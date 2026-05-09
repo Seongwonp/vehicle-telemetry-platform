@@ -16,6 +16,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+// @Component를 붙이지 않는다. SecurityConfig에서 직접 new로 주입하는데,
+// Bean으로 등록하면 서블릿 필터체인에 중복 등록되어 요청당 두 번 실행되는 버그가 생긴다.
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

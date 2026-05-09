@@ -31,10 +31,12 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         String clientIp = getClientIp(request);
         String key = "rate_limit:" + clientIp;
 
+        // INCR는 원자 연산이라 동시 요청이 와도 카운터가 정확하다.
         Long count = redisTemplate.opsForValue().increment(key);
 
         if (count == 1) {
-            // 첫 요청이면 TTL 1분 설정
+            // TTL을 첫 요청 시점에만 설정한다. 이후 요청마다 expire를 호출하면
+            // 윈도우가 매 요청마다 리셋되어 사실상 제한이 걸리지 않는다.
             redisTemplate.expire(key, Duration.ofMinutes(1));
         }
 

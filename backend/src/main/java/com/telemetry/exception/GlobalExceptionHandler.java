@@ -30,6 +30,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(BadCredentialsException e) {
+        // "아이디가 없다" / "비밀번호가 틀렸다"를 구분하지 않는다.
+        // 구분하면 공격자가 유효한 계정을 열거(user enumeration)할 수 있다.
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ErrorResponse("UNAUTHORIZED", "아이디 또는 비밀번호가 올바르지 않습니다"));
     }

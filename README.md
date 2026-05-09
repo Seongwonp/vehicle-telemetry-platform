@@ -10,7 +10,7 @@
 OBD-II 동글 또는 시뮬레이터에서 발생하는 차량 센서 데이터를 MQTT로 수신하고, Kafka를 통해 분산 처리한 뒤 이상 감지 및 모니터링까지 수행하는 IoT 백엔드 플랫폼입니다.
 
 - **핵심 키워드**: 실시간 스트리밍, 대용량 처리, IoT 백엔드, 커넥티드카
-- **개발 기간**: 10주 (2026.05 ~)
+- **개발 기간**: 2026.03 ~ 진행 중
 - **개발자**: Sungwon
 
 ---
@@ -125,6 +125,26 @@ vehicle-telemetry-platform/
 | 배터리 전압 | 11.5V 미만 또는 15V 초과 |
 | 속도 | 200km/h 초과 |
 | DTC 코드 | 배열이 비어있지 않을 때 |
+
+---
+
+## 테스트 실행
+
+```bash
+# Java (JUnit 5)
+cd backend
+./gradlew test
+
+# Python — 이상 감지 룰 테스트
+cd anomaly-detector
+pip install -r requirements.txt pytest
+pytest
+
+# Python — 시뮬레이터 테스트
+cd simulator
+pip install -r requirements.txt pytest
+pytest
+```
 
 ---
 

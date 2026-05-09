@@ -17,10 +17,8 @@ public class MqttMessageHandler {
     private final TelemetryProducer telemetryProducer;
     private final ObjectMapper objectMapper;
 
-    /**
-     * mqttInputChannel 로 들어온 메시지를 수신하여 Kafka로 전달.
-     * MqttConfig에서 등록한 채널과 @ServiceActivator가 연결됨.
-     */
+    // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
+    // Spring Integration 채널 기반이라 별도 스레드 풀 없이 메시지 도착 즉시 호출된다.
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handle(Message<String> message) {
         String payload = message.getPayload();
@@ -29,18 +27,19 @@ public class MqttMessageHandler {
         try {
             VehicleTelemetry telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
 
-            log.info("[MQTT→Kafka] vehicle={} speed={} rpm={} temp={} bat={}",
+            // 전체 필드를 INFO로 남기면 초당 수십 건 로그가 쌓여 노이즈가 된다.
+            // 이상 탐지와 직결되는 핵심 3개 필드만 남긴다.
+            log.info("[MQTT→Kafka] vehicle={} speed={} engine_temp={} battery_voltage={}",
                 telemetry.getVehicleId(),
                 telemetry.getSpeed(),
-                telemetry.getRpm(),
                 telemetry.getEngineTemp(),
-                telemetry.getBatteryVoltage()
-            );
+                telemetry.getBatteryVoltage());
 
             telemetryProducer.send(telemetry);
 
         } catch (Exception e) {
-            log.error("[MQTT] 메시지 처리 실패 topic={} payload={}", topic, payload, e);
+            // 역직렬화 실패 시 어떤 토픽에서 어떤 페이로드가 왔는지 남겨야 원인 파악이 가능하다
+            log.error("[MQTT] 역직렬화 실패 — topic={} payload={}", topic, payload, e);
         }
     }
 }

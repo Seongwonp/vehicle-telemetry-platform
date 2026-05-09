@@ -21,30 +21,38 @@ public class TelemetryProducer {
     private final ObjectMapper objectMapper;
 
     /**
-     * vehicle_id를 파티션 키로 사용하여 같은 차량 데이터가 항상 같은 파티션에 저장되도록 보장.
-     * 순서 보장 + Consumer 그룹의 파티션 분산 처리에 유리.
+     * vehicle_id를 파티션 키로 사용한다.
+     * 같은 차량의 메시지가 항상 동일 파티션에 쌓이기 때문에, Consumer가 순서를 보장한 채로 처리할 수 있다.
+     * 키 없이 라운드로빈으로 보내면 시계열 순서가 뒤섞여 InfluxDB 저장 시 이상 탐지가 오동작할 수 있다.
      */
     public void send(VehicleTelemetry telemetry) {
+        String payload;
         try {
-            String payload = objectMapper.writeValueAsString(telemetry);
-
-            CompletableFuture<SendResult<String, String>> future =
-                kafkaTemplate.send(TOPIC, telemetry.getVehicleId(), payload);
-
-            future.whenComplete((result, ex) -> {
-                if (ex != null) {
-                    log.error("[Kafka] 전송 실패 vehicle={}", telemetry.getVehicleId(), ex);
-                } else {
-                    log.debug("[Kafka] 전송 성공 vehicle={} partition={} offset={}",
-                        telemetry.getVehicleId(),
-                        result.getRecordMetadata().partition(),
-                        result.getRecordMetadata().offset()
-                    );
-                }
-            });
-
+            payload = objectMapper.writeValueAsString(telemetry);
         } catch (Exception e) {
-            log.error("[Kafka] 직렬화 실패 vehicle={}", telemetry.getVehicleId(), e);
+            // 직렬화 실패는 도메인 객체 자체의 문제일 가능성이 높아 데이터 내용을 남긴다
+            log.error("[Kafka] 직렬화 실패로 전송 불가 — vehicle={} timestamp={} speed={} rpm={}",
+                telemetry.getVehicleId(),
+                telemetry.getTimestamp(),
+                telemetry.getSpeed(),
+                telemetry.getRpm(),
+                e);
+            return;
         }
+
+        CompletableFuture<SendResult<String, String>> future =
+            kafkaTemplate.send(TOPIC, telemetry.getVehicleId(), payload);
+
+        future.whenComplete((result, ex) -> {
+            if (ex != null) {
+                log.error("[Kafka] 브로커 전송 실패 — vehicle={} topic={}",
+                    telemetry.getVehicleId(), TOPIC, ex);
+            } else {
+                log.debug("[Kafka] 전송 완료 — vehicle={} partition={} offset={}",
+                    telemetry.getVehicleId(),
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
+            }
+        });
     }
 }

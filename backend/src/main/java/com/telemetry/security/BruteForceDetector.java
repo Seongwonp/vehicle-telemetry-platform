@@ -38,7 +38,8 @@ public class BruteForceDetector {
         String key = PREFIX + ip;
         Long count = redisTemplate.opsForValue().increment(key);
         if (count == 1) {
-            // 첫 실패 시 TTL 설정
+            // TTL은 첫 실패 시에만 건다. 실패할 때마다 리셋하면 카운터가 만료되지 않아
+            // 의도치 않게 영구 차단으로 변한다.
             redisTemplate.expire(key, Duration.ofMinutes(BLOCK_MINUTES));
         }
         log.warn("[BruteForce] 로그인 실패 ip={} count={}/{}", ip, count, MAX_ATTEMPTS);

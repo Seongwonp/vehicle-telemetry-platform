@@ -27,11 +27,10 @@ public class TelemetryQueryService {
     @Value("${influxdb.bucket}")
     private String bucket;
 
-    /**
-     * 특정 차량의 최근 텔레메트리 데이터 조회.
-     * pivot으로 행 기반으로 변환 후 limit 적용.
-     */
     public List<TelemetryResponse> getRecent(String vehicleId, int limit) {
+        // InfluxDB는 기본적으로 필드마다 별도 행을 반환한다.
+        // pivot으로 _time 기준으로 묶어야 한 타임스탬프 = 한 레코드 구조가 만들어진다.
+        // range(start: -1h)는 전체 스캔 방지용 가드 — 없으면 전 기간을 읽어 OOM 위험이 있다.
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -1h)
@@ -45,9 +44,6 @@ public class TelemetryQueryService {
         return executeQuery(vehicleId, flux);
     }
 
-    /**
-     * 특정 차량의 가장 최신 데이터 1건 조회.
-     */
     public TelemetryResponse getLatest(String vehicleId) {
         List<TelemetryResponse> results = getRecent(vehicleId, 1);
         if (results.isEmpty()) {
