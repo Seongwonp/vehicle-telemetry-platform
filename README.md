@@ -10,8 +10,8 @@
 OBD-II 동글 또는 시뮬레이터에서 발생하는 차량 센서 데이터를 MQTT로 수신하고, Kafka를 통해 분산 처리한 뒤 이상 감지 및 모니터링까지 수행하는 IoT 백엔드 플랫폼입니다.
 
 - **핵심 키워드**: 실시간 스트리밍, 대용량 처리, IoT 백엔드, 커넥티드카
-- **개발 기간**: 2026.03 ~ 진행 중
-- **개발자**: Sungwon
+- **개발 기간**: 2026.01 ~ 진행 중
+- **개발자**: 박성원 (Park Sungwon)
 
 ---
 
@@ -108,11 +108,25 @@ vehicle-telemetry-platform/
 
 | Phase | 내용 | 상태 |
 |-------|------|------|
-| 1 | 데이터 수집 파이프라인 (시뮬레이터 → MQTT → Kafka → InfluxDB) | 진행 중 |
-| 2 | REST API 서버 (Spring Boot + JWT + Rate Limiting) | 대기 |
-| 3 | 이상 감지 (룰 기반 + 선택적 ML) | 대기 |
-| 4 | 보안 강화 (X.509, 로깅, 취약점 점검) | 대기 |
-| 5 | 모니터링 & 배포 (Grafana + Docker Compose + AWS EC2) | 대기 |
+| 1 | 데이터 수집 파이프라인 (시뮬레이터 → MQTT → Kafka → InfluxDB) | 완료 |
+| 2 | REST API 서버 (Spring Boot + JWT + Rate Limiting) | 완료 |
+| 3 | 이상 감지 (룰 기반 + Isolation Forest ML) | 완료 |
+| 4 | 보안 강화 (X.509 준비, BruteForce 차단, 감사 로그) | 완료 |
+| 5 | 모니터링 & 배포 (Grafana + Prometheus + Docker Compose) | 완료 |
+
+---
+
+## 향후 계획
+
+| 항목 | 내용 |
+|------|------|
+| AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 |
+| JWT 블랙리스트 | 로그아웃 시 Redis에 토큰 등록 → 강제 무효화 |
+| InfluxDB 배치 쓰기 | 현재 단건 쓰기 → 비동기 배치 WriteApi로 교체 (고부하 대비) |
+| Dead Letter Queue | Kafka 저장 실패 메시지 DLQ로 격리 → 유실 방지 |
+| MQTT X.509 mTLS 활성화 | 현재 준비만 된 상태 → 인증서 발급 후 운영 적용 |
+| 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체 |
+| WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
 
 ---
 
