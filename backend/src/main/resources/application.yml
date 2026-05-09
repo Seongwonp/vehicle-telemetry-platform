@@ -1,0 +1,100 @@
+spring:
+  application:
+    name: vehicle-telemetry-backend
+
+  # ── PostgreSQL ───────────────────────────────────────────────
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:telemetry}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # ── Redis ────────────────────────────────────────────────────
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+
+  # ── Kafka ────────────────────────────────────────────────────
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      retries: 3
+    consumer:
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      enable-auto-commit: false
+
+# ── MQTT ─────────────────────────────────────────────────────
+mqtt:
+  host: ${MQTT_HOST:localhost}
+  port: ${MQTT_PORT:1883}
+  topic: "vehicle/telemetry/#"
+
+# ── InfluxDB ─────────────────────────────────────────────────
+influxdb:
+  url: ${INFLUXDB_URL:http://localhost:8086}
+  token: ${INFLUXDB_TOKEN}
+  org: ${INFLUXDB_ORG:vehicle-telemetry}
+  bucket: ${INFLUXDB_BUCKET:telemetry}
+
+# ── JWT ──────────────────────────────────────────────────────
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+# ── 관리자 계정 (Phase 2 임시, Phase 4에서 DB 기반으로 교체) ──
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:changeme}
+
+# ── Rate Limiting ────────────────────────────────────────────
+rate-limit:
+  requests-per-minute: ${RATE_LIMIT_RPM:60}
+
+# ── Server ───────────────────────────────────────────────────
+server:
+  port: ${SERVER_PORT:8080}
+
+# ── Swagger ──────────────────────────────────────────────────
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# ── Actuator ─────────────────────────────────────────────────
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  pattern:
+    console: "%d{HH:mm:ss} [%X{traceId:--}] [%X{clientIp:--}] %-5level %logger{25} - %msg%n"
+  level:
+    com.telemetry: INFO
+    org.springframework.security: WARN
+    org.springframework.kafka: WARN

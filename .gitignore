@@ -1,3 +1,11 @@
+# 환경변수 (절대 커밋 금지)
+.env
+
+# TLS 인증서 (절대 커밋 금지)
+broker/certs/*.crt
+broker/certs/*.key
+broker/certs/*.pem
+
 # Compiled class file
 *.class
 

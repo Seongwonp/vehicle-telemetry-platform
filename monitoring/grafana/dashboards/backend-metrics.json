@@ -1,0 +1,70 @@
+{
+  "title": "Backend Server Metrics",
+  "uid": "backend-metrics",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-1h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "API 요청 수 (분당)",
+      "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "rate(http_server_requests_seconds_count{application=\"vehicle-telemetry-backend\"}[1m])",
+        "legendFormat": "req/s",
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "API 평균 응답시간 (ms)",
+      "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "rate(http_server_requests_seconds_sum{application=\"vehicle-telemetry-backend\"}[1m]) / rate(http_server_requests_seconds_count{application=\"vehicle-telemetry-backend\"}[1m]) * 1000",
+        "legendFormat": "ms",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "ms" } }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "JVM 힙 메모리 사용량",
+      "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "jvm_memory_used_bytes{application=\"vehicle-telemetry-backend\", area=\"heap\"}",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "bytes" } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "활성 스레드 수",
+      "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "jvm_threads_live_threads{application=\"vehicle-telemetry-backend\"}",
+        "refId": "A"
+      }]
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "HTTP 상태코드별 요청 수",
+      "gridPos": { "x": 0, "y": 4, "w": 24, "h": 8 },
+      "datasource": "Prometheus",
+      "targets": [{
+        "expr": "rate(http_server_requests_seconds_count{application=\"vehicle-telemetry-backend\"}[1m])",
+        "legendFormat": "{{status}} {{uri}}",
+        "refId": "A"
+      }]
+    }
+  ]
+}
