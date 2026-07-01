@@ -157,6 +157,11 @@ vehicle-telemetry-platform/
 | 3 | 이상 감지 (룰 기반 + Isolation Forest ML) | 완료 |
 | 4 | 보안 강화 (X.509 준비, BruteForce 차단, 감사 로그) | 완료 |
 | 5 | 모니터링 & 배포 (Grafana + Prometheus + Docker Compose) | 완료 |
+| 6 | 버그 픽스 (Actuator 인증 우회/정보 노출, 예외 처리 보강) | 완료 |
+| 7 | Refresh Token + 로그아웃 무효화 (Redis 기반) | 완료 |
+| 8 | 데이터 파이프라인 안정성 (InfluxDB 배치 쓰기, Kafka DLQ) | 완료 |
+| 9 | AI 진단 (Gemini API) | 완료 |
+| 10 | MQTT mTLS 실제 활성화 | 예정 |
 
 ---
 
@@ -164,13 +169,13 @@ vehicle-telemetry-platform/
 
 | 항목 | 내용 |
 |------|------|
-| AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 |
-| JWT 블랙리스트 | 로그아웃 시 Redis에 토큰 등록 → 강제 무효화 |
-| InfluxDB 배치 쓰기 | 현재 단건 쓰기 → 비동기 배치 WriteApi로 교체 (고부하 대비) |
-| Dead Letter Queue | Kafka 저장 실패 메시지 DLQ로 격리 → 유실 방지 |
-| MQTT X.509 mTLS 활성화 | 현재 준비만 된 상태 → 인증서 발급 후 운영 적용 |
-| 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체 |
+| AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 (또는 Render 무료 티어) |
+| MQTT X.509 mTLS 활성화 | 인증서/설정은 준비됨(Phase 4) → `mqtt.tls.enabled` 플래그로 실제 적용 예정(Phase 10) |
+| 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체. 도입 시 차량 소유자 검증(IDOR 차단)도 함께 필요 |
 | WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
+| DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
+
+> JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ는 Phase 7~8에서 처리 완료.
 
 ---
 
@@ -226,7 +231,7 @@ vehicle-telemetry-platform/
 |------|------|
 | 장애 발생 | Redis 연결 불가 |
 | Rate Limiting | `redisTemplate.opsForValue().increment()` 예외 발생 → 요청이 `preHandle()`에서 터짐 |
-| 영향 범위 | Rate Limiting과 BruteForce 감지가 비활성화되는 게 아니라 API 전체가 500 응답 |
+| 영향 범위 | Rate Limiting과 BruteForce 감지가 비활성화되는 게 아니라 API 전체가 500 응답. Refresh Token(Phase 7)도 Redis에 저장되므로 재로그인(로그인 자체는 영향 없음, 재발급만 불가)도 함께 영향받음 |
 | 운영 개선 방향 | Redis 장애 시 Rate Limiting을 bypass하도록 try-catch 추가 고려 (가용성 vs 보안 트레이드오프) |
 
 ---
@@ -270,7 +275,7 @@ pytest
 ```bash
 # 1. 환경변수 설정
 cp .env.example .env
-# .env 파일 편집
+# .env 파일 편집 (GEMINI_API_KEY는 선택 — 없으면 AI 진단 기능만 동작 안 함, 나머지는 정상)
 
 # 2. 전체 스택 실행
 docker-compose up -d

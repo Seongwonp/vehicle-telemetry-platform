@@ -111,3 +111,51 @@
 - Eclipse Paho MQTT 클라이언트를 직접 사용하면 재연결 로직, 스레드 관리, 채널 연결을 직접 구현해야 한다.
 - Spring Integration이 자동 재연결, 채널 기반 메시지 라우팅을 처리하므로 `MqttMessageHandler`는 비즈니스 로직에만 집중할 수 있다.
 - `@ServiceActivator(inputChannel = "mqttInputChannel")`로 채널과 핸들러를 선언적으로 연결한다.
+
+---
+
+## ADR-010: Refresh Token을 JWT가 아닌 Redis opaque token으로 저장
+
+**결정**: Refresh Token은 서명된 JWT가 아니라 `UUID.randomUUID()` 문자열을 Redis에
+`refresh_token:{token} → username` 형태로 저장한다 (`RefreshTokenService`).
+
+**이유**:
+- Access Token(Stateless JWT)은 발급 후 서버가 강제로 무효화할 수 없다는 게 ADR-006의 알려진 한계였다.
+- Refresh Token까지 JWT로 만들면 같은 문제가 반복된다 — 서버가 값을 들고 있지 않으니 로그아웃해도 막을 방법이 없다.
+- Redis에 저장하면 로그아웃 시 해당 키를 지우는 것만으로 재발급을 차단할 수 있다.
+  Access Token은 여전히 만료시간까지 유효하지만, 최소한 "재발급 사슬"은 즉시 끊어진다.
+- `BruteForceDetector`/`RateLimitInterceptor`와 동일하게 `StringRedisTemplate`을 재사용해 새 인프라 의존성을 추가하지 않았다.
+
+**Rotation 적용 이유**: `rotate()`는 검증과 동시에 기존 토큰을 즉시 삭제한다.
+탈취된 Refresh Token이 재사용되는 창구를 최소화하기 위함 — 정상 사용자가 먼저 재발급받으면
+공격자가 들고 있던 토큰은 그 순간 무효가 된다.
+
+---
+
+## ADR-011: InfluxDB 비동기 배치 쓰기(WriteApi)로 전환
+
+**결정**: `TelemetryRepository`가 `WriteApiBlocking`(단건 동기 쓰기) 대신
+`WriteApi`(비동기 배치, `batchSize=500`, `flushInterval=1000ms`)를 사용하도록 변경.
+
+**이유**:
+- 단건 쓰기는 Kafka 메시지 하나마다 InfluxDB에 HTTP 요청을 하나씩 보낸다 — 차량 수가 늘어나면 InfluxDB 부하가 선형으로 증가한다.
+- `WriteApi`는 내부 버퍼에 포인트를 모았다가 배치 크기 또는 시간 조건에 도달하면 한 번에 flush한다.
+
+**트레이드오프**: 쓰기가 비동기이므로 `TelemetryRepository.save()`는 더 이상 전송 성공을 보장하지 않는다.
+실제 쓰기 실패는 `InfluxDbConfig`에 등록한 `WriteErrorEvent` 리스너가 백그라운드에서 로깅하며,
+`TelemetryConsumer`의 catch 블록은 더 이상 InfluxDB 네트워크 오류를 잡지 못한다(역직렬화/포인트 구성 오류만 잡음).
+Kafka offset은 이미 auto-commit이 꺼져 있고 리스너가 정상 반환하면 커밋되므로, 이 부분은 배치 전환 이전과 동일한 "저장 성공을 보장하지 않는" 특성을 유지한다.
+
+---
+
+## ADR-012: Kafka DLQ로 저장 실패 메시지 격리
+
+**결정**: `TelemetryConsumer`의 두 리스너가 역직렬화/저장 준비 단계에서 실패하면
+원본 메시지를 각각 `vehicle-telemetry-dlq`, `vehicle-anomaly-alerts-dlq` 토픽으로 재발행한다.
+
+**이유**:
+- 기존에는 실패를 로그로만 남기고 메시지를 버렸다 — 장애 원인 파악 후에도 유실된 데이터를 복구할 방법이 없었다.
+- DLQ에 원본 페이로드와 원래 key(`vehicle_id`)를 그대로 유지해 두면, 나중에 원인을 고쳐서 DLQ를 재처리하거나
+  최소한 어떤 차량의 어느 데이터가 얼마나 유실됐는지 조회할 수 있다.
+- 자동 재처리 컨슈머는 이번 범위에서 제외했다 — 재시도 정책(횟수 제한, 백오프)까지 설계하면 범위가 커지므로,
+  우선 유실 방지와 가시성 확보까지만 구현했다.

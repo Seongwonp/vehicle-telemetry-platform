@@ -2,7 +2,7 @@
 
 > **프로젝트**: Vehicle Telemetry Platform  
 > **점검 기준**: OWASP Top 10, UN R155 / ISO SAE 21434 (차량 사이버보안)  
-> **점검일**: 2026-05-09  
+> **점검일**: 2026-05-09 (2026-07-01 Phase 6~9 반영 갱신)  
 > **작성자**: Sungwon
 
 ---
@@ -11,16 +11,18 @@
 
 | 항목 | 위험도 | 상태 |
 |------|--------|------|
-| MQTT 평문 통신 | 높음 | 완화 (TLS 설정 준비 완료) |
+| MQTT 평문 통신 | 높음 | 완화 (TLS 설정 준비 완료, 실제 활성화는 Phase 10 예정) |
 | 브루트포스 로그인 공격 | 높음 | 완화 (Redis 기반 IP 차단) |
-| JWT 토큰 탈취 | 높음 | 완화 (만료시간, HTTPS 적용) |
+| JWT 토큰 탈취/무효화 불가 | 높음 | 완화 (만료시간, HTTPS 적용, Phase 7에서 Refresh Token 로그아웃 무효화 추가) |
 | SQL Injection | 높음 | 완화 (JPA 파라미터 바인딩) |
 | Rate Limiting 미적용 | 중간 | 완화 (Redis 기반, 분당 60회) |
 | 보안 헤더 누락 | 중간 | 완화 (5개 헤더 적용) |
-| IDOR (권한 우회) | 중간 | 부분 완화 (추가 개선 필요) |
+| IDOR (권한 우회) | 중간 | 부분 완화 (현재 admin 단일 계정이라 실질 위험 낮음. 다중 사용자 도입 시 필요) |
 | 민감 정보 하드코딩 | 높음 | 완화 (.env 분리, .gitignore 처리) |
-| 인증서 없는 MQTT 클라이언트 | 높음 | 완화 (X.509 mTLS 준비 완료) |
+| 인증서 없는 MQTT 클라이언트 | 높음 | 완화 (X.509 mTLS 준비 완료, 실제 활성화는 Phase 10 예정) |
 | 이상 접근 미감지 | 중간 | 완화 (감사 로그 + IP 차단) |
+| Actuator 인증 우회/정보 노출 | 중간 | 완화 (Phase 6 — `/actuator/prometheus` 인증 예외 처리, health `show-details: never`) |
+| 예외 응답 정보 노출 | 낮음 | 완화 (Phase 6 — AccessDenied/DataIntegrity/MessageNotReadable 핸들러 추가) |
 
 ---
 
@@ -67,10 +69,11 @@ cd broker/certs && ./generate-certs.sh
 | 토큰 만료 (기본 24시간) | `application.yml` |
 | 5회 실패 → 15분 IP 차단 | `BruteForceDetector.java` |
 | STATELESS 세션 | `SecurityConfig.java` |
+| Refresh Token (Redis opaque token, rotation) | `RefreshTokenService.java`, `AuthController.java` |
+| 로그아웃 시 토큰 무효화 | `AuthController.logout()` — Redis에서 Refresh Token 삭제. Access Token은 Stateless라 자체 만료 전까지는 유효(블랙리스트 아님) |
 
 **남은 개선 사항**:
-- 토큰 블랙리스트 (로그아웃 시 Redis에 저장)
-- Refresh Token 도입 (Access Token 만료시간 단축)
+- Access Token 만료시간 단축(현재 24h) — 로그아웃 즉시 무효화가 필요하면 블랙리스트 도입 검토
 
 ---
 
@@ -173,6 +176,28 @@ public VehicleResponse findByVehicleId(String vehicleId, String requestingUser) 
 
 ---
 
+### 2-9. Actuator 엔드포인트 노출 (Phase 6에서 발견 및 수정)
+
+**위험**: Prometheus 스크레이핑 대상인 `/actuator/prometheus`가 인증이 걸린 채 방치되어 있었고,
+동시에 인증이 필요 없는 `/actuator/health`는 `show-details: always`로 DB/Redis 연결 상태 등
+상세 정보를 익명 사용자에게 노출하고 있었다. Phase 5(모니터링) 완료 표시와 달리
+실제로는 Prometheus가 401만 받고 메트릭을 전혀 수집하지 못하는 상태였다.
+
+**수정**:
+```java
+// SecurityConfig.java
+.requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
+```
+```yaml
+# application.yml
+management.endpoint.health.show-details: never
+```
+
+**운영 배포 시 추가 권고**: 애플리케이션 레벨 인증 대신 보안그룹/리버스프록시로
+`/actuator/**` 자체를 내부망에서만 접근 가능하도록 제한할 것 (`docs/deployment-guide.md` 참고).
+
+---
+
 ## 3. UN R155 / ISO SAE 21434 대응 현황
 
 자동차 사이버보안 국제 규제 기준으로 점검:
@@ -192,11 +217,11 @@ public VehicleResponse findByVehicleId(String vehicleId, String requestingUser) 
 
 | 취약점 | 우선순위 | 계획 |
 |--------|----------|------|
-| IDOR 완전 차단 | 높음 | 사용자-차량 소유 관계 검증 추가 |
-| JWT 토큰 블랙리스트 | 중간 | 로그아웃 API + Redis 블랙리스트 |
-| MQTT 1883 포트 차단 | 높음 | 운영 배포 시 TLS 전용으로 전환 |
+| IDOR 완전 차단 | 높음(다중 사용자 도입 시) | 현재 admin 단일 계정이라 보류. 다중 사용자 도입 시 사용자-차량 소유 관계 검증 필요 |
+| MQTT 1883 포트 차단 / mTLS 실제 적용 | 높음 | Phase 10 — 인증서 발급 후 `mqtt.tls.enabled` 활성화, 운영 배포 시 TLS 전용 전환 |
 | CSP 헤더 추가 | 낮음 | Content Security Policy 설정 |
 | 의존성 취약점 스캔 | 중간 | OWASP Dependency-Check 도입 |
+| Access Token 즉시 무효화 | 낮음 | 현재는 만료시간(24h)까지 유효. 필요 시 블랙리스트 또는 만료시간 단축 검토 |
 
 ---
 

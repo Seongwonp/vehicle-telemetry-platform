@@ -502,6 +502,56 @@ Phase 1~5 전체 구현 완료 후 코드 전체를 다시 훑으며 마무리.
 
 ---
 
+## 2026-07-01
+
+### 코드 감사 + Phase 6~9, 11 구현
+
+CSAT_Forge(실서비스 운영 중인 다른 포트폴리오 프로젝트)와 나란히 대표작으로 내세우기로 하면서,
+"완료"로 표시된 Phase 1~5가 실제로 문서를 뒷받침하는지 코드를 직접 감사했다.
+
+**감사 중 새로 발견한 것 (기존 문서엔 없던 실제 버그)**
+- `/actuator/prometheus`가 인증에 걸려있어 Prometheus가 매번 401만 받고 있었다 — Phase 5 "완료" 표시와 달리
+  실제로는 Grafana에 백엔드 메트릭이 안 쌓이고 있었을 가능성이 높다.
+- `/actuator/health`의 `show-details: always`가 익명 사용자에게 DB/Redis 연결 상태를 노출하고 있었다.
+- `GlobalExceptionHandler`가 `AccessDeniedException`/`HttpMessageNotReadableException`/`DataIntegrityViolationException`을
+  처리하지 않아 스프링 기본 에러 응답으로 새는 경로가 있었다.
+- Flutter 앱(`vehicle-telemetry-app`)이 이미 `/api/auth/refresh`를 호출하고 있는데 백엔드엔 그 엔드포인트 자체가 없었다.
+- **`./gradlew`가 레포에 한 번도 커밋된 적이 없었다.** README는 `./gradlew test`를 안내하는데 실제로는 실행 불가능한 상태 —
+  지금까지 테스트를 IntelliJ에서만 돌렸다는 뜻이고, 그래서 `VehicleControllerTest`/`BruteForceDetectorTest`의
+  잠재 버그(아래)도 발견되지 못했었다.
+
+**Phase 6 — 버그 픽스**: 위 Actuator/예외처리 문제 수정.
+
+**Phase 7 — Refresh Token + 로그아웃 무효화**: `RefreshTokenService`를 새로 만들어 Redis에 opaque token을
+`refresh_token:{token} → username` 형태로 저장(TTL 14일). `POST /api/auth/refresh`(rotation), `POST /api/auth/logout`
+추가. Access Token은 여전히 Stateless라 즉시 무효화는 못 하지만, 로그아웃하면 최소한 재발급 사슬은 끊긴다.
+자세한 설계 이유는 `docs/architecture-decisions.md`의 ADR-010.
+
+**Phase 8 — 파이프라인 안정성**: `TelemetryRepository`를 `WriteApiBlocking`(단건) → `WriteApi`(비동기 배치)로 전환.
+`TelemetryConsumer`의 저장 실패 메시지를 `vehicle-telemetry-dlq`/`vehicle-anomaly-alerts-dlq` 토픽으로 옮기도록 변경.
+ADR-011, ADR-012 참고.
+
+**Phase 9 — AI 진단**: Gemini API 연동. WebClient/WebFlux 의존성을 새로 추가하는 대신 JDK 내장
+`java.net.http.HttpClient`로 단발성 블로킹 호출만 처리하는 `DiagnosisService` 추가.
+`GET /api/vehicles/{vehicleId}/diagnosis` — Flutter 앱의 `diagnosis_screen.dart`가 이미 기대하던 응답 형태
+(`{diagnosis, dataPoints}`)를 그대로 맞췄다.
+
+**Phase 11 — 테스트**: `RefreshTokenService`, `TelemetryConsumer`(저장/DLQ 분기), `GlobalExceptionHandler`,
+`AnomalyService` 테스트 추가. 그리고 `./gradlew wrapper`로 빠진 wrapper 스크립트를 생성해 커밋 — 이제 클론 후
+바로 `./gradlew test`가 된다.
+
+**테스트 작성 중 발견한 기존 버그 2개**
+- `VehicleControllerTest`(`@WebMvcTest`) — `WebMvcConfig`가 등록한 `RateLimitInterceptor`가 슬라이스 테스트에도
+  같이 실행되는데 `StringRedisTemplate` mock이 없어서 `NoSuchBeanDefinitionException`으로 컨텍스트 로딩 자체가 실패하고 있었다.
+- `BruteForceDetectorTest` — 공용 `@BeforeEach`에서 `opsForValue()`를 스텁했는데 `recordSuccess`는 그걸 안 쓰다 보니
+  Mockito strict stubs가 "사용되지 않은 스텁"으로 그 테스트를 실패시키고 있었다. 둘 다 `./gradlew test`가
+  한 번도 안 돌아봐서 아무도 몰랐던 문제 — 각 테스트에 필요한 스텁만 개별로 넣는 방식으로 고쳤다.
+
+**미룬 것**: MQTT mTLS 실제 활성화(Phase 10)는 로컬 개발 사이클에 인증서가 끼어드는 트레이드오프가 있어 다음으로 미뤘다.
+다중 사용자/IDOR 완전 차단도 이번엔 스코프에서 뺐다 — 지금은 admin 단일 계정이라 실질 위험이 낮다.
+
+---
+
 ## 로컬에서 다시 시작할 때
 
 ```bash
