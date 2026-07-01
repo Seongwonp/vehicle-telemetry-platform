@@ -40,6 +40,10 @@ create_topic "vehicle-anomaly-alerts" 3 1
 # DTC 진단 코드 이벤트 (Phase 3에서 사용)
 create_topic "vehicle-dtc-events" 1 1
 
+# DLQ — 저장 실패한 원본 메시지 격리 (Phase 8, backend KafkaConfig가 부팅 시에도 자동 생성함)
+create_topic "vehicle-telemetry-dlq" 1 1
+create_topic "vehicle-anomaly-alerts-dlq" 1 1
+
 echo "================================================================"
 echo "생성된 토픽 목록:"
 kafka-topics --bootstrap-server $KAFKA_BROKER --list

@@ -24,4 +24,21 @@ public class KafkaConfig {
             .replicas(1)
             .build();
     }
+
+    // DLQ 토픽 — 저장 실패한 원본 메시지를 격리해 유실을 방지한다 (재처리 컨슈머는 아직 없음).
+    @Bean
+    public NewTopic vehicleTelemetryDlqTopic() {
+        return TopicBuilder.name("vehicle-telemetry-dlq")
+            .partitions(1)
+            .replicas(1)
+            .build();
+    }
+
+    @Bean
+    public NewTopic vehicleAnomalyAlertsDlqTopic() {
+        return TopicBuilder.name("vehicle-anomaly-alerts-dlq")
+            .partitions(1)
+            .replicas(1)
+            .build();
+    }
 }
