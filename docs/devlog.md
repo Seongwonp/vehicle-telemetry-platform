@@ -547,8 +547,34 @@ ADR-011, ADR-012 참고.
   Mockito strict stubs가 "사용되지 않은 스텁"으로 그 테스트를 실패시키고 있었다. 둘 다 `./gradlew test`가
   한 번도 안 돌아봐서 아무도 몰랐던 문제 — 각 테스트에 필요한 스텁만 개별로 넣는 방식으로 고쳤다.
 
-**미룬 것**: MQTT mTLS 실제 활성화(Phase 10)는 로컬 개발 사이클에 인증서가 끼어드는 트레이드오프가 있어 다음으로 미뤘다.
-다중 사용자/IDOR 완전 차단도 이번엔 스코프에서 뺐다 — 지금은 admin 단일 계정이라 실질 위험이 낮다.
+다중 사용자/IDOR 완전 차단은 이번엔 스코프에서 뺐다 — 지금은 admin 단일 계정이라 실질 위험이 낮다.
+
+### Phase 10 — MQTT mTLS 실제 활성화
+
+당일 이어서 진행. `mqtt.tls.enabled` 플래그(기본 false)로 평문/mTLS를 전환할 수 있게
+`MqttConfig.java`에 SSL 소켓 팩토리 로직 추가.
+
+**막힌 부분 1**: `broker/certs/generate-certs.sh`를 실제로 실행해본 게 이번이 처음이었다 —
+`openssl x509 -req ... -quiet` 옵션이 `x509` 서브커맨드엔 없는 옵션이라(`req`에만 있음)
+2단계(서버 인증서 생성)에서 항상 실패하고 있었다. 지금까지 아무도 이 스크립트를 돌려본 적이
+없었다는 뜻. `-quiet` 제거로 수정.
+
+**막힌 부분 2**: openssl이 만드는 개인키(PKCS#1)를 Java가 못 읽어서, Spring Boot용으로
+`client.p12`(인증서+키)를 추가로 생성하도록 스크립트를 확장했다. 처음엔 CA 인증서만 담은
+트러스트스토어도 `openssl pkcs12 -export -nokeys`로 만들었는데, `keytool -list`로 확인해보니
+항목이 0개로 나왔다 — openssl이 만드는 cert-only PKCS12는 `trustedCertEntry` 속성이 없어서
+Java `KeyStore`가 인식을 못 하는 것. `keytool -importcert`로 바꾸니 정상적으로 1개 항목이 잡혔다.
+자세한 이유는 ADR-013.
+
+**검증**: `openssl s_server`/`s_client`로 생성된 server/client 인증서 간 실제 TLS 1.2 mutual auth
+핸드셰이크가 되는지 직접 확인(둘 다 `verify return:1`). Java 쪽은 별도 클래스로 `KeyStore` →
+`KeyManagerFactory`/`TrustManagerFactory` → `SSLContext` 빌드까지 생성된 `client.p12`/`truststore.p12`
+파일로 직접 돌려서 예외 없이 `SSLSocketFactory`가 만들어지는 것까지 확인.
+Docker가 로컬에 안 떠 있어서 Mosquitto 컨테이너까지 붙인 완전한 end-to-end 테스트는 못 했다 —
+다음에 실제로 켤 때 `docker-compose restart mosquitto` 후 백엔드 로그에서 연결 확인 필요.
+
+기본값은 여전히 평문(1883) — 데모나 보안 점검 때만 `.env`에서 `MQTT_TLS_ENABLED=true` +
+`MQTT_PORT=8883`으로 바꾸고 mosquitto.conf TLS 섹션 주석을 해제하면 켜지는 구조.
 
 ---
 

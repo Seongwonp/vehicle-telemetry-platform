@@ -161,7 +161,7 @@ vehicle-telemetry-platform/
 | 7 | Refresh Token + 로그아웃 무효화 (Redis 기반) | 완료 |
 | 8 | 데이터 파이프라인 안정성 (InfluxDB 배치 쓰기, Kafka DLQ) | 완료 |
 | 9 | AI 진단 (Gemini API) | 완료 |
-| 10 | MQTT mTLS 실제 활성화 | 예정 |
+| 10 | MQTT mTLS 실제 활성화 (백엔드/시뮬레이터 클라이언트 코드, 기본값은 여전히 평문) | 완료 |
 
 ---
 
@@ -170,12 +170,12 @@ vehicle-telemetry-platform/
 | 항목 | 내용 |
 |------|------|
 | AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 (또는 Render 무료 티어) |
-| MQTT X.509 mTLS 활성화 | 인증서/설정은 준비됨(Phase 4) → `mqtt.tls.enabled` 플래그로 실제 적용 예정(Phase 10) |
 | 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체. 도입 시 차량 소유자 검증(IDOR 차단)도 함께 필요 |
 | WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
 | DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
+| MQTT 1883 포트 운영 차단 | mTLS 코드는 Phase 10에서 완료. 실제 운영 배포 시 인증서 발급 + 플래그 활성화 + 1883 차단은 배포 단계 작업 |
 
-> JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ는 Phase 7~8에서 처리 완료.
+> JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ, MQTT mTLS 클라이언트 코드는 Phase 7~10에서 처리 완료.
 
 ---
 

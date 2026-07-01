@@ -40,9 +40,20 @@ services:
         condition: service_started
     ports:
       - "${SERVER_PORT:-8080}:8080"
+    volumes:
+      # Phase 10 mTLS 활성화 시(MQTT_TLS_ENABLED=true) client.p12/truststore.p12를 읽기 위함.
+      # 평문(기본값) 모드에서는 사용되지 않는다.
+      - ./broker/certs:/app/certs:ro
     environment:
       MQTT_HOST: mosquitto
+      # 컨테이너 간 통신은 항상 mosquitto:1883/8883 고정 포트를 쓴다 — 위 mosquitto 서비스의
+      # 호스트 포트 매핑(${MQTT_PORT:-1883})과는 별개다. mTLS 테스트 시엔 이 값을 8883으로 바꾸고
+      # MQTT_TLS_ENABLED도 true로 같이 바꿔야 한다(docker-compose엔 조건부 기본값 문법이 없음).
       MQTT_PORT: 1883
+      MQTT_TLS_ENABLED: ${MQTT_TLS_ENABLED:-false}
+      MQTT_TLS_KEYSTORE_PATH: /app/certs/client.p12
+      MQTT_TLS_TRUSTSTORE_PATH: /app/certs/truststore.p12
+      MQTT_TLS_STORE_PASSWORD: ${MQTT_TLS_STORE_PASSWORD:-changeit}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       INFLUXDB_URL: http://influxdb:8086
       INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
@@ -91,9 +102,16 @@ services:
     profiles: ["simulator"]
     depends_on:
       - mosquitto
+    volumes:
+      # mTLS 테스트 시 TLS_CA_CERT 등 PEM 경로가 이 디렉터리를 가리키게 된다. 평문 모드에선 미사용.
+      - ./broker/certs:/app/certs:ro
     environment:
       MQTT_HOST: mosquitto
+      # 컨테이너 간 통신 고정 포트. mTLS 테스트 시 8883 + 아래 TLS_* 값도 함께 설정해야 한다.
       MQTT_PORT: 1883
+      TLS_CA_CERT: ${SIMULATOR_TLS_CA_CERT:-}
+      TLS_CLIENT_CERT: ${SIMULATOR_TLS_CLIENT_CERT:-}
+      TLS_CLIENT_KEY: ${SIMULATOR_TLS_CLIENT_KEY:-}
       VEHICLE_COUNT: ${VEHICLE_COUNT:-3}
       PUBLISH_INTERVAL: ${PUBLISH_INTERVAL:-1.0}
       ANOMALY_RATE: ${ANOMALY_RATE:-0.02}

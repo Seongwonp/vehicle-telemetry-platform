@@ -2,7 +2,7 @@
 
 > **프로젝트**: Vehicle Telemetry Platform  
 > **점검 기준**: OWASP Top 10, UN R155 / ISO SAE 21434 (차량 사이버보안)  
-> **점검일**: 2026-05-09 (2026-07-01 Phase 6~9 반영 갱신)  
+> **점검일**: 2026-05-09 (2026-07-01 Phase 6~10 반영 갱신)  
 > **작성자**: Sungwon
 
 ---
@@ -11,7 +11,7 @@
 
 | 항목 | 위험도 | 상태 |
 |------|--------|------|
-| MQTT 평문 통신 | 높음 | 완화 (TLS 설정 준비 완료, 실제 활성화는 Phase 10 예정) |
+| MQTT 평문 통신 | 높음 | 완화 (TLS 클라이언트 코드 구현 완료 — Phase 10. 기본값은 여전히 평문, 플래그로 전환) |
 | 브루트포스 로그인 공격 | 높음 | 완화 (Redis 기반 IP 차단) |
 | JWT 토큰 탈취/무효화 불가 | 높음 | 완화 (만료시간, HTTPS 적용, Phase 7에서 Refresh Token 로그아웃 무효화 추가) |
 | SQL Injection | 높음 | 완화 (JPA 파라미터 바인딩) |
@@ -19,7 +19,7 @@
 | 보안 헤더 누락 | 중간 | 완화 (5개 헤더 적용) |
 | IDOR (권한 우회) | 중간 | 부분 완화 (현재 admin 단일 계정이라 실질 위험 낮음. 다중 사용자 도입 시 필요) |
 | 민감 정보 하드코딩 | 높음 | 완화 (.env 분리, .gitignore 처리) |
-| 인증서 없는 MQTT 클라이언트 | 높음 | 완화 (X.509 mTLS 준비 완료, 실제 활성화는 Phase 10 예정) |
+| 인증서 없는 MQTT 클라이언트 | 높음 | 완화 (X.509 mTLS 클라이언트 코드 구현 완료 — Phase 10) |
 | 이상 접근 미감지 | 중간 | 완화 (감사 로그 + IP 차단) |
 | Actuator 인증 우회/정보 노출 | 중간 | 완화 (Phase 6 — `/actuator/prometheus` 인증 예외 처리, health `show-details: never`) |
 | 예외 응답 정보 노출 | 낮음 | 완화 (Phase 6 — AccessDenied/DataIntegrity/MessageNotReadable 핸들러 추가) |
@@ -45,15 +45,23 @@ tcpdump -i eth0 -w capture.pcap port 1883
 - TLS 1.2 이상 암호화 (8883 포트) 설정 준비
 - 서버/클라이언트 상호 인증 (mTLS) — X.509 인증서 발급 스크립트 제공
 - 클라이언트 인증서 없으면 브로커 연결 거부
+- Spring Boot 백엔드(`MqttConfig.java`)와 Python 시뮬레이터 양쪽 모두 mTLS 클라이언트 코드 구현 완료(Phase 10)
+  — `mqtt.tls.enabled` 플래그로 켜고 끌 수 있어 평소 로컬 개발은 평문으로 유지
 
 **활성화 방법**:
 ```bash
-# 1. 인증서 생성
+# 1. 인증서 생성 (client.p12 / truststore.p12까지 함께 생성됨)
 cd broker/certs && ./generate-certs.sh
 
 # 2. mosquitto.conf 의 TLS 섹션 주석 해제
 # 3. docker-compose restart mosquitto
+
+# 4. 백엔드: .env에서 MQTT_TLS_ENABLED=true, MQTT_PORT=8883로 변경 후 재시작
+# 5. 시뮬레이터: .env에서 TLS_CA_CERT/TLS_CLIENT_CERT/TLS_CLIENT_KEY 경로 설정 시 자동 적용
 ```
+
+> `client.p12`의 개인키는 openssl이 만드는 PKCS#1 PEM을 Java가 직접 읽지 못해서 PKCS12로
+> 한 번 변환한 것 — Mosquitto 서버/Python 시뮬레이터는 원본 PEM(`client.crt`/`client.key`)을 그대로 쓴다.
 
 ---
 
@@ -218,7 +226,7 @@ management.endpoint.health.show-details: never
 | 취약점 | 우선순위 | 계획 |
 |--------|----------|------|
 | IDOR 완전 차단 | 높음(다중 사용자 도입 시) | 현재 admin 단일 계정이라 보류. 다중 사용자 도입 시 사용자-차량 소유 관계 검증 필요 |
-| MQTT 1883 포트 차단 / mTLS 실제 적용 | 높음 | Phase 10 — 인증서 발급 후 `mqtt.tls.enabled` 활성화, 운영 배포 시 TLS 전용 전환 |
+| MQTT 1883 포트 운영 차단 | 높음 | 코드/설정은 Phase 10에서 완료. 운영 배포 시 인증서 발급 + `mqtt.tls.enabled=true` + 1883 포트 자체를 닫는 것은 배포 단계에서 적용 필요 |
 | CSP 헤더 추가 | 낮음 | Content Security Policy 설정 |
 | 의존성 취약점 스캔 | 중간 | OWASP Dependency-Check 도입 |
 | Access Token 즉시 무효화 | 낮음 | 현재는 만료시간(24h)까지 유효. 필요 시 블랙리스트 또는 만료시간 단축 검토 |

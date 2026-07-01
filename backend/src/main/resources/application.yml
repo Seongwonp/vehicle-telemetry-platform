@@ -43,6 +43,13 @@ mqtt:
   host: ${MQTT_HOST:localhost}
   port: ${MQTT_PORT:1883}
   topic: "vehicle/telemetry/#"
+  tls:
+    # broker/certs/generate-certs.sh 실행 + mosquitto.conf TLS 섹션 주석 해제 후에만 true로 켤 것.
+    # 평소 로컬 개발은 false(평문 1883) 유지 — 매번 인증서를 준비할 필요 없게.
+    enabled: ${MQTT_TLS_ENABLED:false}
+    keystore-path: ${MQTT_TLS_KEYSTORE_PATH:}
+    truststore-path: ${MQTT_TLS_TRUSTSTORE_PATH:}
+    store-password: ${MQTT_TLS_STORE_PASSWORD:changeit}
 
 # ── InfluxDB ─────────────────────────────────────────────────
 influxdb:
