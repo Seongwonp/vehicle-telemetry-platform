@@ -65,6 +65,11 @@ admin:
 rate-limit:
   requests-per-minute: ${RATE_LIMIT_RPM:60}
 
+# ── Gemini AI 진단 (Phase 9) ───────────────────────────────────
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:gemini-2.0-flash}
+
 # ── Server ───────────────────────────────────────────────────
 server:
   port: ${SERVER_PORT:8080}
