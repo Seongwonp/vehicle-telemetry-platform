@@ -86,7 +86,9 @@ management:
         include: health,info,metrics,prometheus
   endpoint:
     health:
-      show-details: always
+      # /actuator/health는 익명 접근을 허용하므로(SecurityConfig) DB/Redis 연결 상태 등
+      # 상세 정보를 노출하지 않는다. 상세 헬스체크는 인증된 채널(로그, 내부 대시보드)로 확인한다.
+      show-details: never
   metrics:
     tags:
       application: ${spring.application.name}

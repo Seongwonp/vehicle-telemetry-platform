@@ -1,8 +1,11 @@
 package com.telemetry.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,6 +37,26 @@ public class GlobalExceptionHandler {
         // 구분하면 공격자가 유효한 계정을 열거(user enumeration)할 수 있다.
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
             .body(new ErrorResponse("UNAUTHORIZED", "아이디 또는 비밀번호가 올바르지 않습니다"));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(new ErrorResponse("FORBIDDEN", "접근 권한이 없습니다"));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse("BAD_REQUEST", "요청 본문을 읽을 수 없습니다"));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrityViolation(DataIntegrityViolationException e) {
+        // 유니크 제약 위반 등 — 원본 예외 메시지는 DB 구조를 노출할 수 있어 응답에 담지 않는다.
+        log.warn("데이터 무결성 제약 위반", e);
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse("CONFLICT", "이미 존재하거나 다른 데이터와 충돌합니다"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
