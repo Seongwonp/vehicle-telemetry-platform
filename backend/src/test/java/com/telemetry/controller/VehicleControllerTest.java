@@ -5,11 +5,14 @@ import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.service.VehicleService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -17,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -35,6 +39,20 @@ class VehicleControllerTest {
 
     @MockBean
     private VehicleService vehicleService;
+
+    // WebMvcConfig가 등록한 RateLimitInterceptor가 이 슬라이스 테스트에도 함께 실행되므로
+    // StringRedisTemplate을 채워주지 않으면 opsForValue() 호출에서 NPE가 난다.
+    @MockBean
+    private StringRedisTemplate redisTemplate;
+
+    @MockBean
+    private ValueOperations<String, String> valueOperations;
+
+    @BeforeEach
+    void setUpRateLimit() {
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.increment(anyString())).willReturn(1L);
+    }
 
     @Test
     @WithMockUser(roles = "ADMIN")

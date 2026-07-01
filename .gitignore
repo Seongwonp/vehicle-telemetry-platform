@@ -27,6 +27,14 @@ broker/certs/*.pem
 *.tar.gz
 *.rar
 
+# Gradle Wrapper jar는 예외 — 이게 없으면 클론 후 ./gradlew가 동작하지 않는다.
+!backend/gradle/wrapper/gradle-wrapper.jar
+
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 replay_pid*
+
+# 빌드 산출물 / IDE
+backend/build/
+backend/.gradle/
+.idea/
