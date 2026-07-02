@@ -12,7 +12,9 @@ COPY src ./src
 RUN gradle bootJar --no-daemon
 
 # ── 2단계: 실행 이미지 (경량) ────────────────────────────────────
-FROM eclipse-temurin:17-jre-alpine
+# eclipse-temurin:17-jre-alpine은 arm64 매니페스트가 없어 Apple Silicon 등에서 빌드가 깨진다.
+# jammy(Ubuntu 기반)는 amd64/arm64 모두 공식 지원한다.
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
