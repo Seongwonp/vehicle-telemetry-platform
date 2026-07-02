@@ -36,7 +36,7 @@ public class TelemetryQueryService {
               |> range(start: -1h)
               |> filter(fn: (r) => r._measurement == "vehicle_telemetry")
               |> filter(fn: (r) => r.vehicle_id == "%s")
-              |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: ["_value"])
+              |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
               |> sort(columns: ["_time"], desc: true)
               |> limit(n: %d)
             """, bucket, vehicleId, limit);
