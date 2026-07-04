@@ -18,6 +18,12 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -32,9 +38,17 @@ public class SecurityConfig {
     @Value("${admin.password}")
     private String adminPassword;
 
+    @Value("${cors.allowed-origin-patterns}")
+    private String allowedOriginPatterns;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // ── CORS ────────────────────────────────────────────────
+            // Flutter web(브라우저)에서 호출할 때만 필요 — 네이티브 앱/curl은 브라우저가
+            // 아니라 CORS 검사 자체를 안 받아서 이 설정 없이도 지금까지는 문제가 안 보였다.
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
             // ── CSRF 비활성화 (Stateless JWT 방식) ─────────────────
             .csrf(AbstractHttpConfigurer::disable)
 
@@ -71,6 +85,22 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // 콤마로 구분된 패턴 목록. 포트가 매번 바뀌는 로컬 개발 편의를 위해
+        // setAllowedOrigins가 아닌 setAllowedOriginPatterns를 쓴다 — 후자만 "localhost:*"
+        // 같은 포트 와일드카드를 지원한다.
+        configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns.split(",")));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     @Bean
