@@ -69,6 +69,8 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
+      # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값 — 부하 테스트로 발견해 추가.
+      RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
     networks:
       - telemetry-net
     restart: unless-stopped

@@ -3,6 +3,7 @@ vehicle_simulator.py VehicleState 테스트
 """
 import sys
 import os
+from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
@@ -86,6 +87,14 @@ class TestVehicleStateNext:
         state = VehicleState(vehicle_id="KR-GA-1234")
         payload = state.next()
         assert payload["vehicle_id"] == "KR-GA-1234"
+
+    def test_타임스탬프_밀리초_정밀도(self):
+        state = VehicleState(vehicle_id="TEST-001")
+        timestamp = state.next()["timestamp"]
+
+        parsed = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        assert len(timestamp) == 24
+        assert parsed.microsecond % 1000 == 0
 
 
 class TestVehicleStateAnomalyInjection:

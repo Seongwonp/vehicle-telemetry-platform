@@ -146,6 +146,21 @@
 `TelemetryConsumer`의 catch 블록은 더 이상 InfluxDB 네트워크 오류를 잡지 못한다(역직렬화/포인트 구성 오류만 잡음).
 Kafka offset은 이미 auto-commit이 꺼져 있고 리스너가 정상 반환하면 커밋되므로, 이 부분은 배치 전환 이전과 동일한 "저장 성공을 보장하지 않는" 특성을 유지한다.
 
+**2026-07 부하 테스트 실측 추가**: `batchSize=500` / `flushInterval=1000ms` 자체를 다른 값과
+비교 측정하지는 못했다(향후 과제). 대신 부하 테스트 중 이 설정과는 무관한 별개의 심각한
+버그를 발견했다 — `WritePrecision.S`(초 단위)와 시뮬레이터의 초 단위 타임스탬프가 겹쳐서,
+차량 발행 주기가 1초 미만이면 같은 시리즈+타임스탬프에 여러 포인트가 충돌해 뒤 값이 앞
+값을 조용히 덮어썼다(50% 데이터 유실, Kafka lag은 0으로 정상처럼 보임). ADR-014, 그리고
+`docs/load-test-plan.md` 5절에 상세 기록. `WriteApi`의 비동기 특성과는 별개로, 정밀도
+설정 자체가 배치 쓰기 이전부터 있던 잠재적 유실 지점이었다는 점에서 이 ADR과 관련이 깊어 여기에도 남긴다.
+
+읽기 클라이언트도 같은 부하 테스트에서 검증했다. `/latest`의 p95가 3.82초까지 증가해
+OkHttp Dispatcher의 호스트당 동시 요청 기본값 5를 200으로 확대했지만, p95 6.23초와
+에러율 1.43%로 오히려 악화됐다. InfluxDB의 `context canceled`와 백엔드의
+`SocketTimeoutException`을 확인해 클라이언트 대기열 뒤의 InfluxDB 동시 쿼리 처리 용량이
+실제 제약임을 확인했고, 확대 설정은 원복했다. 읽기 경로 개선은 InfluxDB 스케일링·쿼리
+최적화·캐싱을 별도 검증한 뒤 결정한다.
+
 ---
 
 ## ADR-012: Kafka DLQ로 저장 실패 메시지 격리
@@ -181,3 +196,47 @@ mTLS(`ssl://`) 사이에서 전환한다. `generate-certs.sh`는 Mosquitto/Pytho
 - 트러스트스토어(`truststore.p12`, CA 인증서만 포함)는 `openssl pkcs12 -export -nokeys`로 만들면
   인증서가 `trustedCertEntry` 속성 없이 저장되어 Java `KeyStore`가 0개 항목으로 인식하는 문제가 있었다.
   `keytool -importcert`로 만들면 이 속성이 올바르게 채워진다 — 그래서 트러스트스토어만 keytool로 생성한다.
+
+---
+
+## ADR-014: 부하 테스트로 발견한 InfluxDB 타임스탬프 정밀도 유실 수정, Kafka concurrency 조정
+
+**배경**: `docs/load-test-plan.md`에 따라 시뮬레이터를 스케일하며 수집 파이프라인 부하 테스트를
+진행하던 중(2026-07), 원래 가설(Kafka 컨슈머 concurrency 미설정이 병목)과 다른, 훨씬 심각한
+문제를 실측으로 발견했다.
+
+**결정 1 — InfluxDB 타임스탬프를 초 단위(`WritePrecision.S`)에서 밀리초(`WritePrecision.MS`)로,
+시뮬레이터 타임스탬프도 초 단위에서 밀리초 단위로 변경**.
+
+**이유**: `PUBLISH_INTERVAL=0.5`(차량당 초당 2회 발행) 조건에서 InfluxDB 저장량을 측정했더니
+목표 200 msg/s의 절반인 약 100 msg/s만 저장됐다. Kafka consumer lag은 0에 가까워 정상처럼
+보였는데, 원인은 따로 있었다 — 시뮬레이터가 초 단위 타임스탬프(`%Y-%m-%dT%H:%M:%SZ`)를 보내고
+백엔드가 `WritePrecision.S`로 기록하다 보니, 같은 차량의 같은 초 안에 도착한 두 번째 메시지가
+InfluxDB에서 (measurement, tag, timestamp)가 완전히 같은 포인트로 취급되어 앞 메시지를 조용히
+덮어썼다. `influx query`로 특정 차량의 연속 타임스탬프를 직접 확인해 초 단위로만 점이 찍히는
+것을 보고 확정했다. 수정 후 동일 조건에서 저장량이 약 197 msg/s(목표의 98.5%)로 회복됐다.
+
+**교훈**: Kafka consumer lag = 0은 "메시지를 다 소비했다"는 뜻이지 "데이터가 다 저장됐다"는
+뜻이 아니다 — 저장 단계의 정합성은 별도로 검증해야 한다.
+
+**결정 2 — `spring.kafka.listener.concurrency=3`으로 설정 (파티션 수와 일치)**.
+
+**이유**: `vehicle-telemetry`/`vehicle-anomaly-alerts` 모두 파티션 3개인데 concurrency
+미설정 시 기본값 1이라 파티션 수만큼 병렬 처리가 안 될 가능성이 있었다. 실측 결과, 이번
+테스트로 도달 가능했던 부하 범위(~1,250 msg/s — 시뮬레이터 자체의 발행 한계)에서는
+concurrency=1이어도 lag이 누적된 적이 없어 개선 효과가 뚜렷하지 않았다. 그럼에도 파티션
+수와 컨슈머 스레드 수를 일치시키는 것 자체는 일반적으로 안전한 기본값이라 그대로 유지한다.
+더 높은 처리량에서 실제 효과가 있는지는 시뮬레이터를 더 강하게 만들어야 확인 가능(향후 과제).
+
+**결정 3(되돌림) — InfluxDB Java 클라이언트 OkHttp Dispatcher 확대 시도, 롤백**.
+
+**이유**: REST API 부하 테스트에서 `/latest`·`/telemetry` 조회가 데이터량과 무관하게 비슷한
+p95/p99를 보여 InfluxDB 클라이언트의 OkHttp Dispatcher(호스트당 동시 요청 기본값 5)가 병목으로
+의심됐다. `Dispatcher`를 200/200으로 늘려 재측정했더니 p95가 3.82s→6.23s로, 에러율이
+0.03%→1.43%로 오히려 악화됐고 InfluxDB/백엔드 로그에 `context canceled`,
+`SocketTimeoutException`이 다수 발생했다. 즉 기본값 5는 병목이 아니라 로컬 InfluxDB
+컨테이너의 실제 동시 쿼리 처리 용량을 클라이언트 쪽에서 우연히 지켜주고 있었던 것 —
+풀을 넓히자 서버가 감당 못 할 요청이 한꺼번에 몰렸다. 원래 설정(기본값)으로 되돌렸다.
+진짜 개선은 InfluxDB 자체 스케일링, 쿼리 최적화, 캐싱 등 더 큰 작업이 필요해 향후 과제로 남긴다.
+
+**상세 수치**: `docs/load-test-plan.md` 5절.
