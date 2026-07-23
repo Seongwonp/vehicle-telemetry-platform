@@ -37,6 +37,12 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       enable-auto-commit: false
+    listener:
+      # 부하 테스트 결과: vehicle-telemetry/vehicle-anomaly-alerts 모두 파티션 3개인데
+      # concurrency 미설정 시 기본값 1 — 파티션 수에 맞춰 스레드 3개로 늘린다.
+      # (실측으로는 concurrency=1도 도달 가능했던 부하 범위(~1,250 msg/s)에서 lag이 없었다 —
+      # docs/load-test-plan.md 5절 before/after 참고)
+      concurrency: 3
 
 # ── MQTT ─────────────────────────────────────────────────────
 mqtt:

@@ -34,7 +34,11 @@ public class TelemetryRepository {
             .addField("battery_voltage", telemetry.getBatteryVoltage())
             // timestamp는 시뮬레이터가 보낸 ISO-8601 문자열을 파싱한다.
             // 형식이 맞지 않으면 Instant.parse()에서 DateTimeParseException이 발생한다.
-            .time(Instant.parse(telemetry.getTimestamp()), WritePrecision.S);
+            // WritePrecision.S(초 단위)였을 때는 PUBLISH_INTERVAL이 1초 미만이면 같은 차량의
+            // 여러 포인트가 (측정값, 태그, 타임스탬프)가 같아져 뒤 포인트가 앞 포인트를 조용히
+            // 덮어썼다 — 부하 테스트로 발견한 실데이터 유실 버그. 시뮬레이터가 이제 밀리초까지
+            // 보내므로 정밀도를 맞춘다.
+            .time(Instant.parse(telemetry.getTimestamp()), WritePrecision.MS);
 
         if (telemetry.getGps() != null) {
             point.addField("lat", telemetry.getGps().getLat())

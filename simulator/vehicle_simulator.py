@@ -146,7 +146,10 @@ class VehicleState:
     def _to_payload(self) -> dict:
         return {
             "vehicle_id": self.vehicle_id,
-            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            # 초 단위 문자열이면 PUBLISH_INTERVAL이 1초 미만일 때 같은 차량의 여러 메시지가
+            # InfluxDB에서 동일 타임스탬프로 충돌해 뒤 값이 앞 값을 덮어쓴다(부하 테스트로 발견).
+            # 밀리초까지 남겨서 충돌을 없앤다.
+            "timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z",
             "speed": round(self.speed, 1),
             "rpm": self.rpm,
             "engine_temp": round(self.engine_temp, 1),
