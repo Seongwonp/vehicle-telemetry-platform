@@ -240,3 +240,40 @@ p95/p99를 보여 InfluxDB 클라이언트의 OkHttp Dispatcher(호스트당 동
 진짜 개선은 InfluxDB 자체 스케일링, 쿼리 최적화, 캐싱 등 더 큰 작업이 필요해 향후 과제로 남긴다.
 
 **상세 수치**: `docs/load-test-plan.md` 5절.
+
+---
+
+## ADR-015: 부하 생성기를 멀티프로세스로 개선해 진짜 백엔드 한계치 측정
+
+**배경**: ADR-014 시점의 부하 테스트에서는 시뮬레이터 자체가 ~1,000-1,250 msg/s에서 벽에
+부딪혀 Java 백엔드/Kafka의 진짜 처리 한계를 재지 못했다. 원인은 `vehicle_simulator.py`의
+구조 — 차량마다 Python 스레드 하나를 띄우고, 그 안에서 paho MQTT 클라이언트가 `loop_start()`로
+내부 네트워크 스레드를 또 하나 띄운다. 차량 1,000대 = OS 스레드 약 2,000개가 GIL 하나를
+두고 경쟁하는 구조라, CPU 사용률이 40% 안팎으로 낮은데도 처리량이 안 늘었다.
+
+**결정**: `simulator/vehicle_simulator.py`에 `VEHICLE_ID_OFFSET` 환경변수를 추가해, 여러
+시뮬레이터 **프로세스**(컨테이너)를 동시에 띄워도 vehicle_id가 겹치지 않게 했다.
+(`docker compose run -d --rm --name telemetry-sim-N -e VEHICLE_ID_OFFSET=$((N*250)) ...`)
+
+**이유**: 스레드는 같은 프로세스 안에서 GIL을 공유하지만, 프로세스는 각자 별도의 GIL을 갖는다.
+스레드를 더 늘리는 대신 프로세스를 늘리면 진짜 병렬성을 얻는다 — 코드 재작성(asyncio 전환 등)
+없이 기존 스레드 기반 코드를 그대로 재사용할 수 있는 가장 빠른 방법이었다.
+
+**결과**: 6개 프로세스(200대/0.05초씩)로 약 24시간 동안 ~2,500 msg/s를 지속한 결과, 처음으로
+진짜 병목을 발견했다 — `telemetry-storage-group`(Java→InfluxDB)은 lag이 수백 단위에 머문 반면,
+`anomaly-detector-group`(Python 이상 감지, 단일 인스턴스)은 lag이 1,264에서 200만 건 이상으로
+폭주했다. Kafka Consumer Group 분리(ADR-002) 덕분에 이상 감지 쪽이 완전히 밀려도 InfluxDB
+저장 경로는 전혀 영향받지 않았다 — 설계가 의도대로 동작함을 실측으로 확인.
+
+같은 실부하 조건에서 Kafka listener concurrency 1과 3도 재비교했다 — storage lag이 두 설정
+모두 수백 단위(1: 295-829, 3: 156-1182)로 비슷해, 이 컨슈머는 실부하에서도 concurrency 값이
+유의미하지 않다는 걸 재확인했다.
+
+**호스트 제약**: 로컬 Docker Desktop(8 CPU)에서 시뮬레이터 프로세스를 6개→10개로 늘려도
+처리량이 늘지 않았다 — 백엔드/Kafka/InfluxDB/시뮬레이터가 전부 같은 8코어를 나눠 쓰기 때문.
+더 큰 절대치를 재려면 부하 생성기를 별도 호스트로 분리해야 한다(향후 과제).
+
+**향후 과제**: 이상 감지 서비스를 Consumer Group 내 다중 인스턴스로 늘리거나, 룰 기반(가벼움)과
+ML 기반(무거움) 처리를 분리해 ML 추론만 별도 비동기 파이프라인으로 빼는 방향이 유력하다.
+
+**상세 수치**: `docs/load-test-plan.md` 5절 "Track A — 진짜 백엔드 한계치".

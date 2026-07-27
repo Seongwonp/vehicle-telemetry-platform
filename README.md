@@ -176,7 +176,8 @@ vehicle-telemetry-platform/
 | WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
 | DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
 | MQTT 1883 포트 운영 차단 | mTLS 코드는 Phase 10에서 완료. 실제 운영 배포 시 인증서 발급 + 플래그 활성화 + 1883 차단은 배포 단계 작업 |
-| docker-compose 환경변수 전달 보완 | `ADMIN_USERNAME`/`ADMIN_PASSWORD`/`RATE_LIMIT_RPM`/`CORS_ALLOWED_ORIGINS`가 `docker-compose.yml`의 backend 서비스 `environment`에 누락되어 있어, `.env` 값을 바꿔도 컨테이너에는 Spring 기본값이 적용됨 |
+| docker-compose 환경변수 전달 보완 | `ADMIN_USERNAME`/`ADMIN_PASSWORD`/`CORS_ALLOWED_ORIGINS`가 `docker-compose.yml`의 backend 서비스 `environment`에 여전히 누락되어 있어, `.env` 값을 바꿔도 컨테이너에는 Spring 기본값이 적용됨 (`RATE_LIMIT_RPM`은 부하 테스트 과정에서 추가 완료) |
+| 이상 감지 서비스(Python) 확장 | 부하 테스트로 확인된 진짜 병목 — 단일 인스턴스가 ~2,500 msg/s 지속 부하에서 lag 200만 건 이상으로 밀림. 다중 인스턴스(Consumer Group 내 파티션 분산) 또는 룰 기반/ML 기반 분리(무거운 ML 추론만 별도 비동기 처리)로 개선 필요 |
 
 > JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ, MQTT mTLS 클라이언트 코드는 Phase 7~10에서 처리 완료.
 
@@ -244,11 +245,16 @@ vehicle-telemetry-platform/
 > 로컬 Docker Compose 환경(2026-07)에서 부하 테스트로 측정. 상세 방법론·전체 표는
 > [부하 테스트 계획 및 결과](docs/load-test-plan.md) 참고.
 
-- **수집 파이프라인**: 시뮬레이터를 3→1,000대까지 스케일해 측정. 부하 생성기(Python 시뮬레이터)
-  자체가 GIL/스레드 오버헤드로 약 1,000-1,250 msg/s에서 먼저 벽에 부딪혀, 이 범위 내내 Kafka
-  consumer lag은 0 근처로 유지되고 Java 백엔드는 한 번도 포화되지 않았다.
+- **수집 파이프라인**: 시뮬레이터를 3→1,000대까지 스케일해 측정. 단일 프로세스로는 Python
+  GIL/스레드 오버헤드로 약 1,000-1,250 msg/s에서 먼저 벽에 부딪혀 백엔드의 진짜 한계를 잴 수
+  없었다 — 부하 생성기를 여러 **프로세스**(별도 GIL)로 병렬 실행하도록 개선해 ~2,500 msg/s를
+  약 24시간 지속시킨 결과, Kafka Consumer Group으로 분리해둔 두 경로 중 **이상 감지(Python,
+  단일 인스턴스) 쪽만 lag이 1,264 → 200만 건 이상으로 폭주**했고, 저장 경로(Java→InfluxDB)는
+  같은 시간 내내 lag 수백 단위로 버텼다. 이 시스템의 진짜 첫 확장 병목은 Kafka도 InfluxDB도
+  아니라 단일 인스턴스로 도는 이상 감지 서비스였다 — Consumer Group 분리 설계(ADR-002)가
+  장애(여기선 성능 저하) 전파를 실제로 막아준 것도 함께 확인.
 - **데이터 유실 버그 발견·수정**: InfluxDB `WritePrecision.S`(초 단위)와 시뮬레이터의 초 단위
-  타임스탬프가 겹쳐, A1의 차량당 초당 2회 조건에서 같은 초의 메시지가 서로 덮어써 **50%가
+  타임스탬프가 겹쳐, 차량당 초당 2회 조건에서 같은 초의 메시지가 서로 덮어써 **50%가
   조용히 유실**되고 있었다(Kafka lag은 0으로 정상처럼 보임). 밀리초 정밀도로 수정해
   약 100 msg/s → 약 197 msg/s(목표의 98.5%)로 회복.
 - **REST API**: k6로 VU 200까지 부하 테스트. InfluxDB 기반 조회(`/telemetry/latest`, `/telemetry`)의

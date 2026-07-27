@@ -37,6 +37,11 @@ TOPIC_PREFIX     = os.getenv("MQTT_TOPIC_PREFIX", "vehicle/telemetry")
 PUBLISH_INTERVAL = float(os.getenv("PUBLISH_INTERVAL", "1.0"))   # 초
 VEHICLE_COUNT    = int(os.getenv("VEHICLE_COUNT", "1"))
 ANOMALY_RATE     = float(os.getenv("ANOMALY_RATE", "0.02"))       # 2% 확률
+# 부하 테스트용 — 시뮬레이터 인스턴스를 여러 프로세스(컨테이너)로 병렬 실행할 때
+# vehicle_id가 겹치지 않도록 인스턴스마다 다른 오프셋을 준다. GIL 때문에 스레드 수를
+# 한 프로세스 안에서 늘리는 건 ~1,000-1,250 msg/s에서 벽에 부딪힌다(부하 테스트로 확인) —
+# 진짜 더 센 부하를 걸려면 프로세스(=GIL 인스턴스)를 늘려야 한다.
+VEHICLE_ID_OFFSET = int(os.getenv("VEHICLE_ID_OFFSET", "0"))
 
 # Phase 4 TLS 설정 (인증서 경로 설정 시 자동 활성화)
 TLS_CA_CERT      = os.getenv("TLS_CA_CERT", "")        # broker/certs/ca.crt
@@ -237,7 +242,7 @@ def main() -> None:
     logger.info("  Vehicle Telemetry Simulator")
     logger.info("=" * 60)
     logger.info(f"  MQTT 브로커  : {MQTT_HOST}:{MQTT_PORT}")
-    logger.info(f"  차량 수      : {VEHICLE_COUNT}대")
+    logger.info(f"  차량 수      : {VEHICLE_COUNT}대 (ID 오프셋 {VEHICLE_ID_OFFSET})")
     logger.info(f"  전송 주기    : {PUBLISH_INTERVAL}초")
     logger.info(f"  이상값 확률  : {ANOMALY_RATE * 100:.1f}%")
     logger.info(f"  토픽 prefix  : {TOPIC_PREFIX}/<vehicle_id>")
@@ -254,7 +259,7 @@ def main() -> None:
 
     threads = []
     for i in range(1, VEHICLE_COUNT + 1):
-        vehicle_id = f"SIM-{i:03d}"
+        vehicle_id = f"SIM-{VEHICLE_ID_OFFSET + i:03d}"
         t = threading.Thread(
             target=run_vehicle,
             args=(vehicle_id, stop_event),

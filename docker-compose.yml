@@ -117,6 +117,10 @@ services:
       VEHICLE_COUNT: ${VEHICLE_COUNT:-3}
       PUBLISH_INTERVAL: ${PUBLISH_INTERVAL:-1.0}
       ANOMALY_RATE: ${ANOMALY_RATE:-0.02}
+      # 부하 테스트로 시뮬레이터 자체가 GIL 때문에 프로세스당 ~1,000-1,250 msg/s에서
+      # 벽에 부딪히는 것을 확인 — 더 센 부하는 `docker compose run`으로 이 서비스를
+      # 여러 개(다른 VEHICLE_ID_OFFSET) 동시에 띄워서 만든다.
+      VEHICLE_ID_OFFSET: ${VEHICLE_ID_OFFSET:-0}
     networks:
       - telemetry-net
     restart: unless-stopped

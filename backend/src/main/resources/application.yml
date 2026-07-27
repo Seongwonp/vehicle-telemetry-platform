@@ -38,10 +38,11 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       enable-auto-commit: false
     listener:
-      # 부하 테스트 결과: vehicle-telemetry/vehicle-anomaly-alerts 모두 파티션 3개인데
-      # concurrency 미설정 시 기본값 1 — 파티션 수에 맞춰 스레드 3개로 늘린다.
-      # (실측으로는 concurrency=1도 도달 가능했던 부하 범위(~1,250 msg/s)에서 lag이 없었다 —
-      # docs/load-test-plan.md 5절 before/after 참고)
+      # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.
+      # 멀티프로세스 시뮬레이터로 실제 배압(anomaly-detector-group lag 200만+)이 걸리는
+      # ~2,500 msg/s에서 concurrency 1과 3을 재검증했지만 telemetry-storage-group lag은
+      # 두 설정 모두 수백 단위로 비슷했다 — 이 컨슈머(Kafka→InfluxDB)는 메시지당 처리가
+      # 가벼워서 1과 3 사이에 유의미한 차이가 없었다. 파티션 수와 맞춘 설정이라 유지.
       concurrency: 3
 
 # ── MQTT ─────────────────────────────────────────────────────
