@@ -343,3 +343,55 @@ Storage 경로(Java→InfluxDB) lag은 이 전 과정에서 계속 건강했다(
 
 **상세 수치·재검증 절차**: `docs/load-test-plan.md` 5절 "Track A — 이상 감지 서비스 다중화",
 원시 로그는 `load-test/anomaly-detector-scale/`.
+
+---
+
+## ADR-017: 이상 감지 서비스(Python) 처리 신뢰성 — 수동 커밋 + DLQ
+
+**배경**: 코덱스 리뷰(ADR-016 관련)에서 짚은 별도 이슈. 기존 `anomaly_detector.py`는
+`enable_auto_commit=True`로 Kafka 오프셋을 주기적으로 자동 커밋하면서, 메시지 처리 중
+예외(룰/ML 오류, JSON 파싱 실패, Kafka 발행 실패 등)가 나도 로그만 남기고 다음 메시지로
+넘어갔다. 자동 커밋은 "처리 성공 여부"와 무관하게 시간이 지나면 그냥 커밋되므로, 실패한
+메시지도 조용히 커밋되어 재시도나 격리 없이 유실될 수 있었다 — Java 쪽
+(`TelemetryConsumer`)은 이미 실패 시 DLQ로 격리하는데(ADR-012), Python 쪽만 이 안전장치가
+없었다.
+
+**결정**:
+
+1. **수동 커밋으로 전환**: `enable_auto_commit=False`. 메시지 하나를 "처리 완료"(성공 또는
+   DLQ 격리)한 뒤에만 커밋 대상에 포함시킨다. 다만 메시지마다 동기 커밋을 하면 왕복 비용이
+   붙어 부하 테스트로 이미 빠듯함을 확인한 처리량에 부담이 된다 — 그래서 개수(100건) 또는
+   시간(5초) 중 먼저 차는 조건으로 배치 커밋한다(`should_commit()`, 순수 함수라 단위
+   테스트로 분리했다). 정상 종료(SIGINT/SIGTERM) 시에는 `finally`에서 강제 커밋해
+   처리했지만 아직 커밋 안 된 구간이 재시작 후 중복 처리되지 않게 한다(단, 강제 커밋은
+   "처리한 게 있을 때"만 — 아무 것도 안 했는데 억지로 커밋하진 않는다).
+2. **DLQ 격리**: 처리 실패한 메시지는 원본 바이트(키·값)를 그대로 `vehicle-telemetry-anomaly-dlq`
+   토픽으로 옮긴다. `vehicle-telemetry-dlq`(Java 저장 경로 전용)를 재사용하지 않고 별도
+   토픽을 둔 이유는, 같은 토픽에 두 경로의 실패가 섞이면 나중에 "어느 경로가 실패했는지"
+   구분이 안 되기 때문이다(ADR-002의 "경로 분리" 철학과 일관). 이 새 토픽은
+   `kafka/init-topics.sh`와 백엔드 `KafkaConfig.java`의 `NewTopic` 빈 양쪽에 추가해,
+   초기화 스크립트가 안 돌아도 백엔드가 안전망으로 생성하게 했다(기존 DLQ 토픽들과
+   동일한 패턴).
+3. **역직렬화를 애플리케이션 코드로 이동**: 기존엔 `KafkaConsumer`의 `value_deserializer`가
+   JSON 파싱을 했는데, 이러면 파싱 실패 시 원본 바이트를 잃어버려 DLQ로 보낼 수가 없다.
+   Java `TelemetryConsumer`가 문자열을 받아 애플리케이션 코드에서 `objectMapper.readValue()`로
+   파싱하는 것과 같은 방식으로, Python도 컨슈머는 원본 바이트만 넘기고 `json.loads()`를
+   메인 루프의 try/except 안에서 직접 호출하도록 바꿨다 — 파싱 실패도 이제 정상적으로
+   DLQ 대상이 된다.
+4. **발행 실패도 처리 실패로 취급**: `producer.flush()`는 전송을 기다리기만 할 뿐 실패를
+   예외로 다시 던지지 않는다. `process()`가 각 `producer.send()`의 future를 모아뒀다가
+   `future.get(timeout=10)`으로 하나씩 확인하도록 바꿔서, 이상 감지는 성공했는데 Kafka
+   발행만 실패하는 경우(예: 브로커 일시 다운)도 호출자가 예외로 받아 DLQ 처리할 수 있게 했다.
+
+**테스트**: `tests/test_anomaly_detector.py` 신설 — `should_commit()`의 개수/시간/force
+조건 분기, `send_to_dlq()`가 원본 바이트를 보존하고 DLQ 전송 자체가 실패해도 예외를
+전파하지 않는지, `process()`가 발행 실패를 호출자에게 전파하는지를 가짜(Fake) 프로듀서로
+검증한다(실제 Kafka 연결 없이 순수 단위 테스트).
+
+**의도적으로 하지 않은 것**:
+- DLQ 재처리 컨슈머는 여전히 없다(ADR-012와 동일한 스코프 — 유실 방지/격리까지만).
+- 이상 감지 시마다 동기로 호출되는 웹훅(`notifier.send_webhook`)은 그대로 뒀다 — 느려지면
+  전체 처리량에 영향을 줄 수 있는 후보지만, 이번 변경 범위 밖이라 향후 과제로 남긴다.
+- 커밋 배치 크기(100건/5초)는 임의로 정한 값이며 실측 튜닝은 하지 않았다.
+
+**상세**: `anomaly-detector/anomaly_detector.py`, `anomaly-detector/tests/test_anomaly_detector.py`.
