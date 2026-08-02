@@ -164,6 +164,7 @@ vehicle-telemetry-platform/
 | 9 | AI 진단 (Gemini API) | 완료 |
 | 10 | MQTT mTLS 실제 활성화 (백엔드/시뮬레이터 클라이언트 코드, 기본값은 여전히 평문) | 완료 |
 | 11 | Flutter 모바일 앱 연동 — 브라우저(Flutter Web)에서 API 호출을 허용하는 CORS 지원 추가 | 완료 |
+| 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 부하 테스트로 발견한 진짜 병목(단일 인스턴스 lag 200만+) 해소 | 완료 |
 
 ---
 
@@ -176,8 +177,9 @@ vehicle-telemetry-platform/
 | WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
 | DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
 | MQTT 1883 포트 운영 차단 | mTLS 코드는 Phase 10에서 완료. 실제 운영 배포 시 인증서 발급 + 플래그 활성화 + 1883 차단은 배포 단계 작업 |
-| docker-compose 환경변수 전달 보완 | `ADMIN_USERNAME`/`ADMIN_PASSWORD`/`CORS_ALLOWED_ORIGINS`가 `docker-compose.yml`의 backend 서비스 `environment`에 여전히 누락되어 있어, `.env` 값을 바꿔도 컨테이너에는 Spring 기본값이 적용됨 (`RATE_LIMIT_RPM`은 부하 테스트 과정에서 추가 완료) |
-| 이상 감지 서비스(Python) 확장 | 부하 테스트로 확인된 진짜 병목 — 단일 인스턴스가 ~2,500 msg/s 지속 부하에서 lag 200만 건 이상으로 밀림. 다중 인스턴스(Consumer Group 내 파티션 분산) 또는 룰 기반/ML 기반 분리(무거운 ML 추론만 별도 비동기 처리)로 개선 필요 |
+| InfluxDB 읽기 경로 개선 | REST 조회(`/latest`, `/telemetry`)가 InfluxDB 동시 쿼리 용량에 막혀 PostgreSQL 조회보다 최대 40배 느림 — 스케일링/캐싱/쿼리 최적화 필요 |
+| InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
+| kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |
 
 > JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ, MQTT mTLS 클라이언트 코드는 Phase 7~10에서 처리 완료.
 
@@ -242,7 +244,7 @@ vehicle-telemetry-platform/
 
 ## 성능 (실측)
 
-> 로컬 Docker Compose 환경(2026-07)에서 부하 테스트로 측정. 상세 방법론·전체 표는
+> 로컬 Docker Compose 환경(2026-07~08)에서 부하 테스트로 측정. 상세 방법론·전체 표는
 > [부하 테스트 계획 및 결과](docs/load-test-plan.md) 참고.
 
 - **수집 파이프라인**: 시뮬레이터를 3→1,000대까지 스케일해 측정. 단일 프로세스로는 Python
@@ -253,6 +255,14 @@ vehicle-telemetry-platform/
   같은 시간 내내 lag 수백 단위로 버텼다. 이 시스템의 진짜 첫 확장 병목은 Kafka도 InfluxDB도
   아니라 단일 인스턴스로 도는 이상 감지 서비스였다 — Consumer Group 분리 설계(ADR-002)가
   장애(여기선 성능 저하) 전파를 실제로 막아준 것도 함께 확인.
+- **이상 감지 서비스 다중화로 해소**: 위 병목을 실제로 고쳤다. `docker-compose.yml`의
+  `container_name` 고정을 제거해 `--scale anomaly-detector=3`으로 파티션 수(3)에 맞춰
+  3개 인스턴스를 띄우고, 원래 lag이 200만 건 이상으로 폭주했던 것과 같은 수준의 부하
+  (~2,300 msg/s)로 다시 걸어봤다 — 단일 인스턴스는 무한정 쌓였지만 3인스턴스는 수천~2만
+  건대에서 진동만 하고 발산하지 않았다(끝으로 갈수록 오히려 낮아짐). 고치기 전엔 원인부터
+  분리했다 — 시뮬레이터 프로세스 6개가 호스트를 같이 쓰던 원래 테스트와 달리, 호스트에
+  여유를 남긴 채(~1,200 msg/s) 단일 인스턴스만 따로 재보니 평균적으론 따라잡는 것을 확인해,
+  "순수 알고리즘 한계"와 "호스트 자원 경합"이 둘 다 관여했다는 걸 정확히 짚었다.
 - **데이터 유실 버그 발견·수정**: InfluxDB `WritePrecision.S`(초 단위)와 시뮬레이터의 초 단위
   타임스탬프가 겹쳐, 차량당 초당 2회 조건에서 같은 초의 메시지가 서로 덮어써 **50%가
   조용히 유실**되고 있었다(Kafka lag은 0으로 정상처럼 보임). 밀리초 정밀도로 수정해

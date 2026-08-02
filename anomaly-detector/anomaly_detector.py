@@ -17,6 +17,7 @@ Kafka Consumer → 룰 기반 + ML 이상 감지 → vehicle-anomaly-alerts 발�
 import os
 import json
 import signal
+import socket
 import logging
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -36,7 +37,9 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
 )
-logger = logging.getLogger("anomaly-detector")
+# 컨테이너 hostname을 로거 이름에 포함 — 인스턴스를 여러 개(--scale) 띄웠을 때
+# 로그에서 어느 인스턴스가 처리했는지 구분하기 위함.
+logger = logging.getLogger(f"anomaly-detector[{socket.gethostname()}]")
 
 # ── 설정 ────────────────────────────────────────────────────────
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")

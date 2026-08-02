@@ -69,8 +69,11 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
-      # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값 — 부하 테스트로 발견해 추가.
+      # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값들 — 부하 테스트/코드 점검 중 발견해 추가.
       RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
     networks:
       - telemetry-net
     restart: unless-stopped
@@ -80,7 +83,9 @@ services:
   # ════════════════════════════════════════════════════════════
   anomaly-detector:
     build: ./anomaly-detector
-    container_name: telemetry-anomaly-detector
+    # container_name을 고정하면 `--scale`이 이름 충돌로 실패한다 — 부하 테스트로 단일
+    # 인스턴스가 ~2,500 msg/s에서 lag이 폭주하는 걸 확인해 다중 인스턴스로 확장 가능하게
+    # 이름 고정을 없앴다(docs/load-test-plan.md, ADR-016 참고).
     depends_on:
       kafka:
         condition: service_healthy
