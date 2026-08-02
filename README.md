@@ -164,7 +164,7 @@ vehicle-telemetry-platform/
 | 9 | AI 진단 (Gemini API) | 완료 |
 | 10 | MQTT mTLS 실제 활성화 (백엔드/시뮬레이터 클라이언트 코드, 기본값은 여전히 평문) | 완료 |
 | 11 | Flutter 모바일 앱 연동 — 브라우저(Flutter Web)에서 API 호출을 허용하는 CORS 지원 추가 | 완료 |
-| 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 부하 테스트로 발견한 진짜 병목(단일 인스턴스 lag 200만+) 해소 | 완료 |
+| 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 단일 인스턴스 lag 발산 문제에 Consumer Group 다중화 적용, 재검증에서 순발산 없음 확인(단, 동일 조건 A/B는 아직 — 향후 계획 참고) | 완료(검증 계속 진행 중) |
 
 ---
 
@@ -180,6 +180,9 @@ vehicle-telemetry-platform/
 | InfluxDB 읽기 경로 개선 | REST 조회(`/latest`, `/telemetry`)가 InfluxDB 동시 쿼리 용량에 막혀 PostgreSQL 조회보다 최대 40배 느림 — 스케일링/캐싱/쿼리 최적화 필요 |
 | InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
 | kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |
+| 이상 감지 다중화 동일 조건 A/B 재검증 | Phase 12 재측정은 부하·관찰시간·라이브러리 버전이 before/after 사이에 달랐다(코덱스 리뷰로 발견) — 동일 이미지·동일 부하·동일 시간으로 1인스턴스 vs 3인스턴스 최소 1시간 비교 + 3인스턴스 12~24시간 soak test 필요 |
+| ML 이상 감지 다중 인스턴스 대응 | `ML_ENABLED=true` 시 인스턴스별 개별 학습, `_buffer` 무한 증가, 재학습 정책 없음, 재시작 시 모델 소실 등 설계가 비어있음(현재 기본값 false라 당장 문제는 아님) |
+| 이상 감지 처리 신뢰성 | `enable_auto_commit=True` + 예외를 로그만 남기고 다음 메시지로 진행 — 룰/ML/Kafka 발행 실패 메시지가 조용히 커밋되어 유실될 수 있음. 처리 성공 후 수동 커밋 또는 실패 시 DLQ 전송 필요 |
 
 > JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ, MQTT mTLS 클라이언트 코드는 Phase 7~10에서 처리 완료.
 
@@ -255,14 +258,13 @@ vehicle-telemetry-platform/
   같은 시간 내내 lag 수백 단위로 버텼다. 이 시스템의 진짜 첫 확장 병목은 Kafka도 InfluxDB도
   아니라 단일 인스턴스로 도는 이상 감지 서비스였다 — Consumer Group 분리 설계(ADR-002)가
   장애(여기선 성능 저하) 전파를 실제로 막아준 것도 함께 확인.
-- **이상 감지 서비스 다중화로 해소**: 위 병목을 실제로 고쳤다. `docker-compose.yml`의
-  `container_name` 고정을 제거해 `--scale anomaly-detector=3`으로 파티션 수(3)에 맞춰
-  3개 인스턴스를 띄우고, 원래 lag이 200만 건 이상으로 폭주했던 것과 같은 수준의 부하
-  (~2,300 msg/s)로 다시 걸어봤다 — 단일 인스턴스는 무한정 쌓였지만 3인스턴스는 수천~2만
-  건대에서 진동만 하고 발산하지 않았다(끝으로 갈수록 오히려 낮아짐). 고치기 전엔 원인부터
-  분리했다 — 시뮬레이터 프로세스 6개가 호스트를 같이 쓰던 원래 테스트와 달리, 호스트에
-  여유를 남긴 채(~1,200 msg/s) 단일 인스턴스만 따로 재보니 평균적으론 따라잡는 것을 확인해,
-  "순수 알고리즘 한계"와 "호스트 자원 경합"이 둘 다 관여했다는 걸 정확히 짚었다.
+- **이상 감지 서비스 다중화 시도 — 유망하지만 완전 해소는 미확정**: `docker-compose.yml`의
+  `container_name` 고정을 제거하고 `deploy.replicas: 3`으로 파티션 수(3)에 맞춰 3개 인스턴스를
+  띄웠다. 원래 lag이 200만 건 이상으로 폭주했던 것과 비슷한 부하(~2,300 msg/s)로 11분
+  재측정한 결과 순발산 없이 backlog가 줄었지만, **부하 수준·관찰 시간(24시간→11분)·
+  `kafka-python` 버전이 before/after 사이에 달라 동일 조건 비교가 아니었다**(외부 리뷰로
+  발견). 확정하려면 동일 조건 A/B + 장시간 soak test가 더 필요하다 — 자세한 내용과 재검증
+  절차는 `docs/architecture-decisions.md` ADR-016, 원시 로그는 `load-test/anomaly-detector-scale/`.
 - **데이터 유실 버그 발견·수정**: InfluxDB `WritePrecision.S`(초 단위)와 시뮬레이터의 초 단위
   타임스탬프가 겹쳐, 차량당 초당 2회 조건에서 같은 초의 메시지가 서로 덮어써 **50%가
   조용히 유실**되고 있었다(Kafka lag은 0으로 정상처럼 보임). 밀리초 정밀도로 수정해

@@ -84,8 +84,12 @@ services:
   anomaly-detector:
     build: ./anomaly-detector
     # container_name을 고정하면 `--scale`이 이름 충돌로 실패한다 — 부하 테스트로 단일
-    # 인스턴스가 ~2,500 msg/s에서 lag이 폭주하는 걸 확인해 다중 인스턴스로 확장 가능하게
+    # 인스턴스가 ~2,500 msg/s에서 lag이 발산하는 조짐을 보여 다중 인스턴스로 확장 가능하게
     # 이름 고정을 없앴다(docs/load-test-plan.md, ADR-016 참고).
+    # replicas를 여기 선언해야 `docker compose up -d`(또는 down 후 재기동) 만으로도
+    # 3개가 유지된다 — 선언 안 하면 기본 실행 경로에서 1개로 돌아가 버린다.
+    deploy:
+      replicas: 3
     depends_on:
       kafka:
         condition: service_healthy

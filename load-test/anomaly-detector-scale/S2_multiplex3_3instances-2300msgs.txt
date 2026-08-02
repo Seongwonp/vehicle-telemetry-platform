@@ -1,0 +1,158 @@
+=== stage=S2_multiplex3 duration=720s interval=45s start=2026-08-02T04:40:59Z ===
+--- sample @ 2026-08-02T04:40:59Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          17708454        17708609        155             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18204500        18204814        314             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          15672830        15673046        216             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          17714531        17720076        5545            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18211519        18217224        5705            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          15678704        15683892        5188            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                     60236
+[docker stats]
+--- sample @ 2026-08-02T04:42:17Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Call(callName=describeGroups(api=DESCRIBE_GROUPS), deadlineMs=1785645778057, tries=1, nextAllowedTryMs=1785645778213) timed out at 1785645778113 after 1 attempt(s)
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                    262293
+[docker stats]
+--- sample @ 2026-08-02T04:43:50Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          17834119        17834503        384             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18342633        18343128        495             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          15791700        15792157        457             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          17838336        17844553        6217            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18346421        18353975        7554            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          15794611        15801530        6919            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                    440240
+[docker stats]
+--- sample @ 2026-08-02T04:44:57Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          17912885        17913474        589             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18428342        18429079        737             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          15865506        15866212        706             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                    659875
+[docker stats]
+--- sample @ 2026-08-02T04:46:28Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          17937304        17938395        1091            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18455200        18457127        1927            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          15888375        15889794        1419            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                    721164
+[docker stats]
+--- sample @ 2026-08-02T04:48:27Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          17963916        17965211        1295            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18484804        18486521        1717            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          15913419        15915020        1601            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                    804588
+[docker stats]
+--- sample @ 2026-08-02T04:49:56Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          18050638        18051292        654             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18579981        18580881        900             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          15995701        15996544        843             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          18054983        18059851        4868            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18584699        18590107        5408            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          15999524        16004430        4906            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   1090865
+[docker stats]
+--- sample @ 2026-08-02T04:50:59Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          18143542        18143889        347             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18681958        18682538        580             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          16083201        16083689        488             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          18152035        18152913        878             kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18691111        18692192        1081            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          16091125        16092045        920             kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   1373177
+[docker stats]
+--- sample @ 2026-08-02T04:52:08Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          18221363        18221840        477             consumer-telemetry-storage-group-2-a0efcb1d-1483-4cf5-b82c-99313af8fd8b /172.18.0.4     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          18767161        18767882        721             consumer-telemetry-storage-group-3-25b7e77e-45df-4c72-96f8-a7ebb1d74141 /172.18.0.4     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          16156433        16157180        747             consumer-telemetry-storage-group-1-5f88f05a-4faa-400a-9e6a-740c70382b9c /172.18.0.4     consumer-telemetry-storage-group-1
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          18229908        18232112        2204            kafka-python-3.0.9-3c30dd5d-f64c-4d49-ab8c-dfe771dacd2d /172.18.0.9     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          18776484        18779216        2732            kafka-python-3.0.9-f17e44ed-46eb-45d3-be35-a8dec7656833 /172.18.0.13    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          16164552        16166984        2432            kafka-python-3.0.9-1564b008-d15f-460d-bec5-ce5f01fe2b56 /172.18.0.12    kafka-python-3.0.9
+[influx count since 2026-08-02T04:40:59Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   1614872
+[docker stats]
+=== stage=S2_multiplex3 end=2026-08-02T04:53:15Z ===
