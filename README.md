@@ -166,6 +166,7 @@ vehicle-telemetry-platform/
 | 11 | Flutter 모바일 앱 연동 — 브라우저(Flutter Web)에서 API 호출을 허용하는 CORS 지원 추가 | 완료 |
 | 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 단일 인스턴스 lag 발산 문제에 Consumer Group 다중화 적용, 재검증에서 순발산 없음 확인(단, 동일 조건 A/B는 아직 — 향후 계획 참고) | 완료(검증 계속 진행 중) |
 | 13 | 이상 감지 서비스 처리 신뢰성 — 수동 커밋(개수/시간 배치) + DLQ(`vehicle-telemetry-anomaly-dlq`) 도입, 발행 실패도 처리 실패로 감지 | 완료 |
+| 14 | ML 이상 감지 다중 인스턴스 대응 — 슬라이딩 윈도우(버퍼 상한) + 주기적 재학습, 파티션 ID 기준 Redis 영속화로 재시작/리밸런싱 시 학습 상태 유지 | 완료 |
 
 ---
 
@@ -182,7 +183,6 @@ vehicle-telemetry-platform/
 | InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
 | kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |
 | 이상 감지 다중화 동일 조건 A/B 재검증 | Phase 12 재측정은 부하·관찰시간·라이브러리 버전이 before/after 사이에 달랐다(코덱스 리뷰로 발견) — 동일 이미지·동일 부하·동일 시간으로 1인스턴스 vs 3인스턴스 최소 1시간 비교 + 3인스턴스 12~24시간 soak test 필요 |
-| ML 이상 감지 다중 인스턴스 대응 | `ML_ENABLED=true` 시 인스턴스별 개별 학습, `_buffer` 무한 증가, 재학습 정책 없음, 재시작 시 모델 소실 등 설계가 비어있음(현재 기본값 false라 당장 문제는 아님) |
 | DLQ 격리 메시지 재처리 | `vehicle-telemetry-anomaly-dlq`(Phase 13에서 추가)도 기존 DLQ들과 마찬가지로 격리까지만 하고 재처리 컨슈머는 없음 |
 | 이상 감지 웹훅 동기 호출 | `notifier.send_webhook`이 이상 감지마다 동기로 호출됨 — 느려지면 전체 처리량에 영향 줄 수 있어 비동기화/타임아웃 튜닝 검토 |
 

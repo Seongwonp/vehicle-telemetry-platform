@@ -93,11 +93,18 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ML_ENABLED: ${ML_ENABLED:-false}
       ML_MIN_SAMPLES: ${ML_MIN_SAMPLES:-200}
       WEBHOOK_URL: ${WEBHOOK_URL:-}
+      # ML_ENABLED=true일 때만 실제로 연결한다(ML 꺼져 있으면 make_redis_client()가
+      # None을 반환) — 파티션별 학습 상태를 저장해 재시작/리밸런싱에도 이어가기 위함(ADR-018).
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     networks:
       - telemetry-net
     restart: unless-stopped

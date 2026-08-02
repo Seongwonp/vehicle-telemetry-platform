@@ -395,3 +395,73 @@ Storage 경로(Java→InfluxDB) lag은 이 전 과정에서 계속 건강했다(
 - 커밋 배치 크기(100건/5초)는 임의로 정한 값이며 실측 튜닝은 하지 않았다.
 
 **상세**: `anomaly-detector/anomaly_detector.py`, `anomaly-detector/tests/test_anomaly_detector.py`.
+
+---
+
+## ADR-018: ML 이상 감지 다중 인스턴스 대응 — 슬라이딩 윈도우 + 파티션별 Redis 영속화
+
+**배경**: README "향후 계획"에 적어뒀던 미해결 설계 공백. `ML_ENABLED=true`(기본값 false라
+지금까지는 실제 영향이 없었다)로 켜면 `ml_detector.py`의 `MLAnomalyDetector`가 인스턴스
+(현재 3개, ADR-016)마다 각자 따로 학습하는데다 다음 세 가지가 비어 있었다:
+1. `_buffer`가 평범한 리스트라 최초 학습 이후에도 계속 append돼 무한히 커진다.
+2. 최초 학습 이후 재학습 정책이 전혀 없어 주행 패턴이 바뀌어도(concept drift) 모델이
+   그대로 고정된다.
+3. 컨테이너가 재시작되거나 Kafka 컨슈머 그룹 리밸런싱으로 다른 인스턴스가 파티션을
+   넘겨받으면 학습 상태가 그냥 사라져 처음부터 다시 모아야 한다.
+
+**결정**:
+
+1. **슬라이딩 윈도우로 버퍼 상한**: `_buffer`를 `collections.deque(maxlen=window_size)`로
+   바꿔 무한 증가를 막았다(`window_size` 기본 2000, `min_samples`보다 작게 설정하면
+   최초 학습분도 못 채우니 `max(window_size, min_samples)`로 클램프한다).
+2. **주기적 재학습**: 새 샘플이 `retrain_interval`(기본 500)개 쌓일 때마다 현재 윈도우로
+   재학습한다. 재학습은 **새 모델을 다 학습한 뒤에만** `self.model`을 교체하므로(기존
+   모델을 들고 있다가 한 번에 바꿔치기), 학습 도중 예외가 나거나 재학습 자체가 탐지
+   공백을 만들지 않는다 — 최초 학습 전까지만 전부 정상으로 간주한다는 기존 동작은 그대로.
+3. **파티션 ID 기준 Redis 영속화**: "어느 컨테이너/인스턴스가 떴는지"가 아니라 "어느 Kafka
+   파티션인지"를 기준으로 학습 상태를 나눈다. `vehicle_id`가 파티션 키(ADR-003)라 파티션마다
+   담당하는 차량 집합이 사실상 고정적이므로, 컨테이너가 재시작되거나 리밸런싱으로 다른
+   인스턴스가 그 파티션을 넘겨받아도 같은 Redis 키(`anomaly-detector:ml-model:vehicle-telemetry:{partition}`)로
+   학습 상태를 이어받을 수 있다. `MLAnomalyDetector.get_state()`/`load_state()`가 모델·버퍼·
+   학습 진행도를 `pickle`로 직렬화하고, `anomaly_detector.py`의 `PartitionedMLDetectors`가
+   파티션별 인스턴스 생성·조회·저장을 담당한다. 저장은 기존 커밋 배치 주기(100건/5초, ADR-017)에
+   얹었고, 종료 시(`finally`)에도 강제로 한 번 더 저장한다.
+4. **ML이 꺼져 있으면 Redis에 아예 연결하지 않는다**: `make_redis_client()`가 `ML_ENABLED=false`
+   (기본값)일 때 `None`을 반환하고, 그 이후 `redis` 모듈 자체를 임포트하지 않는다 — 기본
+   동작(ML 비활성화)에 새 의존성이나 실패 지점을 추가하지 않기 위함.
+5. **Redis 실패는 열화 동작**: 조회/저장 중 Redis 예외가 나면 로그만 남기고 새/기존 학습
+   상태로 계속 진행한다(컨슈머 루프를 죽이지 않음) — 학습 상태 하나 잃는 것보다 전체
+   파이프라인이 멈추는 게 훨씬 나쁘다.
+
+**실측으로 확인한 것**(`docker compose`로 `ML_ENABLED=true`, `ML_MIN_SAMPLES=30`으로 잠깐
+띄워 검증, 검증 후 기본값으로 복구):
+- 파티션 1이 30개 샘플을 모아 최초 학습을 완료하고(`Isolation Forest (재)학습 완료`),
+  이후 `anomaly-detector:ml-model:vehicle-telemetry:1` 키로 Redis에 저장됨을 확인했다.
+- 해당 컨테이너를 `docker restart`로 강제 재시작한 뒤, 재시작된 프로세스가 처음부터
+  다시 학습하지 않고 Redis에서 학습 상태를 복원함(`[ML] 파티션 1 학습 상태 복원 완료`)을
+  로그로 확인했다.
+- 파티션 2도 별도로 학습을 완료하고 각자의 키로 저장되는 것을 확인해, 인스턴스가 아니라
+  파티션 단위로 상태가 분리됨을 확인했다.
+- 재학습(retrain_interval 500 도달) 자체는 실시간 트래픽으로는 관찰에 시간이 오래 걸려
+  실측하지 않았고, 대신 `tests/test_ml_detector.py`에서 작은 `retrain_interval`로 단위
+  테스트했다(모델 객체 교체 여부·재학습 전 모델 유지 여부 확인).
+
+**테스트**: `tests/test_ml_detector.py`에 버퍼 상한, 재학습 트리거, 재학습 전 모델 유지,
+상태 저장/복원 후 동일 판정, 복원된 버퍼도 상한을 지키는지 검증하는 5개 케이스를 추가했다.
+`tests/test_anomaly_detector.py`에는 `FakeRedis`(dict 기반)로 `PartitionedMLDetectors`의
+파티션별 인스턴스 분리, `save_all()` 이후 새 pool에서 복원되는지, 미학습 감지기는 저장하지
+않는지, Redis 조회/저장 실패 시에도 예외를 밖으로 던지지 않는지를 검증했다 — 전부 실제
+Redis 연결 없는 순수 단위 테스트다.
+
+**의도적으로 하지 않은 것**:
+- Kafka Consumer Rebalance Listener로 파티션이 이 프로세스에서 **빠져나가는** 시점에
+  즉시 저장하는 것은 하지 않았다. 지금은 주기적 저장(커밋 주기와 동일)에만 의존하므로,
+  급작스러운 리밸런싱 직후 몇 초치 학습 진행분은 파티션을 넘겨받는 쪽이 못 받을 수 있다.
+  완벽한 정합성보다 구현 범위를 좁게 유지하는 쪽을 택했다 — 최초 학습 완료 여부와
+  대략적인 학습 상태만 이어가면 되는 용도라 이 정도 손실은 감수 가능하다고 판단했다.
+- 재학습 주기(500건)나 윈도우 크기(2000건) 자체를 실측 데이터로 튜닝하지는 않았다 —
+  ADR-017의 커밋 배치 크기와 마찬가지로 임의로 정한 합리적 기본값이다.
+
+**상세**: `anomaly-detector/ml_detector.py`, `anomaly-detector/anomaly_detector.py`,
+`anomaly-detector/tests/test_ml_detector.py`, `anomaly-detector/tests/test_anomaly_detector.py`,
+`docker-compose.yml`(anomaly-detector 서비스 REDIS_* 환경변수).

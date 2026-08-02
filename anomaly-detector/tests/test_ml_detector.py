@@ -57,3 +57,66 @@ class TestMLAnomalyDetector:
         for i in range(10):
             detector.update(make_normal_data(seed=i))
         assert len(detector._buffer) == 10
+
+    def test_버퍼는_window_size를_넘지_않음(self):
+        # 예전 버전은 리스트라 학습 이후에도 계속 append돼 무한히 커졌다 — 이제는
+        # window_size로 상한을 둔 슬라이딩 윈도우라 넘지 않아야 한다.
+        detector = MLAnomalyDetector(min_samples=10, window_size=50, retrain_interval=1_000_000)
+        for i in range(200):
+            detector.update(make_normal_data(seed=i))
+        assert len(detector._buffer) == 50
+
+    def test_retrain_interval_도달하면_재학습(self):
+        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20)
+        for i in range(10):
+            detector.update(make_normal_data(seed=i))
+        assert detector.is_trained is True
+        model_after_initial_train = detector.model
+
+        for i in range(20):
+            detector.update(make_normal_data(seed=i + 100))
+
+        # retrain_interval(20)을 채웠으니 모델 객체 자체가 교체됐어야 한다.
+        assert detector.model is not model_after_initial_train
+        assert detector._samples_since_train == 0
+
+    def test_재학습_전에는_모델_그대로(self):
+        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20)
+        for i in range(10):
+            detector.update(make_normal_data(seed=i))
+        model_after_initial_train = detector.model
+
+        for i in range(19):  # retrain_interval(20) 미달
+            detector.update(make_normal_data(seed=i + 100))
+
+        assert detector.model is model_after_initial_train
+
+    def test_상태_저장후_복원하면_동일하게_판정(self):
+        detector = MLAnomalyDetector(min_samples=30, window_size=200)
+        for i in range(30):
+            detector.update(make_normal_data(seed=i))
+        assert detector.is_trained is True
+
+        state = detector.get_state()
+
+        restored = MLAnomalyDetector(min_samples=30, window_size=200)
+        assert restored.is_trained is False  # 복원 전에는 미학습 상태
+        restored.load_state(state)
+
+        assert restored.is_trained is True
+        assert len(restored._buffer) == len(detector._buffer)
+        # 같은 입력에 같은 판정을 내려야 한다(모델 자체를 그대로 복원했으므로).
+        sample = make_normal_data(seed=999)
+        assert restored.update(sample) == detector.update(sample)
+
+    def test_복원된_버퍼도_window_size_상한을_지킴(self):
+        detector = MLAnomalyDetector(min_samples=10, window_size=200)
+        for i in range(10):
+            detector.update(make_normal_data(seed=i))
+        state = detector.get_state()
+
+        # 더 작은 window_size로 복원해도 deque maxlen이 새 값으로 재설정돼야 한다
+        # (min_samples 이상으로 클램프되니 둘 다 5로 맞춘다).
+        restored = MLAnomalyDetector(min_samples=5, window_size=5)
+        restored.load_state(state)
+        assert restored._buffer.maxlen == 5

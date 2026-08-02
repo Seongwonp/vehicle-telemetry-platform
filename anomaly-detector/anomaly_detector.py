@@ -93,7 +93,79 @@ def make_dlq_producer() -> KafkaProducer:
     )
 
 
-def process(data: dict, producer: KafkaProducer, ml: MLAnomalyDetector) -> None:
+def make_redis_client():
+    """ML이 꺼져 있으면(기본값) Redis 연결 자체를 만들지 않는다 — 기본 동작에 새
+    의존성/실패 지점을 추가하지 않기 위함."""
+    if not ML_ENABLED:
+        return None
+    import redis  # 지연 임포트 — ML 비활성화 시 이 모듈을 아예 건드리지 않는다.
+    return redis.Redis(
+        host=os.getenv("REDIS_HOST", "localhost"),
+        port=int(os.getenv("REDIS_PORT", "6379")),
+        password=os.getenv("REDIS_PASSWORD") or None,
+    )
+
+
+def ml_state_key(partition: int) -> str:
+    return f"anomaly-detector:ml-model:{INPUT_TOPIC}:{partition}"
+
+
+class PartitionedMLDetectors:
+    """파티션마다 별도 MLAnomalyDetector를 둔다.
+
+    vehicle_id가 Kafka 파티션 키(ADR-003)라 파티션마다 담당하는 차량 집합이 사실상
+    고정적이다 — 그래서 "어느 컨테이너/인스턴스가 떴는지"가 아니라 "어느 파티션인지"를
+    기준으로 학습 상태를 나누는 게 훨씬 안정적이다. Redis에 파티션 ID로 저장해두면,
+    인스턴스가 재시작되거나 리밸런싱으로 다른 인스턴스가 그 파티션을 넘겨받아도 학습
+    상태를 이어받을 수 있다(ADR-018).
+
+    한계: 파티션이 이 프로세스에서 빠져나가는(리밸런싱으로 다른 인스턴스에 넘어가는)
+    시점을 별도로 감지하지 않는다 — 마지막 저장 이후 몇 초치 학습분은 넘겨받는 쪽이
+    못 받을 수 있다(저장 주기는 커밋 주기와 같음, 기본 100건/5초). 완벽한 정합성이
+    필요하면 Kafka Consumer Rebalance Listener로 파티션 반납 시점에 즉시 저장해야
+    하는데, 이번 범위에서는 하지 않았다.
+    """
+
+    def __init__(self, redis_client, min_samples: int):
+        self._redis = redis_client
+        self._min_samples = min_samples
+        self._detectors: dict[int, MLAnomalyDetector] = {}
+
+    def get(self, partition: int) -> MLAnomalyDetector:
+        detector = self._detectors.get(partition)
+        if detector is None:
+            detector = self._load(partition)
+            self._detectors[partition] = detector
+        return detector
+
+    def _load(self, partition: int) -> MLAnomalyDetector:
+        detector = MLAnomalyDetector(min_samples=self._min_samples)
+        if self._redis is None:
+            return detector
+        try:
+            blob = self._redis.get(ml_state_key(partition))
+            if blob:
+                detector.load_state(blob)
+                logger.info(f"[ML] 파티션 {partition} 학습 상태 복원 완료")
+        except Exception:
+            logger.warning(
+                f"[ML] 파티션 {partition} 학습 상태 복원 실패 — 새로 학습합니다", exc_info=True
+            )
+        return detector
+
+    def save_all(self) -> None:
+        if self._redis is None:
+            return
+        for partition, detector in self._detectors.items():
+            if not detector.is_trained:
+                continue  # 아직 학습 전이면 저장해봐야 복원할 때 다시 처음부터 모으므로 의미 없다.
+            try:
+                self._redis.set(ml_state_key(partition), detector.get_state())
+            except Exception:
+                logger.warning(f"[ML] 파티션 {partition} 학습 상태 저장 실패", exc_info=True)
+
+
+def process(data: dict, producer: KafkaProducer, ml: MLAnomalyDetector | None) -> None:
     vehicle_id = data.get("vehicle_id", "UNKNOWN")
 
     # ── 1. 룰 기반 이상 감지 ────────────────────────────────────
@@ -190,7 +262,8 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    ml = MLAnomalyDetector(min_samples=ML_MIN_SAMPLES)
+    redis_client = make_redis_client()
+    ml_detectors = PartitionedMLDetectors(redis_client, ML_MIN_SAMPLES)
     consumer = make_consumer()
     producer = make_producer()
     dlq_producer = make_dlq_producer()
@@ -205,6 +278,8 @@ def main() -> None:
         elapsed = time.time() - last_commit_time
         if should_commit(handled_since_commit, elapsed, force=force):
             consumer.commit()
+            if ML_ENABLED:
+                ml_detectors.save_all()
             handled_since_commit = 0
             last_commit_time = time.time()
 
@@ -215,6 +290,7 @@ def main() -> None:
                     break
                 try:
                     data = json.loads(message.value.decode("utf-8"))
+                    ml = ml_detectors.get(message.partition) if ML_ENABLED else None
                     process(data, producer, ml)
                     processed += 1
                     if processed % 100 == 0:

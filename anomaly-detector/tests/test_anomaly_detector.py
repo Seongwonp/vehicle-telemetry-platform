@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
-from anomaly_detector import should_commit, send_to_dlq, process, DLQ_TOPIC
+from anomaly_detector import should_commit, send_to_dlq, process, DLQ_TOPIC, PartitionedMLDetectors, ml_state_key
 from ml_detector import MLAnomalyDetector
 
 
@@ -64,6 +64,24 @@ class FakeMessage:
         self.value = value
         self.partition = partition
         self.offset = offset
+
+
+class FakeRedis:
+    """실제 redis-py 클라이언트 대신 dict로 흉내낸 가짜 — get/set만 흉내내면 충분하다."""
+
+    def __init__(self, fail_on: set[str] = frozenset()):
+        self.store: dict[str, bytes] = {}
+        self._fail_on = fail_on  # 이 키로 get/set 호출 시 일부러 예외를 던져 장애를 흉내낸다.
+
+    def get(self, key):
+        if key in self._fail_on:
+            raise ConnectionError("redis down")
+        return self.store.get(key)
+
+    def set(self, key, value):
+        if key in self._fail_on:
+            raise ConnectionError("redis down")
+        self.store[key] = value
 
 
 # ── should_commit: 배치 커밋 판단 (순수 함수) ─────────────────────
@@ -140,3 +158,91 @@ class TestProcessPropagatesPublishFailure:
 
         with pytest.raises(RuntimeError):
             process(make_data(engine_temp=999.0), producer, ml)
+
+
+# ── PartitionedMLDetectors: 파티션별 ML 상태 저장/복원 (ADR-018) ──
+
+def make_features(seed: int = 0) -> dict:
+    import random
+    random.seed(seed)
+    return {
+        "speed": random.uniform(60.0, 120.0),
+        "rpm": random.randint(1500, 3500),
+        "engine_temp": random.uniform(85.0, 98.0),
+        "battery_voltage": random.uniform(13.5, 14.2),
+        "fuel_level": random.uniform(30.0, 80.0),
+    }
+
+
+class TestPartitionedMLDetectors:
+
+    def test_redis_없으면_파티션마다_새_감지기_생성(self):
+        pool = PartitionedMLDetectors(redis_client=None, min_samples=30)
+
+        d0 = pool.get(0)
+        d1 = pool.get(1)
+
+        assert d0 is not d1  # 파티션마다 독립된 인스턴스여야 한다.
+        assert pool.get(0) is d0  # 같은 파티션은 같은 인스턴스를 재사용한다.
+
+    def test_같은_파티션_재조회시_같은_인스턴스_반환(self):
+        redis_client = FakeRedis()
+        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+
+        first = pool.get(2)
+        second = pool.get(2)
+
+        assert first is second
+
+    def test_save_all_이후_새_pool에서_복원됨(self):
+        redis_client = FakeRedis()
+        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+
+        detector = pool.get(0)
+        for i in range(30):
+            detector.update(make_features(seed=i))
+        assert detector.is_trained is True
+
+        pool.save_all()
+        assert ml_state_key(0) in redis_client.store
+
+        # 재시작(또는 리밸런싱으로 다른 인스턴스가 파티션을 넘겨받음)을 흉내낸다 —
+        # 같은 Redis를 바라보는 새 pool이 저장된 학습 상태를 이어받아야 한다.
+        restored_pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        restored = restored_pool.get(0)
+
+        assert restored.is_trained is True
+        sample = make_features(seed=999)
+        assert restored.update(sample) == detector.update(sample)
+
+    def test_미학습_감지기는_저장하지_않음(self):
+        redis_client = FakeRedis()
+        pool = PartitionedMLDetectors(redis_client, min_samples=1_000_000)
+
+        detector = pool.get(0)
+        detector.update(make_features())
+        assert detector.is_trained is False
+
+        pool.save_all()
+
+        assert ml_state_key(0) not in redis_client.store
+
+    def test_redis_조회_실패해도_예외없이_새_감지기로_대체(self):
+        key = ml_state_key(0)
+        redis_client = FakeRedis(fail_on={key})
+
+        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        detector = pool.get(0)  # 예외가 여기서 올라오면 컨슈머 루프 전체가 죽는다.
+
+        assert detector.is_trained is False
+
+    def test_redis_저장_실패해도_예외없이_넘어감(self):
+        key = ml_state_key(0)
+        redis_client = FakeRedis(fail_on={key})
+
+        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        detector = pool.get(0)
+        for i in range(30):
+            detector.update(make_features(seed=i))
+
+        pool.save_all()  # 예외가 올라오면 안 된다 — 로그만 남기고 계속 처리해야 한다.
