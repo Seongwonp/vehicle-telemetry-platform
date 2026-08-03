@@ -1,0 +1,909 @@
+=== stage=AB_phase3_soak12h duration=43200s interval=180s start=2026-08-03T02:21:39Z ===
+--- sample @ 2026-08-03T02:21:39Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          31627762        31628031        269             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          34685975        34686452        477             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          36792879        36793481        602             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          36805194        36805479        285             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          31638206        31638484        278             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          34697081        34697396        315             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T02:21:39Z sum=878
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                     60790
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               95.09%    481.2MiB / 7.75GiB
+telemetry-kafka                                 51.89%    1.228GiB / 7.75GiB
+telemetry-influxdb                              18.69%    877.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   32.89%    67.42MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   33.50%    75.59MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.84%    66.84MiB / 7.75GiB
+--- sample @ 2026-08-03T02:24:52Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          32038418        32038487        69              consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          35121936        35122103        167             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          37270791        37271011        220             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          37280194        37280433        239             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          32046706        32046881        175             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          35130581        35130779        198             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T02:24:52Z sum=612
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   1378655
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               82.47%    484.4MiB / 7.75GiB
+telemetry-kafka                                 50.56%    1.079GiB / 7.75GiB
+telemetry-influxdb                              13.40%    923MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   35.50%    63.66MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   37.51%    63.05MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.15%    66.94MiB / 7.75GiB
+--- sample @ 2026-08-03T02:45:08Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          32422414        32422981        567             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          35529092        35529767        675             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          37717892        37718660        768             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          37726653        37726905        252             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          32429969        32430185        216             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          35537151        35537311        160             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T02:45:08Z sum=628
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   2613767
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               78.98%    498.7MiB / 7.75GiB
+telemetry-kafka                                 81.94%    1.147GiB / 7.75GiB
+telemetry-influxdb                              11.05%    916.3MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   29.75%    63.75MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   29.27%    62.94MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   29.64%    109.3MiB / 7.75GiB
+--- sample @ 2026-08-03T03:03:27Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          32781807        32782192        385             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          35910635        35911107        472             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          38136439        38136992        553             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          38146802        38146998        196             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          32790716        32790947        231             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          35920072        35920316        244             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:03:27Z sum=671
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   3777577
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               97.83%    494.3MiB / 7.75GiB
+telemetry-kafka                                 50.05%    1.099GiB / 7.75GiB
+telemetry-influxdb                              22.78%    816.5MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   34.62%    55.98MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   37.50%    55.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   36.03%    109.3MiB / 7.75GiB
+--- sample @ 2026-08-03T03:06:40Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          33194946        33195415        469             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          36349445        36350168        723             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          38616509        38617399        890             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+[anomaly_lag_sum] ts=2026-08-03T03:06:40Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   5118286
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               92.12%    494.5MiB / 7.75GiB
+telemetry-kafka                                 42.28%    1.081GiB / 7.75GiB
+telemetry-influxdb                              17.17%    952.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   33.37%    52.17MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   34.17%    51.05MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.68%    103.5MiB / 7.75GiB
+--- sample @ 2026-08-03T03:10:10Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          33319465        33320524        1059            consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          36481438        36482955        1517            consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          38761346        38762857        1511            consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          38780802        38781188        386             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          33336216        33336631        415             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          36499372        36499849        477             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:10:10Z sum=1278
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   5537336
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               99.36%    492.5MiB / 7.75GiB
+telemetry-kafka                                 51.14%    1.075GiB / 7.75GiB
+telemetry-influxdb                              26.81%    921.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   36.63%    52.27MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   39.67%    51.08MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.90%    97.85MiB / 7.75GiB
+--- sample @ 2026-08-03T03:13:45Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          33592223        33592883        660             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          36771196        36772002        806             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          39078839        39079758        919             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          39095702        39096079        377             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          33606716        33607290        574             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          36786572        36787287        715             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:13:45Z sum=1666
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   6409415
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               86.25%    495.6MiB / 7.75GiB
+telemetry-kafka                                 44.88%    1.216GiB / 7.75GiB
+telemetry-influxdb                              17.99%    892.3MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   33.96%    52.36MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   34.75%    51.11MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.89%    97.88MiB / 7.75GiB
+--- sample @ 2026-08-03T03:17:24Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          33809506        33810075        569             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          37001795        37002514        719             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          39331366        39332239        873             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+[anomaly_lag_sum] ts=2026-08-03T03:17:24Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   7093828
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               75.71%    499MiB / 7.75GiB
+telemetry-kafka                                 100.98%   1.497GiB / 7.75GiB
+telemetry-influxdb                              17.85%    804.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   23.42%    96.18MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   21.26%    51.66MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   21.28%    98MiB / 7.75GiB
+--- sample @ 2026-08-03T03:21:11Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          33910685        33910975        290             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          37109598        37110099        501             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          39449123        39449704        581             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          39458602        39459284        682             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          33918916        33919515        599             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          37118341        37118948        607             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:21:11Z sum=1888
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   7415654
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               64.22%    499.9MiB / 7.75GiB
+telemetry-kafka                                 52.83%    1.57GiB / 7.75GiB
+telemetry-influxdb                              8.91%     768.6MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   28.30%    96.19MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   25.47%    51.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   26.74%    98.01MiB / 7.75GiB
+--- sample @ 2026-08-03T03:24:54Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Call(callName=describeGroups(api=DESCRIBE_GROUPS), deadlineMs=1785727514003, tries=1, nextAllowedTryMs=1785727514323) timed out at 1785727514223 after 1 attempt(s)
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+[anomaly_lag_sum] ts=2026-08-03T03:24:54Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   7753151
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               44.68%    500.2MiB / 7.75GiB
+telemetry-kafka                                 87.41%    1.638GiB / 7.75GiB
+telemetry-influxdb                              124.22%   855.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   17.46%    96.18MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   19.47%    51.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   23.66%    98.04MiB / 7.75GiB
+--- sample @ 2026-08-03T03:28:40Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Call(callName=describeGroups(api=DESCRIBE_GROUPS), deadlineMs=1785727735831, tries=1, nextAllowedTryMs=1785727736006) timed out at 1785727735906 after 1 attempt(s)
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          39776602        39777166        564             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          34192316        34192887        571             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          37408141        37408688        547             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:28:40Z sum=1682
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   8297619
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               99.49%    501MiB / 7.75GiB
+telemetry-kafka                                 42.78%    1.074GiB / 7.75GiB
+telemetry-influxdb                              15.76%    811MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   34.18%    96.22MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   28.73%    51.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   29.51%    98.13MiB / 7.75GiB
+--- sample @ 2026-08-03T03:32:20Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          34390213        34390927        714             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          37618396        37619393        997             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          40006726        40008255        1529            consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          40022802        40023204        402             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          34403616        34404055        439             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          37632641        37633141        500             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:32:20Z sum=1341
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   8979859
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               95.62%    501.8MiB / 7.75GiB
+telemetry-kafka                                 40.94%    1.089GiB / 7.75GiB
+telemetry-influxdb                              23.29%    879.3MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   35.79%    96.22MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   37.34%    52.05MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   35.57%    98.15MiB / 7.75GiB
+--- sample @ 2026-08-03T03:35:50Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          34594787        34594963        176             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          37835659        37836123        464             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          40245600        40246007        407             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          40265102        40265653        551             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          34611416        34612024        608             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          37853441        37853980        539             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:35:50Z sum=1698
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                   9652012
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               90.16%    507.7MiB / 7.75GiB
+telemetry-kafka                                 42.44%    1.103GiB / 7.75GiB
+telemetry-influxdb                              18.79%    735.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   34.06%    96.23MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   35.35%    51.86MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   32.59%    98.19MiB / 7.75GiB
+--- sample @ 2026-08-03T03:39:31Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          34799792        34800010        218             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          38053440        38053742        302             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          40484272        40484600        328             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          40501402        40502396        994             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          34814416        34815863        1447            kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          38069041        38070555        1514            kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:39:31Z sum=3955
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  10308118
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               78.70%    508.1MiB / 7.75GiB
+telemetry-kafka                                 42.30%    1.113GiB / 7.75GiB
+telemetry-influxdb                              39.56%    768.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   34.41%    94.84MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   32.18%    52.12MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   33.95%    98.21MiB / 7.75GiB
+--- sample @ 2026-08-03T03:43:08Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          35027654        35028567        913             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          38295497        38296511        1014            consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          40749623        40750733        1110            consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          40768202        40769533        1331            kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          35043816        35045125        1309            kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          38312441        38313861        1420            kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:43:08Z sum=4060
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  11048682
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               85.07%    509.4MiB / 7.75GiB
+telemetry-kafka                                 53.16%    1.124GiB / 7.75GiB
+telemetry-influxdb                              17.84%    737.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   35.14%    94.86MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   33.88%    51.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   35.99%    98.32MiB / 7.75GiB
+--- sample @ 2026-08-03T03:46:46Z ---
+[kafka lag]
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting to send the call. Call: describeGroups(api=FIND_COORDINATOR)
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          41008402        41008861        459             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          35250416        35250818        402             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          38531541        38532091        550             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:46:46Z sum=1411
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  11711200
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               86.00%    510.4MiB / 7.75GiB
+telemetry-kafka                                 46.45%    1.14GiB / 7.75GiB
+telemetry-influxdb                              17.48%    764.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   30.98%    94.87MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   30.62%    51.91MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   34.33%    98.35MiB / 7.75GiB
+--- sample @ 2026-08-03T03:50:26Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          35467477        35467779        302             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          38761760        38762511        751             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          41260937        41261435        498             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+Error: Executing consumer group command failed due to org.apache.kafka.common.errors.TimeoutException: Timed out waiting for a node assignment. Call: describeGroups(api=FIND_COORDINATOR)
+[anomaly_lag_sum] ts=2026-08-03T03:50:26Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  12453759
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               68.38%    512.1MiB / 7.75GiB
+telemetry-kafka                                 75.33%    1.204GiB / 7.75GiB
+telemetry-influxdb                              44.46%    749.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   28.91%    94.88MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   24.93%    51.94MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   30.32%    98.36MiB / 7.75GiB
+--- sample @ 2026-08-03T03:54:05Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          35664659        35665038        379             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          38971001        38971448        447             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          41489887        41490373        486             consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          41506802        41507352        550             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          35679316        35679853        537             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          38986541        38987085        544             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:54:05Z sum=1631
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  13093688
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               84.23%    511.6MiB / 7.75GiB
+telemetry-kafka                                 47.03%    1.162GiB / 7.75GiB
+telemetry-influxdb                              34.33%    744.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   32.93%    94.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   34.20%    51.95MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.99%    98.39MiB / 7.75GiB
+--- sample @ 2026-08-03T03:57:42Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          35875792        35876170        378             consumer-telemetry-storage-group-1-51bb6e3b-b19e-45c7-9535-9acb4c584e84 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          39195232        39195734        502             consumer-telemetry-storage-group-2-5e0d1ec5-3fa4-4b98-bf36-cf9429c8df7a /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 2          41734533        41736530        1997            consumer-telemetry-storage-group-3-cf8dfac5-5970-438d-aec0-23d4e6883515 /172.18.0.9     consumer-telemetry-storage-group-3
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 2          41751302        41751747        445             kafka-python-3.0.9-b3968aa9-54ed-49d3-8a07-e937b4916cfa /172.18.0.4     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          35888916        35889503        587             kafka-python-3.0.9-13055768-1652-4953-8be8-b6398de48fb5 /172.18.0.19    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          39209141        39209756        615             kafka-python-3.0.9-7dca326f-7c9d-4cf4-b39f-3bdfe44c9765 /172.18.0.18    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T03:57:42Z sum=1647
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  13773162
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               86.89%    507.5MiB / 7.75GiB
+telemetry-kafka                                 37.35%    1.073GiB / 7.75GiB
+telemetry-influxdb                              26.97%    876.2MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   33.55%    94.88MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   32.82%    51.79MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   35.60%    100.4MiB / 7.75GiB
+--- sample @ 2026-08-03T04:01:16Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T04:01:16Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T04:04:16Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T04:04:16Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T04:07:16Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T04:07:16Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T11:02:53Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T11:02:53Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T11:05:54Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T11:05:54Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T11:08:54Z ---
+[kafka lag]
+
+[anomaly_lag_sum] ts=2026-08-03T11:08:54Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+[docker stats]
+--- sample @ 2026-08-03T11:11:55Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID     HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          36009497        36009497        0               -               -               -
+telemetry-storage-group vehicle-telemetry 1          39344519        39344519        0               -               -               -
+telemetry-storage-group vehicle-telemetry 2          41884570        41884570        0               -               -               -
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          39344519        39344519        0               kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          41884570        41884570        0               kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          36009497        36009497        0               kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:11:55Z sum=0
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  14176936
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               5.41%     414.3MiB / 7.75GiB
+telemetry-kafka                                 68.37%    658.6MiB / 7.75GiB
+telemetry-influxdb                              0.07%     637.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   0.60%     101.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   0.58%     99.97MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   0.61%     99.64MiB / 7.75GiB
+--- sample @ 2026-08-03T11:15:00Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          42085827        42086291        464             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          36183743        36184155        412             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          39529180        39529634        454             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          39537620        39537887        267             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          42095171        42095466        295             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          36191798        36191986        188             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:15:00Z sum=750
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  14767253
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               77.60%    660.8MiB / 7.75GiB
+telemetry-kafka                                 93.84%    915.1MiB / 7.75GiB
+telemetry-influxdb                              10.94%    640.2MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   28.19%    102.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   28.40%    101MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   28.85%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:18:13Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          42479442        42479496        54              consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          36523006        36523098        92              consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          39889479        39889581        102             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          39896920        39897259        339             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          42487371        42487990        619             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          36529998        36530442        444             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:18:13Z sum=1402
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  15857916
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               99.64%    707.3MiB / 7.75GiB
+telemetry-kafka                                 51.68%    816.9MiB / 7.75GiB
+telemetry-influxdb                              15.20%    813.6MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   35.62%    103MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   29.44%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   37.78%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:21:28Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          42882099        42882828        729             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          36869060        36869850        790             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          40256087        40256957        870             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          40266120        40266546        426             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          42892971        42893510        539             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          36878598        36879013        415             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:21:28Z sum=1380
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  16982009
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               80.32%    708MiB / 7.75GiB
+telemetry-kafka                                 108.86%   1.106GiB / 7.75GiB
+telemetry-influxdb                              10.70%    741MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   26.52%    103.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   24.43%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   23.82%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:24:41Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          43282260        43282554        294             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          37212923        37213284        361             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          40621512        40621929        417             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          40628120        40628386        266             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          43289571        43289784        213             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          37219198        37219507        309             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:24:41Z sum=788
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  18081218
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               84.16%    708.6MiB / 7.75GiB
+telemetry-kafka                                 48.94%    831.9MiB / 7.75GiB
+telemetry-influxdb                              13.06%    810.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   36.16%    103.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   34.39%    101.3MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   33.72%    100.9MiB / 7.75GiB
+--- sample @ 2026-08-03T11:27:52Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          43720153        43720613        460             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          37588292        37588748        456             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          41019919        41020433        514             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          41026720        41027198        478             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          43727471        43728347        876             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          37594698        37595390        692             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:27:52Z sum=2046
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  19295427
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               88.97%    709.3MiB / 7.75GiB
+telemetry-kafka                                 49.19%    902.7MiB / 7.75GiB
+telemetry-influxdb                              15.01%    814.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   33.13%    103.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   35.94%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   32.28%    100.9MiB / 7.75GiB
+--- sample @ 2026-08-03T11:31:07Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          44146278        44146574        296             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          37954221        37954762        541             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          41408248        41408814        566             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          41417020        41417456        436             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          44155771        44156461        690             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          37962398        37962890        492             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:31:07Z sum=1618
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  20480077
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               78.25%    711.7MiB / 7.75GiB
+telemetry-kafka                                 85.48%    991.6MiB / 7.75GiB
+telemetry-influxdb                              10.77%    797MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   24.90%    103.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   26.27%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   24.04%    101.2MiB / 7.75GiB
+--- sample @ 2026-08-03T11:34:20Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          44575998        44576502        504             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          38323589        38324063        474             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          41801201        41801690        489             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          41808920        41809211        291             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          44584371        44585275        904             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          38330798        38331601        803             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:34:20Z sum=1998
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  21669195
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               92.88%    712MiB / 7.75GiB
+telemetry-kafka                                 53.66%    950.2MiB / 7.75GiB
+telemetry-influxdb                              17.10%    789.2MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   37.61%    103.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   37.50%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   33.71%    101.3MiB / 7.75GiB
+--- sample @ 2026-08-03T11:37:35Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          45006268        45006561        293             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          38692836        38693177        341             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          42193599        42193998        399             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          42201220        42201453        233             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          45014571        45014957        386             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          38699998        38700517        519             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:37:35Z sum=1138
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  22859836
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               85.36%    713.4MiB / 7.75GiB
+telemetry-kafka                                 49.24%    972.4MiB / 7.75GiB
+telemetry-influxdb                              16.90%    771.5MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   34.09%    103.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   31.07%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   32.41%    101.4MiB / 7.75GiB
+--- sample @ 2026-08-03T11:40:47Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          45438840        45439068        228             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          39064714        39065038        324             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          42588789        42589071        282             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          42596320        42596622        302             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          45447171        45447712        541             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          39071998        39072476        478             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:40:47Z sum=1321
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  24060384
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               73.89%    705.4MiB / 7.75GiB
+telemetry-kafka                                 52.65%    991.1MiB / 7.75GiB
+telemetry-influxdb                              11.48%    768.9MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   32.88%    103.2MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   37.10%    100.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   32.97%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:43:59Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          45843208        45843872        664             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          39411929        39412597        668             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          42957479        42958285        806             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          42966620        42966826        206             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          45853271        45853660        389             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          39420598        39420974        376             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:43:59Z sum=971
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  25184699
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               84.19%    706.8MiB / 7.75GiB
+telemetry-kafka                                 60.86%    1.918GiB / 7.75GiB
+telemetry-influxdb                              13.77%    771.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   30.40%    100.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   26.81%    100.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   27.03%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:47:16Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          46271325        46271766        441             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          39779680        39780232        552             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          43347674        43348217        543             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          43355920        43356358        438             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          46280371        46280882        511             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          39787498        39787933        435             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:47:16Z sum=1384
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  26368431
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               83.25%    707.3MiB / 7.75GiB
+telemetry-kafka                                 38.09%    1014MiB / 7.75GiB
+telemetry-influxdb                              20.88%    715MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   28.18%    100.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   28.21%    100.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   32.11%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:50:28Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          46679397        46679624        227             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          40130406        40130666        260             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          43719892        43720214        322             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          43727020        43727557        537             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          46687271        46687984        713             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          40137098        40137766        668             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:50:28Z sum=1918
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  27496453
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               82.69%    707.3MiB / 7.75GiB
+telemetry-kafka                                 60.26%    1.01GiB / 7.75GiB
+telemetry-influxdb                              17.86%    497.7MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   31.99%    100.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   32.65%    101.1MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   34.17%    100.8MiB / 7.75GiB
+--- sample @ 2026-08-03T11:53:41Z ---
+[kafka lag]
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 2          47088100        47088368        268             consumer-telemetry-storage-group-3-0b6ee033-d55d-44e1-8dd0-42bd94f34388 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 0          40481123        40481417        294             consumer-telemetry-storage-group-1-4f25b965-39d9-4942-a855-69c71aa54353 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          44091768        44092119        351             consumer-telemetry-storage-group-2-f770ce24-08de-4dac-a067-ffd0e62bcc12 /172.18.0.9     consumer-telemetry-storage-group-2
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          44102520        44102871        351             kafka-python-3.0.9-07801dd7-b61c-46d3-8691-617fb986398e /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          47099771        47100230        459             kafka-python-3.0.9-55c7a497-3934-448b-ab4f-6f2f5fbfc188 /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          40491298        40491712        414             kafka-python-3.0.9-06632947-5045-43c7-9289-81a6c1494a51 /172.18.0.11    kafka-python-3.0.9
+[anomaly_lag_sum] ts=2026-08-03T11:53:41Z sum=1224
+[influx count since 2026-08-03T02:21:39Z]
+Result: _result
+Table: keys: []
+                _value:int
+--------------------------
+                  28639190
+[docker stats]
+NAME                                            CPU %     MEM USAGE / LIMIT
+telemetry-backend                               80.78%    711.5MiB / 7.75GiB
+telemetry-kafka                                 50.12%    1007MiB / 7.75GiB
+telemetry-influxdb                              14.10%    735.2MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-3   36.28%    101.4MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-4   33.02%    100.8MiB / 7.75GiB
+vehicle-telemetry-platform-anomaly-detector-2   36.95%    100.7MiB / 7.75GiB
+--- sample @ 2026-08-03T11:56:57Z ---
+[kafka lag]

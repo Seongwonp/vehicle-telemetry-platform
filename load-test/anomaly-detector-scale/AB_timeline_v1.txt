@@ -1,0 +1,6 @@
+2026-08-03T00:06:26Z simulators started
+2026-08-03T01:07:29Z phase1 sample.sh done
+2026-08-03T01:08:41Z drain wait 시작 (3인스턴스)
+2026-08-03T01:20:39Z drain 완료 (lag<500) — phase2 타이머 시작
+2026-08-03T02:21:39Z phase2 sample.sh done
+2026-08-03T02:21:39Z soak(12h) 타이머 시작
