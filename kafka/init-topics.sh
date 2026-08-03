@@ -20,15 +20,21 @@ create_topic() {
   local topic=$1
   local partitions=${2:-3}
   local replication=${3:-1}
+  # Kafka는 이 프로젝트에서 최종 저장소가 아니라 InfluxDB/PostgreSQL로 가기 전 임시
+  # 통로일 뿐이다. 브로커 기본 리텐션(7일)을 그대로 두면 시뮬레이터가 계속 도는 동안
+  # 무한정 쌓여 디스크를 다 채운다 — 실제로 부하 테스트를 반복하다 호스트 디스크가
+  # 꽉 차서 Docker 자체가 응답 불능이 되는 일을 겪었다. 그래서 1시간으로 짧게 잡는다.
+  local retention_ms=${4:-3600000}
 
   kafka-topics --bootstrap-server $KAFKA_BROKER \
     --create \
     --if-not-exists \
     --topic "$topic" \
     --partitions "$partitions" \
-    --replication-factor "$replication"
+    --replication-factor "$replication" \
+    --config retention.ms="$retention_ms"
 
-  echo "[OK] 토픽 생성: $topic (파티션: $partitions, 복제: $replication)"
+  echo "[OK] 토픽 생성: $topic (파티션: $partitions, 복제: $replication, 리텐션: ${retention_ms}ms)"
 }
 
 # 차량 텔레메트리 원본 데이터 (핵심 토픽)
