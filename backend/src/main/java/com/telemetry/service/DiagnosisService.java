@@ -65,9 +65,15 @@ public class DiagnosisService {
     private String buildPrompt(String vehicleId, List<TelemetryResponse> recent, List<AnomalyResponse> anomalies) {
         TelemetryResponse latest = recent.get(0);
         StringBuilder sb = new StringBuilder();
-        sb.append("당신은 자동차 정비 전문가입니다. 아래 차량 센서 데이터를 보고 현재 상태를 진단하고, ")
-          .append("이상 징후가 있다면 원인 추정과 조치 방법을 한국어로 간결하게 설명하세요. ")
-          .append("또한 차량의 전반적 상태를 A(매우 양호)~F(즉시 정비 필요) 등급과 0~100점 점수로 함께 평가하세요.\n\n");
+        sb.append("당신은 자동차 정비 전문가입니다. 아래 차량 센서 데이터를 보고 현재 상태를 상세히 진단하세요.\n\n")
+          .append("응답은 JSON의 diagnosis 필드에 마크다운으로 작성하되, 다음 구조를 반드시 갖추세요 ")
+          .append("(각 섹션을 생략하거나 한두 문장으로 축약하지 말고, 기존 정비 리포트 수준으로 충분히 상세하게 작성):\n")
+          .append("### 1. 현재 상태 진단\n실시간 수치 평가와 종합 소견을 문단으로 작성.\n")
+          .append("### 2. 이상 징후 및 원인 추정\n항목별로 현상과 추정 원인을 글머리 기호로 구체적으로 나열.\n")
+          .append("### 3. 조치 방법\n번호를 매겨 구체적인 정비/점검 항목을 나열.\n")
+          .append("마지막에 한 문장 요약도 포함하세요.\n\n")
+          .append("diagnosis 필드와 별도로, 차량의 전반적 상태를 A(매우 양호)~F(즉시 정비 필요) 등급과 ")
+          .append("0~100점 점수로도 함께 평가해 grade/score 필드에 담으세요.\n\n");
         sb.append("차량 ID: ").append(vehicleId).append('\n');
         sb.append("최신 센서값 — 속도: ").append(latest.getSpeed()).append("km/h, RPM: ").append(latest.getRpm())
           .append(", 엔진온도: ").append(latest.getEngineTemp()).append("°C, 배터리전압: ")
@@ -104,7 +110,11 @@ public class DiagnosisService {
                 "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
                 "generationConfig", Map.of(
                     "responseMimeType", "application/json",
-                    "responseSchema", RESPONSE_SCHEMA
+                    "responseSchema", RESPONSE_SCHEMA,
+                    // gemini-3 계열은 "thinking" 추론 토큰도 이 상한을 함께 소모한다.
+                    // 상세 3섹션 리포트 + 추론 토큰을 감안해 넉넉히 잡는다 — 4096에서는
+                    // diagnosis 문자열이 중간에 잘려 JSON 파싱이 깨지는 문제가 있었다.
+                    "maxOutputTokens", 8192
                 )
             );
 
@@ -114,7 +124,7 @@ public class DiagnosisService {
             );
 
             HttpRequest request = HttpRequest.newBuilder(uri)
-                .timeout(Duration.ofSeconds(45))
+                .timeout(Duration.ofSeconds(90))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
                 .build();
