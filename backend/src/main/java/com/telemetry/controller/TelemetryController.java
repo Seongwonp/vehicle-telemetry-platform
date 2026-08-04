@@ -9,6 +9,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 
 import java.util.List;
 
@@ -17,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Tag(name = "Telemetry", description = "차량 텔레메트리 데이터 조회 API")
 @SecurityRequirement(name = "bearerAuth")
+@Validated
 public class TelemetryController {
 
     private final TelemetryQueryService telemetryQueryService;
@@ -29,10 +33,9 @@ public class TelemetryController {
     public ResponseEntity<List<TelemetryResponse>> getRecent(
         @PathVariable String vehicleId,
         @Parameter(description = "조회 건수 (최대 100)", example = "20")
-        @RequestParam(defaultValue = "20") int limit
+        @RequestParam(defaultValue = "20") @Min(1) @Max(100) int limit
     ) {
-        int safeLimit = Math.min(limit, 100);
-        return ResponseEntity.ok(telemetryQueryService.getRecent(vehicleId, safeLimit));
+        return ResponseEntity.ok(telemetryQueryService.getRecent(vehicleId, limit));
     }
 
     @GetMapping("/latest")

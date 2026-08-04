@@ -145,7 +145,9 @@ public VehicleResponse findByVehicleId(String vehicleId, String requestingUser) 
 ### 2-6. Rate Limiting
 
 **적용**: `RateLimitInterceptor.java`
-- 분당 60회 초과 → 429 Too Many Requests
+- 일반 API 분당 60회 초과 → 429 Too Many Requests
+- `X-Forwarded-For`는 설정된 신뢰 프록시 peer에서 온 경우만 사용
+- 로그인은 신뢰 IP+username 기준 분당 10회 별도 제한
 - Redis key: `rate_limit:{ip}`, TTL 1분
 - 응답 헤더: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
 - 예외: `/api/auth/login` (브루트포스 감지가 별도 처리)

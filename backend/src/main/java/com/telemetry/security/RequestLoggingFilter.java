@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -20,7 +21,10 @@ import java.util.UUID;
 @Slf4j
 @Component
 @Order(1)
+@RequiredArgsConstructor
 public class RequestLoggingFilter extends OncePerRequestFilter {
+
+    private final ClientIpResolver clientIpResolver;
 
     @Override
     protected void doFilterInternal(
@@ -30,7 +34,7 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String traceId = UUID.randomUUID().toString().substring(0, 8);
-        String ip = resolveClientIp(request);
+        String ip = clientIpResolver.resolve(request);
         String method = request.getMethod();
         String uri = request.getRequestURI();
 
@@ -61,11 +65,4 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         }
     }
 
-    private String resolveClientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            return forwarded.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
-    }
 }

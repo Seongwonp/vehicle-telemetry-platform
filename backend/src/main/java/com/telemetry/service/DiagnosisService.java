@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.dto.response.AnomalyResponse;
 import com.telemetry.dto.response.DiagnosisResponse;
 import com.telemetry.dto.response.TelemetryResponse;
+import com.telemetry.exception.ResourceNotFoundException;
+import com.telemetry.exception.ServiceUnavailableException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,8 +18,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 최근 텔레메트리 + 이상 이력을 프롬프트로 구성해 Gemini API에 던지고 진단 텍스트를 받아온다.
@@ -46,20 +53,75 @@ public class DiagnosisService {
     @Value("${gemini.model}")
     private String model;
 
+    @Value("${gemini.cache-ttl-ms}")
+    private long cacheTtlMs;
+
+    @Value("${gemini.max-concurrent-calls}")
+    private int maxConcurrentCalls;
+
+    @Value("${gemini.circuit-failure-threshold}")
+    private int circuitFailureThreshold;
+
+    @Value("${gemini.circuit-open-ms}")
+    private long circuitOpenMs;
+
+    private final Map<String, CachedDiagnosis> cache = new ConcurrentHashMap<>();
+    private final AtomicInteger consecutiveFailures = new AtomicInteger();
+    private final AtomicLong circuitOpenUntil = new AtomicLong();
+    private volatile Semaphore callPermits;
+
     public DiagnosisResponse diagnose(String vehicleId) {
+        CachedDiagnosis cached = cache.get(vehicleId);
+        if (cached != null && cached.expiresAt().isAfter(Instant.now())) return cached.response();
+
         List<TelemetryResponse> recent = telemetryQueryService.getRecent(vehicleId, TELEMETRY_SAMPLE_SIZE);
         if (recent.isEmpty()) {
-            throw new IllegalStateException("진단할 텔레메트리 데이터가 없습니다: " + vehicleId);
+            throw new ResourceNotFoundException("진단할 텔레메트리 데이터가 없습니다: " + vehicleId);
         }
         List<AnomalyResponse> anomalies = anomalyService.getRecent(vehicleId, ANOMALY_SAMPLE_SIZE);
 
         String prompt = buildPrompt(vehicleId, recent, anomalies);
-        GeminiDiagnosisResult result = callGemini(prompt);
+        GeminiDiagnosisResult result = protectedGeminiCall(prompt);
 
-        return new DiagnosisResponse(result.grade(), result.score(), result.diagnosis(), recent.size());
+        DiagnosisResponse response = new DiagnosisResponse(
+            result.grade(), result.score(), result.diagnosis(), recent.size());
+        if (cache.size() >= 1_000) cache.entrySet().removeIf(entry -> entry.getValue().expiresAt().isBefore(Instant.now()));
+        cache.put(vehicleId, new CachedDiagnosis(response, Instant.now().plusMillis(cacheTtlMs)));
+        return response;
     }
 
+    private record CachedDiagnosis(DiagnosisResponse response, Instant expiresAt) {}
+
     private record GeminiDiagnosisResult(String grade, int score, String diagnosis) {
+    }
+
+    private GeminiDiagnosisResult protectedGeminiCall(String prompt) {
+        long now = System.currentTimeMillis();
+        if (circuitOpenUntil.get() > now) {
+            throw new ServiceUnavailableException("AI 진단 회로가 일시적으로 열려 있습니다");
+        }
+        Semaphore permits = callPermits;
+        if (permits == null) {
+            synchronized (this) {
+                if (callPermits == null) callPermits = new Semaphore(maxConcurrentCalls);
+                permits = callPermits;
+            }
+        }
+        if (!permits.tryAcquire()) {
+            throw new ServiceUnavailableException("AI 진단 동시 요청 한도를 초과했습니다");
+        }
+        try {
+            GeminiDiagnosisResult result = callGemini(prompt);
+            consecutiveFailures.set(0);
+            return result;
+        } catch (RuntimeException e) {
+            if (consecutiveFailures.incrementAndGet() >= circuitFailureThreshold) {
+                circuitOpenUntil.set(System.currentTimeMillis() + circuitOpenMs);
+            }
+            throw e;
+        } finally {
+            permits.release();
+        }
     }
 
     private String buildPrompt(String vehicleId, List<TelemetryResponse> recent, List<AnomalyResponse> anomalies) {
@@ -106,28 +168,7 @@ public class DiagnosisService {
 
     private GeminiDiagnosisResult callGemini(String prompt) {
         try {
-            Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
-                "generationConfig", Map.of(
-                    "responseMimeType", "application/json",
-                    "responseSchema", RESPONSE_SCHEMA,
-                    // gemini-3 계열은 "thinking" 추론 토큰도 이 상한을 함께 소모한다.
-                    // 상세 3섹션 리포트 + 추론 토큰을 감안해 넉넉히 잡는다 — 4096에서는
-                    // diagnosis 문자열이 중간에 잘려 JSON 파싱이 깨지는 문제가 있었다.
-                    "maxOutputTokens", 8192
-                )
-            );
-
-            URI uri = URI.create(
-                "https://generativelanguage.googleapis.com/v1beta/models/" + model
-                    + ":generateContent?key=" + apiKey
-            );
-
-            HttpRequest request = HttpRequest.newBuilder(uri)
-                .timeout(Duration.ofSeconds(90))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
-                .build();
+            HttpRequest request = buildGeminiRequest(prompt);
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
@@ -163,5 +204,26 @@ public class DiagnosisService {
             Thread.currentThread().interrupt();
             throw new RuntimeException("AI 진단 서비스 호출이 중단되었습니다", e);
         }
+    }
+
+    HttpRequest buildGeminiRequest(String prompt) throws IOException {
+        Map<String, Object> requestBody = Map.of(
+            "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
+            "generationConfig", Map.of(
+                "responseMimeType", "application/json",
+                "responseSchema", RESPONSE_SCHEMA,
+                "maxOutputTokens", 8192
+            )
+        );
+        URI uri = URI.create(
+            "https://generativelanguage.googleapis.com/v1beta/models/" + model
+                + ":generateContent"
+        );
+        return HttpRequest.newBuilder(uri)
+            .timeout(Duration.ofSeconds(90))
+            .header("Content-Type", "application/json")
+            .header("x-goog-api-key", apiKey)
+            .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(requestBody)))
+            .build();
     }
 }

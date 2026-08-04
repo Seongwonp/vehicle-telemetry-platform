@@ -25,10 +25,11 @@ import signal
 import socket
 import time
 import logging
+import hashlib
 from dataclasses import asdict
 from datetime import datetime, timezone
 
-from kafka import KafkaConsumer, KafkaProducer
+from kafka import KafkaConsumer, KafkaProducer, TopicPartition, OffsetAndMetadata
 from dotenv import load_dotenv
 
 import rules
@@ -197,6 +198,10 @@ def process(data: dict, producer: KafkaProducer, ml: MLAnomalyDetector | None) -
             **asdict(event),
             "detected_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
+        event_key = "|".join(str(payload.get(field, "")) for field in (
+            "vehicle_id", "timestamp", "anomaly_type", "field", "detector"
+        ))
+        payload["event_id"] = hashlib.sha256(event_key.encode("utf-8")).hexdigest()
 
         futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
 
@@ -232,15 +237,17 @@ def should_commit(handled_since_commit: int, elapsed_seconds: float, force: bool
 def send_to_dlq(dlq_producer: KafkaProducer, message) -> None:
     """처리 실패한 원본 메시지를 DLQ로 옮긴다. key/value를 원본 바이트 그대로 보존한다."""
     try:
-        dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value)
+        future = dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value)
         dlq_producer.flush()
+        future.get(timeout=10)
     except Exception:
-        # DLQ 전송조차 실패하면 이 메시지는 정말로 유실된다 — 다른 로그와 구분되게 남긴다.
+        # 이 예외를 메인 루프 밖으로 전파해야 현재 offset이 처리 완료로 집계되지 않는다.
         logger.error(
-            f"[DLQ] {DLQ_TOPIC} 전송조차 실패 — 메시지 완전 유실 "
+            f"[DLQ] {DLQ_TOPIC} 전송 실패 — 원본 offset을 커밋하지 않음 "
             f"partition={message.partition} offset={message.offset}",
             exc_info=True,
         )
+        raise
 
 
 def main() -> None:
@@ -272,12 +279,16 @@ def main() -> None:
     dlq_count = 0
     handled_since_commit = 0
     last_commit_time = time.time()
+    safe_offsets: dict[TopicPartition, OffsetAndMetadata] = {}
 
     def maybe_commit(force: bool = False) -> None:
         nonlocal handled_since_commit, last_commit_time
         elapsed = time.time() - last_commit_time
         if should_commit(handled_since_commit, elapsed, force=force):
-            consumer.commit()
+            # consumer.commit()에 인자를 생략하면 DLQ 전송에 실패한 현재 position까지
+            # 커밋될 수 있다. 성공/DLQ 성공으로 표시한 offset만 명시적으로 커밋한다.
+            consumer.commit(offsets=dict(safe_offsets))
+            safe_offsets.clear()
             if ML_ENABLED:
                 ml_detectors.save_all()
             handled_since_commit = 0
@@ -306,6 +317,9 @@ def main() -> None:
 
                 # 성공이든 DLQ로 격리했든 이 메시지는 "처리 완료"다 — 재시도 없이 다음
                 # 메시지로 넘어가되, 실패분은 원본이 DLQ에 남아 나중에 조사/재처리할 수 있다.
+                safe_offsets[TopicPartition(message.topic, message.partition)] = OffsetAndMetadata(
+                    message.offset + 1, ""
+                )
                 handled_since_commit += 1
                 maybe_commit()
 

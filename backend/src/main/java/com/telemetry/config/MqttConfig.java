@@ -17,7 +17,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.util.UUID;
 
 @Configuration
 public class MqttConfig {
@@ -30,6 +29,9 @@ public class MqttConfig {
 
     @Value("${mqtt.topic}")
     private String topic;
+
+    @Value("${mqtt.client-id:telemetry-backend}")
+    private String clientId;
 
     // 평소 로컬 개발 사이클은 인증서 없이 평문(1883)으로 돌리고,
     // 데모/보안 검증 때만 이 플래그를 켜서 mTLS(8883)로 전환한다.
@@ -53,7 +55,7 @@ public class MqttConfig {
         String scheme = tlsEnabled ? "ssl" : "tcp";
         MqttConnectOptions options = new MqttConnectOptions();
         options.setServerURIs(new String[]{scheme + "://" + host + ":" + port});
-        options.setCleanSession(true);
+        options.setCleanSession(false);
         options.setConnectionTimeout(10);
         options.setKeepAliveInterval(60);
         // 브로커 재시작이나 네트워크 단절 시 자동 재연결 — 수동 복구 없이 파이프라인 유지
@@ -110,10 +112,6 @@ public class MqttConfig {
 
     @Bean
     public MqttPahoMessageDrivenChannelAdapter mqttInbound() {
-        // 재시작마다 다른 clientId를 쓴다. 같은 ID로 재접속하면 브로커가 이전 세션을
-        // 복원하려 하는데, cleanSession=true와 조합하면 예측 불가한 동작이 생긴다.
-        String clientId = "backend-" + UUID.randomUUID().toString().substring(0, 8);
-
         MqttPahoMessageDrivenChannelAdapter adapter =
             new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), topic);
 

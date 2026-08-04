@@ -1,5 +1,6 @@
 package com.telemetry.config;
 
+import com.telemetry.security.ClientIpResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.time.Duration;
 public class RateLimitInterceptor implements HandlerInterceptor {
 
     private final StringRedisTemplate redisTemplate;
+    private final ClientIpResolver clientIpResolver;
 
     @Value("${rate-limit.requests-per-minute}")
     private int requestsPerMinute;
@@ -28,7 +30,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         HttpServletResponse response,
         Object handler
     ) throws Exception {
-        String clientIp = getClientIp(request);
+        String clientIp = clientIpResolver.resolve(request);
         String key = "rate_limit:" + clientIp;
 
         // INCR는 원자 연산이라 동시 요청이 와도 카운터가 정확하다.
@@ -55,11 +57,4 @@ public class RateLimitInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            return xForwardedFor.split(",")[0].trim();
-        }
-        return request.getRemoteAddr();
-    }
 }

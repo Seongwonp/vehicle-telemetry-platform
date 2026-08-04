@@ -49,24 +49,24 @@ class RefreshTokenServiceTest {
     @DisplayName("유효한 토큰으로 rotate 시 username 반환하고 기존 토큰 삭제")
     void rotate_유효토큰_성공() {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("refresh_token:valid-token")).willReturn("admin");
+        given(valueOperations.getAndDelete("refresh_token:valid-token")).willReturn("admin");
 
         Optional<String> result = refreshTokenService.rotate("valid-token");
 
         assertThat(result).contains("admin");
-        verify(redisTemplate).delete("refresh_token:valid-token");
+        verify(valueOperations).getAndDelete("refresh_token:valid-token");
     }
 
     @Test
     @DisplayName("존재하지 않는 토큰으로 rotate 시 빈 Optional 반환하고 삭제하지 않음")
     void rotate_유효하지않은토큰_빈값() {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get(anyString())).willReturn(null);
+        given(valueOperations.getAndDelete(anyString())).willReturn(null);
 
         Optional<String> result = refreshTokenService.rotate("unknown-token");
 
         assertThat(result).isEmpty();
-        verify(redisTemplate, org.mockito.Mockito.never()).delete(anyString());
+        verify(valueOperations).getAndDelete("refresh_token:unknown-token");
     }
 
     @Test

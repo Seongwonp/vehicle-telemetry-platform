@@ -10,12 +10,16 @@ spring:
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
 
   # ── Redis ────────────────────────────────────────────────────
   data:
@@ -38,6 +42,7 @@ spring:
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       enable-auto-commit: false
     listener:
+      ack-mode: manual_immediate
       # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.
       # 멀티프로세스 시뮬레이터로 실제 배압(anomaly-detector-group lag 200만+)이 걸리는
       # ~2,500 msg/s에서 concurrency 1과 3을 재검증했지만 telemetry-storage-group lag은
@@ -48,15 +53,20 @@ spring:
 # ── MQTT ─────────────────────────────────────────────────────
 mqtt:
   host: ${MQTT_HOST:localhost}
-  port: ${MQTT_PORT:1883}
+  port: ${MQTT_PORT:8883}
   topic: "vehicle/telemetry/#"
+  client-id: ${MQTT_CLIENT_ID:telemetry-backend}
   tls:
-    # broker/certs/generate-certs.sh 실행 + mosquitto.conf TLS 섹션 주석 해제 후에만 true로 켤 것.
-    # 평소 로컬 개발은 false(평문 1883) 유지 — 매번 인증서를 준비할 필요 없게.
-    enabled: ${MQTT_TLS_ENABLED:false}
+    # 기본값은 mTLS 강제. 평문 로컬 개발은 docker-compose.dev.yml에서만 false로 덮어쓴다.
+    enabled: ${MQTT_TLS_ENABLED:true}
     keystore-path: ${MQTT_TLS_KEYSTORE_PATH:}
     truststore-path: ${MQTT_TLS_TRUSTSTORE_PATH:}
     store-password: ${MQTT_TLS_STORE_PASSWORD:changeit}
+
+telemetry:
+  spool:
+    path: ${TELEMETRY_SPOOL_PATH:data/telemetry-spool}
+    retry-ms: ${TELEMETRY_SPOOL_RETRY_MS:5000}
 
 # ── InfluxDB ─────────────────────────────────────────────────
 influxdb:
@@ -68,7 +78,7 @@ influxdb:
 # ── JWT ──────────────────────────────────────────────────────
 jwt:
   secret: ${JWT_SECRET}
-  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  expiration-ms: ${JWT_EXPIRATION_MS:600000}
 
 # ── 관리자 계정 (Phase 2 임시, Phase 4에서 DB 기반으로 교체) ──
 admin:
@@ -82,11 +92,21 @@ cors:
 # ── Rate Limiting ────────────────────────────────────────────
 rate-limit:
   requests-per-minute: ${RATE_LIMIT_RPM:60}
+  login-attempts-per-minute: ${LOGIN_RATE_LIMIT_RPM:10}
+  diagnosis-requests-per-hour: ${DIAGNOSIS_RATE_LIMIT_RPH:5}
+
+security:
+  # X-Forwarded-For는 여기에 명시한 reverse proxy에서 온 요청에만 신뢰한다.
+  trusted-proxies: ${TRUSTED_PROXY_IPS:}
 
 # ── Gemini AI 진단 (Phase 9) ───────────────────────────────────
 gemini:
   api-key: ${GEMINI_API_KEY:}
   model: ${GEMINI_MODEL:gemini-2.0-flash}
+  cache-ttl-ms: ${GEMINI_CACHE_TTL_MS:300000}
+  max-concurrent-calls: ${GEMINI_MAX_CONCURRENT_CALLS:4}
+  circuit-failure-threshold: ${GEMINI_CIRCUIT_FAILURE_THRESHOLD:3}
+  circuit-open-ms: ${GEMINI_CIRCUIT_OPEN_MS:60000}
 
 # ── Server ───────────────────────────────────────────────────
 server:

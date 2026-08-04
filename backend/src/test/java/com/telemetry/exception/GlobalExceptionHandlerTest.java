@@ -27,12 +27,23 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
-    @DisplayName("IllegalStateException → 404")
-    void handleIllegalState_404() {
+    @DisplayName("ResourceNotFoundException → 404")
+    void handleResourceNotFound_404() {
         ResponseEntity<ErrorResponse> response =
-            handler.handleIllegalState(new IllegalStateException("데이터 없음"));
+            handler.handleResourceNotFound(new ResourceNotFoundException("데이터 없음"));
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertThat(response.getBody().getCode()).isEqualTo("NOT_FOUND");
+    }
+
+    @Test
+    @DisplayName("ResourceConflictException → 409")
+    void handleResourceConflict_409() {
+        ResponseEntity<ErrorResponse> response =
+            handler.handleResourceConflict(new ResourceConflictException("중복 데이터"));
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(response.getBody().getCode()).isEqualTo("CONFLICT");
     }
 
     @Test

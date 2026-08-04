@@ -43,6 +43,7 @@ dependencies {
     // ── PostgreSQL + JPA ──────────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
 
     // ── Redis (Rate Limiting) ─────────────────────────────────
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'

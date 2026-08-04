@@ -9,6 +9,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
+import hashlib
 from anomaly_detector import should_commit, send_to_dlq, process, DLQ_TOPIC, PartitionedMLDetectors, ml_state_key
 from ml_detector import MLAnomalyDetector
 
@@ -121,12 +122,12 @@ class TestSendToDlq:
         assert producer.sent == [(DLQ_TOPIC, b"SIM-001", b'{"not":"valid json"')]
         assert producer.flushed is True
 
-    def test_DLQ_전송자체가_실패해도_예외를_밖으로_던지지_않음(self):
-        producer = FakeProducer(send_exc=RuntimeError("broker down"))
+    def test_DLQ_future가_실패하면_offset_커밋을_막도록_예외를_전파(self):
+        producer = FakeProducer(future_exc=RuntimeError("broker down"))
         msg = FakeMessage()
 
-        # 여기서 예외가 올라오면 메인 루프 전체가 죽는다 — 로그만 남기고 조용히 삼켜야 한다.
-        send_to_dlq(producer, msg)
+        with pytest.raises(RuntimeError):
+            send_to_dlq(producer, msg)
 
 
 # ── process(): 발행 실패가 호출자에게 전파되는지 ───────────────────
@@ -149,6 +150,12 @@ class TestProcessPropagatesPublishFailure:
 
         assert len(producer.sent) == 1
         assert producer.flushed is True
+        payload = producer.sent[0][2]
+        event_key = "|".join([
+            payload["vehicle_id"], payload["timestamp"], payload["anomaly_type"],
+            payload["field"], payload["detector"]
+        ])
+        assert payload["event_id"] == hashlib.sha256(event_key.encode("utf-8")).hexdigest()
 
     def test_발행_future가_실패하면_process가_예외를_전파(self):
         # producer.send() 자체는 성공(버퍼에 큐잉)하지만, 나중에 브로커 응답에서 실패한

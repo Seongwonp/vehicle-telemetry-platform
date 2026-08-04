@@ -160,13 +160,14 @@ vehicle-telemetry-platform/
 | 5 | 모니터링 & 배포 (Grafana + Prometheus + Docker Compose) | 완료 |
 | 6 | 버그 픽스 (Actuator 인증 우회/정보 노출, 예외 처리 보강) | 완료 |
 | 7 | Refresh Token + 로그아웃 무효화 (Redis 기반) | 완료 |
-| 8 | 데이터 파이프라인 안정성 (InfluxDB 배치 쓰기, Kafka DLQ) | 완료 |
+| 8 | 데이터 파이프라인 안정성 (InfluxDB 동기 쓰기-수동 offset 연계, Kafka DLQ) | 완료 |
 | 9 | AI 진단 (Gemini API) | 완료 |
-| 10 | MQTT mTLS 실제 활성화 (백엔드/시뮬레이터 클라이언트 코드, 기본값은 여전히 평문) | 완료 |
+| 10 | MQTT mTLS 실제 활성화 (기본 Compose는 8883/mTLS, 평문은 명시적 dev override만 허용) | 완료 |
 | 11 | Flutter 모바일 앱 연동 — 브라우저(Flutter Web)에서 API 호출을 허용하는 CORS 지원 추가 | 완료 |
 | 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 단일 인스턴스 lag 발산 문제에 Consumer Group 다중화 적용, 재검증에서 순발산 없음 확인(단, 동일 조건 A/B는 아직 — 향후 계획 참고) | 완료(검증 계속 진행 중) |
 | 13 | 이상 감지 서비스 처리 신뢰성 — 수동 커밋(개수/시간 배치) + DLQ(`vehicle-telemetry-anomaly-dlq`) 도입, 발행 실패도 처리 실패로 감지 | 완료 |
 | 14 | ML 이상 감지 다중 인스턴스 대응 — 슬라이딩 윈도우(버퍼 상한) + 주기적 재학습, 파티션 ID 기준 Redis 영속화로 재시작/리밸런싱 시 학습 상태 유지 | 완료 |
+| 15 | 보안/신뢰성 보강 — Flux 파라미터 바인딩, 신뢰 프록시, STOMP 구독 인가, mTLS 기본화, 로컬 Kafka spool, Flyway | 완료 |
 
 ---
 
@@ -176,9 +177,8 @@ vehicle-telemetry-platform/
 |------|------|
 | AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 (또는 Render 무료 티어) |
 | 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체. 도입 시 차량 소유자 검증(IDOR 차단)도 함께 필요 |
-| WebSocket 실시간 대시보드 | REST 폴링 → WebSocket 푸시로 전환해 지연 최소화 |
 | DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
-| MQTT 1883 포트 운영 차단 | mTLS 코드는 Phase 10에서 완료. 실제 운영 배포 시 인증서 발급 + 플래그 활성화 + 1883 차단은 배포 단계 작업 |
+| 차량별 MQTT 인증서/ACL 세분화 | 현재 mTLS/ACL은 기본 강제지만 backend와 simulator가 동일한 `vehicle-client` 인증서를 사용 — 운영에서는 차량별 identity로 분리 필요 |
 | InfluxDB 읽기 경로 개선 | REST 조회(`/latest`, `/telemetry`)가 InfluxDB 동시 쿼리 용량에 막혀 PostgreSQL 조회보다 최대 40배 느림 — 스케일링/캐싱/쿼리 최적화 필요 |
 | InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
 | kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |
@@ -186,7 +186,8 @@ vehicle-telemetry-platform/
 | DLQ 격리 메시지 재처리 | `vehicle-telemetry-anomaly-dlq`(Phase 13에서 추가)도 기존 DLQ들과 마찬가지로 격리까지만 하고 재처리 컨슈머는 없음 |
 | 이상 감지 웹훅 동기 호출 | `notifier.send_webhook`이 이상 감지마다 동기로 호출됨 — 느려지면 전체 처리량에 영향 줄 수 있어 비동기화/타임아웃 튜닝 검토 |
 
-> JWT 블랙리스트(로그아웃 무효화), InfluxDB 배치 쓰기, Kafka DLQ, MQTT mTLS 클라이언트 코드는 Phase 7~10에서 처리 완료.
+> Refresh Token은 Redis GETDEL 기반 rotation과 로그아웃 폐기를 지원한다. Access Token은 10분 만료의
+> stateless JWT이며 별도 jti 블랙리스트는 두지 않는다. 즉시 강제 로그아웃이 요구되면 jti 블랙리스트를 추가한다.
 
 ---
 
@@ -199,10 +200,10 @@ vehicle-telemetry-platform/
 | 단계 | 동작 |
 |------|------|
 | 장애 발생 | Spring Boot `TelemetryProducer`의 `kafkaTemplate.send()` 실패 |
-| 즉각 영향 | 차량 데이터가 InfluxDB/이상 감지로 전달되지 않음 |
+| 즉각 영향 | 차량 데이터가 즉시 InfluxDB/이상 감지로 전달되지 않음 |
 | MQTT 수신 | Mosquitto는 독립적으로 계속 동작. 데이터는 Spring Boot까지 도달 |
-| 복구 시 | Kafka 재시작 후 Spring Boot가 자동 재연결, 이후 수신된 데이터부터 정상 처리 |
-| 미구현 한계 | Kafka 다운 중 수신한 메시지는 유실됨. DLQ(Dead Letter Queue) 도입으로 해결 가능 |
+| 복구 시 | 전송 전 로컬 volume에 기록한 spool을 Kafka ACK 후 삭제하며, 재연결 시 보류 파일부터 재전송 |
+| 미구현 한계 | spool volume 자체가 손실되면 복구 불가. 운영에서는 디스크 사용량 경보와 HA 수집 계층 필요 |
 
 ### 시나리오 2 — Python 이상 감지 서비스 다운
 
@@ -231,10 +232,10 @@ vehicle-telemetry-platform/
 | 단계 | 동작 |
 |------|------|
 | 장애 발생 | InfluxDB 응답 불가 또는 쓰기 타임아웃 |
-| 동작 | `TelemetryRepository.save()` 에서 예외 발생 → `RuntimeException` 상위 전달 |
-| Kafka offset | 예외 발생 시 해당 메시지의 offset이 커밋되지 않음 → Kafka가 재처리 시도 |
-| 로그 | `[InfluxDB] 쓰기 실패 — vehicle={} timestamp={}` ERROR 레벨 기록 |
-| 미구현 한계 | 반복 실패 메시지가 무한 재처리될 수 있음. DLQ + 재처리 횟수 제한 필요 |
+| 동작 | 동기 `WriteApiBlocking` 실패를 listener가 잡아 원본을 DLQ로 발행 |
+| Kafka offset | InfluxDB 쓰기 또는 DLQ 발행 성공 뒤에만 수동 커밋. DLQ 발행도 실패하면 미커밋 |
+| 로그 | 저장 실패와 DLQ 실패를 서로 다른 ERROR 로그로 기록 |
+| 미구현 한계 | DLQ 자동 재처리 consumer와 재시도 횟수 정책은 아직 없음 |
 
 ### 시나리오 5 — Redis 다운 (Rate Limiting / BruteForce)
 

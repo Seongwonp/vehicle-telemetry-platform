@@ -18,6 +18,6 @@ public class LoginResponse {
     @Schema(description = "토큰 타입", example = "Bearer")
     private final String tokenType = "Bearer";
 
-    @Schema(description = "만료 시간 (ms)", example = "86400000")
+    @Schema(description = "만료 시간 (ms)", example = "600000")
     private final long expiresIn;
 }

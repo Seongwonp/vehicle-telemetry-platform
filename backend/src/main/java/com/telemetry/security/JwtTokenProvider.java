@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.time.Instant;
 
 @Slf4j
 @Component
@@ -53,6 +54,10 @@ public class JwtTokenProvider {
 
     public long getExpirationMs() {
         return expirationMs;
+    }
+
+    public Instant getExpiration(String token) {
+        return parseClaims(token).getExpiration().toInstant();
     }
 
     private Claims parseClaims(String token) {

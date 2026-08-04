@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   # ════════════════════════════════════════════════════════════
@@ -10,10 +8,10 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: telemetry-mosquitto
     ports:
-      - "${MQTT_PORT:-1883}:1883"       # 평문 MQTT (개발용)
-      - "${MQTT_TLS_PORT:-8883}:8883"   # TLS (Phase 4에서 활성화)
+      - "${MQTT_TLS_PORT:-8883}:8883"
     volumes:
       - ./broker/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./broker/config/acl:/mosquitto/config/acl:ro
       - ./broker/certs:/mosquitto/certs:ro
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
@@ -41,16 +39,13 @@ services:
     ports:
       - "${SERVER_PORT:-8080}:8080"
     volumes:
-      # Phase 10 mTLS 활성화 시(MQTT_TLS_ENABLED=true) client.p12/truststore.p12를 읽기 위함.
-      # 평문(기본값) 모드에서는 사용되지 않는다.
+      # 기본 mTLS 연결에 필요한 client.p12/truststore.p12.
       - ./broker/certs:/app/certs:ro
+      - backend-spool:/app/data/telemetry-spool
     environment:
       MQTT_HOST: mosquitto
-      # 컨테이너 간 통신은 항상 mosquitto:1883/8883 고정 포트를 쓴다 — 위 mosquitto 서비스의
-      # 호스트 포트 매핑(${MQTT_PORT:-1883})과는 별개다. mTLS 테스트 시엔 이 값을 8883으로 바꾸고
-      # MQTT_TLS_ENABLED도 true로 같이 바꿔야 한다(docker-compose엔 조건부 기본값 문법이 없음).
-      MQTT_PORT: 1883
-      MQTT_TLS_ENABLED: ${MQTT_TLS_ENABLED:-false}
+      MQTT_PORT: 8883
+      MQTT_TLS_ENABLED: "true"
       MQTT_TLS_KEYSTORE_PATH: /app/certs/client.p12
       MQTT_TLS_TRUSTSTORE_PATH: /app/certs/truststore.p12
       MQTT_TLS_STORE_PASSWORD: ${MQTT_TLS_STORE_PASSWORD:-changeit}
@@ -69,13 +64,23 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
       SERVER_PORT: 8080
       JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-600000}
       # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값들 — 부하 테스트/코드 점검 중 발견해 추가.
       RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
+      LOGIN_RATE_LIMIT_RPM: ${LOGIN_RATE_LIMIT_RPM:-10}
+      DIAGNOSIS_RATE_LIMIT_RPH: ${DIAGNOSIS_RATE_LIMIT_RPH:-5}
+      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-}
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-changeme}
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+      GEMINI_CACHE_TTL_MS: ${GEMINI_CACHE_TTL_MS:-300000}
+      GEMINI_MAX_CONCURRENT_CALLS: ${GEMINI_MAX_CONCURRENT_CALLS:-4}
+      GEMINI_CIRCUIT_FAILURE_THRESHOLD: ${GEMINI_CIRCUIT_FAILURE_THRESHOLD:-3}
+      GEMINI_CIRCUIT_OPEN_MS: ${GEMINI_CIRCUIT_OPEN_MS:-60000}
+      TELEMETRY_SPOOL_PATH: /app/data/telemetry-spool
+      TELEMETRY_SPOOL_RETRY_MS: ${TELEMETRY_SPOOL_RETRY_MS:-5000}
     networks:
       - telemetry-net
     restart: unless-stopped
@@ -127,11 +132,10 @@ services:
       - ./broker/certs:/app/certs:ro
     environment:
       MQTT_HOST: mosquitto
-      # 컨테이너 간 통신 고정 포트. mTLS 테스트 시 8883 + 아래 TLS_* 값도 함께 설정해야 한다.
-      MQTT_PORT: 1883
-      TLS_CA_CERT: ${SIMULATOR_TLS_CA_CERT:-}
-      TLS_CLIENT_CERT: ${SIMULATOR_TLS_CLIENT_CERT:-}
-      TLS_CLIENT_KEY: ${SIMULATOR_TLS_CLIENT_KEY:-}
+      MQTT_PORT: 8883
+      TLS_CA_CERT: ${SIMULATOR_TLS_CA_CERT:-/app/certs/ca.crt}
+      TLS_CLIENT_CERT: ${SIMULATOR_TLS_CLIENT_CERT:-/app/certs/client.crt}
+      TLS_CLIENT_KEY: ${SIMULATOR_TLS_CLIENT_KEY:-/app/certs/client.key}
       VEHICLE_COUNT: ${VEHICLE_COUNT:-3}
       PUBLISH_INTERVAL: ${PUBLISH_INTERVAL:-1.0}
       ANOMALY_RATE: ${ANOMALY_RATE:-0.02}
@@ -347,3 +351,4 @@ volumes:
   redis-data:
   prometheus-data:
   grafana-data:
+  backend-spool:

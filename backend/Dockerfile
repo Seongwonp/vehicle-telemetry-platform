@@ -9,7 +9,7 @@ COPY gradle ./gradle
 RUN gradle dependencies --no-daemon
 
 COPY src ./src
-RUN gradle bootJar --no-daemon
+RUN gradle test bootJar --no-daemon
 
 # ── 2단계: 실행 이미지 (경량) ────────────────────────────────────
 # eclipse-temurin:17-jre-alpine은 arm64 매니페스트가 없어 Apple Silicon 등에서 빌드가 깨진다.

@@ -10,7 +10,8 @@ import java.time.Instant;
 @Entity
 @Table(name = "anomaly_alerts", indexes = {
     @Index(name = "idx_anomaly_vehicle_id", columnList = "vehicle_id"),
-    @Index(name = "idx_anomaly_detected_at", columnList = "detected_at")
+    @Index(name = "idx_anomaly_detected_at", columnList = "detected_at"),
+    @Index(name = "idx_anomaly_vehicle_detected_at", columnList = "vehicle_id, detected_at")
 })
 @Getter @Setter
 @NoArgsConstructor
@@ -19,6 +20,9 @@ public class AnomalyAlert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "event_id", nullable = false, unique = true, length = 64)
+    private String eventId;
 
     @Column(name = "vehicle_id", nullable = false, length = 50)
     private String vehicleId;

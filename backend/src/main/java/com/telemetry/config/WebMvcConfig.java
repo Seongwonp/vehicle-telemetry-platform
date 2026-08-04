@@ -10,11 +10,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final RateLimitInterceptor rateLimitInterceptor;
+    private final DiagnosisRateLimitInterceptor diagnosisRateLimitInterceptor;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(rateLimitInterceptor)
             .addPathPatterns("/api/**")
             .excludePathPatterns("/api/auth/login"); // 로그인은 Rate Limit 제외
+        registry.addInterceptor(diagnosisRateLimitInterceptor)
+            .addPathPatterns("/api/vehicles/*/diagnosis");
     }
 }

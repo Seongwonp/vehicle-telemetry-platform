@@ -3,6 +3,8 @@ package com.telemetry.service;
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
+import com.telemetry.exception.ResourceConflictException;
+import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +26,7 @@ public class VehicleService {
     @Transactional
     public VehicleResponse register(VehicleRegisterRequest request) {
         if (vehicleRepository.existsByVehicleId(request.getVehicleId())) {
-            throw new IllegalArgumentException("이미 등록된 차량 ID입니다: " + request.getVehicleId());
+            throw new ResourceConflictException("이미 등록된 차량 ID입니다: " + request.getVehicleId());
         }
         Vehicle vehicle = new Vehicle(request.getVehicleId(), request.getName(), request.getOwner());
         Vehicle saved = vehicleRepository.save(vehicle);
@@ -41,14 +43,14 @@ public class VehicleService {
 
     public VehicleResponse findByVehicleId(String vehicleId) {
         Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId)
-            .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 차량입니다: " + vehicleId));
+            .orElseThrow(() -> new ResourceNotFoundException("등록되지 않은 차량입니다: " + vehicleId));
         return new VehicleResponse(vehicle);
     }
 
     @Transactional
     public void deactivate(String vehicleId) {
         Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId)
-            .orElseThrow(() -> new IllegalArgumentException("등록되지 않은 차량입니다: " + vehicleId));
+            .orElseThrow(() -> new ResourceNotFoundException("등록되지 않은 차량입니다: " + vehicleId));
 
         // 물리 삭제 대신 active 플래그를 내린다.
         // 차량 ID는 InfluxDB 텔레메트리 데이터와 연결되어 있어 행을 지우면 이력 조회가 깨질 수 있다.

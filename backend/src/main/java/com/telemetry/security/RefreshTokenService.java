@@ -38,12 +38,12 @@ public class RefreshTokenService {
      */
     public Optional<String> rotate(String token) {
         String key = PREFIX + token;
-        String username = redisTemplate.opsForValue().get(key);
+        // Redis GETDEL: 검증과 폐기를 단일 원자 연산으로 수행해 동시 재사용을 막는다.
+        String username = redisTemplate.opsForValue().getAndDelete(key);
         if (username == null) {
             log.warn("[RefreshToken] 유효하지 않거나 만료된 토큰으로 재발급 시도");
             return Optional.empty();
         }
-        redisTemplate.delete(key);
         return Optional.of(username);
     }
 

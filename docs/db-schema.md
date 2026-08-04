@@ -43,6 +43,7 @@ Python anomaly-detector가 발행한 이상 감지 이벤트를 Spring Boot Kafk
 | 컬럼 | 타입 | 제약 | 설명 |
 |------|------|------|------|
 | `id` | BIGINT | PK, AUTO_INCREMENT | 내부 식별자 |
+| `event_id` | VARCHAR(64) | UNIQUE, NOT NULL | Kafka 재전달 중복 방지용 결정적 SHA-256 ID |
 | `vehicle_id` | VARCHAR(50) | NOT NULL, INDEX | 이상이 발생한 차량 ID |
 | `anomaly_type` | VARCHAR(255) | NOT NULL | 이상 유형 (예: `엔진 과열`, `RPM 과부하`) |
 | `field` | VARCHAR(50) | | 이상이 감지된 필드명 (예: `engine_temp`) |
@@ -56,6 +57,7 @@ Python anomaly-detector가 발행한 이상 감지 이벤트를 Spring Boot Kafk
 ```sql
 CREATE TABLE anomaly_alerts (
     id                BIGSERIAL PRIMARY KEY,
+    event_id          VARCHAR(64) NOT NULL UNIQUE,
     vehicle_id        VARCHAR(50)  NOT NULL,
     anomaly_type      VARCHAR(255) NOT NULL,
     field             VARCHAR(50),
@@ -69,11 +71,12 @@ CREATE TABLE anomaly_alerts (
 
 CREATE INDEX idx_anomaly_vehicle_id  ON anomaly_alerts (vehicle_id);
 CREATE INDEX idx_anomaly_detected_at ON anomaly_alerts (detected_at);
+CREATE INDEX idx_anomaly_vehicle_detected_at ON anomaly_alerts (vehicle_id, detected_at DESC);
 ```
 
 > **인덱스 선택 이유**: 대부분의 조회 패턴이 "특정 차량의 최근 N건" 형태이므로
-> `vehicle_id` 단독 인덱스와 `detected_at` 단독 인덱스로 커버한다.
-> 복합 인덱스(`vehicle_id, detected_at`)도 고려했으나 현재 데이터 규모에서는 단독으로 충분하다.
+> 복합 인덱스(`vehicle_id, detected_at DESC`)로 차량 필터와 최신순 정렬을 함께 처리한다.
+> 단독 인덱스는 전체 차량 기준 조회와 기존 운영 쿼리 호환을 위해 유지한다.
 
 ---
 

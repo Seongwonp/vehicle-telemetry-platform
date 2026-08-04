@@ -18,10 +18,10 @@
 | 22 | TCP | 내 IP만 | SSH |
 | 8080 | TCP | 0.0.0.0/0 | Spring Boot API |
 | 3000 | TCP | 0.0.0.0/0 | Grafana |
-| 1883 | TCP | 차량/시뮬레이터 IP | MQTT (개발) |
 | 8883 | TCP | 차량/시뮬레이터 IP | MQTT TLS (운영) |
 
-> 운영 배포 시 1883 포트는 닫고 8883만 열기
+> 기본 Compose는 8883/mTLS만 노출한다. 1883 평문은 `docker-compose.dev.yml`을 명시한
+> 로컬 개발 프로파일에서만 `127.0.0.1`에 바인딩된다.
 
 > `/actuator/prometheus`는 애플리케이션 레벨에선 인증 없이 열려있다(Prometheus 스크레이핑용, `SecurityConfig.java`).
 > 운영 배포 시엔 보안그룹/리버스프록시로 `/actuator/**` 전체를 내부망(모니터링 서버)에서만 접근 가능하도록 제한할 것.
@@ -63,11 +63,14 @@ cd vehicle-telemetry-platform
 cp .env.example .env
 nano .env
 
-# (선택) MQTT TLS 인증서 생성
+# MQTT TLS 인증서 생성 (기본 프로파일 필수)
 cd broker/certs && ./generate-certs.sh && cd ../..
 
 # 전체 스택 실행
 docker compose up -d
+
+# 인증서 없는 로컬 평문 개발만 필요한 경우
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 
 # 상태 확인
 docker compose ps

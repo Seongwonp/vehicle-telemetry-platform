@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
+import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.service.VehicleService;
+import com.telemetry.security.ClientIpResolver;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -48,10 +50,14 @@ class VehicleControllerTest {
     @MockBean
     private ValueOperations<String, String> valueOperations;
 
+    @MockBean
+    private ClientIpResolver clientIpResolver;
+
     @BeforeEach
     void setUpRateLimit() {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.increment(anyString())).willReturn(1L);
+        given(clientIpResolver.resolve(any())).willReturn("127.0.0.1");
     }
 
     @Test
@@ -114,13 +120,13 @@ class VehicleControllerTest {
 
     @Test
     @WithMockUser(roles = "ADMIN")
-    @DisplayName("존재하지 않는 차량 조회 → 400 Bad Request")
-    void findOne_없는차량_400() throws Exception {
+    @DisplayName("존재하지 않는 차량 조회 → 404 Not Found")
+    void findOne_없는차량_404() throws Exception {
         given(vehicleService.findByVehicleId("UNKNOWN"))
-            .willThrow(new IllegalArgumentException("등록되지 않은 차량입니다: UNKNOWN"));
+            .willThrow(new ResourceNotFoundException("등록되지 않은 차량입니다: UNKNOWN"));
 
         mockMvc.perform(get("/api/vehicles/UNKNOWN"))
-            .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.code").value("NOT_FOUND"));
     }
 }

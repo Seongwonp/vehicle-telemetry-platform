@@ -3,6 +3,8 @@ package com.telemetry.service;
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
+import com.telemetry.exception.ResourceConflictException;
+import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.VehicleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -59,7 +61,7 @@ class VehicleServiceTest {
 
         // when & then
         assertThatThrownBy(() -> vehicleService.register(request))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(ResourceConflictException.class)
             .hasMessageContaining("이미 등록된 차량 ID");
     }
 
@@ -88,7 +90,7 @@ class VehicleServiceTest {
 
         // when & then
         assertThatThrownBy(() -> vehicleService.findByVehicleId("UNKNOWN"))
-            .isInstanceOf(IllegalArgumentException.class)
+            .isInstanceOf(ResourceNotFoundException.class)
             .hasMessageContaining("등록되지 않은 차량");
     }
 

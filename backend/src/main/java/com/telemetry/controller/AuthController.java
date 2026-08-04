@@ -5,7 +5,9 @@ import com.telemetry.dto.request.RefreshRequest;
 import com.telemetry.dto.response.LoginResponse;
 import com.telemetry.exception.ErrorResponse;
 import com.telemetry.security.BruteForceDetector;
+import com.telemetry.security.ClientIpResolver;
 import com.telemetry.security.JwtTokenProvider;
+import com.telemetry.security.LoginRateLimiter;
 import com.telemetry.security.RefreshTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +35,8 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
     private final BruteForceDetector bruteForceDetector;
     private final RefreshTokenService refreshTokenService;
+    private final ClientIpResolver clientIpResolver;
+    private final LoginRateLimiter loginRateLimiter;
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "username/password로 JWT Access/Refresh 토큰 발급. 5회 실패 시 15분 IP 차단.")
@@ -40,7 +44,12 @@ public class AuthController {
         @Valid @RequestBody LoginRequest request,
         HttpServletRequest httpRequest
     ) {
-        String ip = resolveIp(httpRequest);
+        String ip = clientIpResolver.resolve(httpRequest);
+
+        if (!loginRateLimiter.tryAcquire(ip, request.getUsername())) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(new ErrorResponse("TOO_MANY_REQUESTS", "로그인 요청이 너무 많습니다"));
+        }
 
         if (bruteForceDetector.isBlocked(ip)) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
@@ -92,9 +101,4 @@ public class AuthController {
         return ResponseEntity.noContent().build();
     }
 
-    private String resolveIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) return forwarded.split(",")[0].trim();
-        return request.getRemoteAddr();
-    }
 }

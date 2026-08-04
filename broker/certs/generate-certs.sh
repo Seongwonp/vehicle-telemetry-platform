@@ -88,6 +88,5 @@ echo "================================================================"
 echo "  생성 완료!"
 ls -lh *.crt *.key *.p12 2>/dev/null
 echo ""
-echo "  다음 단계: mosquitto.conf 의 TLS 섹션 주석 해제"
-echo "  (broker/config/mosquitto.conf 참고)"
+echo "  다음 단계: docker compose up -d (기본 프로파일은 mTLS 강제)"
 echo "================================================================"

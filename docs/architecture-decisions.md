@@ -134,6 +134,11 @@
 
 ## ADR-011: InfluxDB 비동기 배치 쓰기(WriteApi)로 전환
 
+> **2026-08 보안/신뢰성 리뷰로 대체됨**: 비동기 `WriteApi`는 실제 저장 실패 뒤에도 Kafka
+> listener가 정상 반환해 offset이 커밋되는 조용한 유실 창구가 있었다. 현재 구현은
+> `WriteApiBlocking`으로 실제 저장 성공을 확인하고 `MANUAL_IMMEDIATE` ack를 수행한다.
+> 처리량보다 저장 확인 가능성을 우선한 결정이며, 재배치 최적화는 영속 outbox 도입 후 검토한다.
+
 **결정**: `TelemetryRepository`가 `WriteApiBlocking`(단건 동기 쓰기) 대신
 `WriteApi`(비동기 배치, `batchSize=500`, `flushInterval=1000ms`)를 사용하도록 변경.
 

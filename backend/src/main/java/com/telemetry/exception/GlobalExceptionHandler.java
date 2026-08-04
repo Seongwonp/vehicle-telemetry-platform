@@ -1,5 +1,6 @@
 package com.telemetry.exception;
 
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -11,7 +12,6 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,10 +25,16 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("BAD_REQUEST", e.getMessage()));
     }
 
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ErrorResponse> handleIllegalState(IllegalStateException e) {
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
             .body(new ErrorResponse("NOT_FOUND", e.getMessage()));
+    }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<ErrorResponse> handleResourceConflict(ResourceConflictException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(new ErrorResponse("CONFLICT", e.getMessage()));
     }
 
     @ExceptionHandler(BadCredentialsException.class)
@@ -67,10 +73,23 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("VALIDATION_FAILED", errors.toString()));
     }
 
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException e) {
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse("VALIDATION_FAILED", "요청 파라미터 범위가 올바르지 않습니다"));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception e) {
         log.error("처리되지 않은 예외", e);
         return ResponseEntity.internalServerError()
             .body(new ErrorResponse("INTERNAL_ERROR", "서버 내부 오류가 발생했습니다"));
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<ErrorResponse> handleServiceUnavailable(ServiceUnavailableException e) {
+        log.warn("외부 서비스 일시 사용 불가: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+            .body(new ErrorResponse("SERVICE_UNAVAILABLE", e.getMessage()));
     }
 }

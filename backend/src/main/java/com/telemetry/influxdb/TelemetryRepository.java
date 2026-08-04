@@ -1,6 +1,6 @@
 package com.telemetry.influxdb;
 
-import com.influxdb.client.WriteApi;
+import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.telemetry.domain.VehicleTelemetry;
@@ -13,14 +13,9 @@ import java.time.Instant;
 @RequiredArgsConstructor
 public class TelemetryRepository {
 
-    private final WriteApi writeApi;
+    private final WriteApiBlocking writeApi;
 
-    /**
-     * WriteApi(비동기 배치)에 포인트를 큐잉한다. 포인트 구성 중 타임스탬프 파싱 실패 등은
-     * 이 메서드 호출 시점에 즉시 예외로 던져지지만, 실제 InfluxDB 전송/쓰기 실패는
-     * 백그라운드에서 비동기로 일어나며 InfluxDbConfig에 등록한 WriteErrorEvent 리스너가
-     * 처리한다 — 이 메서드는 전송 성공을 보장하지 않는다.
-     */
+    /** 실제 InfluxDB 응답까지 기다린다. 정상 반환은 Kafka offset 커밋의 전제 조건이다. */
     public void save(VehicleTelemetry telemetry) {
         // vehicle_id는 tag로 설정한다. InfluxDB에서 tag는 자동으로 인덱싱되어
         // "특정 차량의 데이터만 조회"하는 쿼리가 field 필터보다 훨씬 빠르다.
