@@ -54,16 +54,20 @@ public class DiagnosisService {
         List<AnomalyResponse> anomalies = anomalyService.getRecent(vehicleId, ANOMALY_SAMPLE_SIZE);
 
         String prompt = buildPrompt(vehicleId, recent, anomalies);
-        String diagnosisText = callGemini(prompt);
+        GeminiDiagnosisResult result = callGemini(prompt);
 
-        return new DiagnosisResponse(diagnosisText, recent.size());
+        return new DiagnosisResponse(result.grade(), result.score(), result.diagnosis(), recent.size());
+    }
+
+    private record GeminiDiagnosisResult(String grade, int score, String diagnosis) {
     }
 
     private String buildPrompt(String vehicleId, List<TelemetryResponse> recent, List<AnomalyResponse> anomalies) {
         TelemetryResponse latest = recent.get(0);
         StringBuilder sb = new StringBuilder();
         sb.append("당신은 자동차 정비 전문가입니다. 아래 차량 센서 데이터를 보고 현재 상태를 진단하고, ")
-          .append("이상 징후가 있다면 원인 추정과 조치 방법을 한국어로 간결하게 설명하세요.\n\n");
+          .append("이상 징후가 있다면 원인 추정과 조치 방법을 한국어로 간결하게 설명하세요. ")
+          .append("또한 차량의 전반적 상태를 A(매우 양호)~F(즉시 정비 필요) 등급과 0~100점 점수로 함께 평가하세요.\n\n");
         sb.append("차량 ID: ").append(vehicleId).append('\n');
         sb.append("최신 센서값 — 속도: ").append(latest.getSpeed()).append("km/h, RPM: ").append(latest.getRpm())
           .append(", 엔진온도: ").append(latest.getEngineTemp()).append("°C, 배터리전압: ")
@@ -84,10 +88,24 @@ public class DiagnosisService {
         return sb.toString();
     }
 
-    private String callGemini(String prompt) {
+    private static final Map<String, Object> RESPONSE_SCHEMA = Map.of(
+        "type", "OBJECT",
+        "properties", Map.of(
+            "grade", Map.of("type", "STRING", "enum", List.of("A", "B", "C", "D", "E", "F")),
+            "score", Map.of("type", "INTEGER"),
+            "diagnosis", Map.of("type", "STRING")
+        ),
+        "required", List.of("grade", "score", "diagnosis")
+    );
+
+    private GeminiDiagnosisResult callGemini(String prompt) {
         try {
             Map<String, Object> requestBody = Map.of(
-                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt))))
+                "contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))),
+                "generationConfig", Map.of(
+                    "responseMimeType", "application/json",
+                    "responseSchema", RESPONSE_SCHEMA
+                )
             );
 
             URI uri = URI.create(
@@ -116,7 +134,17 @@ public class DiagnosisService {
                 log.error("[Gemini] 응답 파싱 실패 body={}", response.body());
                 throw new RuntimeException("AI 진단 응답을 해석할 수 없습니다");
             }
-            return textNode.asText();
+
+            // responseSchema 지정 시 text 필드 안에 JSON 문자열이 들어온다 (JSON-in-JSON).
+            JsonNode structured = objectMapper.readTree(textNode.asText());
+            String grade = structured.path("grade").asText("C");
+            int score = structured.path("score").asInt(50);
+            String diagnosisText = structured.path("diagnosis").asText();
+            if (diagnosisText.isBlank()) {
+                log.error("[Gemini] 구조화 응답에 diagnosis 누락 body={}", response.body());
+                throw new RuntimeException("AI 진단 응답을 해석할 수 없습니다");
+            }
+            return new GeminiDiagnosisResult(grade, score, diagnosisText);
 
         } catch (IOException e) {
             log.error("[Gemini] 호출 중 오류", e);
