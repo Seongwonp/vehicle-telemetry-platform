@@ -71,6 +71,9 @@ public class SecurityConfig {
             // ── 엔드포인트 인가 ─────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                // WebSocket 핸드셰이크(HTTP 업그레이드) 자체는 열어두고, 실제 인증은
+                // STOMP CONNECT 프레임에서 WebSocketConfig의 인터셉터가 검사한다.
+                .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 // /actuator/prometheus는 Prometheus 스크레이핑용 — 별도 인증 없이 접근해야 정상 수집됨.
                 // 운영 배포 시엔 애플리케이션 레벨 인증 대신 보안그룹/리버스프록시로 내부망만 접근 허용해야 한다.

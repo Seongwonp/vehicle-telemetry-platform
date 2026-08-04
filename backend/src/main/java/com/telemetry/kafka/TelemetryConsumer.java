@@ -3,6 +3,9 @@ package com.telemetry.kafka;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.domain.VehicleTelemetry;
+import com.telemetry.dto.response.AnomalyResponse;
+import com.telemetry.dto.response.TelemetryResponse;
+import com.telemetry.entity.AnomalyAlert;
 import com.telemetry.influxdb.TelemetryRepository;
 import com.telemetry.service.AnomalyService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -26,6 +30,7 @@ public class TelemetryConsumer {
     private final AnomalyService anomalyService;
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final SimpMessagingTemplate messagingTemplate;
 
     /**
      * Consumer 그룹을 두 개로 분리한 이유:
@@ -45,6 +50,7 @@ public class TelemetryConsumer {
                 telemetry.getVehicleId(),
                 record.partition(),
                 record.offset());
+            broadcastTelemetry(telemetry);
         } catch (Exception e) {
             // 역직렬화 실패 또는 포인트 구성 실패(예: 잘못된 timestamp 형식) — DLQ로 옮겨 유실 없이 격리한다
             log.error("[Kafka→InfluxDB] 저장 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
@@ -62,15 +68,39 @@ public class TelemetryConsumer {
             Map<String, Object> payload = objectMapper.readValue(
                 record.value(), new TypeReference<>() {}
             );
-            anomalyService.save(payload);
+            AnomalyAlert saved = anomalyService.save(payload);
             log.debug("[Kafka→Anomaly] 이상 이벤트 저장 완료 — vehicle={} offset={}",
                 record.key(), record.offset());
+            messagingTemplate.convertAndSend(
+                "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
+                new AnomalyResponse(saved)
+            );
         } catch (Exception e) {
             // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 — 알림 누락으로 이어질 수 있어 DLQ로 격리한다
             log.error("[Kafka→Anomaly] 저장 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
                 record.key(), record.offset(), record.partition(), e);
             sendToDlq(ANOMALY_DLQ_TOPIC, record);
         }
+    }
+
+    // REST의 TelemetryResponse와 동일한 JSON 형태로 만들어 보낸다 — 앱이
+    // 폴링 응답과 스트리밍 응답을 같은 모델(Telemetry.fromJson)로 파싱할 수 있도록.
+    private void broadcastTelemetry(VehicleTelemetry t) {
+        TelemetryResponse response = TelemetryResponse.builder()
+            .vehicleId(t.getVehicleId())
+            .timestamp(t.getTimestamp())
+            .speed(t.getSpeed())
+            .rpm((double) t.getRpm())
+            .engineTemp(t.getEngineTemp())
+            .throttlePosition(t.getThrottlePosition())
+            .fuelLevel(t.getFuelLevel())
+            .batteryVoltage(t.getBatteryVoltage())
+            .lat(t.getGps() != null ? t.getGps().getLat() : null)
+            .lng(t.getGps() != null ? t.getGps().getLng() : null)
+            .dtcCodes(t.getDtcCodes())
+            .build();
+        messagingTemplate.convertAndSend(
+            "/topic/vehicle/" + t.getVehicleId() + "/telemetry", response);
     }
 
     // 저장 실패한 원본 메시지를 DLQ 토픽으로 옮긴다. key(vehicle_id)를 그대로 유지해

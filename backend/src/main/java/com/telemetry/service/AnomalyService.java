@@ -22,7 +22,7 @@ public class AnomalyService {
     private final AnomalyAlertRepository anomalyAlertRepository;
 
     @Transactional
-    public void save(Map<String, Object> payload) {
+    public AnomalyAlert save(Map<String, Object> payload) {
         AnomalyAlert alert = new AnomalyAlert();
         alert.setVehicleId((String) payload.get("vehicle_id"));
         alert.setAnomalyType((String) payload.get("anomaly_type"));
@@ -40,9 +40,10 @@ public class AnomalyService {
         String detectedAt = (String) payload.get("detected_at");
         alert.setDetectedAt(detectedAt != null ? Instant.parse(detectedAt) : Instant.now());
 
-        anomalyAlertRepository.save(alert);
+        AnomalyAlert saved = anomalyAlertRepository.save(alert);
         log.info("[이상 저장] vehicle={} type={} severity={}",
             alert.getVehicleId(), alert.getAnomalyType(), alert.getSeverity());
+        return saved;
     }
 
     public List<AnomalyResponse> getRecent(String vehicleId, int limit) {

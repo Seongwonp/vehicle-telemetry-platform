@@ -27,6 +27,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
+    // ── WebSocket (STOMP) — 대시보드 실시간 스트리밍 ────────────
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
     // ── MQTT (Spring Integration) ─────────────────────────────
     implementation 'org.springframework.integration:spring-integration-mqtt'
     implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
