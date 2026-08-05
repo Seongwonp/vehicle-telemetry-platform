@@ -19,6 +19,8 @@ public interface AnomalyAlertRepository extends JpaRepository<AnomalyAlert, Long
 
     long countByVehicleId(String vehicleId);
 
+    long countByVehicleIdAndSeverity(String vehicleId, String severity);
+
     Optional<AnomalyAlert> findByEventId(String eventId);
 
     @Modifying

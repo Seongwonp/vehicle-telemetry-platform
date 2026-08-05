@@ -1,16 +1,19 @@
 package com.telemetry.service;
 
 import com.telemetry.dto.request.VehicleRegisterRequest;
+import com.telemetry.dto.response.TelemetryResponse;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
+import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.VehicleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
 
 @Slf4j
@@ -22,6 +25,8 @@ import java.util.List;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final AnomalyAlertRepository anomalyAlertRepository;
+    private final TelemetryQueryService telemetryQueryService;
 
     @Transactional
     public VehicleResponse register(VehicleRegisterRequest request) {
@@ -37,8 +42,30 @@ public class VehicleService {
 
     public List<VehicleResponse> findAll() {
         return vehicleRepository.findAllByActiveTrue().stream()
-            .map(VehicleResponse::new)
+            .map(this::withFleetSummary)
             .toList();
+    }
+
+    // 목록 화면에서 차량마다 대시보드에 들어가지 않고도 상태를 비교할 수 있게
+    // InfluxDB 최근 텔레메트리 + HIGH 이상 누적 건수를 함께 붙인다. 아직 데이터가
+    // 없는 차량(방금 등록됨)은 조용히 null/0으로 둔다 — 목록 조회 자체가
+    // 실패하면 안 되므로 텔레메트리 조회 실패를 전체 요청 실패로 전파하지 않는다.
+    private VehicleResponse withFleetSummary(Vehicle vehicle) {
+        VehicleResponse response = new VehicleResponse(vehicle);
+        response.setHighAnomalyCount(
+            anomalyAlertRepository.countByVehicleIdAndSeverity(vehicle.getVehicleId(), "HIGH"));
+        try {
+            TelemetryResponse latest = telemetryQueryService.getLatest(vehicle.getVehicleId());
+            response.setLatestSpeed(latest.getSpeed());
+            if (latest.getTimestamp() != null) {
+                response.setLastSeenAt(Instant.parse(latest.getTimestamp()));
+            }
+        } catch (ResourceNotFoundException e) {
+            // 텔레메트리 이력 없음 — 정상 케이스, null로 둔다.
+        } catch (Exception e) {
+            log.warn("[Fleet 요약] 텔레메트리 조회 실패 vehicle={}", vehicle.getVehicleId(), e);
+        }
+        return response;
     }
 
     public VehicleResponse findByVehicleId(String vehicleId) {

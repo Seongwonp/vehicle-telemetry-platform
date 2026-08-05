@@ -3,7 +3,9 @@ package com.telemetry.dto.response;
 import com.telemetry.entity.Vehicle;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Getter
@@ -27,6 +29,20 @@ public class VehicleResponse {
 
     @Schema(description = "등록 일시")
     private final LocalDateTime registeredAt;
+
+    // 목록 화면에서 차량별로 매번 대시보드에 들어가지 않고도 상태를 비교할 수
+    // 있게 하는 fleet 요약 필드 — 데이터가 없으면(방금 등록된 차량 등) null/0.
+    @Setter
+    @Schema(description = "마지막 텔레메트리 수신 시각 (수신 이력 없으면 null)")
+    private Instant lastSeenAt;
+
+    @Setter
+    @Schema(description = "최근 속도 (km/h, 수신 이력 없으면 null)")
+    private Double latestSpeed;
+
+    @Setter
+    @Schema(description = "HIGH 심각도 이상 이벤트 누적 건수")
+    private long highAnomalyCount;
 
     public VehicleResponse(Vehicle vehicle) {
         this.id = vehicle.getId();

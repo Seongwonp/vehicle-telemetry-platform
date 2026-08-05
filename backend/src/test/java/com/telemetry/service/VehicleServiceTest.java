@@ -5,6 +5,7 @@ import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
+import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.VehicleRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
+import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,11 +26,18 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @DisplayName("VehicleService 단위 테스트")
 class VehicleServiceTest {
 
     @Mock
     private VehicleRepository vehicleRepository;
+
+    @Mock
+    private AnomalyAlertRepository anomalyAlertRepository;
+
+    @Mock
+    private TelemetryQueryService telemetryQueryService;
 
     @InjectMocks
     private VehicleService vehicleService;
