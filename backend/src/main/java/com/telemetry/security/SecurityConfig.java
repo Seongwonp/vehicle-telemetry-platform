@@ -1,5 +1,6 @@
 package com.telemetry.security;
 
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -40,6 +41,21 @@ public class SecurityConfig {
 
     @Value("${cors.allowed-origin-patterns}")
     private String allowedOriginPatterns;
+
+    // application.yml의 기본값(ADMIN_PASSWORD 미설정 시 "changeme")이 그대로
+    // 배포되면 관리자 계정이 공개 기본 비밀번호로 열려버린다. .env 없이 실수로
+    // 띄우는 걸 배포 전에 바로 드러내기 위한 fail-fast 검증이다.
+    private static final String INSECURE_DEFAULT_PASSWORD = "changeme";
+
+    @PostConstruct
+    void validateAdminPassword() {
+        if (adminPassword == null || adminPassword.isBlank()
+            || adminPassword.equals(INSECURE_DEFAULT_PASSWORD)) {
+            throw new IllegalStateException(
+                "ADMIN_PASSWORD가 설정되지 않았거나 기본값(\"" + INSECURE_DEFAULT_PASSWORD + "\")입니다. "
+                    + ".env에 실제 비밀번호를 설정하세요.");
+        }
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {

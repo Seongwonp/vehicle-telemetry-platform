@@ -46,37 +46,48 @@ public class TelemetryQueryService {
     @Value("${influxdb.org}")
     private String influxOrg;
 
+    // fleet 요약/AI 진단이 "차량이 마지막으로 언제 신호를 보냈는지" 알아야
+    // 하는데, 대시보드 추이 조회(getRecent)는 OOM 가드로 최근 1시간만 본다.
+    // 1시간 넘게 정지한 차량은 실제로는 과거 데이터가 있어도 lastSeenAt이
+    // null로 나오던 버그가 있어, getLatest 전용으로 더 넓은 창을 둔다.
+    private static final int LATEST_LOOKBACK_HOURS = 24;
+
     public List<TelemetryResponse> getRecent(String vehicleId, int limit) {
         validateVehicleId(vehicleId);
-        // InfluxDB는 기본적으로 필드마다 별도 행을 반환한다.
-        // pivot으로 _time 기준으로 묶어야 한 타임스탬프 = 한 레코드 구조가 만들어진다.
-        // range(start: -1h)는 전체 스캔 방지용 가드 — 없으면 전 기간을 읽어 OOM 위험이 있다.
-        //
-        // vehicleId는 이미 validateVehicleId()로 ^[A-Z0-9-]{4,20}$ 형식만 통과시킨
-        // 뒤라 따옴표/역슬래시/개행 등 Flux 구문을 깨뜨릴 문자가 들어올 수 없어
-        // 문자열 삽입이 안전하다(injection 여지 없음). bucket도 애플리케이션
-        // 설정값이라 사용자 입력이 아니다. InfluxDB 2.7 서버가 클라이언트의
-        // 파라미터 바인딩(`params.xxx`) 기능을 지원하지 않아("undefined identifier
-        // params" 컴파일 에러로 모든 조회가 깨졌었다) 검증된 값 직접 삽입 방식으로 되돌렸다.
+        return getRecent(vehicleId, limit, 1);
+    }
+
+    public TelemetryResponse getLatest(String vehicleId) {
+        validateVehicleId(vehicleId);
+        List<TelemetryResponse> results = getRecent(vehicleId, 1, LATEST_LOOKBACK_HOURS);
+        if (results.isEmpty()) {
+            throw new ResourceNotFoundException("수신된 텔레메트리 데이터가 없습니다: " + vehicleId);
+        }
+        return results.get(0);
+    }
+
+    // InfluxDB는 기본적으로 필드마다 별도 행을 반환한다.
+    // pivot으로 _time 기준으로 묶어야 한 타임스탬프 = 한 레코드 구조가 만들어진다.
+    // range(start: -Nh)는 전체 스캔 방지용 가드 — 없으면 전 기간을 읽어 OOM 위험이 있다.
+    //
+    // vehicleId는 이미 validateVehicleId()로 ^[A-Z0-9-]{4,20}$ 형식만 통과시킨
+    // 뒤라 따옴표/역슬래시/개행 등 Flux 구문을 깨뜨릴 문자가 들어올 수 없어
+    // 문자열 삽입이 안전하다(injection 여지 없음). bucket도 애플리케이션
+    // 설정값이라 사용자 입력이 아니다. InfluxDB 2.7 서버가 클라이언트의
+    // 파라미터 바인딩(`params.xxx`) 기능을 지원하지 않아("undefined identifier
+    // params" 컴파일 에러로 모든 조회가 깨졌었다) 검증된 값 직접 삽입 방식으로 되돌렸다.
+    private List<TelemetryResponse> getRecent(String vehicleId, int limit, int rangeHours) {
         String flux = String.format("""
             from(bucket: "%s")
-              |> range(start: -1h)
+              |> range(start: -%dh)
               |> filter(fn: (r) => r._measurement == "vehicle_telemetry")
               |> filter(fn: (r) => r.vehicle_id == "%s")
               |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
               |> sort(columns: ["_time"], desc: true)
               |> limit(n: %d)
-            """, bucket, vehicleId, limit);
+            """, bucket, rangeHours, vehicleId, limit);
 
         return executeQuery(vehicleId, flux);
-    }
-
-    public TelemetryResponse getLatest(String vehicleId) {
-        List<TelemetryResponse> results = getRecent(vehicleId, 1);
-        if (results.isEmpty()) {
-            throw new ResourceNotFoundException("수신된 텔레메트리 데이터가 없습니다: " + vehicleId);
-        }
-        return results.get(0);
     }
 
     // 연속 수신 구간을 시간 간격(TRIP_GAP_THRESHOLD) 기준으로 트립으로 나눈다.
@@ -89,17 +100,23 @@ public class TelemetryQueryService {
             ? DEFAULT_TRIP_HOURS
             : Math.min(Math.max(hours, 1), MAX_TRIP_HOURS);
 
+        // 내림차순으로 최신 TRIP_POINT_LIMIT개를 먼저 자른 다음 Java에서 다시
+        // 오름차순으로 뒤집는다 — 오름차순 정렬 후 limit을 걸면 "가장 오래된"
+        // N개만 남아 최근 트립이 통째로 잘려나가는 버그가 있었다(6시간 구간을
+        // 1초 간격으로 수집하면 21,600개인데 10,000개로 자르면 앞쪽 10,000개만
+        // 남아 방금 끝난 트립이 사라졌다).
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -%dh)
               |> filter(fn: (r) => r._measurement == "vehicle_telemetry")
               |> filter(fn: (r) => r.vehicle_id == "%s")
               |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
-              |> sort(columns: ["_time"], desc: false)
+              |> sort(columns: ["_time"], desc: true)
               |> limit(n: %d)
             """, bucket, safeHours, vehicleId, TRIP_POINT_LIMIT);
 
         List<TelemetryResponse> points = executeQuery(vehicleId, flux);
+        Collections.reverse(points); // 세그멘테이션은 오름차순을 기대한다
 
         List<TripResponse> trips = segmentIntoTrips(points);
         Collections.reverse(trips); // 최신 트립이 먼저 오도록
