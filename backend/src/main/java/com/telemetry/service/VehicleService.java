@@ -2,6 +2,7 @@ package com.telemetry.service;
 
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.TelemetryResponse;
+import com.telemetry.dto.response.FleetSummaryStatus;
 import com.telemetry.dto.response.VehicleResponse;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceConflictException;
@@ -15,13 +16,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-// 클래스 레벨에 readOnly = true를 달아두면 조회 메서드에서 트랜잭션 생략 실수를 방지하고,
-// JPA 더티체킹을 건너뛰어 조회 성능이 약간 올라간다. 쓰기 메서드는 @Transactional로 오버라이드한다.
-@Transactional(readOnly = true)
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
@@ -41,8 +40,25 @@ public class VehicleService {
     }
 
     public List<VehicleResponse> findAll() {
-        return vehicleRepository.findAllByActiveTrue().stream()
-            .map(this::withFleetSummary)
+        // Spring Data repository 호출의 read-only 트랜잭션은 이 줄에서 종료된다.
+        // 이후 InfluxDB 외부 호출이 PostgreSQL 트랜잭션/커넥션을 붙잡지 않는다.
+        List<Vehicle> vehicles = vehicleRepository.findAllByActiveTrue();
+        List<String> vehicleIds = vehicles.stream().map(Vehicle::getVehicleId).toList();
+
+        Map<String, TelemetryResponse> latestByVehicle;
+        boolean telemetryAvailable = true;
+        try {
+            latestByVehicle = telemetryQueryService.getLatestByVehicleIds(vehicleIds);
+        } catch (Exception e) {
+            telemetryAvailable = false;
+            latestByVehicle = Map.of();
+            log.warn("[Fleet 요약] 일괄 텔레메트리 조회 실패 vehicles={}", vehicleIds.size(), e);
+        }
+
+        boolean finalTelemetryAvailable = telemetryAvailable;
+        Map<String, TelemetryResponse> finalLatestByVehicle = latestByVehicle;
+        return vehicles.stream()
+            .map(vehicle -> withFleetSummary(vehicle, finalLatestByVehicle, finalTelemetryAvailable))
             .toList();
     }
 
@@ -50,20 +66,25 @@ public class VehicleService {
     // InfluxDB 최근 텔레메트리 + HIGH 이상 누적 건수를 함께 붙인다. 아직 데이터가
     // 없는 차량(방금 등록됨)은 조용히 null/0으로 둔다 — 목록 조회 자체가
     // 실패하면 안 되므로 텔레메트리 조회 실패를 전체 요청 실패로 전파하지 않는다.
-    private VehicleResponse withFleetSummary(Vehicle vehicle) {
+    private VehicleResponse withFleetSummary(
+        Vehicle vehicle,
+        Map<String, TelemetryResponse> latestByVehicle,
+        boolean telemetryAvailable
+    ) {
         VehicleResponse response = new VehicleResponse(vehicle);
         response.setHighAnomalyCount(
             anomalyAlertRepository.countByVehicleIdAndSeverity(vehicle.getVehicleId(), "HIGH"));
-        try {
-            TelemetryResponse latest = telemetryQueryService.getLatest(vehicle.getVehicleId());
-            response.setLatestSpeed(latest.getSpeed());
-            if (latest.getTimestamp() != null) {
-                response.setLastSeenAt(Instant.parse(latest.getTimestamp()));
-            }
-        } catch (ResourceNotFoundException e) {
-            // 텔레메트리 이력 없음 — 정상 케이스, null로 둔다.
-        } catch (Exception e) {
-            log.warn("[Fleet 요약] 텔레메트리 조회 실패 vehicle={}", vehicle.getVehicleId(), e);
+        if (!telemetryAvailable) {
+            response.setSummaryStatus(FleetSummaryStatus.UNAVAILABLE);
+            return response;
+        }
+        TelemetryResponse latest = latestByVehicle.get(vehicle.getVehicleId());
+        if (latest == null) return response;
+
+        response.setSummaryStatus(FleetSummaryStatus.OK);
+        response.setLatestSpeed(latest.getSpeed());
+        if (latest.getTimestamp() != null) {
+            response.setLastSeenAt(Instant.parse(latest.getTimestamp()));
         }
         return response;
     }

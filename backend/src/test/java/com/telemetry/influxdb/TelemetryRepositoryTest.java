@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -18,10 +19,12 @@ import static org.mockito.Mockito.verify;
 class TelemetryRepositoryTest {
 
     @Mock WriteApiBlocking writeApi;
-    @InjectMocks TelemetryRepository repository;
+    TelemetryRepository repository;
 
     @Test
     void waitsForBlockingWriteAndPropagatesFailure() {
+        SimpleMeterRegistry meterRegistry = new SimpleMeterRegistry();
+        repository = new TelemetryRepository(writeApi, meterRegistry);
         VehicleTelemetry telemetry = telemetry();
         repository.save(telemetry);
         verify(writeApi).writePoint(any(Point.class));
@@ -30,6 +33,8 @@ class TelemetryRepositoryTest {
         assertThatThrownBy(() -> repository.save(telemetry))
             .isInstanceOf(RuntimeException.class)
             .hasMessageContaining("InfluxDB down");
+        org.assertj.core.api.Assertions.assertThat(
+            meterRegistry.get("telemetry.influx.write.failures").counter().count()).isEqualTo(1.0);
     }
 
     private VehicleTelemetry telemetry() {

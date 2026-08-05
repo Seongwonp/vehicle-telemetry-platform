@@ -4,16 +4,22 @@ import com.influxdb.client.WriteApiBlocking;
 import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.telemetry.domain.VehicleTelemetry;
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 
 @Repository
-@RequiredArgsConstructor
 public class TelemetryRepository {
 
     private final WriteApiBlocking writeApi;
+    private final Counter writeFailureCounter;
+
+    public TelemetryRepository(WriteApiBlocking writeApi, MeterRegistry meterRegistry) {
+        this.writeApi = writeApi;
+        this.writeFailureCounter = meterRegistry.counter("telemetry.influx.write.failures");
+    }
 
     /** 실제 InfluxDB 응답까지 기다린다. 정상 반환은 Kafka offset 커밋의 전제 조건이다. */
     public void save(VehicleTelemetry telemetry) {
@@ -44,6 +50,11 @@ public class TelemetryRepository {
             point.addField("dtc_codes", String.join(",", telemetry.getDtcCodes()));
         }
 
-        writeApi.writePoint(point);
+        try {
+            writeApi.writePoint(point);
+        } catch (RuntimeException e) {
+            writeFailureCounter.increment();
+            throw e;
+        }
     }
 }

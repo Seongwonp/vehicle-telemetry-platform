@@ -182,22 +182,21 @@ OkHttp Dispatcher의 호스트당 동시 요청 기본값 5를 200으로 확대�
 
 ---
 
-## ADR-013: MQTT mTLS — 기본값은 평문 유지, 플래그로 전환 + PKCS12 변환
+## ADR-013: MQTT mTLS — 운영 기본 강제, 명시적 개발 override + 인증서 identity 분리
 
-**결정**: `mqtt.tls.enabled`(기본 `false`)로 Spring Boot 백엔드의 MQTT 연결을 평문(`tcp://`)과
-mTLS(`ssl://`) 사이에서 전환한다. `generate-certs.sh`는 Mosquitto/Python 시뮬레이터용 PEM 인증서에
-더해 Spring Boot용 `client.p12`/`truststore.p12`도 함께 생성한다.
+**결정**: 기본 Compose는 8883/mTLS만 노출하고, 평문은 `docker-compose.dev.yml`을 명시한
+localhost 개발 환경에서만 허용한다. `generate-certs.sh`는 Spring Boot 구독자 전용
+`backend.p12`/`truststore.p12`와 CN=`vehicle_id`인 차량별 PEM 인증서를 생성한다.
 
-**기본값을 평문으로 유지하는 이유**:
-- mTLS를 기본으로 켜면 매번 인증서를 미리 생성해둬야 `docker-compose up -d`가 성공한다 —
-  포트폴리오 프로젝트에서 반복되는 로컬 개발 사이클에 불필요한 마찰을 추가한다.
-- 데모/보안 점검 시에만 플래그를 켜는 구조가 "준비는 됐지만 강제하지는 않는다"는 현재 프로젝트의
-  다른 보안 기능들(MQTT TLS 리스너 자체도 mosquitto.conf에서 기본 주석 처리)과 일관된다.
+**권한 경계**:
+- backend CN `telemetry-backend`는 `vehicle/telemetry/+` 읽기만 허용한다.
+- 차량 인증서 CN은 차량 ID와 같고 `vehicle/telemetry/%u` 쓰기만 허용한다.
+- 애플리케이션에서도 topic 차량 ID와 payload `vehicle_id` 일치를 다시 검증한다.
 
 **PKCS12 변환이 필요한 이유**:
 - `openssl req`가 만드는 개인키는 PKCS#1 PEM 형식인데, Java의 `KeyStore`/`KeyManagerFactory`는
   이를 직접 읽지 못한다(PKCS#8 또는 PKCS12만 지원).
-- `openssl pkcs12 -export`로 인증서+키를 묶어 `client.p12`로 만들면 표준 `javax.net.ssl` API로 로드 가능하다.
+- `openssl pkcs12 -export`로 backend 인증서+키를 `backend.p12`로 만들면 표준 `javax.net.ssl` API로 로드 가능하다.
 - 트러스트스토어(`truststore.p12`, CA 인증서만 포함)는 `openssl pkcs12 -export -nokeys`로 만들면
   인증서가 `trustedCertEntry` 속성 없이 저장되어 Java `KeyStore`가 0개 항목으로 인식하는 문제가 있었다.
   `keytool -importcert`로 만들면 이 속성이 올바르게 채워진다 — 그래서 트러스트스토어만 keytool로 생성한다.

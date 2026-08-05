@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+import io.micrometer.core.instrument.MeterRegistry;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,7 @@ public class TelemetryConsumer {
     private final ObjectMapper objectMapper;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final SimpMessagingTemplate messagingTemplate;
+    private final MeterRegistry meterRegistry;
 
     /**
      * Consumer 그룹을 두 개로 분리한 이유:
@@ -118,7 +120,9 @@ public class TelemetryConsumer {
     private void sendToDlq(String dlqTopic, ConsumerRecord<String, String> record) {
         try {
             kafkaTemplate.send(dlqTopic, record.key(), record.value()).get(10, TimeUnit.SECONDS);
+            meterRegistry.counter("telemetry.kafka.dlq.published", "topic", dlqTopic).increment();
         } catch (Exception e) {
+            meterRegistry.counter("telemetry.kafka.dlq.publish.failures", "topic", dlqTopic).increment();
             log.error("[DLQ] {} 전송 실패 — 원본 offset을 커밋하지 않음 key={}",
                 dlqTopic, record.key(), e);
             throw new IllegalStateException("DLQ 전송 실패", e);

@@ -6,6 +6,8 @@ import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.kafka.TelemetryProducer;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
@@ -15,25 +17,39 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
 public class MqttMessageHandler {
 
+    private static final Pattern TELEMETRY_TOPIC = Pattern.compile(
+        "^vehicle/telemetry/([A-Z0-9-]{4,20})$");
+
     private final TelemetryProducer telemetryProducer;
     private final ObjectMapper objectMapper;
     private final Counter receivedCounter;
     private final Counter invalidCounter;
+    private final Validator validator;
+    private final MqttInvalidMessagePublisher invalidMessagePublisher;
 
     public MqttMessageHandler(
         TelemetryProducer telemetryProducer,
         ObjectMapper objectMapper,
-        MeterRegistry meterRegistry
+        MeterRegistry meterRegistry,
+        Validator validator,
+        MqttInvalidMessagePublisher invalidMessagePublisher
     ) {
         this.telemetryProducer = telemetryProducer;
         this.objectMapper = objectMapper;
         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
+        this.validator = validator;
+        this.invalidMessagePublisher = invalidMessagePublisher;
     }
 
     // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
@@ -48,10 +64,23 @@ public class MqttMessageHandler {
         try {
             telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
         } catch (JsonProcessingException e) {
-            invalidCounter.increment();
-            // 원본 payload에는 위치·차량 정보가 포함될 수 있으므로 길이와 해시만 기록한다.
-            log.warn("[MQTT] 역직렬화 실패 — topic={} payloadLength={} payloadSha256={}",
-                topic, payload.length(), sha256(payload));
+            reject(topic, payload, "MALFORMED_JSON");
+            return;
+        }
+
+        Set<ConstraintViolation<VehicleTelemetry>> violations = validator.validate(telemetry);
+        Matcher topicMatcher = topic == null ? null : TELEMETRY_TOPIC.matcher(topic);
+        if (!violations.isEmpty()) {
+            reject(topic, payload, "PAYLOAD_VALIDATION_FAILED");
+            return;
+        }
+        if (!validTimestamp(telemetry.getTimestamp())) {
+            reject(topic, payload, "INVALID_TIMESTAMP");
+            return;
+        }
+        if (topicMatcher == null || !topicMatcher.matches()
+            || !topicMatcher.group(1).equals(telemetry.getVehicleId())) {
+            reject(topic, payload, "TOPIC_VEHICLE_MISMATCH");
             return;
         }
 
@@ -63,6 +92,22 @@ public class MqttMessageHandler {
 
         // spool/Kafka 전송 실패는 삼키지 않아 MQTT 어댑터가 실패를 인지하고 재처리할 수 있게 한다.
         telemetryProducer.send(telemetry);
+    }
+
+    private void reject(String topic, String payload, String reason) {
+        invalidCounter.increment();
+        log.warn("[MQTT] 메시지 거부 — topic={} reason={} payloadLength={} payloadSha256={}",
+            topic, reason, payload.length(), sha256(payload));
+        invalidMessagePublisher.publish(topic, payload, reason);
+    }
+
+    private boolean validTimestamp(String timestamp) {
+        try {
+            Instant.parse(timestamp);
+            return true;
+        } catch (DateTimeParseException | NullPointerException e) {
+            return false;
+        }
     }
 
     static String sha256(String payload) {

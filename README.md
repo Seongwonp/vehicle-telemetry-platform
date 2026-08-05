@@ -167,7 +167,7 @@ vehicle-telemetry-platform/
 | 12 | 이상 감지 서비스(Python) 다중 인스턴스화 — 단일 인스턴스 lag 발산 문제에 Consumer Group 다중화 적용, 재검증에서 순발산 없음 확인(단, 동일 조건 A/B는 아직 — 향후 계획 참고) | 완료(검증 계속 진행 중) |
 | 13 | 이상 감지 서비스 처리 신뢰성 — 수동 커밋(개수/시간 배치) + DLQ(`vehicle-telemetry-anomaly-dlq`) 도입, 발행 실패도 처리 실패로 감지 | 완료 |
 | 14 | ML 이상 감지 다중 인스턴스 대응 — 슬라이딩 윈도우(버퍼 상한) + 주기적 재학습, 파티션 ID 기준 Redis 영속화로 재시작/리밸런싱 시 학습 상태 유지 | 완료 |
-| 15 | 보안/신뢰성 보강 — Flux 파라미터 바인딩, 신뢰 프록시, STOMP 구독 인가, mTLS 기본화, 로컬 Kafka spool, Flyway | 완료 |
+| 15 | 보안/신뢰성 보강 — 검증된 ID 기반 Flux 생성+InfluxDB 2.7 계약 테스트, 신뢰 프록시, STOMP 구독 인가, 차량별 mTLS/ACL, 로컬 Kafka spool, Flyway | 완료 |
 
 ---
 
@@ -178,7 +178,7 @@ vehicle-telemetry-platform/
 | AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 (또는 Render 무료 티어) |
 | 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체. 도입 시 차량 소유자 검증(IDOR 차단)도 함께 필요 |
 | DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
-| 차량별 MQTT 인증서/ACL 세분화 | 현재 mTLS/ACL은 기본 강제지만 backend와 simulator가 동일한 `vehicle-client` 인증서를 사용 — 운영에서는 차량별 identity로 분리 필요 |
+| 차량별 MQTT 인증서/ACL 세분화 | 완료 — backend는 `telemetry-backend` 구독자 인증서, 차량은 CN=`vehicle_id` 인증서와 `vehicle/telemetry/%u` 발행 ACL 사용 |
 | InfluxDB 읽기 경로 개선 | REST 조회(`/latest`, `/telemetry`)가 InfluxDB 동시 쿼리 용량에 막혀 PostgreSQL 조회보다 최대 40배 느림 — 스케일링/캐싱/쿼리 최적화 필요 |
 | InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
 | kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |

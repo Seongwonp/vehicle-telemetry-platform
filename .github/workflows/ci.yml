@@ -1,0 +1,92 @@
+name: backend-infrastructure-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - name: Backend unit and Testcontainers contracts
+        working-directory: backend
+        run: ./gradlew test --no-daemon
+      - name: Require all infrastructure contracts to execute
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          import glob
+          import sys
+          import xml.etree.ElementTree as ET
+
+          files = glob.glob('build/test-results/test/TEST-com.telemetry.contract.*.xml')
+          skipped = sum(int(ET.parse(path).getroot().attrib.get('skipped', 0)) for path in files)
+          if len(files) != 4 or skipped:
+              sys.exit(f'Infrastructure contracts did not all execute: files={len(files)}, skipped={skipped}')
+          PY
+      - name: Python tests
+        run: |
+          python -m pip install -r anomaly-detector/requirements.txt pytest
+          PYTHONPATH=anomaly-detector pytest anomaly-detector/tests -q
+
+  images-and-smoke:
+    runs-on: ubuntu-latest
+    needs: tests
+    env:
+      POSTGRES_DB: telemetry
+      POSTGRES_USER: telemetry
+      POSTGRES_PASSWORD: ci-postgres-password
+      REDIS_PASSWORD: ci-redis-password
+      INFLUXDB_USERNAME: ci-user
+      INFLUXDB_PASSWORD: ci-influx-password
+      INFLUXDB_ORG: vehicle-telemetry
+      INFLUXDB_BUCKET: telemetry
+      INFLUXDB_TOKEN: ci-influx-token-with-sufficient-length
+      JWT_SECRET: ci-jwt-secret-must-be-at-least-thirty-two-bytes-long
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: ci-admin-password
+      MQTT_TLS_STORE_PASSWORD: ci-mqtt-password
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Generate per-vehicle MQTT certificates
+        run: broker/certs/generate-certs.sh
+      - name: Validate Compose and build images
+        run: |
+          docker compose config --quiet
+          docker compose build
+      - name: Start stack and verify health
+        run: |
+          docker compose --profile simulator up -d
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://localhost:8080/actuator/health | grep -q '"status":"UP"'; then
+              exit 0
+            fi
+            sleep 5
+          done
+          docker compose ps
+          docker compose logs backend
+          exit 1
+      - name: Dump logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop stack
+        if: always()
+        run: docker compose down -v

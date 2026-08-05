@@ -45,8 +45,9 @@ VEHICLE_ID_OFFSET = int(os.getenv("VEHICLE_ID_OFFSET", "0"))
 
 # Phase 4 TLS 설정 (인증서 경로 설정 시 자동 활성화)
 TLS_CA_CERT      = os.getenv("TLS_CA_CERT", "")        # broker/certs/ca.crt
-TLS_CLIENT_CERT  = os.getenv("TLS_CLIENT_CERT", "")    # broker/certs/client.crt
-TLS_CLIENT_KEY   = os.getenv("TLS_CLIENT_KEY", "")     # broker/certs/client.key
+TLS_CLIENT_CERT  = os.getenv("TLS_CLIENT_CERT", "")    # 단일 인증서 로컬 호환 모드
+TLS_CLIENT_KEY   = os.getenv("TLS_CLIENT_KEY", "")
+TLS_VEHICLE_CERT_DIR = os.getenv("TLS_VEHICLE_CERT_DIR", "")
 
 # 서울 근처 GPS 기준점
 BASE_LAT = 37.4563
@@ -190,16 +191,18 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
-    # Phase 4: TLS 인증서가 설정된 경우 mTLS 활성화
-    if TLS_CA_CERT and TLS_CLIENT_CERT and TLS_CLIENT_KEY:
+    # 운영 프로파일은 vehicle_id와 CN이 같은 차량별 인증서를 사용한다.
+    vehicle_cert = os.path.join(TLS_VEHICLE_CERT_DIR, f"{vehicle_id}.crt") if TLS_VEHICLE_CERT_DIR else TLS_CLIENT_CERT
+    vehicle_key = os.path.join(TLS_VEHICLE_CERT_DIR, f"{vehicle_id}.key") if TLS_VEHICLE_CERT_DIR else TLS_CLIENT_KEY
+    if TLS_CA_CERT and vehicle_cert and vehicle_key:
         import ssl
         client.tls_set(
             ca_certs=TLS_CA_CERT,
-            certfile=TLS_CLIENT_CERT,
-            keyfile=TLS_CLIENT_KEY,
+            certfile=vehicle_cert,
+            keyfile=vehicle_key,
             tls_version=ssl.PROTOCOL_TLSv1_2,
         )
-        log.info("TLS mTLS 활성화됨")
+        log.info(f"TLS mTLS 활성화됨 (CN={vehicle_id})")
 
     try:
         client.connect(MQTT_HOST, MQTT_PORT, keepalive=60)

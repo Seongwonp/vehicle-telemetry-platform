@@ -2,6 +2,8 @@ package com.telemetry.service;
 
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
+import com.telemetry.dto.response.TelemetryResponse;
+import com.telemetry.dto.response.FleetSummaryStatus;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
@@ -18,12 +20,14 @@ import org.mockito.junit.jupiter.MockitoSettings;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -82,6 +86,9 @@ class VehicleServiceTest {
         Vehicle v1 = new Vehicle("KR-GA-1234", "아반떼", "홍길동");
         Vehicle v2 = new Vehicle("KR-GA-5678", "소나타", "김철수");
         given(vehicleRepository.findAllByActiveTrue()).willReturn(List.of(v1, v2));
+        given(telemetryQueryService.getLatestByVehicleIds(List.of("KR-GA-1234", "KR-GA-5678")))
+            .willReturn(Map.of("KR-GA-1234", TelemetryResponse.builder()
+                .vehicleId("KR-GA-1234").timestamp("2026-08-05T00:00:00Z").speed(80.0).build()));
 
         // when
         List<VehicleResponse> result = vehicleService.findAll();
@@ -90,6 +97,25 @@ class VehicleServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result).extracting(VehicleResponse::getVehicleId)
             .containsExactly("KR-GA-1234", "KR-GA-5678");
+        assertThat(result.get(0).getSummaryStatus()).isEqualTo(FleetSummaryStatus.OK);
+        assertThat(result.get(1).getSummaryStatus()).isEqualTo(FleetSummaryStatus.NO_DATA);
+        verify(telemetryQueryService, times(1))
+            .getLatestByVehicleIds(List.of("KR-GA-1234", "KR-GA-5678"));
+    }
+
+    @Test
+    @DisplayName("InfluxDB 장애 시 fleet 요약 상태를 UNAVAILABLE로 반환")
+    void findAll_인프라장애_상태표시() {
+        Vehicle vehicle = new Vehicle("KR-GA-1234", "아반떼", "홍길동");
+        given(vehicleRepository.findAllByActiveTrue()).willReturn(List.of(vehicle));
+        given(telemetryQueryService.getLatestByVehicleIds(List.of("KR-GA-1234")))
+            .willThrow(new RuntimeException("InfluxDB down"));
+
+        List<VehicleResponse> result = vehicleService.findAll();
+
+        assertThat(result).singleElement()
+            .extracting(VehicleResponse::getSummaryStatus)
+            .isEqualTo(FleetSummaryStatus.UNAVAILABLE);
     }
 
     @Test

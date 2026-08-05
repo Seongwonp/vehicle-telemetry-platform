@@ -50,7 +50,7 @@ tcpdump -i eth0 -w capture.pcap port 1883
 
 **활성화 방법**:
 ```bash
-# 1. 인증서 생성 (client.p12 / truststore.p12까지 함께 생성됨)
+# 1. 인증서 생성 (backend.p12 / 차량별 PEM / truststore.p12 생성)
 cd broker/certs && ./generate-certs.sh
 
 # 2. mosquitto.conf 의 TLS 섹션 주석 해제
@@ -60,8 +60,9 @@ cd broker/certs && ./generate-certs.sh
 # 5. 시뮬레이터: .env에서 TLS_CA_CERT/TLS_CLIENT_CERT/TLS_CLIENT_KEY 경로 설정 시 자동 적용
 ```
 
-> `client.p12`의 개인키는 openssl이 만드는 PKCS#1 PEM을 Java가 직접 읽지 못해서 PKCS12로
-> 한 번 변환한 것 — Mosquitto 서버/Python 시뮬레이터는 원본 PEM(`client.crt`/`client.key`)을 그대로 쓴다.
+> `backend.p12`는 Spring Boot 구독자 전용이며, Python 시뮬레이터는
+> `vehicles/<vehicle_id>.crt/.key`를 사용한다. Mosquitto ACL은 인증서 CN과 topic의
+> vehicle ID를 일치시켜 다른 차량 topic 발행을 차단한다.
 
 ---
 
@@ -74,14 +75,14 @@ cd broker/certs && ./generate-certs.sh
 | 대책 | 구현 위치 |
 |------|----------|
 | HMAC-SHA256 서명 | `JwtTokenProvider.java` |
-| 토큰 만료 (기본 24시간) | `application.yml` |
+| Access Token 만료 (기본 10분) | `application.yml` |
 | 5회 실패 → 15분 IP 차단 | `BruteForceDetector.java` |
 | STATELESS 세션 | `SecurityConfig.java` |
 | Refresh Token (Redis opaque token, rotation) | `RefreshTokenService.java`, `AuthController.java` |
 | 로그아웃 시 토큰 무효화 | `AuthController.logout()` — Redis에서 Refresh Token 삭제. Access Token은 Stateless라 자체 만료 전까지는 유효(블랙리스트 아님) |
 
 **남은 개선 사항**:
-- Access Token 만료시간 단축(현재 24h) — 로그아웃 즉시 무효화가 필요하면 블랙리스트 도입 검토
+- 로그아웃 즉시 Access Token 무효화가 필요하면 jti 블랙리스트 도입 검토
 
 ---
 

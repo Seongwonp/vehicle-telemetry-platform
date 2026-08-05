@@ -53,4 +53,12 @@ public class KafkaConfig {
             .replicas(1)
             .build();
     }
+
+    @Bean
+    public NewTopic vehicleTelemetryMqttDlqTopic() {
+        return TopicBuilder.name("vehicle-telemetry-mqtt-dlq")
+            .partitions(1)
+            .replicas(1)
+            .build();
+    }
 }

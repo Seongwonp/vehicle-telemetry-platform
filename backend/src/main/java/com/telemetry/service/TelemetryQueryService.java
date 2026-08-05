@@ -7,7 +7,9 @@ import com.influxdb.query.FluxTable;
 import com.telemetry.dto.response.TelemetryResponse;
 import com.telemetry.dto.response.TripResponse;
 import com.telemetry.exception.ResourceNotFoundException;
-import lombok.RequiredArgsConstructor;
+import com.telemetry.repository.VehicleRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -24,7 +27,6 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TelemetryQueryService {
 
     private static final Pattern VEHICLE_ID_PATTERN = Pattern.compile("^[A-Z0-9-]{4,20}$");
@@ -32,19 +34,43 @@ public class TelemetryQueryService {
     // 트립 조회 파라미터 — hours는 검증된 int(자유 문자열 아님)라 Flux 문자열에
     // 직접 삽입해도 injection 위험이 없다(파라미터 바인딩은 값 리터럴만 지원하고
     // range() duration 인자에는 쓸 수 없어 다른 쿼리들과 달리 String.format을 쓴다).
-    private static final int DEFAULT_TRIP_HOURS = 1;
     private static final int MAX_TRIP_HOURS = 6;
-    private static final int TRIP_POINT_LIMIT = 10_000;
-    private static final Duration TRIP_GAP_THRESHOLD = Duration.ofMinutes(3);
     private static final double EARTH_RADIUS_KM = 6371.0;
 
     private final InfluxDBClient influxDBClient;
+    private final VehicleRepository vehicleRepository;
+    private final Counter queryFailureCounter;
+
+    public TelemetryQueryService(
+        InfluxDBClient influxDBClient,
+        VehicleRepository vehicleRepository,
+        MeterRegistry meterRegistry
+    ) {
+        this.influxDBClient = influxDBClient;
+        this.vehicleRepository = vehicleRepository;
+        this.queryFailureCounter = meterRegistry.counter("telemetry.influx.query.failures");
+    }
 
     @Value("${influxdb.bucket}")
     private String bucket;
 
     @Value("${influxdb.org}")
     private String influxOrg;
+
+    @Value("${telemetry.trip.default-hours:1}")
+    private int defaultTripHours;
+
+    @Value("${telemetry.trip.point-limit:10000}")
+    private int tripPointLimit;
+
+    @Value("${telemetry.trip.gap-threshold:3m}")
+    private Duration tripGapThreshold;
+
+    @Value("${telemetry.trip.min-points:3}")
+    private int tripMinPoints;
+
+    @Value("${telemetry.trip.max-gps-speed-kmh:250}")
+    private double maxGpsSpeedKmh;
 
     // fleet 요약/AI 진단이 "차량이 마지막으로 언제 신호를 보냈는지" 알아야
     // 하는데, 대시보드 추이 조회(getRecent)는 OOM 가드로 최근 1시간만 본다.
@@ -64,6 +90,34 @@ public class TelemetryQueryService {
             throw new ResourceNotFoundException("수신된 텔레메트리 데이터가 없습니다: " + vehicleId);
         }
         return results.get(0);
+    }
+
+    public Map<String, TelemetryResponse> getLatestByVehicleIds(List<String> vehicleIds) {
+        if (vehicleIds.isEmpty()) return Map.of();
+        vehicleIds.forEach(this::validateVehicleId);
+        String ids = vehicleIds.stream()
+            .distinct()
+            .map(id -> "\"" + id + "\"")
+            .collect(Collectors.joining(", "));
+        String flux = String.format("""
+            from(bucket: "%s")
+              |> range(start: -%dh)
+              |> filter(fn: (r) => r._measurement == "vehicle_telemetry")
+              |> filter(fn: (r) => contains(value: r.vehicle_id, set: [%s]))
+              |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
+              |> group(columns: ["vehicle_id"])
+              |> sort(columns: ["_time"], desc: true)
+              |> limit(n: 1)
+            """, bucket, LATEST_LOOKBACK_HOURS, ids);
+
+        Map<String, TelemetryResponse> latest = new HashMap<>();
+        for (FluxTable table : query(flux, "fleet")) {
+            for (FluxRecord record : table.getRecords()) {
+                String vehicleId = getStr(record.getValues(), "vehicle_id");
+                if (vehicleId != null) latest.put(vehicleId, mapToResponse(vehicleId, record));
+            }
+        }
+        return Map.copyOf(latest);
     }
 
     // InfluxDB는 기본적으로 필드마다 별도 행을 반환한다.
@@ -93,11 +147,13 @@ public class TelemetryQueryService {
     // 연속 수신 구간을 시간 간격(TRIP_GAP_THRESHOLD) 기준으로 트립으로 나눈다.
     // 시뮬레이터처럼 끊김 없이 계속 송신하는 소스는 트립 하나로 합쳐지는 게
     // 맞는 동작이다 — 실제 OBD-II 동글처럼 시동이 꺼지며 송신이 끊기는 경우를
-    // 위한 일반적인 로직이라 지금 당장 여러 트립으로 안 나뉘는 건 버그가 아니다.
     public List<TripResponse> getTrips(String vehicleId, Integer hours) {
         validateVehicleId(vehicleId);
+        if (!vehicleRepository.existsByVehicleIdAndActiveTrue(vehicleId)) {
+            throw new ResourceNotFoundException("등록되지 않은 차량입니다: " + vehicleId);
+        }
         int safeHours = hours == null
-            ? DEFAULT_TRIP_HOURS
+            ? defaultTripHours
             : Math.min(Math.max(hours, 1), MAX_TRIP_HOURS);
 
         // 내림차순으로 최신 TRIP_POINT_LIMIT개를 먼저 자른 다음 Java에서 다시
@@ -113,7 +169,7 @@ public class TelemetryQueryService {
               |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
               |> sort(columns: ["_time"], desc: true)
               |> limit(n: %d)
-            """, bucket, safeHours, vehicleId, TRIP_POINT_LIMIT);
+            """, bucket, safeHours, vehicleId, tripPointLimit);
 
         List<TelemetryResponse> points = executeQuery(vehicleId, flux);
         Collections.reverse(points); // 세그멘테이션은 오름차순을 기대한다
@@ -123,7 +179,7 @@ public class TelemetryQueryService {
         return trips;
     }
 
-    private List<TripResponse> segmentIntoTrips(List<TelemetryResponse> points) {
+    List<TripResponse> segmentIntoTrips(List<TelemetryResponse> points) {
         List<TripResponse> trips = new ArrayList<>();
         List<TelemetryResponse> current = new ArrayList<>();
         Instant prevTime = null;
@@ -132,7 +188,7 @@ public class TelemetryQueryService {
             if (point.getTimestamp() == null) continue;
             Instant time = Instant.parse(point.getTimestamp());
             if (prevTime != null
-                && Duration.between(prevTime, time).compareTo(TRIP_GAP_THRESHOLD) > 0) {
+                && Duration.between(prevTime, time).compareTo(tripGapThreshold) > 0) {
                 addTripIfMeaningful(trips, current);
                 current = new ArrayList<>();
             }
@@ -146,34 +202,50 @@ public class TelemetryQueryService {
     // 포인트 1~2개짜리 구간(신호가 잠깐 끊겼다 바로 돌아온 경우 등)은 실제
     // 주행으로 보기 어려워 트립 목록에서 제외한다.
     private void addTripIfMeaningful(List<TripResponse> trips, List<TelemetryResponse> points) {
-        if (points.size() < 3) return;
+        if (points.size() < tripMinPoints) return;
 
         Instant start = Instant.parse(points.get(0).getTimestamp());
         Instant end = Instant.parse(points.get(points.size() - 1).getTimestamp());
 
         double distanceKm = 0.0;
-        double speedSum = 0.0;
+        double weightedSpeedSeconds = 0.0;
+        long weightedDurationSeconds = 0;
         double maxSpeed = 0.0;
         for (int i = 0; i < points.size(); i++) {
             TelemetryResponse p = points.get(i);
             double speed = p.getSpeed() != null ? p.getSpeed() : 0.0;
-            speedSum += speed;
             maxSpeed = Math.max(maxSpeed, speed);
             if (i > 0) {
                 TelemetryResponse prev = points.get(i - 1);
+                Instant previousTime = Instant.parse(prev.getTimestamp());
+                long seconds = Duration.between(previousTime, Instant.parse(p.getTimestamp())).toSeconds();
+                if (seconds > 0) {
+                    double previousSpeed = prev.getSpeed() != null ? prev.getSpeed() : 0.0;
+                    weightedSpeedSeconds += ((previousSpeed + speed) / 2.0) * seconds;
+                    weightedDurationSeconds += seconds;
+                }
                 if (prev.getLat() != null && prev.getLng() != null
-                    && p.getLat() != null && p.getLng() != null) {
-                    distanceKm += haversineKm(prev.getLat(), prev.getLng(), p.getLat(), p.getLng());
+                    && p.getLat() != null && p.getLng() != null
+                    && validCoordinates(prev.getLat(), prev.getLng())
+                    && validCoordinates(p.getLat(), p.getLng())
+                    && seconds > 0) {
+                    double segmentKm = haversineKm(prev.getLat(), prev.getLng(), p.getLat(), p.getLng());
+                    double impliedSpeed = segmentKm / (seconds / 3600.0);
+                    if (impliedSpeed <= maxGpsSpeedKmh) distanceKm += segmentKm;
                 }
             }
         }
+
+        double averageSpeed = weightedDurationSeconds == 0
+            ? (points.get(0).getSpeed() == null ? 0.0 : points.get(0).getSpeed())
+            : weightedSpeedSeconds / weightedDurationSeconds;
 
         trips.add(TripResponse.builder()
             .startTime(start)
             .endTime(end)
             .durationMinutes(Duration.between(start, end).toMinutes())
             .distanceKm(Math.round(distanceKm * 100) / 100.0)
-            .avgSpeedKmh(Math.round((speedSum / points.size()) * 10) / 10.0)
+            .avgSpeedKmh(Math.round(averageSpeed * 10) / 10.0)
             .maxSpeedKmh(Math.round(maxSpeed * 10) / 10.0)
             .pointCount(points.size())
             .build());
@@ -189,6 +261,10 @@ public class TelemetryQueryService {
         return EARTH_RADIUS_KM * c;
     }
 
+    private boolean validCoordinates(double lat, double lng) {
+        return lat >= -90.0 && lat <= 90.0 && lng >= -180.0 && lng <= 180.0;
+    }
+
     private List<TelemetryResponse> executeQuery(String vehicleId, String flux) {
         QueryApi queryApi = influxDBClient.getQueryApi();
         List<TelemetryResponse> results = new ArrayList<>();
@@ -202,11 +278,22 @@ public class TelemetryQueryService {
                 }
             }
         } catch (Exception e) {
+            queryFailureCounter.increment();
             log.error("[InfluxDB] 쿼리 실패 vehicle={}", vehicleId, e);
             throw new RuntimeException("텔레메트리 조회 실패", e);
         }
 
         return results;
+    }
+
+    private List<FluxTable> query(String flux, String context) {
+        try {
+            return influxDBClient.getQueryApi().query(flux, influxOrg);
+        } catch (Exception e) {
+            queryFailureCounter.increment();
+            log.error("[InfluxDB] 쿼리 실패 context={}", context, e);
+            throw new RuntimeException("텔레메트리 조회 실패", e);
+        }
     }
 
     private void validateVehicleId(String vehicleId) {

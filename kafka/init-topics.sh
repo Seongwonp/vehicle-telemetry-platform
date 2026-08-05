@@ -53,6 +53,7 @@ create_topic "vehicle-anomaly-alerts-dlq" 1 1
 # DLQ — 이상 감지(Python) 처리 실패 원본 메시지 격리. vehicle-telemetry-dlq는 Java
 # 저장 경로 전용이라 재사용하면 "어느 경로가 실패했는지" 구분이 안 돼 별도 토픽으로 분리.
 create_topic "vehicle-telemetry-anomaly-dlq" 1 1
+create_topic "vehicle-telemetry-mqtt-dlq" 1 1
 
 echo "================================================================"
 echo "생성된 토픽 목록:"

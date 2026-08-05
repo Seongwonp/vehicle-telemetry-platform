@@ -1,0 +1,41 @@
+groups:
+  - name: telemetry-platform
+    rules:
+      - alert: TelemetryBackendDown
+        expr: up{job="telemetry-backend"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Telemetry backend is down"
+
+      - alert: KafkaConsumerLagHigh
+        expr: max(kafka_consumer_records_lag_max) > 10000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Kafka consumer lag exceeds 10,000"
+
+      - alert: TelemetryDlqIncreasing
+        expr: sum(increase(telemetry_kafka_dlq_published_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Messages are being published to a telemetry DLQ"
+
+      - alert: TelemetryDlqPublishFailure
+        expr: sum(increase(telemetry_kafka_dlq_publish_failures_total[5m])) > 0
+        labels:
+          severity: critical
+        annotations:
+          summary: "Publishing to a telemetry DLQ failed"
+
+      - alert: InfluxDbOperationFailures
+        expr: sum(increase(telemetry_influx_write_failures_total[5m])) + sum(increase(telemetry_influx_query_failures_total[5m])) > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "InfluxDB write or query failures detected"

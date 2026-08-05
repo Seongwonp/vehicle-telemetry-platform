@@ -1,5 +1,6 @@
-# generate-certs.sh가 만드는 현재 클라이언트 인증서 CN.
-# 운영에서는 backend/차량별 인증서를 분리하고 각 identity별 topic pattern으로 세분화한다.
-user vehicle-client
-topic read vehicle/telemetry/#
-topic write vehicle/telemetry/#
+# Backend는 전체 차량을 구독하지만 발행 권한은 없다.
+user telemetry-backend
+topic read vehicle/telemetry/+
+
+# 차량 인증서 CN을 vehicle_id로 발급한다. 각 차량은 자신의 topic에만 발행 가능하다.
+pattern write vehicle/telemetry/%u

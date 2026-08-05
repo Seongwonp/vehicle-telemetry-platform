@@ -14,6 +14,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -57,7 +58,8 @@ class TelemetryConsumerTest {
     @BeforeEach
     void setUp() {
         telemetryConsumer = new TelemetryConsumer(
-            telemetryRepository, anomalyService, objectMapper, kafkaTemplate, messagingTemplate);
+            telemetryRepository, anomalyService, objectMapper, kafkaTemplate, messagingTemplate,
+            new SimpleMeterRegistry());
     }
 
     @Test

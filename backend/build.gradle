@@ -7,6 +7,8 @@ plugins {
 group = 'com.telemetry'
 version = '0.0.1-SNAPSHOT'
 
+ext['testcontainers.version'] = '1.20.4'
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
@@ -68,8 +70,15 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testImplementation 'org.springframework.kafka:spring-kafka-test'
+    testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:kafka'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    // Docker Engine 29+는 legacy API를 거부한다. docker-java/Testcontainers가
+    // 지원되는 API로 통신하도록 명시해 로컬/CI 계약 테스트가 조용히 skip되지 않게 한다.
+    systemProperty 'api.version', '1.44'
 }

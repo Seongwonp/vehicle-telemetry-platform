@@ -44,6 +44,10 @@ public class VehicleResponse {
     @Schema(description = "HIGH 심각도 이상 이벤트 누적 건수")
     private long highAnomalyCount;
 
+    @Setter
+    @Schema(description = "Fleet 텔레메트리 요약 상태: OK, NO_DATA, UNAVAILABLE")
+    private FleetSummaryStatus summaryStatus;
+
     public VehicleResponse(Vehicle vehicle) {
         this.id = vehicle.getId();
         this.vehicleId = vehicle.getVehicleId();
@@ -51,5 +55,6 @@ public class VehicleResponse {
         this.owner = vehicle.getOwner();
         this.active = vehicle.isActive();
         this.registeredAt = vehicle.getRegisteredAt();
+        this.summaryStatus = FleetSummaryStatus.NO_DATA;
     }
 }
