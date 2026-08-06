@@ -31,7 +31,7 @@ echo "[1/5] CA 인증서 생성 중..."
 openssl req -new -x509 -days 3650 \
   -keyout ca.key -out ca.crt \
   -subj "/C=KR/ST=Seoul/O=VehicleTelemetry/CN=TelemetryCA" \
-  -nodes -quiet
+  -nodes
 
 echo "      ca.key / ca.crt 생성 완료"
 
@@ -40,7 +40,7 @@ echo "[2/5] 서버 인증서 생성 중..."
 openssl req -new \
   -keyout server.key -out server.csr \
   -subj "/C=KR/ST=Seoul/O=VehicleTelemetry/CN=mosquitto" \
-  -nodes -quiet
+  -nodes
 
 openssl x509 -req -days 3650 \
   -in server.csr -CA ca.crt -CAkey ca.key \
@@ -54,7 +54,7 @@ echo "[3/4] Backend 인증서 생성 중..."
 openssl req -new \
   -keyout backend.key -out backend.csr \
   -subj "/C=KR/ST=Seoul/O=VehicleTelemetry/CN=telemetry-backend" \
-  -nodes -quiet
+  -nodes
 
 openssl x509 -req -days 3650 \
   -in backend.csr -CA ca.crt -CAkey ca.key \
@@ -75,7 +75,7 @@ for vehicle_id in "${VEHICLE_IDS[@]}"; do
   openssl req -new \
     -keyout "vehicles/$vehicle_id.key" -out "vehicles/$vehicle_id.csr" \
     -subj "/C=KR/ST=Seoul/O=VehicleTelemetry/CN=$vehicle_id" \
-    -nodes -quiet
+    -nodes
   openssl x509 -req -days 3650 \
     -in "vehicles/$vehicle_id.csr" -CA ca.crt -CAkey ca.key \
     -CAcreateserial -out "vehicles/$vehicle_id.crt"
