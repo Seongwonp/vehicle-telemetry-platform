@@ -92,18 +92,22 @@ class TelemetryConsumerTest {
     }
 
     @Test
-    @DisplayName("저장 중 예외가 나면 DLQ로 보낸다")
-    void consumeForStorage_저장실패_DLQ이동() {
-        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
-            .willReturn(CompletableFuture.completedFuture(null));
+    @DisplayName("InfluxDB 저장 실패는 DLQ로 보내지 않고 offset도 커밋하지 않는다 — 재시도로 이어져야 한다")
+    void consumeForStorage_저장실패_재시도유도() {
         doThrow(new RuntimeException("InfluxDB 연결 실패")).when(telemetryRepository).save(any());
         ConsumerRecord<String, String> record =
             new ConsumerRecord<>("vehicle-telemetry", 0, 0L, "SIM-001", VALID_TELEMETRY_JSON);
 
-        telemetryConsumer.consumeForStorage(record, acknowledgment);
+        // 예전엔 이 경로도 역직렬화 실패와 같은 catch에 묶여 DLQ+ack 됐다 — InfluxDB
+        // 장애 중에도 Kafka lag은 낮게 유지된 채 텔레메트리가 조용히 유실되는 버그였다
+        // (12시간 soak test로 발견). 이제는 예외가 그대로 전파돼 offset 미커밋 → 재시도로
+        // 이어지고, 계속 실패하면 lag 상승으로 드러나야 한다.
+        assertThatThrownBy(() -> telemetryConsumer.consumeForStorage(record, acknowledgment))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining("InfluxDB 연결 실패");
 
-        verify(kafkaTemplate).send("vehicle-telemetry-dlq", "SIM-001", VALID_TELEMETRY_JSON);
-        verify(acknowledgment).acknowledge();
+        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
+        verify(acknowledgment, never()).acknowledge();
     }
 
     @Test

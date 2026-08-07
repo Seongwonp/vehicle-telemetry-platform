@@ -50,19 +50,28 @@ public class TelemetryConsumer {
         VehicleTelemetry telemetry;
         try {
             telemetry = objectMapper.readValue(record.value(), VehicleTelemetry.class);
-            telemetryRepository.save(telemetry);
-            log.debug("[Kafka→InfluxDB] 저장 완료 — vehicle={} partition={} offset={}",
-                telemetry.getVehicleId(),
-                record.partition(),
-                record.offset());
         } catch (Exception e) {
-            // 역직렬화 실패 또는 포인트 구성 실패(예: 잘못된 timestamp 형식) — DLQ로 옮겨 유실 없이 격리한다
-            log.error("[Kafka→InfluxDB] 저장 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
+            // 역직렬화 실패 — 메시지 자체가 영구적으로 처리 불가능하므로 DLQ로 격리하고 커밋한다.
+            log.error("[Kafka→InfluxDB] 역직렬화 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
                 record.key(), record.offset(), record.partition(), e);
             sendToDlq(TELEMETRY_DLQ_TOPIC, record);
             acknowledgment.acknowledge();
             return;
         }
+
+        // InfluxDB 쓰기 실패는 여기서 잡지 않는다. 예전엔 역직렬화 실패와 같은 catch에
+        // 묶여 있어서, InfluxDB 장애 중에도 원본 메시지를 DLQ로 옮기고 offset을 커밋해버렸다
+        // — 12시간 soak test에서 InfluxDB 쓰기가 테스트 시작 26초 만에 멈췄는데도
+        // telemetry-storage-group의 Kafka lag은 끝까지 낮게 유지된 채(offset은 계속 커밋됨)
+        // 텔레메트리가 12시간 내내 조용히 유실된 걸로 이 버그를 찾았다. 여기서 예외를
+        // 그대로 던지면 offset이 커밋되지 않아 메시지가 재시도되고, 계속 실패하면 Kafka
+        // lag이 올라가 KafkaConsumerLagHigh/InfluxDbOperationFailures 알림으로 드러난다
+        // — "장애가 나면 눈에 띄어야 한다"가 여기선 맞는 동작이다.
+        telemetryRepository.save(telemetry);
+        log.debug("[Kafka→InfluxDB] 저장 완료 — vehicle={} partition={} offset={}",
+            telemetry.getVehicleId(),
+            record.partition(),
+            record.offset());
         acknowledgment.acknowledge();
         broadcastTelemetry(telemetry);
     }
