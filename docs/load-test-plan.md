@@ -367,14 +367,45 @@ ML 관리 등 — ML은 기본값 off라 이번 테스트엔 영향 없음, 하�
 있음). 따라서 "구코드 24시간 vs 신코드 1시간"을 직접 비교하는 것은 아니고, 이번 1시간
 비교(1인스턴스 vs 3인스턴스, 동일 신코드)만이 엄격하게 동일 조건이다.
 
-**soak test(3인스턴스, 12시간)는 이번 세션에서 완료하지 못했다** — 이 호스트(8코어)에서 두 번
-시도했고 둘 다 중간에 끊겼다(1차: 호스트 절전 두 차례 + `sample.sh`의 무한 타임아웃으로 6시간
-넘게 조용히 정지, 2차: `sample.sh`에 타임아웃을 추가하고 절전도 막았지만 이번엔 절전 없이도
-~2시간 만에 Docker Desktop 자체가 응답 불능 — 6프로세스+3인스턴스+나머지 스택 전체를 CPU
-600~700%대로 장시간 유지한 게 원인으로 추정). 상세 경위는
-`load-test/anomaly-detector-scale/README.md`와 `AB3_soak_v1_interrupted_1h46m.txt`,
-`AB3_soak_v2_interrupted_2h.txt` 참고. 더 여유 있는 호스트에서 재시도 예정이며, 완료되면
-이 절을 갱신한다.
+**soak test(3인스턴스, 12시간)는 노트북에서 두 번 시도했으나 완료하지 못했다** — 1차: 호스트
+절전 두 차례 + `sample.sh`의 무한 타임아웃으로 6시간 넘게 조용히 정지, 2차: `sample.sh`에
+타임아웃을 추가하고 절전도 막았지만 이번엔 절전 없이도 ~2시간 만에 Docker Desktop 자체가
+응답 불능 — 6프로세스+3인스턴스+나머지 스택 전체를 CPU 600~700%대로 장시간 유지한 게 원인으로
+추정. 상세 경위는 `load-test/anomaly-detector-scale/README.md`와
+`AB3_soak_v1_interrupted_1h46m.txt`, `AB3_soak_v2_interrupted_2h.txt` 참고.
+
+### Track A — 이상 감지 다중화 5차 측정 (데스크탑 재시도, 12시간 soak 완주, 2026-08-06~07)
+
+더 여유 있는 호스트(10코어/16스레드)에서 재시도해 **12시간(43,200초)을 중단 없이 완주했다**
+(원본 로그: `load-test/anomaly-detector-scale/AB4_soak_desktop_12h.txt`, 60초 간격 샘플 469개).
+4차와 동일한 부하(시뮬레이터 6프로세스, 200대/0.05초 ×6, ~2,300-2,700 msg/s)를 그대로 유지했다.
+
+| 지표 | 값 |
+| --- | --- |
+| 총 실행 시간 | 12h 01m 15s (2026-08-06T06:45:52Z ~ 18:47:07Z), 중단 없음 |
+| `anomaly-detector-group` lag | 최대 100, 평균 27.4, 500 초과 샘플 **0건**(469개 중) |
+| `docker exec` 타임아웃(15s) | 6건 / 약 1,900회 점검 중 — 산발적, 연속 실패 없음 |
+
+**확인된 것**: 4차의 1시간 A/B 우위가 12시간 장시간 관찰에서도 그대로 유지된다 —
+3인스턴스 구성은 이 부하 수준에서 lag 발산 없이 안정적으로 버틴다. Track A의 원래 목표
+(이상 감지 서비스 다중화 검증)는 이걸로 **완료**로 본다.
+
+**별개로 발견한 버그(이번 soak에서 우연히 드러남, 다중화 검증과는 무관)**:
+InfluxDB에 저장되는 원시 텔레메트리(`speed` 등)가 테스트 시작 26초 만에(06:45:26Z) 완전히
+멈췄고 이후 12시간 내내 단 1건도 기록되지 않았다 — `from(bucket:"telemetry") |> range(start:-30d)
+|> filter(...field=="speed") |> group() |> sort(columns:["_time"],desc:true) |> limit(n:1)`로
+확인한 전체 기간 최신 레코드가 06:45:26Z였다. `telemetry-storage-group`의 Kafka lag은 이
+구간 내내 낮게 유지돼(수백 이하) **정상으로 보였다** — lag만 보는 모니터링으로는 이 유실을
+못 잡는다. 같은 시간대 backend 로그에는 InfluxDB 관련 에러/경고가 전혀 없었다(무음 실패).
+ADR-016에서 이미 고친 초 단위 타임스탬프 충돌 버그(`WritePrecision.S`)는 현재 코드가
+`WritePrecision.MS`를 쓰고 있어 재발이 아님을 확인했다 — **근본 원인은 이번 세션에서
+특정하지 못했다.** 별도로, 08:25:39부터 종료까지(약 1h40m 지점부터) MQTT
+`MqttPahoMessageDrivenChannelAdapter`가 시간당 155~160회, 총 1,677회 "Lost connection:
+MqttException" + 메시지 처리 실패를 기록했다 — InfluxDB 저장 중단(06:45)보다 늦게
+시작했으므로 같은 원인은 아니고, 장시간 부하에서의 MQTT 연결 안정성 문제로 별도 이슈다.
+**두 건 모두 원인 조사와 수정이 필요한 미해결 버그로 남겨둔다** — 과장 없이, 다중화 검증
+자체는 성공했지만 이 세션에서 저장 파이프라인의 새로운 무음 유실 버그를 하나 더 찾았다는
+뜻이다.
 
 ### Track B — InfluxDB 클라이언트 동시 요청 확대 before/after
 
@@ -421,6 +452,8 @@ p95/p99를 보였다 — 두 엔드포인트가 공유하는 InfluxDB 조회 경
 - [x] docker-compose 환경변수 전달 보완 (`ADMIN_USERNAME`/`ADMIN_PASSWORD`/`CORS_ALLOWED_ORIGINS` 추가, `RATE_LIMIT_RPM`은 이전에 완료)
 - [x] 결과 표 채움 (Grafana 캡처는 이번 회차에서 생략 — 터미널/Flux 쿼리로 직접 수치 확인)
 - [x] 요약을 README "성능" 섹션과 ADR-011/ADR-014/ADR-016에 반영
+- [x] 이상 감지 서비스 다중화 12시간 soak test 완주(데스크탑, 5차 측정) — lag 발산 없음 확인,
+      단 이번 soak에서 InfluxDB 저장 무음 유실 버그를 새로 발견(원인 미특정, 별도 이슈로 기록)
 
 ---
 

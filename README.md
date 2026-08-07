@@ -261,13 +261,20 @@ vehicle-telemetry-platform/
   같은 시간 내내 lag 수백 단위로 버텼다. 이 시스템의 진짜 첫 확장 병목은 Kafka도 InfluxDB도
   아니라 단일 인스턴스로 도는 이상 감지 서비스였다 — Consumer Group 분리 설계(ADR-002)가
   장애(여기선 성능 저하) 전파를 실제로 막아준 것도 함께 확인.
-- **이상 감지 서비스 다중화 시도 — 유망하지만 완전 해소는 미확정**: `docker-compose.yml`의
+- **이상 감지 서비스 다중화 — 12시간 soak test로 검증 완료**: `docker-compose.yml`의
   `container_name` 고정을 제거하고 `deploy.replicas: 3`으로 파티션 수(3)에 맞춰 3개 인스턴스를
-  띄웠다. 원래 lag이 200만 건 이상으로 폭주했던 것과 비슷한 부하(~2,300 msg/s)로 11분
-  재측정한 결과 순발산 없이 backlog가 줄었지만, **부하 수준·관찰 시간(24시간→11분)·
-  `kafka-python` 버전이 before/after 사이에 달라 동일 조건 비교가 아니었다**(외부 리뷰로
-  발견). 확정하려면 동일 조건 A/B + 장시간 soak test가 더 필요하다 — 자세한 내용과 재검증
-  절차는 `docs/architecture-decisions.md` ADR-016, 원시 로그는 `load-test/anomaly-detector-scale/`.
+  띄웠다. 동일 이미지·동일 부하(~2,300-2,700 msg/s)·시작 lag 0 조건의 1시간 A/B에서 1인스턴스는
+  30분 만에 lag 140만대까지 치솟는 반면 3인스턴스는 낮게 유지됨을 먼저 확인했고, 이어서
+  3인스턴스 구성으로 12시간(43,200초) soak test를 중단 없이 완주해 lag이 최대 100(평균 27.4,
+  500 초과 0건)으로 장시간 안정적임을 확정했다 — 자세한 내용은
+  `docs/architecture-decisions.md` ADR-016, 원시 로그는 `load-test/anomaly-detector-scale/`.
+- **12시간 soak 중 InfluxDB 저장 무음 유실 버그 발견(원인 미해결)**: 위 soak test 도중
+  원시 텔레메트리(`speed` 등)의 InfluxDB 기록이 시작 26초 만에 완전히 멈춰 이후 12시간 동안
+  단 1건도 저장되지 않은 것을 발견했다. 이 구간 내내 `telemetry-storage-group`의 Kafka lag은
+  낮게 유지돼 **정상처럼 보였고**, backend 로그에도 에러가 전혀 없었다(무음 실패) — lag 기반
+  모니터링만으로는 잡을 수 없는 유형의 저장 유실이다. 기존에 고쳤던 초 단위 타임스탬프 충돌
+  버그(ADR-014, `WritePrecision.S`)의 재발은 아님을 코드로 확인했으나 근본 원인은 아직
+  못 찾았다 — 별도 이슈로 남겨둠.
 - **데이터 유실 버그 발견·수정**: InfluxDB `WritePrecision.S`(초 단위)와 시뮬레이터의 초 단위
   타임스탬프가 겹쳐, 차량당 초당 2회 조건에서 같은 초의 메시지가 서로 덮어써 **50%가
   조용히 유실**되고 있었다(Kafka lag은 0으로 정상처럼 보임). 밀리초 정밀도로 수정해
