@@ -41,6 +41,15 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       enable-auto-commit: false
+      properties:
+        # max.poll.interval.ms(기본 5분)를 넘기면 정적 멤버십 없이는 컨슈머가 그룹을
+        # 완전히 떠났다가(member id 리셋) 재가입해야 하는데, concurrency=3인 상태에서
+        # 여러 컨슈머가 동시에 이 경로를 타면 "MemberIdRequiredException → group is
+        # already rebalancing"에 갇혀 영영 복구가 안 되는 걸 12시간 soak test로 확인했다.
+        # group.instance.id를 주면(Concurrent 컨테이너가 -0/-1/-2로 자동 접미사를 붙인다)
+        # poll 간격을 잠깐 넘겨도 세션을 유지한 채 재가입할 수 있어 이 rebalance storm을
+        # 피할 수 있다.
+        group.instance.id: ${GROUP_INSTANCE_ID_BASE:telemetry-backend-consumer}
     listener:
       ack-mode: manual_immediate
       # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.
