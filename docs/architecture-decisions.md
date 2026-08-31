@@ -138,6 +138,25 @@
 > listener가 정상 반환해 offset이 커밋되는 조용한 유실 창구가 있었다. 현재 구현은
 > `WriteApiBlocking`으로 실제 저장 성공을 확인하고 `MANUAL_IMMEDIATE` ack를 수행한다.
 > 처리량보다 저장 확인 가능성을 우선한 결정이며, 재배치 최적화는 영속 outbox 도입 후 검토한다.
+>
+> **2026-08-31 재측정으로 다시 갱신 — 둘 다 가질 수 있었다**: 위 전환(`fdce9a3`)은
+> `WriteApiBlocking`을 **메시지 1건당 요청 1건**으로 쓰는 형태였고, 그 대가를 실측하지
+> 않았다. 4주 뒤 재보니 저장 처리량이 **8.2 msg/s**까지 떨어져 있었다(회귀 전 ~2,500 msg/s).
+> Kafka lag이 정상으로 보여 아무도 몰랐다.
+>
+> 원인은 동기 쓰기 자체가 아니라 **요청 단위**였다. 계측 결과 InfluxDB 쓰기 비용은
+> 포인트당이 아니라 **요청당**이 지배적이다 — 14포인트 0.81초, 1,914포인트 0.53초로
+> 포인트를 100배 넘게 늘려도 시간이 늘지 않는다(요청당 WAL fsync 1회. 이 호스트는
+> Docker Desktop/WSL2라 fsync가 특히 비싸다). InfluxDB 컨테이너가 CPU 1.66%로 놀면서도
+> 쓰기가 5초 타임아웃까지 걸린 게 결정적 단서였다.
+>
+> 그래서 Kafka 리스너를 **배치 리스너**로 바꿔 poll 배치(`max.poll.records`, 현재 2,000)를
+> `writePoints()` 요청 1건으로 묶었다. **저장 확인 보장은 그대로다** — 여전히 동기
+> 쓰기이고, 배치 쓰기가 성공한 뒤에만 offset을 커밋한다. 처리량만 **8.2 → 약 9,600 msg/s**로
+> 회복했다. 즉 "처리량 vs 저장 확인"은 실제로는 트레이드오프가 아니었고, 요청 단위를
+> 잘못 잡은 문제였다.
+>
+> 상세 수치는 `docs/load-test-plan.md` "Track A — 수집·저장 처리량 붕괴 발견과 복구".
 
 **결정**: `TelemetryRepository`가 `WriteApiBlocking`(단건 동기 쓰기) 대신
 `WriteApi`(비동기 배치, `batchSize=500`, `flushInterval=1000ms`)를 사용하도록 변경.
@@ -487,3 +506,46 @@ Redis 연결 없는 순수 단위 테스트다.
 **상세**: `anomaly-detector/ml_detector.py`, `anomaly-detector/anomaly_detector.py`,
 `anomaly-detector/tests/test_ml_detector.py`, `anomaly-detector/tests/test_anomaly_detector.py`,
 `docker-compose.yml`(anomaly-detector 서비스 REDIS_* 환경변수).
+
+---
+
+## ADR-019: MQTT 수집 경로의 write-ahead spool을 "항상"에서 "실패 시에만"으로
+
+**배경**: ADR-012(DLQ)와 같은 맥락에서, `fdce9a3`은 Kafka 브로커 장애 시 유실을 막으려고
+`TelemetryProducer.send()`에 write-ahead spool을 넣었다 — 메시지를 받으면 먼저 로컬 파일로
+저장하고, Kafka 전송이 성공하면 그 파일을 지운다. 의도는 옳았다.
+
+문제는 **비용을 재지 않은 것**이다. `TelemetrySpool.store()`는 메시지 1건마다
+디렉터리 생성 → 파일 쓰기 → `ATOMIC_MOVE` rename을 하고, 전송 성공 후 삭제까지 하면
+파일시스템 연산이 약 5회다. 게다가 `send()`가 `synchronized`이고 MQTT Paho 콜백
+**단일 스레드**에서 호출되므로, 수집 전체가 디스크 지연에 직렬로 묶였다.
+
+**실측 결과**: 시뮬레이터가 초당 약 10,000건을 발행하고 mosquitto가 전량 PUBACK하는 동안
+**Kafka에는 초당 20건만 도착했다**. 백엔드가 못 받아가 브로커 구독자 큐가 넘치면서
+**99.8%가 조용히 버려지고 있었다.** Kafka lag은 들어온 게 없으니 정상으로 보였고,
+그래서 이 유실이 4주간 드러나지 않았다.
+
+**결정**: 정상 경로에서는 spool을 거치지 않는다. **전송에 실패했을 때만** spool에 적는다.
+
+**근거**: spool의 목적은 *Kafka 브로커 장애 시 유실 방지*인데, Kafka 프로듀서 자체가
+내부 버퍼와 재시도(`acks=all`, `retries=3`)를 이미 갖고 있다. 정상 경로까지 디스크를
+경유시킬 이유가 없다. 실패 콜백에서 spool에 적으면 durability 의도는 그대로 지키면서
+메시지당 파일시스템 연산이 5회에서 0회가 된다.
+
+**순서 보장 유지**: 밀린 spool이 있는 동안(`backlog` 플래그)에는 기존처럼 새 메시지도
+spool로 보낸다. 그래야 `retryPending()`이 파일명(타임스탬프+시퀀스) 순서대로 드레인하면서
+차량별 순서(ADR-003)가 유지된다. `retryPending()`의 락도 `send()`와 분리해, 5초마다 도는
+스케줄러가 spool 디렉터리를 스캔하는 동안 수집 스레드까지 멈춰 세우던 문제를 없앴다.
+
+**트레이드오프(정직하게)**: 백엔드가 Kafka ack 전에 죽으면 그 인플라이트 구간은 유실된다.
+항상 spool하던 방식은 이 구간까지 지켰지만, 그 대가로 실제로는 **99.8%를 잃고 있었다.**
+또한 브로커 복구 직후 아주 짧은 구간에서 `backlog` 플래그가 best-effort라 같은 차량
+메시지의 순서가 뒤집힐 수 있다 — 각 메시지가 자체 timestamp를 갖고 있어 저장/조회는
+영향받지 않는다.
+
+**결과**: MQTT→Kafka 수집 **20 → 약 9,600 msg/s**. 상세는
+`docs/load-test-plan.md` "Track A — 수집·저장 처리량 붕괴 발견과 복구".
+
+**남은 과제**: 크래시 구간까지 지키려면 spool을 메시지당 파일이 아니라 append-only
+세그먼트 로그로 만들거나, MQTT 수동 ack(`setManualAcks(true)`)로 Kafka 확인 후 PUBACK하는
+방식이 필요하다. 둘 다 이번 범위를 벗어나 향후 과제로 남긴다.
