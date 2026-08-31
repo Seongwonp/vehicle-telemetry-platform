@@ -52,8 +52,14 @@ spring:
         group.instance.id: ${GROUP_INSTANCE_ID_BASE:telemetry-backend-consumer}
         # 저장 경로가 배치 리스너(KafkaConfig.telemetryBatchListenerContainerFactory)라
         # 이 값이 곧 InfluxDB 쓰기 1건에 묶이는 포인트 수 = 처리량 튜닝 손잡이다.
-        # 기본값과 같은 500이지만 성능에 직접 영향을 주므로 명시해 둔다.
-        max.poll.records: 500
+        #
+        # 실측(부하 ~9,000 msg/s)에서 InfluxDB 쓰기 비용은 배치 크기에 거의 비례하지 않는다:
+        # 14포인트 0.81초, 89포인트 0.97초, 460포인트 0.91초 — 요청당 고정비가 약 0.8초로
+        # 지배적이다(이 호스트는 Docker Desktop/WSL2라 fsync가 특히 비싸다). 따라서 배치를
+        # 키울수록 처리량이 거의 선형으로 오른다. 재빌드 없이 실험할 수 있게 환경변수로 뺐다.
+        # 메시지가 약 250바이트라 max.partition.fetch.bytes 기본값(1MB, 약 4,000건) 안에서
+        # 안전하게 올릴 수 있고, 배치 처리 시간은 max.poll.interval.ms(5분)에 한참 못 미친다.
+        max.poll.records: ${KAFKA_MAX_POLL_RECORDS:2000}
     listener:
       ack-mode: manual_immediate
       # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.

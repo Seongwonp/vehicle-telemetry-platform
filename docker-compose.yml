@@ -81,6 +81,9 @@ services:
       GEMINI_CIRCUIT_OPEN_MS: ${GEMINI_CIRCUIT_OPEN_MS:-60000}
       TELEMETRY_SPOOL_PATH: /app/data/telemetry-spool
       TELEMETRY_SPOOL_RETRY_MS: ${TELEMETRY_SPOOL_RETRY_MS:-5000}
+      # InfluxDB 저장 배치 크기 = 처리량 튜닝 손잡이 (application.yml 주석 참고).
+      # 재빌드 없이 값만 바꿔 재기동하면 되도록 노출한다.
+      KAFKA_MAX_POLL_RECORDS: ${KAFKA_MAX_POLL_RECORDS:-2000}
       TRIP_DEFAULT_HOURS: ${TRIP_DEFAULT_HOURS:-1}
       TRIP_POINT_LIMIT: ${TRIP_POINT_LIMIT:-10000}
       TRIP_GAP_THRESHOLD: ${TRIP_GAP_THRESHOLD:-3m}
