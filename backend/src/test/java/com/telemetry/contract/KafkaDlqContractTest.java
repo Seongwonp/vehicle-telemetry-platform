@@ -58,8 +58,8 @@ class KafkaDlqContractTest {
         Acknowledgment acknowledgment = mock(Acknowledgment.class);
 
         listener.consumeForStorage(
-            new org.apache.kafka.clients.consumer.ConsumerRecord<>(
-                "vehicle-telemetry", 0, 42L, "TEST-001", "{broken-json"),
+            List.of(new org.apache.kafka.clients.consumer.ConsumerRecord<>(
+                "vehicle-telemetry", 0, 42L, "TEST-001", "{broken-json")),
             acknowledgment);
 
         try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Map.of(

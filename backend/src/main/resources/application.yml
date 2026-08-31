@@ -50,6 +50,10 @@ spring:
         # poll 간격을 잠깐 넘겨도 세션을 유지한 채 재가입할 수 있어 이 rebalance storm을
         # 피할 수 있다.
         group.instance.id: ${GROUP_INSTANCE_ID_BASE:telemetry-backend-consumer}
+        # 저장 경로가 배치 리스너(KafkaConfig.telemetryBatchListenerContainerFactory)라
+        # 이 값이 곧 InfluxDB 쓰기 1건에 묶이는 포인트 수 = 처리량 튜닝 손잡이다.
+        # 기본값과 같은 500이지만 성능에 직접 영향을 주므로 명시해 둔다.
+        max.poll.records: 500
     listener:
       ack-mode: manual_immediate
       # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.

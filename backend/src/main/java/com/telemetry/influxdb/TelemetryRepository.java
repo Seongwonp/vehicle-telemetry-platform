@@ -5,24 +5,71 @@ import com.influxdb.client.domain.WritePrecision;
 import com.influxdb.client.write.Point;
 import com.telemetry.domain.VehicleTelemetry;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.List;
 
 @Repository
 public class TelemetryRepository {
 
     private final WriteApiBlocking writeApi;
     private final Counter writeFailureCounter;
+    // 부하 테스트에서 "건당 310ms"의 정체를 추측으로만 좁히다 두 번 빗나갔다(InfluxDB 타임아웃
+    // 설정 → Kafka 재시도 폭주 → 실제로는 요청당 fsync). 다음엔 숫자로 바로 답할 수 있도록
+    // 쓰기 소요 시간과 실제 배치 크기를 상시 계측한다.
+    private final Timer writeTimer;
+    private final DistributionSummary batchSizeSummary;
 
     public TelemetryRepository(WriteApiBlocking writeApi, MeterRegistry meterRegistry) {
         this.writeApi = writeApi;
         this.writeFailureCounter = meterRegistry.counter("telemetry.influx.write.failures");
+        this.writeTimer = meterRegistry.timer("telemetry.influx.write");
+        this.batchSizeSummary = meterRegistry.summary("telemetry.influx.write.batch.size");
     }
 
-    /** 실제 InfluxDB 응답까지 기다린다. 정상 반환은 Kafka offset 커밋의 전제 조건이다. */
+    /**
+     * 여러 포인트를 InfluxDB 요청 1건으로 쓴다. 실제 응답까지 기다리므로 정상 반환은
+     * Kafka offset 커밋의 전제 조건이다.
+     *
+     * <p>단건 {@code writePoint()}로 메시지마다 HTTP 요청을 보내던 구조에서는 요청 하나가
+     * InfluxDB의 WAL fsync 한 번을 유발해, ~2,400 msg/s 부하에서 처리량이 8 msg/s까지
+     * 무너졌다(InfluxDB CPU는 1.66%로 놀고 있는데 쓰기만 느린 I/O 대기 패턴이었다).
+     * 모든 포인트가 같은 {@link WritePrecision#MS}라 클라이언트 내부 precision 그룹핑에서도
+     * 요청 1건으로 합쳐진다.
+     */
+    public void saveAll(List<Point> points) {
+        if (points.isEmpty()) {
+            return;
+        }
+        batchSizeSummary.record(points.size());
+        Timer.Sample sample = Timer.start();
+        try {
+            writeApi.writePoints(points);
+        } catch (RuntimeException e) {
+            writeFailureCounter.increment();
+            throw e;
+        } finally {
+            sample.stop(writeTimer);
+        }
+    }
+
+    /** 단건 저장 — 배치 경로({@link #saveAll})에 위임한다. */
     public void save(VehicleTelemetry telemetry) {
+        saveAll(List.of(toPoint(telemetry)));
+    }
+
+    /**
+     * 텔레메트리를 InfluxDB 포인트로 변환한다.
+     *
+     * <p>배치 컨슈머가 레코드별 try/catch 안에서 직접 호출할 수 있도록 public이다 —
+     * 여기서 발생하는 {@link java.time.format.DateTimeParseException} 같은 데이터 오류는
+     * 그 레코드 하나만 DLQ로 보내야지, 배치 전체를 실패시키면 정상 메시지까지 재시도된다.
+     */
+    public Point toPoint(VehicleTelemetry telemetry) {
         // vehicle_id는 tag로 설정한다. InfluxDB에서 tag는 자동으로 인덱싱되어
         // "특정 차량의 데이터만 조회"하는 쿼리가 field 필터보다 훨씬 빠르다.
         Point point = Point.measurement("vehicle_telemetry")
@@ -50,11 +97,6 @@ public class TelemetryRepository {
             point.addField("dtc_codes", String.join(",", telemetry.getDtcCodes()));
         }
 
-        try {
-            writeApi.writePoint(point);
-        } catch (RuntimeException e) {
-            writeFailureCounter.increment();
-            throw e;
-        }
+        return point;
     }
 }
