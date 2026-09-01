@@ -122,4 +122,34 @@ public class MqttConfig {
         adapter.setOutputChannel(mqttInputChannel());
         return adapter;
     }
+
+    @Bean
+    public MessageChannel mqttBrokerMetricsChannel() {
+        return new DirectChannel();
+    }
+
+    /**
+     * 브로커 자체 통계(`$SYS`) 구독 — 텔레메트리 경로와 완전히 분리한다.
+     *
+     * <p>같은 어댑터에 `$SYS` 토픽을 얹으면 `MqttMessageHandler`가 이 메시지들을 받아
+     * 차량 토픽 패턴에 안 맞는다며 전부 거부 카운터와 DLQ로 보낸다. 별도 어댑터·채널로
+     * 분리해 그런 오염을 막는다.
+     *
+     * <p>QoS 0인 이유: mosquitto는 이 값들을 기본 10초마다 최신값으로 다시 발행한다.
+     * 한 번 놓쳐도 다음 주기에 정확한 누적값이 오므로 재전송 보장이 필요 없다.
+     */
+    @Bean
+    public MqttPahoMessageDrivenChannelAdapter mqttBrokerMetricsInbound() {
+        MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(
+            clientId + "-sys", mqttClientFactory(),
+            "$SYS/broker/publish/messages/dropped",
+            "$SYS/broker/messages/received",
+            "$SYS/broker/clients/connected");
+
+        adapter.setCompletionTimeout(5000);
+        adapter.setConverter(new DefaultPahoMessageConverter());
+        adapter.setQos(0);
+        adapter.setOutputChannel(mqttBrokerMetricsChannel());
+        return adapter;
+    }
 }

@@ -32,6 +32,30 @@ groups:
         annotations:
           summary: "Publishing to a telemetry DLQ failed"
 
+      # 브로커가 구독자에게 못 넘겨 버린 메시지 — 곧바로 데이터 유실이다.
+      # 애플리케이션 지표(MQTT 수신 수, Kafka 발행 수, Consumer lag)로는 절대 안 잡힌다:
+      # 수집이 초당 20건으로 막혀 있던 동안 셋 다 서로 일치하며 정상으로 보였다.
+      # 브로커만이 아는 값이라 백엔드가 $SYS를 구독해 게이지로 내보낸다.
+      - alert: MqttBrokerDroppingMessages
+        expr: increase(telemetry_mqtt_broker_messages_dropped[5m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MQTT 브로커가 메시지를 버리고 있음 — 수집 유실 발생 중"
+
+      # 브로커가 받은 양과 백엔드가 실제로 처리한 양의 괴리. 위 dropped가 오르기 전
+      # 단계(브로커 큐에 쌓이는 중)에서 먼저 뜨는 조기 경보다.
+      - alert: MqttIngestFallingBehind
+        expr: >
+          rate(telemetry_mqtt_broker_messages_received[5m])
+            - rate(telemetry_mqtt_messages_received_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "백엔드가 MQTT 유입 속도를 못 따라가고 있음 (브로커 수신 대비 처리 부족)"
+
       - alert: InfluxDbOperationFailures
         expr: sum(increase(telemetry_influx_write_failures_total[5m])) + sum(increase(telemetry_influx_query_failures_total[5m])) > 0
         for: 1m

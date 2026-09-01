@@ -89,3 +89,37 @@
   총 1,677회 "Lost connection: MqttException"을 기록했다 — InfluxDB 저장 중단(06:45)보다
   1h40m 늦게 시작했으므로 같은 원인은 아니고, 장시간 부하에서의 MQTT 연결 안정성 문제로
   별도 이슈다.
+
+## 부하 테스트 전 필수 확인 — 부하가 실제로 도달했는가
+
+2026-08-31에 확인된 사실: **여러 차례의 "2,400 msg/s 부하 테스트"가 실제로는 초당
+15-20건만 파이프라인에 도달한 상태에서 측정됐다.** 시뮬레이터는 정상 발행하고
+브로커도 정상 수신했지만, 백엔드가 못 받아가 브로커가 나머지를 조용히 버리고 있었다.
+Kafka lag은 들어온 게 없으니 정상으로 보였다.
+
+그래서 **부하를 걸었으면 반드시 입력단에서 도달량을 확인한다.** 소요 1분.
+
+```bash
+# 1) 시뮬레이터가 실제로 몇 건 발행하는지 (프로세스 1개 기준, ×프로세스 수)
+A=$(docker logs telemetry-sim-0 2>&1 | wc -l); sleep 15
+B=$(docker logs telemetry-sim-0 2>&1 | wc -l); echo "발행: $(( (B-A)/15 )) msg/s"
+
+# 2) Kafka에 실제로 도착한 양
+A=$(docker exec telemetry-kafka kafka-run-class kafka.tools.GetOffsetShell \
+      --broker-list localhost:9092 --topic vehicle-telemetry | awk -F: '{s+=$3} END{print s}')
+sleep 20
+B=$(docker exec telemetry-kafka kafka-run-class kafka.tools.GetOffsetShell \
+      --broker-list localhost:9092 --topic vehicle-telemetry | awk -F: '{s+=$3} END{print s}')
+echo "수집: $(( (B-A)/20 )) msg/s"
+
+# 3) 브로커가 버린 게 있는지 (0이 아니면 유실 중)
+curl -s localhost:8080/actuator/prometheus | grep -E "^telemetry_mqtt_broker_messages_dropped"
+```
+
+`발행 ≈ 수집`이고 `dropped`가 안 늘어야 그 측정을 신뢰할 수 있다. 크게 벌어지면
+그 회차 수치는 **의도한 부하의 결과가 아니다** — 원인을 먼저 잡고 다시 측정한다.
+
+상시 감시는 `monitoring/prometheus/alerts.yml`의 `MqttBrokerDroppingMessages`(브로커가
+버린 메시지 발생)와 `MqttIngestFallingBehind`(브로커 수신 대비 백엔드 처리 부족)가 맡는다.
+두 알림은 브로커 큐를 10으로 줄여 유실을 인위적으로 만든 뒤 실제로 감지되는 것까지
+확인했다(브로커 수신 474,017건 / 버림 429건 / 백엔드 수신 261,423건).
