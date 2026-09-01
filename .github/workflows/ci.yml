@@ -35,7 +35,7 @@ jobs:
 
           files = glob.glob('build/test-results/test/TEST-com.telemetry.contract.*.xml')
           skipped = sum(int(ET.parse(path).getroot().attrib.get('skipped', 0)) for path in files)
-          if len(files) != 4 or skipped:
+          if len(files) != 5 or skipped:
               sys.exit(f'Infrastructure contracts did not all execute: files={len(files)}, skipped={skipped}')
           PY
       - name: Python tests
