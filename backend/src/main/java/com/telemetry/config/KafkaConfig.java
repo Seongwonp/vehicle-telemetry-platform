@@ -14,6 +14,8 @@ import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.FixedBackOff;
 
+import java.time.Duration;
+
 @Configuration
 public class KafkaConfig {
 
@@ -41,6 +43,12 @@ public class KafkaConfig {
             // 규칙(<topic>-dlt)을 쓰면 이미 운영 중인 DLQ 토픽/알림과 어긋난다.
             // 파티션 -1은 "프로듀서가 정한다" — DLQ 파티션 수가 바뀌어도 안전하다.
             (record, exception) -> new TopicPartition(resolveDlqTopic(record.topic()), -1));
+
+        // DLQ 발행 결과를 실제로 확인한다. 기본값대로 두면 발행이 실패해도 recoverer가
+        // 성공으로 간주해 원본 offset을 커밋해버린다 — 메시지가 DLQ에도 없고 원본도
+        // 지나가버리는 조용한 유실이다(계약 테스트 KafkaStorageFailureContractTest로 발견).
+        recoverer.setFailIfSendResultIsError(true);
+        recoverer.setWaitForSendResultTimeout(Duration.ofSeconds(5));
 
         return new DefaultErrorHandler((record, exception) -> {
             // alerts.yml의 DLQ 알림이 보는 메트릭 — 컨슈머 내부 sendToDlq()와 같은 이름으로
