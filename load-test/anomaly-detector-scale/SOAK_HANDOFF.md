@@ -16,7 +16,7 @@ vehicle-telemetry-platform 저장소에서 anomaly-detector 3인스턴스 12시�
 진행해줘. 배경:
 
 - 목표: `docker-compose.yml`의 `anomaly-detector` 서비스가 `deploy.replicas: 3`으로
-  이미 다중화되어 있는데(commit 4bd775b까지 반영됨), ~2,300-2,700 msg/s급 실부하를
+  이미 다중화되어 있는데(commit 525037f까지 반영됨), ~2,300-2,700 msg/s급 실부하를
   12시간 동안 유지해도 Kafka consumer lag(`anomaly-detector-group`)이 발산하지 않고
   버티는지 확인하는 것. 1시간 A/B 비교(`AB1_1instance_1h_samehost.txt` vs
   `AB2_3instances_1h_samehost.txt`)는 이미 끝났고 3인스턴스가 확실히 우세했지만, 장시간
@@ -27,7 +27,7 @@ vehicle-telemetry-platform 저장소에서 anomaly-detector 3인스턴스 12시�
   (`sample.sh`, `README.md`, 이전 로그들). **그대로 재사용**하면 된다.
 
 ### 시작 전 체크리스트
-1. `git pull origin main` — 최신 커밋 확인 (4bd775b 이후)
+1. `git pull origin main` — 최신 커밋 확인 (525037f 이후)
 2. `.env` 파일 확인 — gitignore라 git엔 없음. 노트북 `.env`를 복사해오거나
    `.env.example` 기준으로 새로 작성(최소: POSTGRES_*, REDIS_PASSWORD, INFLUXDB_*,
    JWT_SECRET, ADMIN_PASSWORD, MQTT_TLS_STORE_PASSWORD)
