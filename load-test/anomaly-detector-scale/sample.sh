@@ -5,7 +5,10 @@
 STAGE="$1"
 DURATION="${2:-300}"
 INTERVAL="${3:-30}"
-OUTDIR="${4:-/private/tmp/claude-501/-Users-parkseong-won-IdeaProjects-vehicle-telemetry-platform/25c5d0c9-024f-4349-b174-0829576d65bf/scratchpad/loadtest2}"
+# 기본값은 이 스크립트가 있는 디렉터리 — 원시 로그는 저장소 안에 남겨 커밋한다.
+# (예전 기본값은 특정 머신의 임시 디렉터리 절대경로였는데, 그 경로는 다른 호스트에
+#  존재하지 않는 데다 세션이 끝나면 지워져 1차 측정 원시 로그가 실제로 유실된 적이 있다.)
+OUTDIR="${4:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 LOG="$OUTDIR/${STAGE}.log"
 TOKEN="localtoken1234567890localtoken1234567890abcdefgh"
 ORG="vehicle-telemetry"
