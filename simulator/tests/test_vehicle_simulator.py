@@ -146,6 +146,23 @@ class TestCompositeAnomaly:
             assert payload["speed"] <= vs.THRESHOLD_SPEED_HIGH
             assert payload["dtc_codes"] == []
 
+    def test_룰_이상_직후에도_룰_임계값을_넘지_않는다(self):
+        """상태가 이월돼 오염되는 경우를 잡는다.
+
+        복합 이상만 연속 호출하면 안 걸리는 버그가 실제로 있었다 — inject_anomaly()가
+        dtc_code를 남기면 다음 복합 이상 페이로드에 그 DTC가 실려 룰이 잡아버렸다
+        (실측에서 복합 19,908건 중 261건 오염). 두 주입을 섞어야 재현된다."""
+        state = vs.VehicleState(vehicle_id="SIM-001")
+        for _ in range(300):
+            state.inject_anomaly()
+            payload = state.inject_composite_anomaly()
+
+            assert payload["dtc_codes"] == []
+            assert payload["engine_temp"] <= vs.THRESHOLD_ENGINE_TEMP_HIGH
+            assert payload["rpm"] <= vs.THRESHOLD_RPM_HIGH
+            assert vs.THRESHOLD_BATTERY_LOW <= payload["battery_voltage"] <= vs.THRESHOLD_BATTERY_HIGH
+            assert payload["speed"] <= vs.THRESHOLD_SPEED_HIGH
+
     def test_정답_로그를_남긴다(self, caplog):
         state = vs.VehicleState(vehicle_id="SIM-007")
         with caplog.at_level("WARNING"):

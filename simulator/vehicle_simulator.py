@@ -196,6 +196,13 @@ class VehicleState:
         룰은 단일 필드 임계값만 보므로 원칙적으로 못 잡고, 다변량 이상치를 보는
         ML만 잡을 수 있어야 한다 — ML의 존재 이유를 검증하는 정답 데이터다.
         """
+        # 반드시 정상 상태에서 출발한다. 직전 틱이 룰 이상이었으면 그 값이 상태에 남아
+        # 있어서(next()를 거치지 않으면 안 지워진다) 복합 이상 페이로드에 실려 나가고,
+        # 룰이 잡아버려 "룰이 못 잡는 케이스"라는 전제가 깨진다 — 실측에서 복합 19,908건
+        # 중 261건이 남은 dtc_code 때문에, 그 외에 battery_voltage도 같은 식으로 오염됐다.
+        # 필드를 하나씩 되돌리면 새 룰 이상이 생길 때마다 또 놓치므로 통째로 정상화한다.
+        self.next()
+
         anomaly_type = random.choice([
             "clutch_slip", "alternator_degrading",
             "overheat_at_idle", "throttle_no_response",
