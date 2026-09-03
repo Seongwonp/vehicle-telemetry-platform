@@ -9,7 +9,10 @@ INTERVAL="${3:-30}"
 # (예전 기본값은 특정 머신의 임시 디렉터리 절대경로였는데, 그 경로는 다른 호스트에
 #  존재하지 않는 데다 세션이 끝나면 지워져 1차 측정 원시 로그가 실제로 유실된 적이 있다.)
 OUTDIR="${4:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-LOG="$OUTDIR/${STAGE}.log"
+# 확장자가 .txt인 이유: .gitignore가 *.log를 제외하는데 이 원시 로그는 반드시 커밋해야
+# 한다(측정 요약만 남고 원본이 없으면 독립 재검증이 불가능하다 — 1차 측정 때 실제로
+# 그렇게 유실됐다). .log로 쓰면 매번 커밋 직전에 이름을 바꿔야 해서 아예 .txt로 쓴다.
+LOG="$OUTDIR/${STAGE}.txt"
 TOKEN="localtoken1234567890localtoken1234567890abcdefgh"
 ORG="vehicle-telemetry"
 

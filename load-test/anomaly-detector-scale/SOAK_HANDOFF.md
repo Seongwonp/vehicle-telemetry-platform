@@ -74,16 +74,16 @@ disown
 ```
 
 `sample.sh`는 이미 자체 타임아웃(15초)이 있어서 docker exec 하나가 멈춰도 전체 루프가
-같이 멈추지 않는다(v1의 실패 원인은 이미 고쳐져 있음). `AB4_soak_desktop_12h.log` 파일에
+같이 멈추지 않는다(v1의 실패 원인은 이미 고쳐져 있음). `AB4_soak_desktop_12h.txt` 파일에
 60초 간격으로 kafka lag, `[anomaly_lag_sum]`, influx 저장 건수, docker stats가 쌓인다.
 
 ### 종료 후 (또는 다시 끊기면)
-- `grep anomaly_lag_sum AB4_soak_desktop_12h.log`로 lag 추이만 뽑아서 발산/진동/안정
+- `grep anomaly_lag_sum AB4_soak_desktop_12h.txt`로 lag 추이만 뽑아서 발산/진동/안정
   여부 판단
 - `docs/load-test-plan.md`의 "Track A — 이상 감지 서비스 다중화" 절, ADR-016,
   `load-test/anomaly-detector-scale/README.md`를 이번 결과로 갱신 — **완주했든
   또 중단됐든 정직하게 기록** (이 세션의 원칙: 과장 없이, 안 되면 안 됐다고 씀)
-- 원시 로그(`AB4_soak_desktop_12h.log`)는 반드시 `load-test/anomaly-detector-scale/`
+- 원시 로그(`AB4_soak_desktop_12h.txt`)는 반드시 `load-test/anomaly-detector-scale/`
   안에 커밋할 것 — 스크래치패드에만 남기면 세션 종료 시 날아간다(1차 측정 원시 로그가
   이렇게 유실된 전례가 있음)
 - 커밋 메시지는 직접 만들지 말고 나(사용자)에게 먼저 요약해서 보여줄 것
