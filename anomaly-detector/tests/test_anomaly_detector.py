@@ -136,17 +136,16 @@ class TestProcessPropagatesPublishFailure:
 
     def test_이상없으면_producer_호출안함(self):
         producer = FakeProducer()
-        ml = MLAnomalyDetector(min_samples=1_000_000)  # ML 절대 안 켜지게
 
-        process(make_data(), producer, ml)
+        # ML 예측은 이제 호출자가 파티션 배치 단위로 수행하고 결과(bool)만 넘긴다.
+        process(make_data(), producer, ml_anomaly=False)
 
         assert producer.sent == []
 
     def test_이상감지시_정상_발행되면_예외없음(self):
         producer = FakeProducer()
-        ml = MLAnomalyDetector(min_samples=1_000_000)
 
-        process(make_data(engine_temp=999.0), producer, ml)
+        process(make_data(engine_temp=999.0), producer, ml_anomaly=False)
 
         assert len(producer.sent) == 1
         assert producer.flushed is True
@@ -161,10 +160,9 @@ class TestProcessPropagatesPublishFailure:
         # producer.send() 자체는 성공(버퍼에 큐잉)하지만, 나중에 브로커 응답에서 실패한
         # 경우를 흉내낸다 — future.get()이 예외를 던진다.
         producer = FakeProducer(future_exc=RuntimeError("send failed"))
-        ml = MLAnomalyDetector(min_samples=1_000_000)
 
         with pytest.raises(RuntimeError):
-            process(make_data(engine_temp=999.0), producer, ml)
+            process(make_data(engine_temp=999.0), producer, ml_anomaly=False)
 
 
 # ── PartitionedMLDetectors: 파티션별 ML 상태 저장/복원 (ADR-018) ──

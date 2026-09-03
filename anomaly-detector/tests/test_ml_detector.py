@@ -67,7 +67,9 @@ class TestMLAnomalyDetector:
         assert len(detector._buffer) == 50
 
     def test_retrain_interval_도달하면_재학습(self):
-        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20)
+        # 이 테스트는 "건수 조건"만 본다 — 시간 하한은 TestRetrainMinSeconds에서 따로 검증한다.
+        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20,
+                                     retrain_min_seconds=0)
         for i in range(10):
             detector.update(make_normal_data(seed=i))
         assert detector.is_trained is True
@@ -120,3 +122,102 @@ class TestMLAnomalyDetector:
         restored = MLAnomalyDetector(min_samples=5, window_size=5)
         restored.load_state(state)
         assert restored._buffer.maxlen == 5
+
+
+# ── update_batch(): 배치 예측 (ADR-018 — predict 호출당 비용이 지배적) ──────
+
+class TestUpdateBatch:
+
+    def test_학습_전에는_전부_정상으로_본다(self):
+        detector = MLAnomalyDetector(min_samples=100)
+        batch = [make_normal_data(seed=i) for i in range(10)]
+
+        results = detector.update_batch(batch)
+
+        assert results == [False] * 10
+        assert detector.is_trained is False
+
+    def test_배치_크기만큼_결과를_돌려준다(self):
+        detector = MLAnomalyDetector(min_samples=50)
+        batch = [make_normal_data(seed=i) for i in range(60)]
+
+        results = detector.update_batch(batch)
+
+        assert len(results) == 60
+        assert all(isinstance(r, bool) for r in results)
+        assert detector.is_trained is True
+
+    def test_빈_배치는_빈_결과(self):
+        detector = MLAnomalyDetector(min_samples=10)
+        assert detector.update_batch([]) == []
+
+    def test_버퍼에_배치_전체가_들어간다(self):
+        detector = MLAnomalyDetector(min_samples=1_000_000, window_size=1_000_000)
+        detector.update_batch([make_normal_data(seed=i) for i in range(30)])
+
+        assert len(detector._buffer) == 30
+
+    def test_단건_경로와_같은_판정을_낸다(self):
+        # 같은 데이터를 같은 순서로 넣으면(학습 시점만 다를 뿐) 동일 모델이 되므로
+        # 판정도 같아야 한다 — 배치화가 탐지 결과를 바꾸지 않음을 확인한다.
+        warmup = [make_normal_data(seed=i) for i in range(60)]
+        probe = make_normal_data(seed=9999)
+
+        one_by_one = MLAnomalyDetector(min_samples=50, retrain_interval=1_000_000)
+        for d in warmup:
+            one_by_one.update(d)
+        expected = one_by_one.update(probe)
+
+        batched = MLAnomalyDetector(min_samples=50, retrain_interval=1_000_000)
+        batched.update_batch(warmup)
+        actual = batched.update_batch([probe])[0]
+
+        assert actual == expected
+
+    def test_재학습_임계치를_넘으면_배치_안에서_한_번_재학습한다(self):
+        # 건수 조건만 보기 위해 시간 하한은 끈다.
+        detector = MLAnomalyDetector(min_samples=10, retrain_interval=20,
+                                     retrain_min_seconds=0)
+        detector.update_batch([make_normal_data(seed=i) for i in range(10)])
+        assert detector.is_trained is True
+
+        trained_model = detector.model
+        # 임계치(20)를 넘는 배치를 넣으면 재학습이 일어나 모델 객체가 교체된다.
+        detector.update_batch([make_normal_data(seed=100 + i) for i in range(25)])
+
+        assert detector.model is not trained_model
+        assert detector._samples_since_train == 0
+
+
+# ── 재학습 시간 하한 (ADR-018 — 건수 기준만으로는 처리량에 따라 빈도가 폭주) ──
+
+class TestRetrainMinSeconds:
+
+    def test_시간_하한_전에는_건수를_넘겨도_재학습하지_않는다(self):
+        detector = MLAnomalyDetector(min_samples=10, retrain_interval=20,
+                                     retrain_min_seconds=3600)
+        detector.update_batch([make_normal_data(seed=i) for i in range(10)])
+        trained_model = detector.model
+
+        # 건수 조건(20)은 한참 넘겼지만 시간 하한(1시간)에 걸려 재학습되면 안 된다.
+        detector.update_batch([make_normal_data(seed=100 + i) for i in range(100)])
+
+        assert detector.model is trained_model
+
+    def test_시간_하한이_0이면_건수만으로_재학습한다(self):
+        detector = MLAnomalyDetector(min_samples=10, retrain_interval=20,
+                                     retrain_min_seconds=0)
+        detector.update_batch([make_normal_data(seed=i) for i in range(10)])
+        trained_model = detector.model
+
+        detector.update_batch([make_normal_data(seed=100 + i) for i in range(25)])
+
+        assert detector.model is not trained_model
+
+    def test_최초_학습은_시간_하한의_영향을_받지_않는다(self):
+        # 시간 하한은 재학습에만 적용된다 — 최초 학습까지 지연되면 그동안 탐지가 비어버린다.
+        detector = MLAnomalyDetector(min_samples=10, retrain_min_seconds=3600)
+
+        detector.update_batch([make_normal_data(seed=i) for i in range(10)])
+
+        assert detector.is_trained is True

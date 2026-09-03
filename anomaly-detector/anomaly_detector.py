@@ -166,16 +166,21 @@ class PartitionedMLDetectors:
                 logger.warning(f"[ML] 파티션 {partition} 학습 상태 저장 실패", exc_info=True)
 
 
-def process(data: dict, producer: KafkaProducer, ml: MLAnomalyDetector | None) -> None:
+def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> None:
+    """한 메시지에 대해 룰 기반 탐지 + 이벤트 발행을 수행한다.
+
+    ML 예측 결과는 `ml_anomaly`로 받는다 — 예측 자체는 호출자가 파티션 배치 단위로
+    한 번에 수행한다(ml_detector.update_batch). sklearn predict는 호출 횟수가 비용을
+    지배해서, 메시지마다 부르면 처리량이 약 25배 떨어진다(ADR-018).
+    """
     vehicle_id = data.get("vehicle_id", "UNKNOWN")
 
     # ── 1. 룰 기반 이상 감지 ────────────────────────────────────
     detected = rules.detect(data)
 
-    # ── 2. ML 기반 이상 감지 ────────────────────────────────────
+    # ── 2. ML 기반 이상 감지 (예측은 배치로 이미 끝났다) ─────────
     if ML_ENABLED:
-        is_ml_anomaly = ml.update(data)
-        if is_ml_anomaly:
+        if ml_anomaly:
             from rules import AnomalyEvent
             detected.append(AnomalyEvent(
                 vehicle_id=vehicle_id,
@@ -296,34 +301,76 @@ def main() -> None:
 
     try:
         while running:
-            for message in consumer:
+            # poll()로 파티션별 묶음을 받는다. ML 예측을 파티션 배치당 1회로 묶기
+            # 위해서다 — 파티션마다 학습 상태가 다르므로(ADR-018) 배치도 파티션 단위여야
+            # 한다. 메시지별 DLQ 격리와 커밋 정책은 그대로 유지한다.
+            records = consumer.poll(timeout_ms=1000)
+            if not records:
+                maybe_commit()
+                continue
+
+            for topic_partition, messages in records.items():
                 if not running:
                     break
-                try:
-                    data = json.loads(message.value.decode("utf-8"))
-                    ml = ml_detectors.get(message.partition) if ML_ENABLED else None
-                    process(data, producer, ml)
-                    processed += 1
-                    if processed % 100 == 0:
-                        logger.info(f"처리 누적: {processed}건")
-                except Exception as e:
-                    logger.error(
-                        f"메시지 처리 실패 — DLQ로 이동 "
-                        f"partition={message.partition} offset={message.offset}: {e}",
-                        exc_info=True,
-                    )
-                    send_to_dlq(dlq_producer, message)
-                    dlq_count += 1
 
-                # 성공이든 DLQ로 격리했든 이 메시지는 "처리 완료"다 — 재시도 없이 다음
-                # 메시지로 넘어가되, 실패분은 원본이 DLQ에 남아 나중에 조사/재처리할 수 있다.
-                safe_offsets[TopicPartition(message.topic, message.partition)] = OffsetAndMetadata(
-                    message.offset + 1, ""
-                )
-                handled_since_commit += 1
-                maybe_commit()
+                # ── 1) 역직렬화: 실패는 메시지 단위로 DLQ 격리 ──────────────
+                parsed: list[tuple] = []
+                for message in messages:
+                    try:
+                        parsed.append((message, json.loads(message.value.decode("utf-8"))))
+                    except Exception as e:
+                        logger.error(
+                            f"역직렬화 실패 — DLQ로 이동 "
+                            f"partition={message.partition} offset={message.offset}: {e}",
+                            exc_info=True,
+                        )
+                        send_to_dlq(dlq_producer, message)
+                        dlq_count += 1
+                        safe_offsets[TopicPartition(message.topic, message.partition)] = \
+                            OffsetAndMetadata(message.offset + 1, "")
+                        handled_since_commit += 1
 
-            # consumer_timeout_ms로 idle 상태가 되어 for 루프를 빠져나온 시점에도 커밋한다.
+                # ── 2) ML 예측: 이 파티션 배치에 대해 단 1회 ────────────────
+                ml_flags = [False] * len(parsed)
+                if ML_ENABLED and parsed:
+                    try:
+                        detector = ml_detectors.get(topic_partition.partition)
+                        ml_flags = detector.update_batch([data for _, data in parsed])
+                    except Exception:
+                        # ML은 룰 위에 얹는 보조 탐지다. 여기서 배치 전체를 DLQ로 보내면
+                        # sklearn 문제 하나로 정상 메시지 수백 건이 격리된다. 룰 기반
+                        # 탐지는 그대로 살리고 이 배치의 ML 판정만 포기하되,
+                        # 조용히 넘어가지 않도록 ERROR로 남긴다.
+                        logger.error(
+                            f"[ML] 배치 예측 실패 — partition={topic_partition.partition} "
+                            f"{len(parsed)}건은 룰 기반으로만 판정합니다",
+                            exc_info=True,
+                        )
+                        ml_flags = [False] * len(parsed)
+
+                # ── 3) 룰 판정 + 이벤트 발행: 실패는 메시지 단위로 DLQ ──────
+                for (message, data), ml_flag in zip(parsed, ml_flags):
+                    try:
+                        process(data, producer, ml_flag)
+                        processed += 1
+                        if processed % 1000 == 0:
+                            logger.info(f"처리 누적: {processed}건")
+                    except Exception as e:
+                        logger.error(
+                            f"메시지 처리 실패 — DLQ로 이동 "
+                            f"partition={message.partition} offset={message.offset}: {e}",
+                            exc_info=True,
+                        )
+                        send_to_dlq(dlq_producer, message)
+                        dlq_count += 1
+
+                    # 성공이든 DLQ로 격리했든 "처리 완료"다 — 재시도 없이 넘어가되,
+                    # 실패분은 원본이 DLQ에 남아 나중에 조사/재처리할 수 있다.
+                    safe_offsets[TopicPartition(message.topic, message.partition)] = \
+                        OffsetAndMetadata(message.offset + 1, "")
+                    handled_since_commit += 1
+                    maybe_commit()
+
             maybe_commit()
     finally:
         maybe_commit(force=True)
