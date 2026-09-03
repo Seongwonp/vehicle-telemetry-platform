@@ -7,6 +7,7 @@ from datetime import datetime
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import pytest
+import vehicle_simulator as vs
 from vehicle_simulator import VehicleState
 
 # 이상 감지 임계값 (CLAUDE.md 기준)
@@ -126,3 +127,69 @@ class TestVehicleStateAnomalyInjection:
         payload = state.inject_anomaly()
         assert "timestamp" in payload
         assert payload["timestamp"] != ""
+
+
+# ── 복합 이상 / 드리프트 (ML 평가용 시나리오) ────────────────────────────
+
+class TestCompositeAnomaly:
+    """복합 이상의 핵심 전제: 개별 필드는 전부 룰 임계값 안이어야 한다.
+    하나라도 룰에 걸리면 'ML만 잡을 수 있는 정답'이 아니게 되므로 측정이 무의미해진다."""
+
+    def test_모든_복합_이상이_룰_임계값을_넘지_않는다(self):
+        state = vs.VehicleState(vehicle_id="SIM-001")
+        for _ in range(300):
+            payload = state.inject_composite_anomaly()
+
+            assert payload["engine_temp"] <= vs.THRESHOLD_ENGINE_TEMP_HIGH
+            assert payload["rpm"] <= vs.THRESHOLD_RPM_HIGH
+            assert vs.THRESHOLD_BATTERY_LOW <= payload["battery_voltage"] <= vs.THRESHOLD_BATTERY_HIGH
+            assert payload["speed"] <= vs.THRESHOLD_SPEED_HIGH
+            assert payload["dtc_codes"] == []
+
+    def test_정답_로그를_남긴다(self, caplog):
+        state = vs.VehicleState(vehicle_id="SIM-007")
+        with caplog.at_level("WARNING"):
+            payload = state.inject_composite_anomaly()
+
+        gt = [r for r in caplog.messages if r.startswith(vs.GROUND_TRUTH_PREFIX)]
+        assert len(gt) == 1
+        assert f"vehicle={payload['vehicle_id']}" in gt[0]
+        assert f"ts={payload['timestamp']}" in gt[0]
+        assert "kind=composite" in gt[0]
+
+    def test_룰_이상도_정답_로그를_남긴다(self, caplog):
+        state = vs.VehicleState(vehicle_id="SIM-007")
+        with caplog.at_level("WARNING"):
+            payload = state.inject_anomaly()
+
+        gt = [r for r in caplog.messages if r.startswith(vs.GROUND_TRUTH_PREFIX)]
+        assert len(gt) == 1
+        assert "kind=rule" in gt[0]
+        assert f"ts={payload['timestamp']}" in gt[0]
+
+
+class TestDrift:
+
+    def test_기본값이면_드리프트가_없다(self):
+        state = vs.VehicleState(vehicle_id="SIM-001")
+        assert state._drift_offset() == 0.0
+
+    def test_시작_시간_전에는_0이다(self, monkeypatch):
+        monkeypatch.setattr(vs, "DRIFT_TEMP_DELTA", 10.0)
+        monkeypatch.setattr(vs, "DRIFT_START_SECONDS", 100.0)
+        state = vs.VehicleState(vehicle_id="SIM-001")
+        state._started_at = vs.time.time()  # 방금 시작
+
+        assert state._drift_offset() == 0.0
+
+    def test_램프_구간을_지나면_최대치로_수렴한다(self, monkeypatch):
+        monkeypatch.setattr(vs, "DRIFT_TEMP_DELTA", 10.0)
+        monkeypatch.setattr(vs, "DRIFT_START_SECONDS", 0.0)
+        monkeypatch.setattr(vs, "DRIFT_RAMP_SECONDS", 100.0)
+        state = vs.VehicleState(vehicle_id="SIM-001")
+
+        state._started_at = vs.time.time() - 50.0    # 램프 절반
+        assert state._drift_offset() == pytest.approx(5.0, abs=0.2)
+
+        state._started_at = vs.time.time() - 999.0   # 램프 종료 후
+        assert state._drift_offset() == pytest.approx(10.0)

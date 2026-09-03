@@ -43,6 +43,25 @@ ANOMALY_RATE     = float(os.getenv("ANOMALY_RATE", "0.02"))       # 2% 확률
 # 진짜 더 센 부하를 걸려면 프로세스(=GIL 인스턴스)를 늘려야 한다.
 VEHICLE_ID_OFFSET = int(os.getenv("VEHICLE_ID_OFFSET", "0"))
 
+# ── ML 평가용 시나리오 (기본 비활성 — 켜지 않으면 기존 동작 그대로) ────────
+# 룰이 잡는 이상값(ANOMALY_RATE)만으로는 ML 탐지 품질을 잴 수 없다. 주입한 정답이
+# 곧 룰이 잡는 것이라, "룰이 못 잡는 복합 패턴"에 대한 정답 데이터가 없기 때문이다
+# (12차 측정에서 확인). 아래 두 가지가 그 공백을 메운다.
+#
+# 1) 복합 이상 — 개별 필드는 전부 룰 임계값 안이지만 조합이 비정상인 패턴.
+#    룰은 원칙적으로 못 잡고 ML(다변량 이상치)만 잡을 수 있어야 하는 케이스다.
+COMPOSITE_ANOMALY_RATE = float(os.getenv("COMPOSITE_ANOMALY_RATE", "0.0"))
+#
+# 2) 분포 이동(concept drift) — 정상 자체가 서서히 변하는 상황. 재학습 주기가
+#    적절한지 재려면 "정상이 변했는데 모델이 언제 따라오는가"를 볼 수 있어야 한다.
+#    DRIFT_TEMP_DELTA만큼 엔진 온도 기준선을 DRIFT_RAMP_SECONDS에 걸쳐 선형으로 올린다.
+DRIFT_TEMP_DELTA    = float(os.getenv("DRIFT_TEMP_DELTA", "0.0"))
+DRIFT_START_SECONDS = float(os.getenv("DRIFT_START_SECONDS", "300"))
+DRIFT_RAMP_SECONDS  = float(os.getenv("DRIFT_RAMP_SECONDS", "300"))
+
+# 정답 로그 접두사 — 채점 스크립트가 이 줄만 뽑아 알림과 조인한다.
+GROUND_TRUTH_PREFIX = "[GT]"
+
 # Phase 4 TLS 설정 (인증서 경로 설정 시 자동 활성화)
 TLS_CA_CERT      = os.getenv("TLS_CA_CERT", "")        # broker/certs/ca.crt
 TLS_CLIENT_CERT  = os.getenv("TLS_CLIENT_CERT", "")    # 단일 인증서 로컬 호환 모드
@@ -78,6 +97,9 @@ class VehicleState:
     lng: float            = field(default_factory=lambda: BASE_LNG + random.uniform(-0.05, 0.05))
     dtc_codes: List[str]  = field(default_factory=list)
     _tick: int            = 0
+    # 드리프트 경과 시간의 기준점. 틱이 아니라 실제 시각을 쓰는 이유는
+    # PUBLISH_INTERVAL이 바뀌어도 "몇 분 뒤부터 이동" 이라는 의미가 유지되게 하기 위함이다.
+    _started_at: float    = field(default_factory=time.time)
 
     def next(self) -> dict:
         """정상 주행 데이터 생성 (자연스러운 가속/순항/감속 사이클)"""
@@ -101,7 +123,7 @@ class VehicleState:
         if self._tick < 30:
             self.engine_temp += random.uniform(1.5, 2.5)
         else:
-            target_temp = 90.0 + (self.rpm - 2000) * 0.003
+            target_temp = 90.0 + (self.rpm - 2000) * 0.003 + self._drift_offset()
             self.engine_temp += (target_temp - self.engine_temp) * 0.05
             self.engine_temp += random.uniform(-0.2, 0.2)
         self.engine_temp = max(20.0, min(103.0, self.engine_temp))
@@ -125,6 +147,23 @@ class VehicleState:
         self.dtc_codes = []
         return self._to_payload()
 
+    def _drift_offset(self) -> float:
+        """경과 시간에 따라 0 → DRIFT_TEMP_DELTA로 선형 증가하는 기준선 이동량.
+
+        "정상 자체가 서서히 변하는" 상황을 만든다. 이상값 주입과 달리 이건 이상이
+        아니라 **새로운 정상**이므로, 잘 만든 감지기라면 재학습 후 알림이 원래
+        수준으로 돌아와야 한다 — 재학습 주기가 적절한지 재는 기준이 된다.
+        """
+        if DRIFT_TEMP_DELTA == 0.0:
+            return 0.0
+        elapsed = time.time() - self._started_at
+        if elapsed <= DRIFT_START_SECONDS:
+            return 0.0
+        if DRIFT_RAMP_SECONDS <= 0:
+            return DRIFT_TEMP_DELTA
+        progress = min(1.0, (elapsed - DRIFT_START_SECONDS) / DRIFT_RAMP_SECONDS)
+        return DRIFT_TEMP_DELTA * progress
+
     def inject_anomaly(self) -> dict:
         """이상 감지 테스트용 — 룰 임계값을 초과하는 값 주입"""
         anomaly_type = random.choice([
@@ -146,8 +185,54 @@ class VehicleState:
         elif anomaly_type == "dtc_code":
             self.dtc_codes = [random.choice(["P0300", "P0171", "P0420", "B0001"])]
 
-        logger.warning(f"[{self.vehicle_id}] 이상값 주입 → {anomaly_type}")
-        return self._to_payload()
+        payload = self._to_payload()
+        self._log_ground_truth(payload, anomaly_type, "rule")
+        return payload
+
+    def inject_composite_anomaly(self) -> dict:
+        """룰이 못 잡는 복합 패턴 주입 — 개별 필드는 전부 임계값 안에 둔다.
+
+        각 케이스는 "필드 하나만 보면 정상인데 조합이 말이 안 되는" 상황이다.
+        룰은 단일 필드 임계값만 보므로 원칙적으로 못 잡고, 다변량 이상치를 보는
+        ML만 잡을 수 있어야 한다 — ML의 존재 이유를 검증하는 정답 데이터다.
+        """
+        anomaly_type = random.choice([
+            "clutch_slip", "alternator_degrading",
+            "overheat_at_idle", "throttle_no_response",
+        ])
+
+        if anomaly_type == "clutch_slip":
+            # 거의 정지 상태인데 RPM만 높다(정상이면 speed 10km/h에서 rpm ≈ 1,020).
+            self.speed = random.uniform(5.0, 15.0)
+            self.rpm = random.randint(4000, 4500)       # < 6000
+            self.throttle = random.uniform(60.0, 80.0)
+        elif anomaly_type == "alternator_degrading":
+            # 엔진이 도는데 충전 전압이 안 나온다. LOW 임계(11.5) 위라 룰엔 안 걸린다.
+            self.battery_voltage = random.uniform(11.6, 12.2)
+            self.rpm = random.randint(2500, 4000)
+        elif anomaly_type == "overheat_at_idle":
+            # 공회전인데 냉각이 안 된다. HIGH 임계(105) 아래로 유지한다.
+            self.speed = random.uniform(0.0, 3.0)
+            self.rpm = random.randint(800, 1000)
+            self.engine_temp = random.uniform(100.0, 103.0)
+        elif anomaly_type == "throttle_no_response":
+            # 스로틀을 밟는데 차가 안 나간다.
+            self.throttle = random.uniform(80.0, 100.0)
+            self.speed = random.uniform(0.0, 10.0)
+            self.rpm = random.randint(800, 1100)
+
+        payload = self._to_payload()
+        self._log_ground_truth(payload, anomaly_type, "composite")
+        return payload
+
+    def _log_ground_truth(self, payload: dict, label: str, kind: str) -> None:
+        """채점용 정답 한 줄. 텔레메트리 페이로드에는 라벨을 넣지 않는다 —
+        넣으면 감지기가 정답을 볼 수 있게 되고 운영 스키마도 오염된다.
+        (vehicle_id, timestamp)로 알림과 조인할 수 있게 둘 다 남긴다."""
+        logger.warning(
+            f"{GROUND_TRUTH_PREFIX} vehicle={payload['vehicle_id']} "
+            f"ts={payload['timestamp']} label={label} kind={kind}"
+        )
 
     def _to_payload(self) -> dict:
         return {
@@ -209,11 +294,15 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
         client.loop_start()
 
         while not stop_event.is_set():
-            payload = (
-                state.inject_anomaly()
-                if random.random() < ANOMALY_RATE
-                else state.next()
-            )
+            # 룰 이상 → 복합 이상 → 정상 순으로 판정한다. 둘 다 0이면(기본값)
+            # 기존과 동일하게 ANOMALY_RATE만 적용된다.
+            roll = random.random()
+            if roll < ANOMALY_RATE:
+                payload = state.inject_anomaly()
+            elif roll < ANOMALY_RATE + COMPOSITE_ANOMALY_RATE:
+                payload = state.inject_composite_anomaly()
+            else:
+                payload = state.next()
 
             result = client.publish(topic, json.dumps(payload), qos=1)
 

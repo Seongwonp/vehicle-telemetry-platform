@@ -123,3 +123,60 @@ curl -s localhost:8080/actuator/prometheus | grep -E "^telemetry_mqtt_broker_mes
 버린 메시지 발생)와 `MqttIngestFallingBehind`(브로커 수신 대비 백엔드 처리 부족)가 맡는다.
 두 알림은 브로커 큐를 10으로 줄여 유실을 인위적으로 만든 뒤 실제로 감지되는 것까지
 확인했다(브로커 수신 474,017건 / 버림 429건 / 백엔드 수신 261,423건).
+
+## ML 평가용 시뮬레이터 시나리오 (2026-09-03 추가)
+
+12차 측정에서 **이 시뮬레이터로는 ML 탐지 품질을 잴 수 없다**는 걸 확인했다 —
+`inject_anomaly()`가 주입하는 이상값이 전부 룰 임계값과 대응해서, 정답 데이터가 곧
+룰이 잡는 것이고 "룰이 못 잡는 복합 패턴"의 정답이 없었다. 그 공백을 메우는 두 가지를
+시뮬레이터에 추가했다. **둘 다 기본값 0이라 켜지 않으면 기존 측정과 동일하게 동작한다.**
+
+### 1. 복합 이상 — `COMPOSITE_ANOMALY_RATE`
+
+개별 필드는 전부 룰 임계값 안이지만 조합이 비정상인 패턴. 룰은 원칙적으로 못 잡고
+다변량 이상치를 보는 ML만 잡을 수 있어야 한다.
+
+| 라벨 | 패턴 | 왜 룰에 안 걸리나 |
+| --- | --- | --- |
+| `clutch_slip` | 속도 5-15km/h인데 RPM 4,000-4,500 | RPM < 6,000 |
+| `alternator_degrading` | 전압 11.6-12.2V + RPM 2,500-4,000 | 전압 > 11.5 |
+| `overheat_at_idle` | 공회전(RPM 800-1,000)인데 온도 100-103°C | 온도 < 105 |
+| `throttle_no_response` | 스로틀 80-100%인데 속도·RPM 정지 수준 | 단일 필드 임계값 없음 |
+
+"개별 필드가 전부 임계값 안"이라는 전제는 단위 테스트로 강제한다
+(`TestCompositeAnomaly::test_모든_복합_이상이_룰_임계값을_넘지_않는다`, 300회 반복).
+이 전제가 깨지면 룰이 잡아버려 ML 평가가 무의미해지므로 반드시 유지돼야 한다.
+
+### 2. 분포 이동 — `DRIFT_TEMP_DELTA` / `DRIFT_START_SECONDS` / `DRIFT_RAMP_SECONDS`
+
+엔진 온도 기준선을 `DRIFT_START_SECONDS` 이후부터 `DRIFT_RAMP_SECONDS`에 걸쳐
+`DRIFT_TEMP_DELTA`만큼 선형으로 올린다. 이건 이상이 아니라 **새로운 정상**이므로,
+잘 동작하는 감지기라면 재학습 후 알림률이 원래 수준으로 돌아와야 한다 —
+`retrain_min_seconds`가 적절한지 재는 기준이 된다.
+
+### 정답 로그 형식
+
+페이로드에는 라벨을 넣지 않는다(감지기가 정답을 볼 수 있게 되고 운영 스키마도 오염된다).
+대신 시뮬레이터 로그에 한 줄씩 남기고, `(vehicle_id, timestamp)`로 알림과 조인한다.
+
+```
+[GT] vehicle=SIM-060 ts=2026-09-03T10:11:12.345Z label=clutch_slip kind=composite
+```
+
+`kind`는 `rule`(룰이 잡아야 함) / `composite`(ML만 잡을 수 있어야 함)로 나뉜다.
+
+### 실행 예
+
+```bash
+# 복합 이상 2% + 5분 뒤부터 5분에 걸쳐 온도 기준선 +8°C 이동
+COMPOSITE_ANOMALY_RATE=0.02 DRIFT_TEMP_DELTA=8 \
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+  run -d --rm --name telemetry-sim-0 \
+  -e VEHICLE_COUNT=200 -e PUBLISH_INTERVAL=0.05 simulator
+
+# 정답만 뽑기
+docker logs telemetry-sim-0 2>&1 | grep '^\[GT\]'
+```
+
+**아직 측정하지 않았다** — 이 시나리오로 ML precision/recall과 재학습 주기 적정성을
+재는 것은 다음 작업이다.

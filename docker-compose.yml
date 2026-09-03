@@ -146,6 +146,14 @@ services:
       VEHICLE_COUNT: ${VEHICLE_COUNT:-3}
       PUBLISH_INTERVAL: ${PUBLISH_INTERVAL:-1.0}
       ANOMALY_RATE: ${ANOMALY_RATE:-0.02}
+      # ML 평가용 시나리오 (기본 0 = 비활성, 켜지 않으면 기존 동작 그대로).
+      # COMPOSITE_ANOMALY_RATE: 룰이 못 잡는 복합 패턴 주입 비율 — ML 탐지 품질의 정답.
+      # DRIFT_*: 정상 분포를 시간에 따라 이동시켜 재학습 주기 적정성을 재기 위한 것.
+      # 사용법은 load-test/anomaly-detector-scale/README.md 참고.
+      COMPOSITE_ANOMALY_RATE: ${COMPOSITE_ANOMALY_RATE:-0.0}
+      DRIFT_TEMP_DELTA: ${DRIFT_TEMP_DELTA:-0.0}
+      DRIFT_START_SECONDS: ${DRIFT_START_SECONDS:-300}
+      DRIFT_RAMP_SECONDS: ${DRIFT_RAMP_SECONDS:-300}
       # 부하 테스트로 시뮬레이터 자체가 GIL 때문에 프로세스당 ~1,000-1,250 msg/s에서
       # 벽에 부딪히는 것을 확인 — 더 센 부하는 `docker compose run`으로 이 서비스를
       # 여러 개(다른 VEHICLE_ID_OFFSET) 동시에 띄워서 만든다.
