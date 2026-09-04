@@ -120,7 +120,16 @@ vehicle-telemetry-platform/
    (실측 2배 차이). `publish/messages/received`로 교체.
    남은 갈래: 단계 1은 브로커 전체 수치라 다른 클라이언트가 붙으면 함께 오른다.
    포인트 수와 메시지 수를 직접 비교하는 것은 1:1 구조에서만 성립한다
-7. 위 신뢰성 작업 이후 Flutter 앱 실기기 검증과 UX 고도화
+7. Flutter 앱 — **디자인/반응형 1차 완료(2026-09-05)**, 실기기 검증은 남음.
+   앱 저장소(`Seongwonp/vehicle-telemetry-app`)에서 진행했다:
+   - 반응형 자동 검사 도입(`test/responsive_overflow_test.dart`) — 구성요소 × 너비 4종 ×
+     글자배율 3종. 돌리자마자 overflow 12건이 나왔고 **차량 카드는 320px에서 기본
+     글자 크기로도 99px 잘리고 있었다**. 전부 수정
+   - 디자인 토큰 도입(`lib/core/theme/design_tokens.dart`, `docs/design-system.md`).
+     스케일 벗어난 값 164곳 → 14곳
+   - `flutter analyze` 40건 → 0건, 테스트 37 → 181개
+   남은 것: **실기기 검증**(전부 위젯 테스트 기준이다), 태블릿 넓은 화면 가독 폭,
+   테마에 남은 `primaryGradient`/`accentGlow` 처리 방침
 
 Flutter 앱 고도화는 폐기한 작업이 아니라 후순위 트랙이다. 앱 저장소의 `AGENTS.md`에 적힌
 데스크톱 검증 절차를 먼저 수행한 뒤 WebSocket 재연결, 오래된 데이터 표시, 작은 화면
