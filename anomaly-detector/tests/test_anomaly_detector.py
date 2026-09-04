@@ -45,14 +45,16 @@ class FakeProducer:
 
     def __init__(self, send_exc=None, future_exc=None):
         self.sent = []
+        self.headers = []
         self.flushed = False
         self._send_exc = send_exc
         self._future_exc = future_exc
 
-    def send(self, topic, key=None, value=None):
+    def send(self, topic, key=None, value=None, headers=None):
         if self._send_exc:
             raise self._send_exc
         self.sent.append((topic, key, value))
+        self.headers.append(headers)
         return FakeFuture(self._future_exc)
 
     def flush(self):
@@ -121,6 +123,32 @@ class TestSendToDlq:
 
         assert producer.sent == [(DLQ_TOPIC, b"SIM-001", b'{"not":"valid json"')]
         assert producer.flushed is True
+
+    def test_실패_원인을_헤더로_남긴다(self):
+        # 재처리 도구(dlq-tools/dlq.py)가 이 헤더로 "다시 넣으면 되는 실패"와
+        # "몇 번을 넣어도 실패하는 메시지"를 가른다. 이름은 Java 쪽과 같아야 한다 —
+        # 도구가 두 언어의 DLQ를 구분 없이 읽기 때문이다.
+        producer = FakeProducer()
+        msg = FakeMessage(partition=3, offset=77)
+
+        send_to_dlq(producer, msg, ValueError("깨진 payload"))
+
+        headers = dict(producer.headers[0])
+        assert headers["x-dlq-origin-partition"] == b"3"
+        assert headers["x-dlq-origin-offset"] == b"77"
+        assert headers["x-dlq-failure-class"] == b"ValueError"
+        assert "깨진 payload" in headers["x-dlq-failure-message"].decode("utf-8")
+        assert headers["x-dlq-origin-topic"]
+        assert headers["x-dlq-failed-at"]
+
+    def test_원인이_없으면_원인_헤더는_생략된다(self):
+        producer = FakeProducer()
+
+        send_to_dlq(producer, FakeMessage())
+
+        keys = {k for k, _ in producer.headers[0]}
+        assert "x-dlq-failure-class" not in keys
+        assert "x-dlq-origin-offset" in keys
 
     def test_DLQ_future가_실패하면_offset_커밋을_막도록_예외를_전파(self):
         producer = FakeProducer(future_exc=RuntimeError("broker down"))

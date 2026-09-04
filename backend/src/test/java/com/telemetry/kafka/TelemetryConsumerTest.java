@@ -6,6 +6,8 @@ import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.influxdb.TelemetryRepository;
 import com.telemetry.service.AnomalyService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import org.springframework.kafka.support.SendResult;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
+import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -91,14 +94,13 @@ class TelemetryConsumerTest {
         verify(telemetryRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(3);
         verify(acknowledgment).acknowledge();
-        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
     }
 
     @Test
     @DisplayName("배치 안의 역직렬화 실패 1건만 DLQ로 가고 나머지는 정상 저장된다")
     void consumeForStorage_혼합배치_실패건만_DLQ이동() {
-        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
-            .willReturn(CompletableFuture.completedFuture(null));
+        givenDlqSendSucceeds();
         given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
         String badJson = "{not-valid-json";
 
@@ -111,15 +113,14 @@ class TelemetryConsumerTest {
         ArgumentCaptor<List<Point>> captor = ArgumentCaptor.forClass(List.class);
         verify(telemetryRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
-        verify(kafkaTemplate).send("vehicle-telemetry-dlq", "SIM-001", badJson);
+        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badJson, "JsonParseException");
         verify(acknowledgment).acknowledge();
     }
 
     @Test
     @DisplayName("포인트 변환 실패(잘못된 타임스탬프) 1건도 배치 전체를 막지 않고 그 건만 DLQ로 간다")
     void consumeForStorage_포인트변환실패_해당건만_DLQ이동() {
-        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
-            .willReturn(CompletableFuture.completedFuture(null));
+        givenDlqSendSucceeds();
         String badTimestampJson = VALID_TELEMETRY_JSON.replace("2026-05-09T10:00:00Z", "not-a-timestamp");
         // 역직렬화는 통과하고 toPoint()의 Instant.parse()에서만 터지는 경우를 재현한다.
         given(telemetryRepository.toPoint(any())).willAnswer(invocation -> {
@@ -138,7 +139,7 @@ class TelemetryConsumerTest {
         ArgumentCaptor<List<Point>> captor = ArgumentCaptor.forClass(List.class);
         verify(telemetryRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
-        verify(kafkaTemplate).send("vehicle-telemetry-dlq", "SIM-001", badTimestampJson);
+        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badTimestampJson, "DateTimeParseException");
         verify(acknowledgment).acknowledge();
     }
 
@@ -157,7 +158,7 @@ class TelemetryConsumerTest {
             .isInstanceOf(RuntimeException.class)
             .hasMessageContaining("InfluxDB 연결 실패");
 
-        verify(kafkaTemplate, never()).send(anyString(), anyString(), anyString());
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
         verify(acknowledgment, never()).acknowledge();
     }
 
@@ -176,14 +177,13 @@ class TelemetryConsumerTest {
 
         verify(anomalyService).save(any());
         verify(acknowledgment).acknowledge();
-        verify(kafkaTemplate, never()).send(eq("vehicle-anomaly-alerts-dlq"), anyString(), anyString());
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
     }
 
     @Test
     @DisplayName("역직렬화 실패한 이상감지 이벤트는 DLQ로 보낸다")
     void consumeAnomalyAlerts_역직렬화실패_DLQ이동() {
-        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
-            .willReturn(CompletableFuture.completedFuture(null));
+        givenDlqSendSucceeds();
         String badJson = "not-json-at-all";
         ConsumerRecord<String, String> record =
             new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", badJson);
@@ -191,7 +191,7 @@ class TelemetryConsumerTest {
         telemetryConsumer.consumeAnomalyAlerts(record, acknowledgment);
 
         verify(anomalyService, never()).save(any());
-        verify(kafkaTemplate).send("vehicle-anomaly-alerts-dlq", "SIM-001", badJson);
+        assertDlqRecord("vehicle-anomaly-alerts-dlq", "SIM-001", badJson, "JsonParseException");
         verify(acknowledgment).acknowledge();
     }
 
@@ -200,7 +200,7 @@ class TelemetryConsumerTest {
     void dlq전송실패_offset미커밋() {
         CompletableFuture<SendResult<String, String>> failed = new CompletableFuture<>();
         failed.completeExceptionally(new RuntimeException("broker down"));
-        given(kafkaTemplate.send(anyString(), anyString(), anyString())).willReturn(failed);
+        given(kafkaTemplate.send(any(ProducerRecord.class))).willReturn(failed);
         List<ConsumerRecord<String, String>> records = List.of(telemetryRecord(0L, "not-json"));
 
         assertThatThrownBy(() -> telemetryConsumer.consumeForStorage(records, acknowledgment))
@@ -208,5 +208,59 @@ class TelemetryConsumerTest {
             .hasMessageContaining("DLQ 전송 실패");
 
         verify(acknowledgment, never()).acknowledge();
+    }
+
+    @Test
+    @DisplayName("재처리 이력(x-dlq-replay-count)은 DLQ 레코드로 이어져야 한다 — 무한 루프 방지")
+    void sendToDlq_재처리이력_보존() {
+        givenDlqSendSucceeds();
+        // 재처리 도구가 DLQ 레코드를 원본 토픽으로 되돌릴 때 이 헤더를 올려서 보낸다.
+        ConsumerRecord<String, String> replayed = telemetryRecord(0L, "{not-json");
+        replayed.headers().add("x-dlq-replay-count", "2".getBytes(StandardCharsets.UTF_8));
+
+        telemetryConsumer.consumeForStorage(List.of(replayed), acknowledgment);
+
+        // 여기서 헤더를 이어받지 않으면 카운터가 매번 0으로 리셋돼, 영구 실패 메시지가
+        // DLQ→원본→DLQ를 무한히 돈다. 실제로 재처리 4회에 2→4→8→16건으로 증식했다.
+        ArgumentCaptor<ProducerRecord<String, String>> captor =
+            ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate).send(captor.capture());
+        assertThat(header(captor.getValue(), "x-dlq-replay-count")).isEqualTo("2");
+    }
+
+    private void givenDlqSendSucceeds() {
+        given(kafkaTemplate.send(any(ProducerRecord.class)))
+            .willReturn(CompletableFuture.completedFuture(null));
+    }
+
+    private static String header(ProducerRecord<String, String> record, String key) {
+        Header found = record.headers().lastHeader(key);
+        return found == null ? null : new String(found.value(), StandardCharsets.UTF_8);
+    }
+
+    /**
+     * DLQ 레코드가 원본 payload뿐 아니라 <b>실패 원인</b>까지 싣고 있는지 본다.
+     *
+     * <p>재처리 도구(dlq-tools/dlq.py)가 이 헤더로 "다시 넣으면 되는 실패"와 "몇 번을
+     * 넣어도 실패하는 메시지"를 가른다. 헤더가 조용히 빠지면 도구는 모든 걸
+     * unknown으로 분류해 아무것도 재처리하지 않게 되므로, 계약으로 고정한다.
+     */
+    @SuppressWarnings("unchecked")
+    private void assertDlqRecord(String expectedTopic, String expectedKey,
+                                 String expectedValue, String expectedFailureClass) {
+        ArgumentCaptor<ProducerRecord<String, String>> captor =
+            ArgumentCaptor.forClass(ProducerRecord.class);
+        verify(kafkaTemplate).send(captor.capture());
+        ProducerRecord<String, String> sent = captor.getValue();
+
+        assertThat(sent.topic()).isEqualTo(expectedTopic);
+        assertThat(sent.key()).isEqualTo(expectedKey);
+        assertThat(sent.value()).isEqualTo(expectedValue);
+        assertThat(header(sent, "x-dlq-origin-topic")).isNotBlank();
+        assertThat(header(sent, "x-dlq-origin-partition")).isEqualTo("0");
+        assertThat(header(sent, "x-dlq-origin-offset")).isNotBlank();
+        assertThat(header(sent, "x-dlq-failed-at")).isNotBlank();
+        assertThat(header(sent, "x-dlq-failure-class")).contains(expectedFailureClass);
+        assertThat(header(sent, "x-dlq-failure-message")).isNotBlank();
     }
 }

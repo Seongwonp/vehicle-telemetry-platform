@@ -75,7 +75,13 @@ vehicle-telemetry-platform/
 1. ~~consumer 강제 종료와 재전달 시 InfluxDB 중복·덮어쓰기 수량 측정~~ — **완료(2026-09-04)**.
    남은 갈래: 같은 밀리초 키 충돌을 일부러 만들어 유실을 재현하고, identity에 밀리초
    이하 구분자(시퀀스 태그 등)를 넣을지 판단. 다중 인스턴스 리밸런싱 시 재전달 구간도 미측정
-2. DLQ 재처리 정책, 도구 및 운영 Runbook
+2. ~~DLQ 재처리 정책, 도구 및 운영 Runbook~~ — **완료(2026-09-04)**.
+   DLQ 레코드에 실패 원인 헤더(`x-dlq-*`)를 붙이고(Java·Python 동일 규약),
+   `dlq-tools/dlq.py`로 원인별 분류(transient/permanent/unknown)와 재처리를 한다.
+   Runbook은 `docs/runbook/dlq-reprocessing.md`.
+   남은 갈래: `vehicle-anomaly-alerts-dlq` 재처리 시 PostgreSQL 중복 알림 여부 **미검증**,
+   `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
+   분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
 3. MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조
 4. 발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완
 5. 위 신뢰성 작업 이후 Flutter 앱 실기기 검증과 UX 고도화

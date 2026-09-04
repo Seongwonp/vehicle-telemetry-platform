@@ -12,6 +12,9 @@ import com.telemetry.service.AnomalyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.Acknowledgment;
@@ -19,6 +22,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import io.micrometer.core.instrument.MeterRegistry;
 
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +79,7 @@ public class TelemetryConsumer {
             } catch (Exception e) {
                 log.error("[Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
                     record.key(), record.offset(), record.partition(), e);
-                sendToDlq(TELEMETRY_DLQ_TOPIC, record);
+                sendToDlq(TELEMETRY_DLQ_TOPIC, record, e);
             }
         }
 
@@ -115,7 +120,7 @@ public class TelemetryConsumer {
             // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 — 알림 누락으로 이어질 수 있어 DLQ로 격리한다
             log.error("[Kafka→Anomaly] 저장 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
                 record.key(), record.offset(), record.partition(), e);
-            sendToDlq(ANOMALY_DLQ_TOPIC, record);
+            sendToDlq(ANOMALY_DLQ_TOPIC, record, e);
             acknowledgment.acknowledge();
             return;
         }
@@ -146,11 +151,44 @@ public class TelemetryConsumer {
             "/topic/vehicle/" + t.getVehicleId() + "/telemetry", response);
     }
 
-    // 저장 실패한 원본 메시지를 DLQ 토픽으로 옮긴다. key(vehicle_id)를 그대로 유지해
-    // 나중에 차량별로 재처리/조사할 수 있게 한다. 재처리 컨슈머는 아직 없음 — 우선 유실 방지/가시성 확보까지.
-    private void sendToDlq(String dlqTopic, ConsumerRecord<String, String> record) {
+    /**
+     * 저장 실패한 원본 메시지를 DLQ 토픽으로 옮긴다. key(vehicle_id)와 payload는 원본
+     * 그대로 두고, <b>왜 실패했는지를 헤더로 함께 남긴다.</b>
+     *
+     * <p>헤더가 없으면 재처리를 결정할 수가 없다. 깨진 JSON은 몇 번을 다시 넣어도
+     * 같은 자리에서 실패하는 영구 실패고(재처리하면 DLQ→원본→DLQ 무한 루프가 된다),
+     * InfluxDB 장애로 재시도가 소진된 건은 DB가 살아나면 그냥 성공한다. 둘을 가르는
+     * 유일한 근거가 실패 원인이라, payload만 보고는 판단이 불가능하다.
+     *
+     * <p>재시도 소진 경로({@link org.springframework.kafka.listener.DeadLetterPublishingRecoverer})는
+     * Spring이 {@code kafka_dlt-*} 헤더를 자동으로 붙인다. 여기(레코드 단위 격리)는
+     * 우리가 직접 붙여야 해서, 같은 정보를 {@code x-dlq-*}로 남긴다 — 두 경로가 같은
+     * DLQ 토픽에 섞이므로 재처리 도구는 둘 다 읽을 수 있어야 한다
+     * ({@code dlq-tools/dlq.py}, {@code docs/runbook/dlq-reprocessing.md}).
+     */
+    private void sendToDlq(String dlqTopic, ConsumerRecord<String, String> record, Exception cause) {
         try {
-            kafkaTemplate.send(dlqTopic, record.key(), record.value()).get(10, TimeUnit.SECONDS);
+            ProducerRecord<String, String> dlqRecord =
+                new ProducerRecord<>(dlqTopic, null, record.key(), record.value());
+            Headers headers = dlqRecord.headers();
+            // 재처리 이력은 반드시 이어받아야 한다. 재처리 도구가 DLQ 레코드를 원본
+            // 토픽으로 되돌릴 때 x-dlq-replay-count를 올려서 보내는데, 여기서 그걸
+            // 버리고 새 헤더만 만들면 카운터가 매번 0으로 리셋된다 — 그러면 영구 실패
+            // 메시지가 DLQ→원본→DLQ를 무한히 돌고, 돌 때마다 DLQ 레코드가 배로 늘어난다
+            // (실제로 재처리 4회에 2→4→8→16건으로 증식하는 걸 확인하고 고쳤다).
+            copyHeader(record, headers, "x-dlq-replay-count");
+            addHeader(headers, "x-dlq-origin-topic", record.topic());
+            addHeader(headers, "x-dlq-origin-partition", String.valueOf(record.partition()));
+            addHeader(headers, "x-dlq-origin-offset", String.valueOf(record.offset()));
+            addHeader(headers, "x-dlq-failed-at", Instant.now().toString());
+            if (cause != null) {
+                addHeader(headers, "x-dlq-failure-class", cause.getClass().getName());
+                // 예외 메시지에는 원본 payload 조각이 섞여 들어올 수 있어(Jackson이 그렇게 한다)
+                // 길이를 잘라 둔다 — Kafka 헤더는 메시지 크기 제한에 함께 잡힌다.
+                addHeader(headers, "x-dlq-failure-message", truncate(cause.getMessage(), 512));
+            }
+
+            kafkaTemplate.send(dlqRecord).get(10, TimeUnit.SECONDS);
             meterRegistry.counter("telemetry.kafka.dlq.published", "topic", dlqTopic).increment();
         } catch (Exception e) {
             meterRegistry.counter("telemetry.kafka.dlq.publish.failures", "topic", dlqTopic).increment();
@@ -158,5 +196,25 @@ public class TelemetryConsumer {
                 dlqTopic, record.key(), e);
             throw new IllegalStateException("DLQ 전송 실패", e);
         }
+    }
+
+    private static void copyHeader(ConsumerRecord<String, String> source, Headers target, String key) {
+        Header found = source.headers().lastHeader(key);
+        if (found != null && found.value() != null) {
+            target.add(key, found.value());
+        }
+    }
+
+    private static void addHeader(Headers headers, String key, String value) {
+        if (value != null) {
+            headers.add(key, value.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private static String truncate(String value, int max) {
+        if (value == null) {
+            return null;
+        }
+        return value.length() <= max ? value : value.substring(0, max) + "...(truncated)";
     }
 }

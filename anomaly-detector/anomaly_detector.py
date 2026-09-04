@@ -273,10 +273,37 @@ def should_commit(handled_since_commit: int, elapsed_seconds: float, force: bool
     )
 
 
-def send_to_dlq(dlq_producer: KafkaProducer, message) -> None:
-    """처리 실패한 원본 메시지를 DLQ로 옮긴다. key/value를 원본 바이트 그대로 보존한다."""
+def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
+    """DLQ 레코드에 붙일 실패 원인 헤더.
+
+    Java 쪽 TelemetryConsumer.sendToDlq()와 **같은 이름**을 쓴다 — 재처리 도구
+    (`dlq-tools/dlq.py`)가 두 언어의 DLQ를 구분 없이 읽어야 하기 때문이다.
+    이 헤더가 없으면 "다시 넣으면 되는 실패"와 "몇 번을 넣어도 실패하는 메시지"를
+    가를 수가 없고, 후자를 재처리하면 DLQ→원본→DLQ 무한 루프가 된다.
+    """
+    headers = [
+        ("x-dlq-origin-topic", INPUT_TOPIC.encode("utf-8")),
+        ("x-dlq-origin-partition", str(message.partition).encode("utf-8")),
+        ("x-dlq-origin-offset", str(message.offset).encode("utf-8")),
+        ("x-dlq-failed-at", datetime.now(timezone.utc).isoformat().encode("utf-8")),
+    ]
+    if cause is not None:
+        headers.append(("x-dlq-failure-class", type(cause).__name__.encode("utf-8")))
+        # 예외 메시지에 원본 payload 조각이 섞여 들어올 수 있어 길이를 자른다 —
+        # Kafka 헤더도 메시지 크기 제한에 함께 잡힌다.
+        text = str(cause)
+        if len(text) > 512:
+            text = text[:512] + "...(truncated)"
+        headers.append(("x-dlq-failure-message", text.encode("utf-8")))
+    return headers
+
+
+def send_to_dlq(dlq_producer: KafkaProducer, message, cause: Exception | None = None) -> None:
+    """처리 실패한 원본 메시지를 DLQ로 옮긴다. key/value를 원본 바이트 그대로 보존하고,
+    왜 실패했는지는 헤더로 남긴다(재처리 판단 근거)."""
     try:
-        future = dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value)
+        future = dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value,
+                                   headers=dlq_headers(message, cause))
         dlq_producer.flush()
         future.get(timeout=10)
     except Exception:
@@ -371,7 +398,7 @@ def main() -> None:
                             f"partition={message.partition} offset={message.offset}: {e}",
                             exc_info=True,
                         )
-                        send_to_dlq(dlq_producer, message)
+                        send_to_dlq(dlq_producer, message, e)
                         dlq_count += 1
                         safe_offsets[TopicPartition(message.topic, message.partition)] = \
                             OffsetAndMetadata(message.offset + 1, "")
@@ -413,7 +440,7 @@ def main() -> None:
                             f"partition={message.partition} offset={message.offset}: {e}",
                             exc_info=True,
                         )
-                        send_to_dlq(dlq_producer, message)
+                        send_to_dlq(dlq_producer, message, e)
                         dlq_count += 1
 
                     # 성공이든 DLQ로 격리했든 "처리 완료"다 — 재시도 없이 넘어가되,
