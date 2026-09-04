@@ -79,6 +79,9 @@ services:
       GEMINI_MAX_CONCURRENT_CALLS: ${GEMINI_MAX_CONCURRENT_CALLS:-4}
       GEMINI_CIRCUIT_FAILURE_THRESHOLD: ${GEMINI_CIRCUIT_FAILURE_THRESHOLD:-3}
       GEMINI_CIRCUIT_OPEN_MS: ${GEMINI_CIRCUIT_OPEN_MS:-60000}
+      # Kafka 리스너 재시도 예산(총 경과 시간). 짧으면 짧은 장애에도 DLQ가 주 경로가 된다
+      # — 2초 예산일 때 InfluxDB 90초 장애에서 트래픽의 47.6%가 DLQ로 갔다.
+      KAFKA_RETRY_BUDGET_MS: ${KAFKA_RETRY_BUDGET_MS:-180000}
       TELEMETRY_SPOOL_PATH: /app/data/telemetry-spool
       TELEMETRY_SPOOL_RETRY_MS: ${TELEMETRY_SPOOL_RETRY_MS:-5000}
       # 한 주기에 처리할 spool 파일 수. retry-ms와 곱해져 드레인 속도 상한이 된다

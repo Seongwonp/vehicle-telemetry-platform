@@ -83,6 +83,14 @@ mqtt:
     store-password: ${MQTT_TLS_STORE_PASSWORD:changeit}
 
 telemetry:
+  kafka:
+    retry:
+      # 재시도 예산 = 총 경과 시간. 이 시간을 넘기면 DLQ로 간다.
+      # max.poll.interval.ms(5분)보다 작아야 한다 — 넘으면 리밸런싱이 돈다.
+      budget-ms: ${KAFKA_RETRY_BUDGET_MS:180000}
+      initial-interval-ms: ${KAFKA_RETRY_INITIAL_INTERVAL_MS:1000}
+      multiplier: ${KAFKA_RETRY_MULTIPLIER:2.0}
+      max-interval-ms: ${KAFKA_RETRY_MAX_INTERVAL_MS:30000}
   spool:
     path: ${TELEMETRY_SPOOL_PATH:data/telemetry-spool}
     retry-ms: ${TELEMETRY_SPOOL_RETRY_MS:5000}

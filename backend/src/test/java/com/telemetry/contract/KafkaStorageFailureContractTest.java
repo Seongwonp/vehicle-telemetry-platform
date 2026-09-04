@@ -117,7 +117,7 @@ class KafkaStorageFailureContractTest {
         var dlqRecord = pollRecordWithKey(DLQ_TOPIC, "TEST-001");
         assertThat(dlqRecord.key()).isEqualTo("TEST-001");
         assertThat(dlqRecord.value()).isEqualTo(PAYLOAD);
-        // FixedBackOff(1000, 2) — 최초 1회 + 재시도 2회
+        // 재시도 예산 150ms / 간격 100ms — 최초 1회 + 재시도 2회 (위 컨테이너 설정 참고)
         verify(telemetryRepository, times(3)).saveAll(any());
 
         TopicPartition sourcePartition = new TopicPartition(
@@ -285,8 +285,11 @@ class KafkaStorageFailureContractTest {
                 listener.consumeForStorage(records, acknowledgment));
 
         var container = new ConcurrentMessageListenerContainer<>(consumerFactory, properties);
+        // 재시도 예산을 짧고 결정적으로 고정한다 — 운영 기본값(180초)으로 돌리면
+        // 테스트가 3분을 기다린다. 간격 100ms 고정에 예산 150ms면 정확히
+        // "최초 1회 + 재시도 2회" 뒤 recoverer로 넘어간다(경과 200ms >= 150ms).
         container.setCommonErrorHandler(new KafkaConfig().kafkaErrorHandler(
-            recoveryTemplate, new SimpleMeterRegistry()));
+            recoveryTemplate, new SimpleMeterRegistry(), 100L, 1.0, 100L, 150L));
         container.start();
         ContainerTestUtils.waitForAssignment(container, 1);
         return container;
