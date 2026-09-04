@@ -143,7 +143,7 @@ public class MqttConfig {
         MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(
             clientId + "-sys", mqttClientFactory(),
             "$SYS/broker/publish/messages/dropped",
-            "$SYS/broker/messages/received",
+            "$SYS/broker/publish/messages/received",
             "$SYS/broker/clients/connected");
 
         adapter.setCompletionTimeout(5000);

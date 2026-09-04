@@ -56,6 +56,53 @@ groups:
         annotations:
           summary: "백엔드가 MQTT 유입 속도를 못 따라가고 있음 (브로커 수신 대비 처리 부족)"
 
+      # 12시간 soak에서 실제로 일어난 사고의 신호다: MQTT는 계속 들어오는데 InfluxDB
+      # 저장이 26초 만에 멈췄고, 그런데도 Kafka lag은 끝까지 0이라(offset이 계속 커밋됨)
+      # 기존 알림이 하나도 안 떴다. "lag이 0"은 "잘 처리되고 있다"가 아니라 "offset이
+      # 전진했다"일 뿐이라, 유입과 저장을 **대조**해야만 잡힌다.
+      #
+      # write.failures로는 못 잡는다 — 조용히 커밋하던 그 버그에서는 실패 카운터조차
+      # 안 올랐다. 그래서 "성공한 저장이 0인가"를 직접 본다.
+      #
+      # rate 창을 2분으로 좁힌 이유: 5분 창으로 두면 장애 직전의 성공분이 창에 남아
+      # rate가 0이 되기까지 5분이 더 걸린다. 실측하면 탐지까지 약 9분이 걸렸다 —
+      # 유실이 진행 중인 알림으로는 너무 느리다. 2분 창 + for 2m이면 약 4분이다.
+      # 순간적인 blip으로 오탐이 나지 않는 것은 for 2m과 "유입이 있을 때만"이라는
+      # 조건이 함께 막는다.
+      - alert: TelemetryStorageStalled
+        expr: >
+          sum(rate(telemetry_mqtt_messages_received_total[2m])) > 1
+            and sum(rate(telemetry_influx_points_written_total[2m])) == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "텔레메트리는 계속 들어오는데 InfluxDB 저장이 멈춤 — Kafka lag이 정상이어도 유실 중"
+
+      # 단계 간 괴리. 유입 대비 저장 성공이 크게 모자라면 어딘가에서 새고 있다.
+      # DLQ로 격리된 분은 저장되지 않은 게 맞으므로 함께 더해 비교한다 —
+      # 격리는 유실이 아니라 재처리 대상이기 때문이다.
+      - alert: TelemetryStorageRatioLow
+        expr: >
+          (sum(rate(telemetry_influx_points_written_total[10m]))
+             + sum(rate(telemetry_kafka_dlq_published_total[10m])))
+            / clamp_min(sum(rate(telemetry_mqtt_messages_received_total[10m])), 0.001) < 0.95
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MQTT 수신 대비 저장+격리 합이 95% 미만 — 어느 단계에서 새는지 파이프라인 대시보드로 확인할 것"
+
+      # spool은 Kafka 장애 시 유실을 막는 장치인데, 드레인이 유입을 못 따라가면
+      # 계속 자란다(실측: 배치 100일 때 드레인 19 msg/s로 유입의 1/89였다).
+      - alert: TelemetrySpoolNotDraining
+        expr: sum(telemetry_spool_pending) > 0 and deriv(sum(telemetry_spool_pending)[10m:]) >= 0
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "spool이 10분간 줄지 않음 — 드레인이 유입을 못 따라가거나 Kafka가 계속 실패 중"
+
       - alert: InfluxDbOperationFailures
         expr: sum(increase(telemetry_influx_write_failures_total[5m])) + sum(increase(telemetry_influx_query_failures_total[5m])) > 0
         for: 1m

@@ -23,12 +23,21 @@ public class TelemetryRepository {
     // 쓰기 소요 시간과 실제 배치 크기를 상시 계측한다.
     private final Timer writeTimer;
     private final DistributionSummary batchSizeSummary;
+    /**
+     * <b>실제로 저장에 성공한</b> 포인트 수. batchSizeSummary는 saveAll 진입 시점에
+     * 기록되므로 쓰기가 실패해도 올라간다 — 즉 "저장 시도"이지 "저장 성공"이 아니다.
+     * 파이프라인 단계별 유입/저장을 대조하려면 성공량이 정확해야 한다:
+     * 12시간 soak에서 InfluxDB 쓰기가 26초 만에 멈췄는데 Kafka lag은 끝까지 0이라
+     * 정상으로 보였던 사고가 바로 이 대조가 없어서 안 보인 것이다(ADR-017).
+     */
+    private final Counter pointsWrittenCounter;
 
     public TelemetryRepository(WriteApiBlocking writeApi, MeterRegistry meterRegistry) {
         this.writeApi = writeApi;
         this.writeFailureCounter = meterRegistry.counter("telemetry.influx.write.failures");
         this.writeTimer = meterRegistry.timer("telemetry.influx.write");
         this.batchSizeSummary = meterRegistry.summary("telemetry.influx.write.batch.size");
+        this.pointsWrittenCounter = meterRegistry.counter("telemetry.influx.points.written");
     }
 
     /**
@@ -49,6 +58,8 @@ public class TelemetryRepository {
         Timer.Sample sample = Timer.start();
         try {
             writeApi.writePoints(points);
+            // 예외 없이 돌아온 뒤에만 센다 — 이 카운터가 파이프라인 대조의 마지막 단계다.
+            pointsWrittenCounter.increment(points.size());
         } catch (RuntimeException e) {
             writeFailureCounter.increment();
             throw e;

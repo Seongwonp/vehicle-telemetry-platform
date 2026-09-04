@@ -39,8 +39,8 @@ class MqttBrokerMetricsHandlerTest {
     @Test
     @DisplayName("같은 토픽이 다시 오면 게이지를 갱신한다 (10초마다 재발행되므로)")
     void 반복수신_게이지갱신() {
-        handler.handle(sysMessage("$SYS/broker/messages/received", "100"));
-        handler.handle(sysMessage("$SYS/broker/messages/received", "250"));
+        handler.handle(sysMessage("$SYS/broker/publish/messages/received", "100"));
+        handler.handle(sysMessage("$SYS/broker/publish/messages/received", "250"));
 
         assertThat(meterRegistry.get("telemetry.mqtt.broker.messages.received").gauge().value())
             .isEqualTo(250.0);
@@ -68,7 +68,7 @@ class MqttBrokerMetricsHandlerTest {
     @Test
     @DisplayName("숫자가 아닌 값은 게이지를 만들지 않고 넘어간다")
     void 비숫자값_무시() {
-        handler.handle(sysMessage("$SYS/broker/messages/received", "N/A"));
+        handler.handle(sysMessage("$SYS/broker/publish/messages/received", "N/A"));
 
         assertThat(meterRegistry.find("telemetry.mqtt.broker.messages.received").gauge()).isNull();
     }

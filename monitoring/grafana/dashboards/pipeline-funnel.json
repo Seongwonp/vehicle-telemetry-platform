@@ -1,0 +1,180 @@
+{
+  "uid": "telemetry-pipeline-funnel",
+  "title": "Telemetry Pipeline — 단계별 대조",
+  "tags": ["telemetry", "reliability"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "10s",
+  "time": { "from": "now-30m", "to": "now" },
+  "description": "발행 → 수집 → Kafka → 저장을 한 화면에서 대조한다. 각 지표를 따로 보면 정상처럼 보이는 무음 유실을 단계 간 괴리로 드러내는 것이 목적이다. 12시간 soak에서 InfluxDB 쓰기가 26초 만에 멈췄는데 Kafka lag은 끝까지 0이라 아무 알림도 안 떴던 사고가 이 대시보드가 없어서 안 보인 것이다.",
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "읽는 법",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "**아래 그래프의 선들이 겹쳐 있으면 정상이다.** 어느 지점에서 갈라지는지가 곧 유실 위치다.\n\n`브로커 수신` → `백엔드 MQTT 수신` 갈라짐 = 브로커 큐 오버플로 / 백엔드가 못 따라감 · `백엔드 수신` → `Kafka 발행` 갈라짐 = 프로듀서 실패(spool 확인) · `Kafka 소비` → `InfluxDB 저장` 갈라짐 = 저장 실패(DLQ 확인)"
+      }
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "단계별 처리율 (msg/s) — 선이 갈라지는 곳이 유실 지점",
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0 }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "1. 브로커 수신 ($SYS)",
+          "expr": "rate(telemetry_mqtt_broker_messages_received[1m])"
+        },
+        {
+          "refId": "B",
+          "legendFormat": "2. 백엔드 MQTT 수신",
+          "expr": "sum(rate(telemetry_mqtt_messages_received_total[1m]))"
+        },
+        {
+          "refId": "C",
+          "legendFormat": "3. Kafka 소비 (vehicle-telemetry)",
+          "expr": "sum(rate(kafka_consumer_fetch_manager_records_consumed_total{topic=\"vehicle-telemetry\"}[1m]))"
+        },
+        {
+          "refId": "D",
+          "legendFormat": "4. InfluxDB 저장 성공",
+          "expr": "sum(rate(telemetry_influx_points_written_total[1m]))"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "저장 / 수신 비율 (최근 5분)",
+      "description": "1.0에서 멀어지면 어딘가에서 새고 있다. 0에 가까우면 저장이 멈춘 것이다 — 12시간 soak 버그의 신호가 바로 이것이었다.",
+      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 3,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "red", "value": null },
+              { "color": "orange", "value": 0.9 },
+              { "color": "green", "value": 0.99 }
+            ]
+          }
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(rate(telemetry_influx_points_written_total[5m])) / clamp_min(sum(rate(telemetry_mqtt_messages_received_total[5m])), 0.001)"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "브로커 버린 메시지 (누적)",
+      "description": "0이 아니면 브로커 큐가 넘쳤다 — 백엔드가 유입을 못 따라간 것이다.",
+      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "targets": [{ "refId": "A", "expr": "telemetry_mqtt_broker_messages_dropped" }]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "spool 대기 (건)",
+      "description": "Kafka 장애 시 로컬 보관량. 줄지 않으면 드레인이 유입을 못 따라간다는 뜻이다.",
+      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "orange", "value": 1 },
+              { "color": "red", "value": 10000 }
+            ]
+          }
+        }
+      },
+      "targets": [{ "refId": "A", "expr": "sum(telemetry_spool_pending)" }]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "DLQ 격리 (5분 증가분)",
+      "description": "0이 아니면 재시도 예산(180초)을 넘긴 장애가 있었다는 뜻이다. docs/runbook/dlq-reprocessing.md 참고.",
+      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 14 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 1 }
+            ]
+          }
+        }
+      },
+      "targets": [{ "refId": "A", "expr": "sum(increase(telemetry_kafka_dlq_published_total[5m]))" }]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "복구 경로 — DLQ / spool / 쓰기 실패",
+      "description": "장애 중에는 이 셋 중 하나가 올라가야 정상이다. 셋 다 0인데 위 단계별 처리율이 갈라졌다면, 어디로 샜는지 모른다는 뜻이라 계측이 부족한 것이다.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "fieldConfig": {
+        "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "legendFormat": "DLQ 발행 (msg/s)",
+          "expr": "sum(rate(telemetry_kafka_dlq_published_total[1m]))"
+        },
+        {
+          "refId": "B",
+          "legendFormat": "spool 대기 (건)",
+          "expr": "sum(telemetry_spool_pending)"
+        },
+        {
+          "refId": "C",
+          "legendFormat": "InfluxDB 쓰기 실패 (회/s)",
+          "expr": "sum(rate(telemetry_influx_write_failures_total[1m]))"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Kafka consumer lag",
+      "description": "lag이 0이라는 건 '잘 처리되고 있다'가 아니라 'offset이 전진했다'일 뿐이다. 반드시 위 저장 성공률과 함께 봐야 한다.",
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+      "targets": [
+        { "refId": "A", "legendFormat": "{{client_id}}", "expr": "kafka_consumer_records_lag_max" }
+      ]
+    }
+  ]
+}

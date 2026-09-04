@@ -30,7 +30,12 @@ public class MqttBrokerMetricsHandler {
     /** 구독한 `$SYS` 토픽 → Micrometer 게이지 이름. 여기 없는 토픽은 무시한다. */
     private static final Map<String, String> TRACKED_TOPICS = Map.of(
         "$SYS/broker/publish/messages/dropped", "telemetry.mqtt.broker.messages.dropped",
-        "$SYS/broker/messages/received", "telemetry.mqtt.broker.messages.received",
+        // publish/messages/received여야 한다. $SYS/broker/messages/received는 PUBLISH뿐 아니라
+        // PUBACK·PINGREQ·SUBSCRIBE 등 **모든 MQTT 패킷 타입**을 센다 — 실측하면 정상 부하에서
+        // 정확히 2배가 나온다(139,009 vs 69,242). 그 값을 백엔드의 PUBLISH 수신량과 빼면
+        // 구조적으로 항상 큰 양수가 나와, MqttIngestFallingBehind 알림이 아무 문제가 없어도
+        // 계속 울린다(파이프라인 단계 대조 대시보드를 만들다 발견했다).
+        "$SYS/broker/publish/messages/received", "telemetry.mqtt.broker.messages.received",
         "$SYS/broker/clients/connected", "telemetry.mqtt.broker.clients.connected"
     );
 

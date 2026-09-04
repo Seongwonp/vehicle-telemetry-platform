@@ -107,7 +107,19 @@ vehicle-telemetry-platform/
    남은 갈래: 영구 실패 배치가 이제 180초를 붙드는 경우 **미재현**,
    예산을 더 늘리려면 `max.poll.interval.ms`도 올려야 하는데 그러면 죽은 컨슈머 감지가
    느려지는 트레이드오프가 있고 **재지 않았다**
-6. 발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완
+6. ~~발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완~~ —
+   **완료(2026-09-04)**. 파이프라인 4단계 대조 대시보드(`monitoring/grafana/dashboards/
+   pipeline-funnel.json`) + 알림 3종 추가. 저장 **성공**만 세는
+   `telemetry.influx.points.written` 카운터를 새로 넣었다(기존 batch.size.sum은 진입
+   시점 기록이라 실패해도 오른다). 12시간 soak 사고를 재현해 `TelemetryStorageStalled`가
+   실제로 발동하는 것을 확인했고, 그때 `kafka_consumer_records_lag_max`는 값 자체가 없어
+   기존 lag 알림으로는 **원천적으로 못 잡는** 상황이었다. Runbook은
+   `docs/runbook/pipeline-observability.md`.
+   만들다 기존 버그도 하나 고쳤다 — `MqttIngestFallingBehind`가 `$SYS/broker/messages/received`
+   (모든 MQTT 패킷)를 PUBLISH만 센 값과 비교해 **정상 부하에서 계속 울리고 있었다**
+   (실측 2배 차이). `publish/messages/received`로 교체.
+   남은 갈래: 단계 1은 브로커 전체 수치라 다른 클라이언트가 붙으면 함께 오른다.
+   포인트 수와 메시지 수를 직접 비교하는 것은 1:1 구조에서만 성립한다
 7. 위 신뢰성 작업 이후 Flutter 앱 실기기 검증과 UX 고도화
 
 Flutter 앱 고도화는 폐기한 작업이 아니라 후순위 트랙이다. 앱 저장소의 `AGENTS.md`에 적힌
