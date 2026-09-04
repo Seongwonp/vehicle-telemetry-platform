@@ -86,8 +86,18 @@ def header_map(record) -> dict[str, str]:
 
 
 def failure_class(headers: dict[str, str]) -> str:
-    """두 발행 경로의 헤더 이름이 달라서 순서대로 찾는다."""
-    for key in ("x-dlq-failure-class", "kafka_dlt-exception-fqcn"):
+    """두 발행 경로의 헤더 이름이 달라서 순서대로 찾는다.
+
+    `kafka_dlt-exception-cause-fqcn`을 `-fqcn`보다 **먼저** 본다. Spring은 리스너에서
+    나온 예외를 `ListenerExecutionFailedException`으로 감싸므로, `-fqcn`만 보면
+    실제 원인이 InfluxDB 장애든 JSON 파싱 실패든 전부 같은 wrapper 이름으로 보인다 —
+    InfluxDB 90초 장애를 주입했더니 DLQ 76,878건이 전부 `unknown`으로 분류돼
+    (실제 원인은 `com.influxdb.exceptions.InfluxException`) 자동 재처리 대상이
+    하나도 안 나왔다. 그때 발견해서 고쳤다.
+    """
+    for key in ("x-dlq-failure-class",
+                "kafka_dlt-exception-cause-fqcn",
+                "kafka_dlt-exception-fqcn"):
         if headers.get(key):
             return headers[key]
     return ""

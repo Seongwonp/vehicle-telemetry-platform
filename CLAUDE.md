@@ -82,9 +82,23 @@ vehicle-telemetry-platform/
    남은 갈래: `vehicle-anomaly-alerts-dlq` 재처리 시 PostgreSQL 중복 알림 여부 **미검증**,
    `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
    분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
-3. MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조
-4. 발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완
-5. 위 신뢰성 작업 이후 Flutter 앱 실기기 검증과 UX 고도화
+3. ~~MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조~~ — **부분 완료(2026-09-04)**.
+   InfluxDB·Kafka 90초 장애를 주입해 **둘 다 유실 0**을 확인했다(InfluxDB는 DLQ 재처리로
+   84,615 → 161,356 완전 복구, Kafka는 spool이 전량 보관). 도구·결과는
+   `load-test/fault-injection/`. **다만 복구 경로가 둘 다 실용적이지 않다** —
+   아래 새 항목 참고. MQTT 브로커 장애는 미실행(시뮬레이터가 발행 성공 건수를 세지 않아
+   정답 기준을 먼저 만들어야 한다)
+4. **spool 드레인 속도** — 유입 약 1,700 msg/s인데 드레인은 **19 msg/s**(89배 차이).
+   `retryPending()`이 `pending(100)`을 5초 주기로 돌아 부하와 무관하게 20 msg/s 상한이
+   걸린다. 90초 장애가 약 35분 복구 시간을 만든다. 배치/주기를 설정으로 빼고 측정해서
+   정할 것 — 단 `pending()`이 디렉터리를 정렬 스캔하므로 배치만 키우면 되는 게 아니라
+   스캔 비용도 함께 재야 한다
+5. **재시도 예산 재검토** — `FixedBackOff(1000L, 2L)`는 3회 시도/약 2초라, 2초를 넘는
+   장애에서는 그 구간 전부가 DLQ로 간다(90초 장애에 전체의 47.6%). 백오프를 늘리면
+   DLQ 양이 크게 준다. 재시도는 멱등이고 lag은 이미 알림으로 드러나지만,
+   `max.poll.interval.ms`를 넘겨 리밸런싱이 도는지 먼저 확인해야 한다
+6. 발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완
+7. 위 신뢰성 작업 이후 Flutter 앱 실기기 검증과 UX 고도화
 
 Flutter 앱 고도화는 폐기한 작업이 아니라 후순위 트랙이다. 앱 저장소의 `AGENTS.md`에 적힌
 데스크톱 검증 절차를 먼저 수행한 뒤 WebSocket 재연결, 오래된 데이터 표시, 작은 화면

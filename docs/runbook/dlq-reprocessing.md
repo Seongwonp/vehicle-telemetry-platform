@@ -21,7 +21,11 @@ DLQ에 메시지가 쌓였을 때 무엇을 확인하고 어떻게 되돌릴지.
 - **재시도 소진** (`DeadLetterPublishingRecoverer`) — InfluxDB 장애 등으로 배치 전체가
   재시도를 다 쓴 경우. Spring이 `kafka_dlt-*` 헤더를 붙인다.
 
-도구는 두 헤더를 모두 읽는다.
+도구는 두 헤더를 모두 읽는다. 재시도 소진 경로에서는 **`kafka_dlt-exception-cause-fqcn`을
+먼저 봐야 한다** — Spring이 리스너 예외를 `ListenerExecutionFailedException`으로 감싸므로
+`kafka_dlt-exception-fqcn`만 보면 InfluxDB 장애든 JSON 파싱 실패든 전부 같은 wrapper
+이름으로 보인다. 실제로 InfluxDB 장애를 주입했더니 DLQ 76,878건이 전부 `unknown`으로
+분류돼 자동 재처리 대상이 하나도 안 나왔고(진짜 원인은 `InfluxException`), 그때 고쳤다.
 
 ## 1. 알림이 떴다 — 먼저 무엇을 보나
 
@@ -122,6 +126,24 @@ python dlq.py --topic vehicle-telemetry-dlq inspect
 - **`vehicle-telemetry-mqtt-dlq`는 형태가 다르다.** payload가 원본 바이트가 아니라
   `mqtt_topic`을 포함한 envelope이라, 원본 토픽으로 그대로 되돌릴 수 없다.
   이 토픽의 재처리는 아직 지원하지 않는다.
+
+## 4-1. 알아둘 것 — 짧은 장애도 DLQ를 주 경로로 만든다
+
+InfluxDB를 **90초** 정지시키자 그 구간 트래픽의 대부분인 **76,878건(전체의 47.6%)이
+DLQ로 갔다**(`load-test/fault-injection/RESULT_20260904_fault_injection.md`).
+
+원인은 재시도 예산이다. `KafkaConfig`의 `FixedBackOff(1000L, 2L)`는 **3회 시도 / 약 2초**라,
+2초를 넘기는 장애에서는 사실상 모든 메시지가 DLQ로 간다. 현실의 의존성 장애는 거의 항상
+2초보다 길다 — **DLQ가 예외 경로가 아니라 주 경로가 된다.**
+
+유실은 아니다. 재처리로 **완전히 복구된다는 것을 실측했다**(InfluxDB 행 84,615 → 161,356,
+Kafka 토픽 수와 정확히 일치). 하지만 그 복구는 **사람이 이 Runbook을 보고 수동으로**
+돌려야 하고, 장애 때마다 수만 건을 되돌려야 한다는 뜻이다.
+
+따라서 운영 관점에서는 **재시도 예산을 늘리는 편이 낫다**. 재시도는 멱등하고
+(`load-test/storage-integrity/`에서 확인), 재시도 중 쌓이는 lag은 이미 알림으로 드러난다.
+그러면 DLQ에는 진짜 처리 불가능한 메시지만 남는다. 이 변경은 **아직 하지 않았다** —
+백오프를 늘리면 `max.poll.interval.ms`를 넘겨 리밸런싱이 도는지부터 확인해야 한다.
 
 ## 5. 아직 안 한 것
 
