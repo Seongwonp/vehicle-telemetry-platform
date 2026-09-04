@@ -182,7 +182,7 @@ def make_features(seed: int = 0) -> dict:
 class TestPartitionedMLDetectors:
 
     def test_redis_없으면_파티션마다_새_감지기_생성(self):
-        pool = PartitionedMLDetectors(redis_client=None, min_samples=30)
+        pool = PartitionedMLDetectors(redis_client=None, min_samples=30, window_size=2000)
 
         d0 = pool.get(0)
         d1 = pool.get(1)
@@ -192,7 +192,7 @@ class TestPartitionedMLDetectors:
 
     def test_같은_파티션_재조회시_같은_인스턴스_반환(self):
         redis_client = FakeRedis()
-        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        pool = PartitionedMLDetectors(redis_client, min_samples=30, window_size=2000)
 
         first = pool.get(2)
         second = pool.get(2)
@@ -201,7 +201,7 @@ class TestPartitionedMLDetectors:
 
     def test_save_all_이후_새_pool에서_복원됨(self):
         redis_client = FakeRedis()
-        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        pool = PartitionedMLDetectors(redis_client, min_samples=30, window_size=2000)
 
         detector = pool.get(0)
         for i in range(30):
@@ -213,7 +213,7 @@ class TestPartitionedMLDetectors:
 
         # 재시작(또는 리밸런싱으로 다른 인스턴스가 파티션을 넘겨받음)을 흉내낸다 —
         # 같은 Redis를 바라보는 새 pool이 저장된 학습 상태를 이어받아야 한다.
-        restored_pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        restored_pool = PartitionedMLDetectors(redis_client, min_samples=30, window_size=2000)
         restored = restored_pool.get(0)
 
         assert restored.is_trained is True
@@ -222,7 +222,7 @@ class TestPartitionedMLDetectors:
 
     def test_미학습_감지기는_저장하지_않음(self):
         redis_client = FakeRedis()
-        pool = PartitionedMLDetectors(redis_client, min_samples=1_000_000)
+        pool = PartitionedMLDetectors(redis_client, min_samples=1_000_000, window_size=2000)
 
         detector = pool.get(0)
         detector.update(make_features())
@@ -236,7 +236,7 @@ class TestPartitionedMLDetectors:
         key = ml_state_key(0)
         redis_client = FakeRedis(fail_on={key})
 
-        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        pool = PartitionedMLDetectors(redis_client, min_samples=30, window_size=2000)
         detector = pool.get(0)  # 예외가 여기서 올라오면 컨슈머 루프 전체가 죽는다.
 
         assert detector.is_trained is False
@@ -245,7 +245,7 @@ class TestPartitionedMLDetectors:
         key = ml_state_key(0)
         redis_client = FakeRedis(fail_on={key})
 
-        pool = PartitionedMLDetectors(redis_client, min_samples=30)
+        pool = PartitionedMLDetectors(redis_client, min_samples=30, window_size=2000)
         detector = pool.get(0)
         for i in range(30):
             detector.update(make_features(seed=i))

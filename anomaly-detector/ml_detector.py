@@ -15,7 +15,7 @@ import logging
 import pickle
 import time
 from collections import deque
-from typing import Deque, List
+from typing import Deque, List, Tuple
 
 import numpy as np
 from sklearn.ensemble import IsolationForest
@@ -44,8 +44,24 @@ class MLAnomalyDetector:
         window_size: int = 2000,
         retrain_interval: int = 500,
         retrain_min_seconds: float = 60.0,
+        score_threshold: float | None = None,
     ):
         self.contamination = contamination
+        # 이상 판정 임계값. None이면 모델의 offset_(= 학습 분포의 contamination 분위수)을
+        # 그대로 쓴다 — 이 경우 데이터에 이상이 있든 없든 **항상 그 비율만큼** 알림이 뜬다.
+        # 값을 주면 그 점수보다 낮은 것만 이상으로 본다. 그러면 알림 수가 설정값이 아니라
+        # 실제 데이터에 따라 움직인다(15차 측정, ADR-018):
+        #
+        #   임계값     복합 recall   정상 오탐률   알림 비율
+        #   -0.5540      73.2%         1.8%        5.2%
+        #   -0.5259      87.3%         4.2%        8.1%
+        #   -0.5118      92.7%         6.3%       10.4%
+        #   offset_(현재) 67.8%        약 5%        5.1%
+        #
+        # 기본값을 None으로 둔 이유: 위 숫자는 **이 시뮬레이터의 점수 분포**에서 나온 것이라
+        # 그대로 상수로 박으면 특정 워크로드에 과적합된다. 실제 배포에서는 정상 구간
+        # 데이터로 같은 스윕(score_ml.py --sweep)을 돌려 직접 정해야 한다.
+        self.score_threshold = score_threshold
         self.min_samples = min_samples
         # 윈도우가 min_samples보다 작으면 최초 학습에 쓸 샘플도 못 채우니 최소한 맞춰준다.
         self.window_size = max(window_size, min_samples)
@@ -66,6 +82,8 @@ class MLAnomalyDetector:
         self._buffer: Deque[List[float]] = deque(maxlen=self.window_size)
         self.is_trained = False
         self._samples_since_train = 0
+        # 마지막 학습에 쓴 표본 수. 워밍업 중 재학습 판단(2배 조건)에 쓴다.
+        self._trained_with = 0
 
     def update(self, data: dict) -> bool:
         """
@@ -84,8 +102,9 @@ class MLAnomalyDetector:
         elif self._should_retrain():
             self._train()
 
-        prediction = self.model.predict([features])
-        return prediction[0] == -1  # -1 = 이상
+        # predict()를 직접 부르지 않는다 — 그러면 score_threshold를 무시하고 항상
+        # offset_으로 판정해서 단건 경로와 배치 경로가 다른 답을 낸다.
+        return self._score_and_flag([features])[0][0]
 
     def update_batch(self, batch: List[dict]) -> List[bool]:
         """한 파티션에서 받은 메시지 묶음을 처리하고 이상 여부 리스트를 돌려준다.
@@ -118,13 +137,71 @@ class MLAnomalyDetector:
         elif self._should_retrain():
             self._train()
 
-        predictions = self.model.predict(np.array(features_list))
-        # numpy.bool_이 아니라 파이썬 bool로 돌려준다 — 호출부에서 그대로 로직·직렬화에
-        # 쓰이는 값이라 numpy 타입이 새어나가지 않게 한다.
-        return [bool(p == -1) for p in predictions]
+        return self._score_and_flag(features_list)[0]
+
+    def update_batch_with_scores(self, batch: List[dict]) -> Tuple[List[bool], List[float]]:
+        """`update_batch()`와 같은 일을 하되 이상 점수도 함께 돌려준다(측정·튜닝용).
+
+        <p>점수는 `IsolationForest.score_samples()` 값으로, **낮을수록 이상**이다.
+        현재 판정은 이 점수를 모델의 `offset_`(= 학습 데이터에서 `contamination` 비율에
+        해당하는 분위수)과 비교하는 것과 정확히 같다 — sklearn의 `predict`가
+        `score_samples(X) - offset_ < 0`이기 때문이다. 즉 지금 구조는 데이터에 이상이
+        있든 없든 **학습 분포의 하위 5%를 찍는다**(ADR-018, 12·14차 측정).
+
+        <p>이 메서드는 그 `offset_`을 우리가 정한 임계값으로 바꾸기 위한 준비다.
+        임계값을 하나씩 찍어 부하를 반복하는 대신, 한 번의 측정에서 모든 메시지의 점수를
+        받아 오프라인으로 임계값을 스윕하려고 만들었다.
+
+        <p>비용은 `update_batch()`와 같다 — `predict()`가 내부적으로 `score_samples()`를
+        부르고 빼기만 하므로, 점수를 직접 받는다고 추가 계산이 생기지 않는다.
+        """
+        if not batch:
+            return [], []
+
+        features_list = [self._extract(data) for data in batch]
+        self._buffer.extend(features_list)
+        self._samples_since_train += len(features_list)
+
+        if not self.is_trained:
+            if len(self._buffer) >= self.min_samples:
+                self._train()
+            else:
+                # 학습 전에는 점수를 매길 모델이 없다. 판정은 전부 정상, 점수는 nan으로
+                # 표시해 "0점"과 구분한다(0.0은 실제로 나올 수 있는 점수다).
+                return [False] * len(features_list), [float("nan")] * len(features_list)
+        elif self._should_retrain():
+            self._train()
+
+        return self._score_and_flag(features_list)
+
+    def _score_and_flag(self, features_list: List[List[float]]) -> Tuple[List[bool], List[float]]:
+        scores = self.model.score_samples(np.array(features_list))
+        offset = self.model.offset_ if self.score_threshold is None else self.score_threshold
+        # numpy 타입이 아니라 파이썬 bool/float로 돌려준다 — 호출부에서 그대로 로직·
+        # 직렬화에 쓰이는 값이라 numpy 타입이 새어나가지 않게 한다.
+        return [bool(s < offset) for s in scores], [float(s) for s in scores]
 
     def _should_retrain(self) -> bool:
-        """건수와 시간 조건을 모두 만족해야 재학습한다(최초 학습에는 적용되지 않는다)."""
+        """건수와 시간 조건을 모두 만족해야 재학습한다(최초 학습에는 적용되지 않는다).
+
+        <p>단, **윈도우가 아직 안 찬 워밍업 구간에는 시간 하한을 적용하지 않는다.**
+        표본이 적은 모델은 정상 데이터를 대량으로 이상이라 찍는다 — 실측하면
+        `min_samples`(200)건으로 학습한 최초 모델이 **정상 트래픽의 91%를 이상으로**
+        판정했다(전부 정상인 부하, ADR-018 15차). 시간 하한을 그대로 걸면 그 모델이
+        60초를 버티므로, 파티션당 초당 500건이면 3만 5천 건이 200건짜리 모델의 판정을
+        받는다. `retrain_min_seconds`를 넣기 전에는 500건마다 재학습해 1초 만에
+        교체되던 것이라, 처리량을 살리려고 넣은 시간 하한이 만든 회귀다.
+
+        <p>워밍업 중에는 **표본이 직전 학습 대비 2배가 될 때마다** 다시 학습한다.
+        건수 기준으로 매번 재학습하면 윈도우가 클 때 학습 횟수가 그만큼 늘지만,
+        2배 조건이면 횟수가 log 스케일이라(200→2000은 4회, 200→60000은 9회) 비용이
+        제한되면서도 모델 품질은 빠르게 올라간다.
+        """
+        if self._trained_with < self.window_size:
+            # 2배가 윈도우를 넘어서는 마지막 단계에서는 "윈도우가 찼는가"로 본다 —
+            # 안 그러면 마지막 학습(윈도우 전체)이 영영 일어나지 않고 절반짜리 모델이
+            # 시간 하한만큼 그대로 남는다.
+            return len(self._buffer) >= min(self._trained_with * 2, self.window_size)
         if self._samples_since_train < self.retrain_interval:
             return False
         return (time.monotonic() - self._last_train_at) >= self.retrain_min_seconds
@@ -143,6 +220,7 @@ class MLAnomalyDetector:
         self.model = new_model
         self.is_trained = True
         self._samples_since_train = 0
+        self._trained_with = len(self._buffer)
         self._last_train_at = time.monotonic()
         logger.info(f"Isolation Forest (재)학습 완료 (윈도우 샘플: {len(self._buffer)}개)")
 
@@ -164,6 +242,7 @@ class MLAnomalyDetector:
             "buffer": list(self._buffer),
             "is_trained": self.is_trained,
             "samples_since_train": self._samples_since_train,
+            "trained_with": self._trained_with,
         })
 
     def load_state(self, blob: bytes) -> None:
@@ -185,3 +264,6 @@ class MLAnomalyDetector:
         self._buffer = deque(state["buffer"], maxlen=self.window_size)
         self.is_trained = state["is_trained"]
         self._samples_since_train = state.get("samples_since_train", 0)
+        # 옛 상태에는 없던 값 — 버퍼 크기로 대신한다(복원 직후 곧바로 재학습하지
+        # 않도록 보수적으로 잡는다).
+        self._trained_with = state.get("trained_with", len(self._buffer))

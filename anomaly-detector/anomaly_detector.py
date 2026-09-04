@@ -23,6 +23,7 @@ import os
 import json
 import signal
 import socket
+import sys
 import time
 import logging
 import hashlib
@@ -54,6 +55,19 @@ OUTPUT_TOPIC            = "vehicle-anomaly-alerts"
 DLQ_TOPIC               = "vehicle-telemetry-anomaly-dlq"
 ML_ENABLED              = os.getenv("ML_ENABLED", "false").lower() == "true"
 ML_MIN_SAMPLES          = int(os.getenv("ML_MIN_SAMPLES", "200"))
+# 학습 윈도우 크기(건수). 이 값이 시간으로 몇 초를 덮는지는 처리량에 따라 달라진다 —
+# 파티션당 약 500 msg/s에서 2000건은 약 4초치다. 재학습 간격(60초)보다 훨씬 짧으면
+# "4초를 배워 60초를 채점"하는 셈이 되므로, 측정해서 정할 수 있게 밖으로 뺐다.
+ML_WINDOW_SIZE          = int(os.getenv("ML_WINDOW_SIZE", "2000"))
+# 이상 판정 점수 임계값. 비워두면 모델의 offset_을 쓰고, 그러면 데이터와 무관하게
+# 항상 contamination 비율(5%)만큼 알림이 뜬다. 값을 주면 알림 수가 실제 데이터에
+# 따라 움직인다 — 값은 정상 구간 데이터로 score_ml.py --sweep을 돌려 정한다(ADR-018).
+_threshold_raw          = os.getenv("ML_SCORE_THRESHOLD", "").strip()
+ML_SCORE_THRESHOLD      = float(_threshold_raw) if _threshold_raw else None
+# 측정 전용: 모든 메시지의 ML 이상 점수를 stdout에 남긴다(기본 off).
+# 켜면 메시지 1건당 한 줄이 나가므로 처리량이 떨어진다 — 탐지 품질을 재는 용도이지
+# 상시 운영용이 아니다. score_ml.py --sweep이 이 줄을 읽어 임계값별 recall/오탐을 낸다.
+ML_SCORE_DUMP           = os.getenv("ML_SCORE_DUMP", "false").lower() == "true"
 
 # 커밋을 메시지마다 하면(동기 왕복) 부하 테스트로 이미 빠듯한 것을 확인한 처리량에
 # 부담을 더한다 — 개수/시간 중 먼저 차는 조건으로 배치 커밋한다.
@@ -127,9 +141,12 @@ class PartitionedMLDetectors:
     하는데, 이번 범위에서는 하지 않았다.
     """
 
-    def __init__(self, redis_client, min_samples: int):
+    def __init__(self, redis_client, min_samples: int, window_size: int,
+                 score_threshold: float | None = None):
         self._redis = redis_client
         self._min_samples = min_samples
+        self._window_size = window_size
+        self._score_threshold = score_threshold
         self._detectors: dict[int, MLAnomalyDetector] = {}
 
     def get(self, partition: int) -> MLAnomalyDetector:
@@ -140,7 +157,10 @@ class PartitionedMLDetectors:
         return detector
 
     def _load(self, partition: int) -> MLAnomalyDetector:
-        detector = MLAnomalyDetector(min_samples=self._min_samples)
+        detector = MLAnomalyDetector(
+            min_samples=self._min_samples, window_size=self._window_size,
+            score_threshold=self._score_threshold,
+        )
         if self._redis is None:
             return detector
         try:
@@ -164,6 +184,20 @@ class PartitionedMLDetectors:
                 self._redis.set(ml_state_key(partition), detector.get_state())
             except Exception:
                 logger.warning(f"[ML] 파티션 {partition} 학습 상태 저장 실패", exc_info=True)
+
+
+def dump_scores(batch: list[dict], flags: list[bool], scores: list[float]) -> None:
+    """ML_SCORE_DUMP가 켜졌을 때 배치 전체의 이상 점수를 한 번에 stdout으로 흘린다.
+
+    채점 스크립트가 정답 로그와 같은 키 (vehicle_id, timestamp)로 조인할 수 있게
+    그 두 값을 그대로 쓴다. 줄마다 logger를 부르면 포맷팅 비용이 메시지 수만큼 붙어
+    측정 자체가 느려지므로, 배치당 한 번만 write한다.
+    """
+    sys.stdout.writelines(
+        f"[SCORE] vehicle={d.get('vehicle_id', 'UNKNOWN')} ts={d.get('timestamp', '')} "
+        f"score={score:.6f} flag={int(flag)}\n"
+        for d, flag, score in zip(batch, flags, scores)
+    )
 
 
 def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> None:
@@ -262,6 +296,17 @@ def main() -> None:
     logger.info(f"  ML 이상 감지: {'활성화' if ML_ENABLED else '비활성화'}")
     if ML_ENABLED:
         logger.info(f"  ML 최소 학습 샘플: {ML_MIN_SAMPLES}개")
+        logger.info(f"  ML 학습 윈도우: {ML_WINDOW_SIZE}개")
+        logger.info(
+            "  ML 판정 기준: "
+            + (f"점수 임계값 {ML_SCORE_THRESHOLD}" if ML_SCORE_THRESHOLD is not None
+               else "모델 offset_ (= contamination 비율만큼 항상 알림)")
+        )
+        if ML_SCORE_DUMP:
+            logger.warning(
+                "  [ML] 점수 덤프 ON — 메시지마다 [SCORE] 줄을 남깁니다. "
+                "측정 전용이며 처리량이 떨어집니다(ML_SCORE_DUMP=false로 끄세요)."
+            )
     logger.info("=" * 60)
 
     running = True
@@ -275,7 +320,9 @@ def main() -> None:
     signal.signal(signal.SIGTERM, handle_signal)
 
     redis_client = make_redis_client()
-    ml_detectors = PartitionedMLDetectors(redis_client, ML_MIN_SAMPLES)
+    ml_detectors = PartitionedMLDetectors(
+        redis_client, ML_MIN_SAMPLES, ML_WINDOW_SIZE, ML_SCORE_THRESHOLD
+    )
     consumer = make_consumer()
     producer = make_producer()
     dlq_producer = make_dlq_producer()
@@ -335,7 +382,12 @@ def main() -> None:
                 if ML_ENABLED and parsed:
                     try:
                         detector = ml_detectors.get(topic_partition.partition)
-                        ml_flags = detector.update_batch([data for _, data in parsed])
+                        batch_data = [data for _, data in parsed]
+                        if ML_SCORE_DUMP:
+                            ml_flags, ml_scores = detector.update_batch_with_scores(batch_data)
+                            dump_scores(batch_data, ml_flags, ml_scores)
+                        else:
+                            ml_flags = detector.update_batch(batch_data)
                     except Exception:
                         # ML은 룰 위에 얹는 보조 탐지다. 여기서 배치 전체를 DLQ로 보내면
                         # sklearn 문제 하나로 정상 메시지 수백 건이 격리된다. 룰 기반

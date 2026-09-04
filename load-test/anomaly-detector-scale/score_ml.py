@@ -25,6 +25,11 @@ GT_PATTERN = re.compile(
     r"\[GT\] vehicle=(?P<vehicle>\S+) ts=(?P<ts>\S+) label=(?P<label>\S+) kind=(?P<kind>\S+)"
 )
 
+# anomaly-detector가 ML_SCORE_DUMP=true일 때 남기는 줄.
+SCORE_PATTERN = re.compile(
+    r"\[SCORE\] vehicle=(?P<vehicle>\S+) ts=(?P<ts>\S+) score=(?P<score>\S+) flag=(?P<flag>\d)"
+)
+
 
 def _collect(lines, truth: dict[tuple[str, str], dict]) -> None:
     for line in lines:
@@ -72,6 +77,81 @@ def load_alerts(bootstrap: str, topic: str, timeout_ms: int) -> list[dict]:
     return alerts
 
 
+def load_scores(containers: list[str], files: list[str]) -> dict[tuple[str, str], float]:
+    """[SCORE] 줄을 (vehicle, ts) → score 로 만든다(ML_SCORE_DUMP=true로 받은 것).
+
+    같은 키가 두 번 나오면(리밸런싱 후 재처리 등) 나중 값으로 덮는다 — 그때의 모델이
+    더 많이 학습된 상태라 실제 판정에 가깝다.
+    """
+    scores: dict[tuple[str, str], float] = {}
+
+    def collect(lines):
+        for line in lines:
+            m = SCORE_PATTERN.search(line)
+            if m:
+                try:
+                    value = float(m["score"])
+                except ValueError:
+                    continue
+                if value == value:  # nan 제외 — 학습 전이라 점수가 없는 구간
+                    scores[(m["vehicle"], m["ts"])] = value
+
+    for name in containers:
+        out = subprocess.run(["docker", "logs", name],
+                             capture_output=True, text=True, errors="replace")
+        collect((out.stdout + out.stderr).splitlines())
+    for path in files:
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            collect(fh)
+    return scores
+
+
+def print_sweep(scores: dict[tuple[str, str], float],
+                truth: dict[tuple[str, str], dict],
+                steps: int) -> None:
+    """임계값을 훑으며 복합 이상 recall과 오탐률을 낸다.
+
+    지금 구조(contamination=0.05)는 "학습 분포의 하위 5%"를 무조건 찍는다. 그걸
+    "점수가 임계값보다 낮으면 이상"으로 바꾸려면 임계값을 정해야 하는데, 값을 하나씩
+    찍어 부하를 반복하면 측정 한 번에 점 하나밖에 못 얻는다. 점수를 전부 받아두면
+    한 번의 측정으로 곡선 전체를 볼 수 있다 — 이 함수가 그 계산이다.
+
+    점수는 낮을수록 이상이므로 `score < threshold`가 알림이다.
+    """
+    if not scores:
+        print("점수 덤프가 없다 — ML_SCORE_DUMP=true로 돌렸는지, "
+              "--score-files/--detector-containers 경로가 맞는지 확인할 것.", file=sys.stderr)
+        return
+
+    composite = {k for k, v in truth.items() if v["kind"] == "composite"}
+    # 정답에 없는 메시지 = 정상. 룰 이상은 어차피 룰이 100% 잡으므로 ML 오탐 계산에서
+    # 빼지 않고 "정답" 쪽에 둔다(알림이 떠도 헛알림은 아니다).
+    scored_composite = [s for k, s in scores.items() if k in composite]
+    scored_normal = [s for k, s in scores.items() if k not in truth]
+
+    if not scored_composite:
+        print("점수와 조인된 복합 이상이 없다 — 정답/점수 수집 구간이 어긋났을 수 있다.",
+              file=sys.stderr)
+        return
+
+    lo = min(min(scored_composite), min(scored_normal or [0.0]))
+    hi = max(max(scored_composite), max(scored_normal or [0.0]))
+
+    print("-" * 62)
+    print(f"임계값 스윕 (점수와 조인된 메시지: 복합 {len(scored_composite):,}건 / "
+          f"정상 {len(scored_normal):,}건)")
+    print(f"  {'임계값':>10} {'복합 recall':>12} {'정상 오탐률':>12} {'알림 비율':>10}")
+    total = len(scored_composite) + len(scored_normal)
+    for i in range(steps + 1):
+        th = lo + (hi - lo) * i / steps
+        rec = sum(1 for s in scored_composite if s < th)
+        fp = sum(1 for s in scored_normal if s < th)
+        print(f"  {th:>10.4f} {rec/len(scored_composite)*100:>11.1f}% "
+              f"{(fp/len(scored_normal)*100 if scored_normal else 0):>11.1f}% "
+              f"{(rec+fp)/total*100:>9.1f}%")
+    print("-" * 62)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -83,6 +163,14 @@ def main() -> int:
     parser.add_argument("--topic", default="vehicle-anomaly-alerts")
     parser.add_argument("--timeout-ms", type=int, default=15000,
                         help="알림 토픽에서 이 시간 동안 새 메시지가 없으면 읽기를 끝낸다")
+    parser.add_argument("--sweep", action="store_true",
+                        help="ML_SCORE_DUMP로 받은 점수로 임계값별 recall/오탐을 계산한다")
+    parser.add_argument("--score-files", default="",
+                        help="쉼표로 구분한 점수 덤프 파일 경로 (docker logs를 받아둔 것)")
+    parser.add_argument("--detector-containers", default="",
+                        help="쉼표로 구분한 anomaly-detector 컨테이너 이름")
+    parser.add_argument("--sweep-steps", type=int, default=20,
+                        help="스윕 구간을 몇 등분할지 (기본 20)")
     args = parser.parse_args()
 
     containers = [c.strip() for c in args.sim_containers.split(",") if c.strip()]
@@ -155,6 +243,16 @@ def main() -> int:
             hit = per_label_hit.get(label, 0)
             print(f"  {label:<22} {hit:>6,}/{total:<6,} ({pct(hit, total)})")
     print("=" * 62)
+
+    if args.sweep:
+        print_sweep(
+            load_scores(
+                [c.strip() for c in args.detector_containers.split(",") if c.strip()],
+                [f.strip() for f in args.score_files.split(",") if f.strip()],
+            ),
+            truth,
+            args.sweep_steps,
+        )
     return 0
 
 

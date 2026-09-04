@@ -114,6 +114,10 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       ML_ENABLED: ${ML_ENABLED:-false}
       ML_MIN_SAMPLES: ${ML_MIN_SAMPLES:-200}
+      ML_WINDOW_SIZE: ${ML_WINDOW_SIZE:-2000}
+      ML_SCORE_THRESHOLD: ${ML_SCORE_THRESHOLD:-}
+      # 측정 전용 — 켜면 메시지마다 이상 점수를 로그로 남긴다(처리량 하락).
+      ML_SCORE_DUMP: ${ML_SCORE_DUMP:-false}
       WEBHOOK_URL: ${WEBHOOK_URL:-}
       # ML_ENABLED=true일 때만 실제로 연결한다(ML 꺼져 있으면 make_redis_client()가
       # None을 반환) — 파티션별 학습 상태를 저장해 재시작/리밸런싱에도 이어가기 위함(ADR-018).

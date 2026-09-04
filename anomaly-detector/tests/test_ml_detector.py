@@ -77,7 +77,9 @@ class TestMLAnomalyDetector:
 
     def test_retrain_interval_도달하면_재학습(self):
         # 이 테스트는 "건수 조건"만 본다 — 시간 하한은 TestRetrainMinSeconds에서 따로 검증한다.
-        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20,
+        # 윈도우를 min_samples와 같게 둬서 곧바로 워밍업이 끝나게 한다 —
+        # 여기서 보려는 건 워밍업이 아니라 정상 구간의 건수 조건이다.
+        detector = MLAnomalyDetector(min_samples=10, window_size=10, retrain_interval=20,
                                      retrain_min_seconds=0)
         for i in range(10):
             detector.update(make_normal_data(seed=i))
@@ -92,7 +94,7 @@ class TestMLAnomalyDetector:
         assert detector._samples_since_train == 0
 
     def test_재학습_전에는_모델_그대로(self):
-        detector = MLAnomalyDetector(min_samples=10, window_size=200, retrain_interval=20)
+        detector = MLAnomalyDetector(min_samples=10, window_size=10, retrain_interval=20)
         for i in range(10):
             detector.update(make_normal_data(seed=i))
         model_after_initial_train = detector.model
@@ -203,12 +205,13 @@ class TestUpdateBatch:
 class TestRetrainMinSeconds:
 
     def test_시간_하한_전에는_건수를_넘겨도_재학습하지_않는다(self):
-        detector = MLAnomalyDetector(min_samples=10, retrain_interval=20,
+        detector = MLAnomalyDetector(min_samples=10, window_size=10, retrain_interval=20,
                                      retrain_min_seconds=3600)
         detector.update_batch([make_normal_data(seed=i) for i in range(10)])
         trained_model = detector.model
 
-        # 건수 조건(20)은 한참 넘겼지만 시간 하한(1시간)에 걸려 재학습되면 안 된다.
+        # 건수 조건(20)은 한참 넘겼지만 시간 하한(1시간)에 걸려 재학습되면 안 된다
+        # (윈도우가 이미 찼으므로 워밍업 예외에도 걸리지 않는다).
         detector.update_batch([make_normal_data(seed=100 + i) for i in range(100)])
 
         assert detector.model is trained_model
@@ -270,3 +273,168 @@ class TestStateFeatureCompatibility:
 
         with pytest.raises(ValueError, match="피처 목록"):
             MLAnomalyDetector(min_samples=10).load_state(legacy)
+
+
+# ── update_batch_with_scores(): 점수 기반 임계값 재설계 준비 (ADR-018) ────────
+
+class TestUpdateBatchWithScores:
+
+    def test_판정이_update_batch와_완전히_같다(self):
+        # 점수를 직접 받아 offset_과 비교하는 것이 predict()와 동일해야 한다 —
+        # 다르면 "측정용 경로"와 "실제 판정"이 어긋나 채점 결과를 믿을 수 없다.
+        warmup = [make_normal_data(seed=i) for i in range(60)]
+        probes = [make_normal_data(seed=500 + i) for i in range(40)]
+
+        plain = MLAnomalyDetector(min_samples=50, retrain_interval=1_000_000)
+        plain.update_batch(warmup)
+        expected = plain.update_batch(probes)
+
+        scored = MLAnomalyDetector(min_samples=50, retrain_interval=1_000_000)
+        scored.update_batch_with_scores(warmup)
+        flags, scores = scored.update_batch_with_scores(probes)
+
+        assert flags == expected
+        assert len(scores) == len(probes)
+
+    def test_이상으로_찍힌_쪽_점수가_더_낮다(self):
+        # 점수는 낮을수록 이상이라는 방향을 고정한다 — 임계값 스윕이 이 방향에 의존한다.
+        detector = MLAnomalyDetector(min_samples=50, retrain_interval=1_000_000)
+        detector.update_batch_with_scores([make_normal_data(seed=i) for i in range(60)])
+
+        probes = [make_normal_data(seed=500 + i) for i in range(60)]
+        probes.append({"speed": 400.0, "rpm": 12000, "engine_temp": 200.0,
+                       "battery_voltage": 3.0, "fuel_level": 0.0,
+                       "throttle_position": 100.0})
+        flags, scores = detector.update_batch_with_scores(probes)
+
+        assert flags[-1] is True  # 노골적인 이상은 잡혀야 한다
+        assert scores[-1] < min(scores[:-1])
+
+    def test_학습_전에는_판정_False_점수_nan(self):
+        # 0.0은 실제로 나올 수 있는 점수라 "모르는 값"과 구분되어야 한다.
+        detector = MLAnomalyDetector(min_samples=100)
+        flags, scores = detector.update_batch_with_scores(
+            [make_normal_data(seed=i) for i in range(10)]
+        )
+
+        assert flags == [False] * 10
+        assert all(s != s for s in scores)  # nan
+
+    def test_빈_배치는_빈_결과_두_개(self):
+        detector = MLAnomalyDetector(min_samples=10)
+        assert detector.update_batch_with_scores([]) == ([], [])
+
+
+# ── 워밍업 중 재학습 (ADR-018 15차 — 표본 적은 최초 모델이 정상의 91%를 찍었다) ──
+
+class TestWarmupRetrain:
+
+    def test_워밍업_중에는_시간_하한을_무시하고_재학습한다(self):
+        # 시간 하한이 걸려 있어도, 윈도우가 안 찬 동안은 표본이 2배가 되면 다시 학습해야
+        # 한다 — 안 그러면 200건짜리 모델이 하한 시간만큼 그대로 판정을 내린다.
+        detector = MLAnomalyDetector(min_samples=100, window_size=1000,
+                                     retrain_min_seconds=3600)
+        detector.update_batch([make_normal_data(seed=i) for i in range(100)])
+        first = detector.model
+        assert detector._trained_with == 100
+
+        detector.update_batch([make_normal_data(seed=100 + i) for i in range(100)])
+
+        assert detector.model is not first
+        assert detector._trained_with == 200
+
+    def test_표본이_2배가_되기_전에는_재학습하지_않는다(self):
+        detector = MLAnomalyDetector(min_samples=100, window_size=1000,
+                                     retrain_min_seconds=3600)
+        detector.update_batch([make_normal_data(seed=i) for i in range(100)])
+        first = detector.model
+
+        # 100 -> 150. 아직 2배(200)가 아니다.
+        detector.update_batch([make_normal_data(seed=100 + i) for i in range(50)])
+
+        assert detector.model is first
+
+    def test_윈도우가_차면_다시_시간_하한이_적용된다(self):
+        # 워밍업이 끝난 뒤에도 시간 하한을 무시하면, 원래 고치려던 재학습 폭주로 돌아간다.
+        detector = MLAnomalyDetector(min_samples=100, window_size=200,
+                                     retrain_interval=50, retrain_min_seconds=3600)
+        detector.update_batch([make_normal_data(seed=i) for i in range(200)])
+        assert len(detector._buffer) == 200  # 윈도우가 찼다
+        filled = detector.model
+
+        detector.update_batch([make_normal_data(seed=300 + i) for i in range(200)])
+
+        assert detector.model is filled  # 시간 하한에 막혀 재학습되지 않는다
+
+    def test_워밍업_재학습_횟수는_log_스케일이다(self):
+        # 건수마다 재학습하면 윈도우가 클수록 학습 비용이 선형으로 늘어난다.
+        # 2배 조건이면 200 -> 3200 구간에서 다섯 번(400/800/1600/3200 + 최초)이면 된다.
+        detector = MLAnomalyDetector(min_samples=200, window_size=3200,
+                                     retrain_min_seconds=3600)
+        trained_sizes = []
+        original_train = detector._train
+
+        def spy():
+            original_train()
+            trained_sizes.append(detector._trained_with)
+
+        detector._train = spy
+        for _ in range(32):
+            detector.update_batch([make_normal_data(seed=i) for i in range(100)])
+
+        assert trained_sizes == [200, 400, 800, 1600, 3200]
+
+
+# ── 점수 임계값 (ADR-018 15차 — contamination은 "표시할 비율"이라 데이터를 안 본다) ──
+
+class TestScoreThreshold:
+
+    def _trained(self, **kw):
+        detector = MLAnomalyDetector(min_samples=50, window_size=50,
+                                     retrain_min_seconds=3600, **kw)
+        detector.update_batch([make_normal_data(seed=i) for i in range(60)])
+        return detector
+
+    def test_기본값은_기존_동작을_그대로_유지한다(self):
+        # 임계값을 안 주면 모델 offset_로 판정 — 기존 배포의 동작이 바뀌면 안 된다.
+        detector = self._trained()
+        assert detector.score_threshold is None
+
+        probes = [make_normal_data(seed=200 + i) for i in range(30)]
+        flags, scores = detector.update_batch_with_scores(probes)
+
+        offset = detector.model.offset_
+        assert flags == [s < offset for s in scores]
+
+    def test_임계값을_주면_그_기준으로_판정한다(self):
+        detector = self._trained(score_threshold=-0.55)
+
+        probes = [make_normal_data(seed=200 + i) for i in range(30)]
+        flags, scores = detector.update_batch_with_scores(probes)
+
+        assert flags == [s < -0.55 for s in scores]
+
+    def test_임계값이_낮을수록_알림이_줄어든다(self):
+        # 점수는 낮을수록 이상이므로, 임계값을 내리면 걸리는 게 줄어야 한다.
+        probes = [make_normal_data(seed=200 + i) for i in range(60)]
+
+        loose = self._trained(score_threshold=-0.40)
+        tight = self._trained(score_threshold=-0.70)
+
+        assert sum(loose.update_batch_with_scores(probes)[0]) >= \
+               sum(tight.update_batch_with_scores(probes)[0])
+
+    def test_단건_경로도_같은_임계값을_쓴다(self):
+        # update()가 predict()를 그대로 부르면 임계값을 무시해 두 경로가 갈린다.
+        batch_side = self._trained(score_threshold=-0.40)
+        single_side = self._trained(score_threshold=-0.40)
+
+        probe = make_normal_data(seed=777)
+
+        assert single_side.update(probe) == batch_side.update_batch([probe])[0]
+
+    def test_아주_높은_임계값이면_전부_이상으로_본다(self):
+        detector = self._trained(score_threshold=1.0)  # 점수는 항상 1보다 작다
+        probes = [make_normal_data(seed=300 + i) for i in range(20)]
+
+        assert all(detector.update_batch(probes))

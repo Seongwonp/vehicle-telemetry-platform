@@ -180,3 +180,62 @@ docker logs telemetry-sim-0 2>&1 | grep '^\[GT\]'
 
 **아직 측정하지 않았다** — 이 시나리오로 ML precision/recall과 재학습 주기 적정성을
 재는 것은 다음 작업이다.
+
+---
+
+## ML 탐지 품질 측정 절차 (15~17차에서 정립)
+
+### 1. 오탐만 따로 재려면 — 이상을 하나도 넣지 않는다
+
+`ANOMALY_RATE=0 COMPOSITE_ANOMALY_RATE=0`으로 부하를 걸면 **ML 알림은 전부 오탐**이라
+정답 로그와 조인할 필요조차 없다. 15차에서 "정상만 있는데 판정률 24.4%"를 이렇게 잡았다.
+
+### 2. 세대별로 갈라 본다
+
+`ML_SCORE_DUMP=true`로 띄우면 메시지마다 `[SCORE] vehicle=... ts=... score=... flag=...`가
+남는다. 재학습 로그(`Isolation Forest (재)학습 완료 (윈도우 샘플: N개)`)를 경계로
+**모델 세대별 판정률**을 내면 문제 구간이 바로 보인다 — 전체 평균만 보면
+"최초 모델이 91%를 찍고 나머지는 7%"인 상황이 24%로 뭉개진다.
+
+```bash
+docker logs <detector> | python - <<'PY'
+import sys, re
+gen=-1; tot={}; fl={}; bs={}
+for line in sys.stdin:
+    if 'Isolation Forest' in line:
+        gen+=1; m=re.search(r'(\d+)개', line)
+        if m: bs[gen]=int(m.group(1))
+        continue
+    if not line.startswith('[SCORE]') or 'score=nan' in line or gen<0: continue
+    tot[gen]=tot.get(gen,0)+1
+    if line.rstrip().endswith('flag=1'): fl[gen]=fl.get(gen,0)+1
+for g in sorted(tot):
+    print(g, bs.get(g), tot[g], f"{fl.get(g,0)/tot[g]*100:.2f}%")
+PY
+```
+
+### 3. 임계값은 스윕으로 정한다 — 부하를 반복하지 않는다
+
+임계값 후보마다 부하를 돌리면 측정 한 번에 점 하나뿐이다. 점수를 전부 덤프해두면
+오프라인으로 곡선 전체를 얻는다. 17차에서 예측(87.3%) 대비 실측(89.1%)으로 검증됐다.
+
+```bash
+python score_ml.py \
+  --gt-files gt-0.txt,gt-1.txt \
+  --score-files det1.txt,det2.txt,det3.txt \
+  --bootstrap kafka:29092 --sweep --sweep-steps 24
+```
+
+### 반드시 지킬 것
+
+- **측정 전에 알림 토픽을 비운다.** 안 그러면 앞선 실행의 알림까지 채점돼 오탐률이
+  엉뚱하게 나온다(16차에서 당했다 — 탐지기 자체 판정률과 20배 어긋나 발견). 단,
+  지우고 **곧바로 다시 만든 뒤** 탐지기를 재시작할 것 — 돌아가는 중에 지우면 프로듀서가
+  계속 실패하며 컨슈머가 멈춘다.
+- **Redis의 ML 학습 상태를 지우고 시작한다.** 안 그러면 직전 실험의 모델을 이어받아
+  워밍업 구간이 관찰되지 않는다.
+- **컨테이너를 `--force-recreate`로 새로 띄운다.** 컨테이너 로그가 곧 측정 데이터라,
+  이전 실행분이 섞이면 세대 구분이 깨진다.
+- **시뮬레이터 로그를 내리기 전에 파일로 받아둔다** (`--rm`이면 컨테이너와 함께 사라진다).
+- `ML_SCORE_DUMP`는 **측정 전용**이다 — 메시지마다 한 줄이 나가 처리량이 떨어지므로
+  처리량을 재는 측정에는 끄고 돌려야 한다.
