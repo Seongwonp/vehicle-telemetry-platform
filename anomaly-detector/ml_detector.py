@@ -23,7 +23,12 @@ from sklearn.ensemble import IsolationForest
 logger = logging.getLogger("ml_detector")
 
 # 이상 감지에 사용할 피처 (순서 고정)
-FEATURES = ["speed", "rpm", "engine_temp", "battery_voltage", "fuel_level"]
+#
+# throttle_position은 원래 빠져 있었는데, 채점해보니 그것 때문에 통째로 못 잡는
+# 이상 유형이 있었다 — "스로틀을 밟는데 차가 안 나간다"(throttle_no_response)의
+# recall이 6.9%로, 다른 복합 패턴(53-92%)과 확연히 달랐다. 스로틀을 안 보면 이 패턴이
+# 그냥 공회전과 구별되지 않아서 파라미터를 조정해도 개선되지 않는다(13차 측정, ADR-018).
+FEATURES = ["speed", "rpm", "engine_temp", "battery_voltage", "fuel_level", "throttle_position"]
 
 
 class MLAnomalyDetector:
@@ -147,8 +152,14 @@ class MLAnomalyDetector:
     # ── 상태 저장/복원 (재시작·리밸런싱 대응) ──────────────────────
 
     def get_state(self) -> bytes:
-        """pickle로 직렬화 — 프로세스가 죽어도 학습 상태를 이어갈 수 있게 한다."""
+        """pickle로 직렬화 — 프로세스가 죽어도 학습 상태를 이어갈 수 있게 한다.
+
+        `features`를 함께 저장한다. 버퍼의 각 행과 학습된 모델이 피처 개수·순서에
+        묶여 있어서, 피처 목록이 바뀐 뒤 옛 상태를 그대로 실으면 차원이 어긋난 채로
+        학습·예측이 돌아간다(조용히 틀린 결과가 나온다). 복원 시 대조할 수 있게 남긴다.
+        """
         return pickle.dumps({
+            "features": list(FEATURES),
             "model": self.model,
             "buffer": list(self._buffer),
             "is_trained": self.is_trained,
@@ -157,8 +168,19 @@ class MLAnomalyDetector:
 
     def load_state(self, blob: bytes) -> None:
         """get_state()로 저장해둔 상태를 복원한다. 형식이 안 맞으면 예외를 그대로 던진다 —
-        호출자가 "복원 실패 시 새로 학습" 여부를 결정하게 한다."""
+        호출자가 "복원 실패 시 새로 학습" 여부를 결정하게 한다.
+
+        피처 목록이 지금과 다르면(옛 버전이라 아예 없는 경우 포함) 복원을 거부한다.
+        차원이 안 맞는 상태로 이어가느니 처음부터 다시 학습하는 게 맞다 —
+        `PartitionedMLDetectors._load`가 이 예외를 잡아 새 detector로 넘어간다.
+        """
         state = pickle.loads(blob)
+        saved_features = state.get("features")
+        if saved_features != list(FEATURES):
+            raise ValueError(
+                f"저장된 피처 목록이 현재와 다르다 — 복원 불가 "
+                f"(저장됨: {saved_features}, 현재: {list(FEATURES)})"
+            )
         self.model = state["model"]
         self._buffer = deque(state["buffer"], maxlen=self.window_size)
         self.is_trained = state["is_trained"]

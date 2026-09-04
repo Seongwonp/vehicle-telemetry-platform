@@ -5,7 +5,12 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import pickle
+
 import pytest
+from sklearn.ensemble import IsolationForest
+
+import ml_detector
 from ml_detector import MLAnomalyDetector
 
 
@@ -18,6 +23,10 @@ def make_normal_data(seed: int = 0) -> dict:
         "engine_temp": random.uniform(85.0, 98.0),
         "battery_voltage": random.uniform(13.5, 14.2),
         "fuel_level": random.uniform(30.0, 80.0),
+        # 정상 주행에서 스로틀은 속도에 대체로 비례한다(시뮬레이터도 그렇게 만든다).
+        # 이 값이 없으면 _extract가 0.0으로 채워 피처가 상수가 되므로 테스트가
+        # 실제 형태를 반영하지 못한다.
+        "throttle_position": random.uniform(20.0, 60.0),
     }
 
 
@@ -221,3 +230,43 @@ class TestRetrainMinSeconds:
         detector.update_batch([make_normal_data(seed=i) for i in range(10)])
 
         assert detector.is_trained is True
+
+
+# ── 피처 변경 시 상태 호환 (ADR-018 — 차원 불일치로 조용히 틀리는 걸 막는다) ──
+
+class TestStateFeatureCompatibility:
+
+    def test_같은_피처면_복원된다(self):
+        detector = MLAnomalyDetector(min_samples=10)
+        for i in range(15):
+            detector.update(make_normal_data(seed=i))
+
+        restored = MLAnomalyDetector(min_samples=10)
+        restored.load_state(detector.get_state())
+
+        assert restored.is_trained is True
+        assert len(restored._buffer) == len(detector._buffer)
+
+    def test_피처가_바뀌면_복원을_거부한다(self, monkeypatch):
+        detector = MLAnomalyDetector(min_samples=10)
+        for i in range(15):
+            detector.update(make_normal_data(seed=i))
+        blob = detector.get_state()
+
+        # 저장 후 피처가 하나 늘어난 상황을 흉내낸다.
+        monkeypatch.setattr(ml_detector, "FEATURES", list(ml_detector.FEATURES) + ["extra"])
+
+        with pytest.raises(ValueError, match="피처 목록"):
+            MLAnomalyDetector(min_samples=10).load_state(blob)
+
+    def test_피처_정보가_없는_옛_상태도_거부한다(self):
+        # features 키가 없던 시절의 상태 — 5개 피처 기준이라 지금과 차원이 다르다.
+        legacy = pickle.dumps({
+            "model": IsolationForest(n_estimators=10).fit([[0.0] * 5] * 10),
+            "buffer": [[0.0] * 5] * 10,
+            "is_trained": True,
+            "samples_since_train": 0,
+        })
+
+        with pytest.raises(ValueError, match="피처 목록"):
+            MLAnomalyDetector(min_samples=10).load_state(legacy)
