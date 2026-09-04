@@ -35,14 +35,17 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -125,7 +128,10 @@ class KafkaStorageFailureContractTest {
 
     @Test
     @SuppressWarnings({"unchecked", "rawtypes"})
-    void dlqPublishFailureDoesNotCommitSourceOffset() throws Exception {
+    void dlqPublishFailureLeavesOffsetAndRestartRedeliversSourceRecord() throws Exception {
+        String sourceTopic = "vehicle-telemetry-restart-contract-" + UUID.randomUUID();
+        String dlqTopic = sourceTopic + "-dlq";
+        createTopics(sourceTopic, dlqTopic);
         kafkaTemplate = createKafkaTemplate();
         KafkaTemplate<String, String> failingDlqTemplate = mock(KafkaTemplate.class);
         CompletableFuture<SendResult<String, String>> failedSend = new CompletableFuture<>();
@@ -145,15 +151,15 @@ class KafkaStorageFailureContractTest {
             mock(SimpMessagingTemplate.class),
             new SimpleMeterRegistry()
         );
-        listenerContainer = startListener(listener, failingDlqTemplate);
-
         SendResult<String, String> sourceResult = kafkaTemplate
-            .send(SOURCE_TOPIC, "TEST-002", PAYLOAD.replace("TEST-001", "TEST-002"))
+            .send(sourceTopic, "TEST-002", PAYLOAD.replace("TEST-001", "TEST-002"))
             .get(10, TimeUnit.SECONDS);
+        listenerContainer = startListener(
+            listener, failingDlqTemplate, sourceTopic, "earliest");
 
         verify(telemetryRepository, timeout(8_000).atLeast(3)).saveAll(any());
         TopicPartition sourcePartition = new TopicPartition(
-            SOURCE_TOPIC, sourceResult.getRecordMetadata().partition());
+            sourceTopic, sourceResult.getRecordMetadata().partition());
 
         // 핵심 계약: DLQ에 넣지 못했으면 원본을 건너뛰면 안 된다.
         // offset+1이 커밋되면 다음 폴에서 이 메시지를 지나쳐 조용히 유실된다.
@@ -164,6 +170,80 @@ class KafkaStorageFailureContractTest {
             .withFailMessage("DLQ 발행 실패에도 원본 offset이 커밋돼 메시지가 스킵된다 — "
                 + "committed=%s recordOffset=%s", committed, recordOffset)
             .isTrue();
+
+        listenerContainer.stop();
+        listenerContainer = null;
+
+        TelemetryRepository recoveredRepository = mock(TelemetryRepository.class);
+        given(recoveredRepository.toPoint(any()))
+            .willReturn(Point.measurement("vehicle_telemetry"));
+        TelemetryConsumer recoveredListener = new TelemetryConsumer(
+            recoveredRepository,
+            mock(AnomalyService.class),
+            new ObjectMapper(),
+            kafkaTemplate,
+            mock(SimpMessagingTemplate.class),
+            new SimpleMeterRegistry()
+        );
+        listenerContainer = startListener(
+            recoveredListener, kafkaTemplate, sourceTopic, "earliest");
+
+        verify(recoveredRepository, timeout(10_000)).saveAll(
+            argThat(points -> points.size() == 1));
+        long recoveredOffset = awaitCommittedOffset(
+            sourcePartition, Duration.ofSeconds(10));
+        assertThat(recoveredOffset).isEqualTo(recordOffset + 1);
+    }
+
+    @Test
+    void permanentBatchFailurePublishesEveryRecordToDlqAndCommitsPastBatch() throws Exception {
+        String sourceTopic = "vehicle-telemetry-contract-" + UUID.randomUUID();
+        String dlqTopic = sourceTopic + "-dlq";
+        createTopics(sourceTopic, dlqTopic);
+        kafkaTemplate = createKafkaTemplate();
+
+        TelemetryRepository telemetryRepository = mock(TelemetryRepository.class);
+        given(telemetryRepository.toPoint(any())).willReturn(Point.measurement("vehicle_telemetry"));
+        doThrow(new RuntimeException("InfluxDB unavailable"))
+            .when(telemetryRepository).saveAll(any());
+        TelemetryConsumer listener = new TelemetryConsumer(
+            telemetryRepository,
+            mock(AnomalyService.class),
+            new ObjectMapper(),
+            kafkaTemplate,
+            mock(SimpMessagingTemplate.class),
+            new SimpleMeterRegistry()
+        );
+
+        SendResult<String, String> first = kafkaTemplate
+            .send(sourceTopic, "BATCH-001", PAYLOAD.replace("TEST-001", "BATCH-001"))
+            .get(10, TimeUnit.SECONDS);
+        kafkaTemplate
+            .send(sourceTopic, "BATCH-002", PAYLOAD.replace("TEST-001", "BATCH-002"))
+            .get(10, TimeUnit.SECONDS);
+        SendResult<String, String> last = kafkaTemplate
+            .send(sourceTopic, "BATCH-003", PAYLOAD.replace("TEST-001", "BATCH-003"))
+            .get(10, TimeUnit.SECONDS);
+
+        assertThat(first.getRecordMetadata().partition()).isEqualTo(last.getRecordMetadata().partition());
+        listenerContainer = startListener(
+            listener, kafkaTemplate, sourceTopic, "earliest");
+
+        Map<String, String> dlqRecords = pollRecordsWithKeys(
+            dlqTopic, Set.of("BATCH-001", "BATCH-002", "BATCH-003"));
+        assertThat(dlqRecords).containsOnlyKeys("BATCH-001", "BATCH-002", "BATCH-003");
+        assertThat(dlqRecords.get("BATCH-001")).isEqualTo(PAYLOAD.replace("TEST-001", "BATCH-001"));
+        assertThat(dlqRecords.get("BATCH-002")).isEqualTo(PAYLOAD.replace("TEST-001", "BATCH-002"));
+        assertThat(dlqRecords.get("BATCH-003")).isEqualTo(PAYLOAD.replace("TEST-001", "BATCH-003"));
+
+        // 최초 시도와 두 번의 재시도 모두 동일한 3건 배치여야 한다.
+        verify(telemetryRepository, timeout(10_000).times(3))
+            .saveAll(argThat(points -> points.size() == 3));
+
+        TopicPartition sourcePartition = new TopicPartition(
+            sourceTopic, last.getRecordMetadata().partition());
+        long committedOffset = awaitCommittedOffset(sourcePartition, Duration.ofSeconds(10));
+        assertThat(committedOffset).isEqualTo(last.getRecordMetadata().offset() + 1);
     }
 
     private MessageListenerContainer startListener(TelemetryConsumer listener) {
@@ -174,19 +254,29 @@ class KafkaStorageFailureContractTest {
         TelemetryConsumer listener,
         KafkaTemplate<String, String> recoveryTemplate
     ) {
+        return startListener(listener, recoveryTemplate, SOURCE_TOPIC, "latest");
+    }
+
+    private MessageListenerContainer startListener(
+        TelemetryConsumer listener,
+        KafkaTemplate<String, String> recoveryTemplate,
+        String sourceTopic,
+        String autoOffsetReset
+    ) {
         Map<String, Object> consumerProperties = Map.of(
             ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers(),
             ConsumerConfig.GROUP_ID_CONFIG, groupId,
             // 두 테스트가 같은 Kafka 컨테이너와 토픽을 공유한다. earliest면 앞 테스트가
             // 일부러 커밋하지 않고 남긴 레코드까지 다시 집어 DLQ가 오염된다.
             // 리스너 할당(waitForAssignment)을 먼저 끝낸 뒤 발행하므로 latest로 충분하다.
-            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest",
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, autoOffsetReset,
+            ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10,
             ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false,
             ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
             ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class
         );
         var consumerFactory = new DefaultKafkaConsumerFactory<String, String>(consumerProperties);
-        ContainerProperties properties = new ContainerProperties(SOURCE_TOPIC);
+        ContainerProperties properties = new ContainerProperties(sourceTopic);
         properties.setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         // 저장 경로는 배치 리스너다(KafkaConfig.telemetryBatchListenerContainerFactory).
         // 배치 리스너 타입을 넘겨야 컨테이너가 배치 모드로 동작한다.
@@ -212,6 +302,17 @@ class KafkaStorageFailureContractTest {
         return new KafkaTemplate<>(producerFactory);
     }
 
+    private static void createTopics(String... topicNames) throws Exception {
+        try (AdminClient admin = AdminClient.create(Map.of(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers()))) {
+            admin.createTopics(
+                java.util.Arrays.stream(topicNames)
+                    .map(name -> new NewTopic(name, 1, (short) 1))
+                    .toList()
+            ).all().get(10, TimeUnit.SECONDS);
+        }
+    }
+
     /**
      * DLQ에서 지정한 key의 레코드를 찾는다.
      *
@@ -235,6 +336,28 @@ class KafkaStorageFailureContractTest {
                 }
             }
             throw new AssertionError("DLQ에서 key=" + key + " 레코드를 찾지 못했다");
+        }
+    }
+
+    private Map<String, String> pollRecordsWithKeys(String topic, Set<String> expectedKeys) {
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Map.of(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers(),
+            ConsumerConfig.GROUP_ID_CONFIG, "dlq-observer-" + UUID.randomUUID(),
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class))) {
+            consumer.subscribe(List.of(topic));
+            Map<String, String> found = new HashMap<>();
+            long deadline = System.nanoTime() + Duration.ofSeconds(20).toNanos();
+            while (System.nanoTime() < deadline && !found.keySet().containsAll(expectedKeys)) {
+                for (var record : consumer.poll(Duration.ofSeconds(2))) {
+                    if (expectedKeys.contains(record.key())) {
+                        found.put(record.key(), record.value());
+                    }
+                }
+            }
+            assertThat(found.keySet()).containsAll(expectedKeys);
+            return found;
         }
     }
 
