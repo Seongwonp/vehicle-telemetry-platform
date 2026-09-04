@@ -1,16 +1,21 @@
 package com.telemetry.kafka;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import com.telemetry.domain.VehicleTelemetry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.nio.file.Path;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -18,7 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class TelemetryProducer {
 
     private static final String TOPIC = "vehicle-telemetry";
@@ -28,6 +32,51 @@ public class TelemetryProducer {
     private final TelemetrySpool telemetrySpool;
     private final Set<Path> inFlight = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean backlog = new AtomicBoolean();
+
+    /**
+     * 한 번의 재전송 주기에 처리할 spool 파일 수.
+     *
+     * <p>이 값과 {@code telemetry.spool.retry-ms}가 곱해져 드레인 속도의 <b>상한</b>이 된다 —
+     * 부하나 브로커 용량과 무관하다. 예전 값(100 / 5초)은 20 msg/s였는데, 유입이
+     * 약 1,700 msg/s라 90초 장애가 약 35분의 복구 시간을 만들었다
+     * ({@code load-test/fault-injection/RESULT_20260904_fault_injection.md}).
+     *
+     * <p>주기를 줄이는 것보다 배치를 키우는 쪽이 낫다 — {@link TelemetrySpool#pending(int)}이
+     * limit과 무관하게 디렉터리 전체를 정렬하므로, 호출 횟수를 늘리면 그 비용이 그대로 늘어난다.
+     * 실측하면 파일 15만 개에서 스캔 1회가 약 121ms라, 5초 주기의 2.4%다 — 스캔은 병목이 아니고
+     * 배치 크기가 그대로 상한이 된다.
+     *
+     * <p>측정값(유입 약 1,700 msg/s, 180초 장애):
+     * <pre>
+     *   배치    100 →  19 msg/s   (잔여 드레인 105분)
+     *   배치  2,000 → 387 msg/s   (잔여 드레인 5분)
+     *   배치 10,000 → 부하 정지 후 약 1분 내 완전 드레인
+     * </pre>
+     *
+     * <p><b>주의</b>: 드레인 중에는 {@code backlog} 플래그 때문에 새 메시지도 spool로 가므로,
+     * 부하가 계속되는 동안 백로그가 줄어드는 속도는 <i>드레인 속도 − 유입 속도</i>다.
+     * 즉 유입과 같은 속도로는 부족하고 <b>넘어서야</b> 줄어든다.
+     */
+    private final int retryBatchSize;
+
+    private final Timer spoolScanTimer;
+    private final Counter spoolDrainedCounter;
+    private final AtomicLong spoolDepth = new AtomicLong();
+
+    public TelemetryProducer(KafkaTemplate<String, String> kafkaTemplate,
+                             ObjectMapper objectMapper,
+                             TelemetrySpool telemetrySpool,
+                             MeterRegistry meterRegistry,
+                             @Value("${telemetry.spool.retry-batch:10000}") int retryBatchSize) {
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
+        this.telemetrySpool = telemetrySpool;
+        this.retryBatchSize = retryBatchSize;
+        this.spoolScanTimer = meterRegistry.timer("telemetry.spool.scan");
+        this.spoolDrainedCounter = meterRegistry.counter("telemetry.spool.drained");
+        // 백로그가 쌓이는데 안 줄어드는 상황을 알림으로 잡으려면 깊이가 지표로 있어야 한다.
+        meterRegistry.gauge("telemetry.spool.pending", spoolDepth, AtomicLong::get);
+    }
 
     @PostConstruct
     void initializeBacklog() {
@@ -88,12 +137,17 @@ public class TelemetryProducer {
      */
     @Scheduled(fixedDelayString = "${telemetry.spool.retry-ms:5000}")
     public synchronized void retryPending() {
-        var pending = telemetrySpool.pending(100);
+        var pending = telemetrySpool.pending(retryBatchSize);
+        spoolScanTimer.record(telemetrySpool.lastScanNanos(), TimeUnit.NANOSECONDS);
         if (pending.isEmpty()) {
             backlog.set(false);
+            spoolDepth.set(0);
             return;
         }
         backlog.set(true);
+        // 배치를 가득 채워 왔다면 아직 더 남았다는 뜻이다. 정확한 깊이는 별도 스캔이
+        // 필요해서 비싸므로, 게이지에는 "최소 이만큼"을 넣는다 — 알림 목적에는 충분하다.
+        spoolDepth.set(pending.size());
         for (Path spoolFile : pending) {
             if (!inFlight.add(spoolFile)) continue;
             try {
@@ -149,6 +203,10 @@ public class TelemetryProducer {
                     vehicleId, TOPIC, ex);
             } else {
                 telemetrySpool.delete(spoolFile);
+                // 선택된 파일이 아니라 **실제로 빠져나간 파일**을 센다. 선택 시점에 세면
+                // 이전 주기의 전송이 아직 안 끝난 파일을 다음 주기가 또 집어 중복 계산된다
+                // (실측에서 drained 379,536 > MQTT 수신 261,340으로 드러났다).
+                spoolDrainedCounter.increment();
             }
         });
     }

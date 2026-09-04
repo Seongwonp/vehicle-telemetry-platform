@@ -86,6 +86,8 @@ telemetry:
   spool:
     path: ${TELEMETRY_SPOOL_PATH:data/telemetry-spool}
     retry-ms: ${TELEMETRY_SPOOL_RETRY_MS:5000}
+    # 한 주기에 처리할 spool 파일 수. retry-ms와 곱해져 드레인 속도 상한이 된다.
+    retry-batch: ${TELEMETRY_SPOOL_RETRY_BATCH:10000}
   trip:
     default-hours: ${TRIP_DEFAULT_HOURS:1}
     point-limit: ${TRIP_POINT_LIMIT:10000}
