@@ -56,33 +56,25 @@ vehicle-telemetry-platform/
 
 ## 현재 최우선 작업 (2026-09-04)
 
-노트북에는 Docker가 없으므로 Testcontainers 계약 테스트를 반복 실행하지 않는다. 다음 작업은
-Docker가 설치된 데스크톱에서 아래 Kafka 저장 실패 계약을 가장 먼저 검증하는 것이다.
+**Kafka 저장 실패 계약 검증 완료** — Docker가 있는 데스크톱에서 실행해
+`KafkaStorageFailureContractTest` 3케이스가 skip 없이 통과했고(18.0초), 전체
+`./gradlew test --no-daemon`도 96개 전부 통과(skip 0), CI(`e4effc2`)도 success다.
+**5회 반복 실행에서도 5/5 통과라 간헐 실패(flakiness)는 관찰되지 않았다.**
+실행 기록: `docs/verification/2026-09-04-desktop-docker-contracts.md`.
 
-```powershell
-cd backend
-.\gradlew.bat test --tests "com.telemetry.contract.KafkaStorageFailureContractTest" --no-daemon
-```
+**우선순위 1번(강제 종료·재전달 시 InfluxDB 중복·덮어쓰기 수량 측정)도 완료** —
+`docker kill` 후 재전달 68건(0.0873%)이 발생했으나 InfluxDB 행 수가 고유 키 수와
+정확히 같아(77,929 = 77,929) **덮어쓰기로 흡수됨(멱등)**을 확인했다. 같은 밀리초
+키 충돌은 이 부하에서 0건이라 ms 정밀도가 충분했다. 측정 도구와 절차는
+`load-test/storage-integrity/`, 결과는 같은 폴더의 `RESULT_20260904_kill_redelivery.md`.
 
-이번 변경에서 추가·확장한 계약:
+다음 작업은 아래 우선순위 2번부터다.
 
-- InfluxDB에서 3건 배치가 영구 실패하면 최초 1회와 재시도 2회를 거친다.
-- 재시도 소진 후 세 레코드의 key와 원본 payload가 모두 DLQ에 남는다.
-- DLQ 처리 후 source offset은 배치 마지막 레코드 다음 위치로 이동한다.
-- DLQ 발행도 실패하면 source offset을 커밋하지 않는다.
-- 같은 Consumer Group을 재시작하면 미커밋 원본이 다시 전달되고, 저장 성공 후 offset이 전진한다.
+## 다음 우선순위
 
-완료 조건:
-
-- 위 Testcontainers 테스트가 Docker 환경에서 실제로 성공한다.
-- 전체 `./gradlew test --no-daemon`이 성공한다.
-- GitHub Actions `backend-infrastructure-ci`가 성공한다.
-- 실행 commit SHA와 CI 링크를 `docs/verification/`에 기록한다.
-- 실행 전까지 새 계약은 `컴파일 검증`, `미검증`으로만 표현한다.
-
-그다음 우선순위:
-
-1. consumer 강제 종료와 재전달 시 InfluxDB 중복·덮어쓰기 수량 측정
+1. ~~consumer 강제 종료와 재전달 시 InfluxDB 중복·덮어쓰기 수량 측정~~ — **완료(2026-09-04)**.
+   남은 갈래: 같은 밀리초 키 충돌을 일부러 만들어 유실을 재현하고, identity에 밀리초
+   이하 구분자(시퀀스 태그 등)를 넣을지 판단. 다중 인스턴스 리밸런싱 시 재전달 구간도 미측정
 2. DLQ 재처리 정책, 도구 및 운영 Runbook
 3. MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조
 4. 발행량·Kafka 유입량·저장 성공량을 한 화면에서 비교하는 관측성 보완
