@@ -75,6 +75,11 @@ mqtt:
   port: ${MQTT_PORT:8883}
   topic: "vehicle/telemetry/#"
   client-id: ${MQTT_CLIENT_ID:telemetry-backend}
+  # 자동 재연결 백오프의 상한. Paho 기본값은 128초인데, 그동안 브로커는 우리 세션
+  # 앞으로 온 메시지를 max_queued_messages(10,000)까지만 담고 나머지를 버린다.
+  # 브로커 90초 장애를 주입해 재보니 복구 후 재연결까지 벌어진 틈에 129,447건이
+  # 버려졌다(load-test/fault-injection/RESULT_20260905_mqtt_broker.md).
+  max-reconnect-delay-ms: ${MQTT_MAX_RECONNECT_DELAY_MS:5000}
   tls:
     # 기본값은 mTLS 강제. 평문 로컬 개발은 docker-compose.dev.yml에서만 false로 덮어쓴다.
     enabled: ${MQTT_TLS_ENABLED:true}

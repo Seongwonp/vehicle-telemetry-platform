@@ -262,6 +262,83 @@ class VehicleState:
         }
 
 
+class PublishStats:
+    """발행 결과를 단계별로 센다.
+
+    MQTT 브로커 장애의 정합성을 대조하려면 **"몇 건을 실제로 발행했는가"라는
+    정답 기준이 발행 측에 있어야 한다.** InfluxDB·Kafka 장애는 Kafka 토픽이나
+    backend의 MQTT 수신 카운터를 기준으로 쓸 수 있었지만(`load-test/fault-injection/`),
+    브로커가 죽으면 그 아래 단계가 전부 비어 있어 기준이 될 수 없다.
+
+    문제는 `client.publish()`의 반환값이 그 기준이 **아니라는** 점이다.
+    `rc == MQTT_ERR_SUCCESS`는 "paho 클라이언트의 송신 큐에 넣었다"는 뜻이지
+    브로커가 받았다는 뜻이 아니다. QoS 1에서 브로커가 받았다는 증거는 PUBACK이고,
+    그게 `on_publish` 콜백이다. 그래서 두 단계를 따로 센다:
+
+    - ``queued``    : publish()가 성공을 반환 — 클라이언트가 받아들였다
+    - ``confirmed`` : PUBACK 도착 — **브로커가 받았다. 이게 정답 기준이다**
+
+    ``queued - confirmed``는 큐에는 들어갔는데 브로커까지 못 간 것으로,
+    브로커 장애 구간에서 이 차이가 벌어진다.
+
+    PUBACK이 유실되면 paho가 DUP로 재전송하는데 그때도 ``confirmed``는 1만 오른다.
+    즉 ``confirmed``는 브로커가 실제로 받은 건수의 **하한**이다 —
+    유실을 판정하는 기준으로는 이쪽이 안전하다(과소 추정은 유실을 놓치지 않는다).
+    """
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.attempted = 0
+        self.queued = 0
+        self.rejected = 0
+        self.confirmed = 0
+
+    def attempt(self, accepted: bool) -> None:
+        with self._lock:
+            self.attempted += 1
+            if accepted:
+                self.queued += 1
+            else:
+                self.rejected += 1
+
+    def confirm(self) -> None:
+        with self._lock:
+            self.confirmed += 1
+
+    def snapshot(self) -> dict:
+        with self._lock:
+            return {
+                "attempted": self.attempted,
+                "queued": self.queued,
+                "rejected": self.rejected,
+                "confirmed": self.confirmed,
+            }
+
+    def line(self) -> str:
+        """장애 주입 스크립트가 파싱하는 한 줄. 접두사를 고정한다."""
+        s = self.snapshot()
+        return ("[STATS] attempted={attempted} queued={queued} "
+                "rejected={rejected} confirmed={confirmed}".format(**s))
+
+
+STATS = PublishStats()
+STATS_INTERVAL = float(os.getenv("STATS_INTERVAL", "5"))
+# 종료 시 미확인 메시지를 몇 초까지 flush할지. 장애 주입 실험에서 정답 기준을
+# 확정하려면 필요하다 — 자세한 이유는 run_vehicle의 finally 절 주석 참고.
+SHUTDOWN_FLUSH_SECONDS = float(os.getenv("SHUTDOWN_FLUSH_SECONDS", "45"))
+
+
+def _report_stats(stop_event: threading.Event) -> None:
+    """주기적으로 `[STATS]` 한 줄을 남긴다.
+
+    컨테이너를 `--rm`으로 띄우면 정지와 동시에 로그가 사라져서, 종료 시점에만
+    찍으면 읽을 기회가 없다. 주기적으로 남겨두면 컨테이너를 지우기 전 아무 때나
+    마지막 줄을 집어갈 수 있다.
+    """
+    while not stop_event.wait(STATS_INTERVAL):
+        logger.info(STATS.line())
+
+
 def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
     """단일 차량 시뮬레이션 스레드"""
     log = logging.getLogger(f"vehicle.{vehicle_id}")
@@ -280,8 +357,20 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
         if rc != 0:
             log.warning(f"MQTT 연결 끊김 (rc={rc}), 재연결 시도 중...")
 
+    # 이 클라이언트가 아직 PUBACK을 못 받은 건수. 종료 시 flush를 기다리는 데 쓴다.
+    pending = {"sent": 0, "acked": 0}
+    pending_lock = threading.Lock()
+
+    def on_publish(c, userdata, mid):
+        # QoS 1에서 이 콜백은 PUBACK 수신을 뜻한다 — 브로커가 실제로 받았다는
+        # 유일한 증거다. publish()의 반환값은 큐에 넣은 것까지만 보장한다.
+        STATS.confirm()
+        with pending_lock:
+            pending["acked"] += 1
+
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
+    client.on_publish = on_publish
 
     # 운영 프로파일은 vehicle_id와 CN이 같은 차량별 인증서를 사용한다.
     vehicle_cert = os.path.join(TLS_VEHICLE_CERT_DIR, f"{vehicle_id}.crt") if TLS_VEHICLE_CERT_DIR else TLS_CLIENT_CERT
@@ -312,6 +401,12 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
                 payload = state.next()
 
             result = client.publish(topic, json.dumps(payload), qos=1)
+            STATS.attempt(result.rc == mqtt.MQTT_ERR_SUCCESS)
+            # QoS 1은 rc가 NO_CONN이어도 paho의 송신 큐에 남아 재연결 때 재전송된다
+            # (`_messages_reconnect_reset_out`가 DUP로 표시해 다시 큐에 넣는다).
+            # 그래서 "미확인 건수"는 rc와 무관하게 시도 전부를 세야 한다.
+            with pending_lock:
+                pending["sent"] += 1
 
             if result.rc == mqtt.MQTT_ERR_SUCCESS:
                 log.info(
@@ -322,7 +417,9 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
                     f"fuel={payload['fuel_level']:.1f}%"
                 )
             else:
-                log.warning(f"발행 실패 (rc={result.rc})")
+                # rc=4(MQTT_ERR_NO_CONN)가 대부분이다 — 브로커와 연결이 끊긴 상태.
+                # 유실 확정은 아니다. QoS 1이라 재연결 시 재전송된다.
+                log.warning(f"publish() 실패 (rc={result.rc}) — 재연결 시 재전송 대상")
 
             stop_event.wait(PUBLISH_INTERVAL)
 
@@ -331,6 +428,26 @@ def run_vehicle(vehicle_id: str, stop_event: threading.Event) -> None:
     except Exception as e:
         log.error(f"오류 발생: {e}", exc_info=True)
     finally:
+        # 끊기 전에 미확인 메시지를 flush한다.
+        #
+        # 이게 없으면 정답 기준이 확정되지 않는다. 브로커 장애 뒤에는 paho의 송신
+        # 큐에 수백 건씩 밀려 있는데, 바로 disconnect하면 그 건들이 PUBACK을 받기
+        # 전에 버려진다. 그러면 `confirmed`가 실제보다 작게 나와, **정답 기준이
+        # backend 수신량보다 작은** 말이 안 되는 결과가 된다(실측으로 겪었다:
+        # 기준 46,142 < 수신 49,060).
+        #
+        # 무한정 기다리지는 않는다. 여기서 시간이 다 지나도 안 빠지는 건은 진짜로
+        # 브로커에 못 간 것이고, `attempted - confirmed`가 그 값이다.
+        deadline = time.monotonic() + SHUTDOWN_FLUSH_SECONDS
+        while time.monotonic() < deadline:
+            with pending_lock:
+                if pending["sent"] <= pending["acked"]:
+                    break
+            time.sleep(0.2)
+        with pending_lock:
+            unflushed = pending["sent"] - pending["acked"]
+        if unflushed > 0:
+            log.warning(f"종료 시 미확인 {unflushed}건 — 브로커까지 못 간 것으로 집계된다")
         client.loop_stop()
         client.disconnect()
         log.info("차량 시뮬레이터 종료")
@@ -356,6 +473,10 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
+    reporter = threading.Thread(
+        target=_report_stats, args=(stop_event,), name="stats-reporter", daemon=True)
+    reporter.start()
+
     threads = []
     for i in range(1, VEHICLE_COUNT + 1):
         vehicle_id = f"SIM-{VEHICLE_ID_OFFSET + i:03d}"
@@ -372,6 +493,14 @@ def main() -> None:
     for t in threads:
         t.join()
 
+    final = STATS.snapshot()
+    logger.info("=" * 60)
+    logger.info(STATS.line())
+    logger.info(f"  publish() 시도       : {final['attempted']:,}")
+    logger.info(f"  클라이언트 큐 적재   : {final['queued']:,}")
+    logger.info(f"  큐 적재 실패         : {final['rejected']:,}  (브로커 미연결 — 재전송 안 됨)")
+    logger.info(f"  브로커 확인(PUBACK)  : {final['confirmed']:,}  ← 정합성 대조의 정답 기준")
+    logger.info("=" * 60)
     logger.info("전체 시뮬레이터 종료 완료")
 
 

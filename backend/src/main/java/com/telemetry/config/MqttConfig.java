@@ -48,6 +48,9 @@ public class MqttConfig {
     @Value("${mqtt.tls.store-password:changeit}")
     private String storePassword;
 
+    @Value("${mqtt.max-reconnect-delay-ms:5000}")
+    private int maxReconnectDelayMs;
+
     @Bean
     public MqttPahoClientFactory mqttClientFactory() {
         DefaultMqttPahoClientFactory factory = new DefaultMqttPahoClientFactory();
@@ -60,6 +63,21 @@ public class MqttConfig {
         options.setKeepAliveInterval(60);
         // 브로커 재시작이나 네트워크 단절 시 자동 재연결 — 수동 복구 없이 파이프라인 유지
         options.setAutomaticReconnect(true);
+        // 재연결 백오프의 상한을 반드시 낮춰야 한다. Paho는 1초에서 시작해 매번 두 배로
+        // 늘리고 기본 상한이 **128초**인데, 그 시간은 그냥 기다리는 시간이 아니다 —
+        // cleanSession=false라 브로커가 우리 세션 앞으로 오는 메시지를 대신 쌓아두다가
+        // max_queued_messages(10,000)를 넘기면 **말없이 버린다.**
+        //
+        // 브로커를 90초 정지시켰다 살리는 실험에서, 브로커가 살아난 뒤에도 백오프가
+        // 이미 커져 있어 백엔드가 한참 뒤에야 붙었다. 그 틈에 시뮬레이터는 밀렸던 것을
+        // 한꺼번에 쏟아냈고, 브로커는 10,000건만 큐에 담고 **129,447건을 버렸다.**
+        // 백엔드가 재연결 후 실제로 받은 건 10,002건 — 큐 크기와 정확히 일치한다.
+        // 유실을 아는 유일한 지표가 브로커의 $SYS dropped였다
+        // (load-test/fault-injection/RESULT_20260905_mqtt_broker.md).
+        //
+        // 상한을 낮추면 브로커가 죽어 있는 동안 재연결 시도가 잦아지지만, 5초 간격은
+        // 초당 0.2회라 브로커 부하로는 무시할 수준이다. 유실 위험과 바꿀 것이 못 된다.
+        options.setMaxReconnectDelay(maxReconnectDelayMs);
 
         if (tlsEnabled) {
             options.setSocketFactory(buildSslSocketFactory());

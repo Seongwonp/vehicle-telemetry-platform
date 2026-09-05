@@ -179,13 +179,13 @@ vehicle-telemetry-platform/
 |------|------|
 | AWS EC2 배포 | Docker Compose 기반으로 실제 서버에 배포 (또는 Render 무료 티어) |
 | 다중 사용자 지원 | 현재 admin 단일 계정 → DB 기반 사용자 관리로 교체. 도입 시 차량 소유자 검증(IDOR 차단)도 함께 필요 |
-| DLQ 재처리 컨슈머 | 현재 DLQ는 유실 방지/격리까지만 — 재처리 자동화는 미구현 |
+| ~~DLQ 재처리 컨슈머~~ | **도구·Runbook 완료(2026-09-04~05)** — 실패 원인 헤더(`x-dlq-*`) + 원인별 분류·재처리 도구(`dlq-tools/dlq.py`) + [Runbook](docs/runbook/dlq-reprocessing.md). 텔레메트리(InfluxDB)와 이상 알림(PostgreSQL) 모두 **재처리 멱등성을 실측으로 확인**했다. 다만 **자동 재처리 컨슈머는 여전히 없다** — "언제 원인이 복구됐다고 볼 것인가"를 기계가 틀리면 루프가 되기 때문 |
 | 차량별 MQTT 인증서/ACL 세분화 | 완료 — backend는 `telemetry-backend` 구독자 인증서, 차량은 CN=`vehicle_id` 인증서와 `vehicle/telemetry/%u` 발행 ACL 사용 |
 | InfluxDB 읽기 경로 개선 | REST 조회(`/latest`, `/telemetry`)가 InfluxDB 동시 쿼리 용량에 막혀 PostgreSQL 조회보다 최대 40배 느림 — 스케일링/캐싱/쿼리 최적화 필요 |
 | InfluxDB batchSize/flush 튜닝, acks=all vs acks=1 비교 | 부하 테스트 범위에서 비교 측정하지 못함 |
 | kafka-python 버전 고정 | `anomaly-detector/requirements.txt`가 `>=2.0.2`로만 열려 있어 재빌드 시마다 버전이 달라질 수 있음(재현성) |
 | ~~이상 감지 다중화 동일 조건 A/B 재검증~~ | **완료(2026-09-01~03)** — 실부하 약 9,000 msg/s에서 1 vs 2 vs 3인스턴스 A/B, 3인스턴스 6시간 soak까지 마쳤다. `docs/load-test-plan.md` 7~9차 측정 |
-| DLQ 격리 메시지 재처리 | `vehicle-telemetry-anomaly-dlq`(Phase 13에서 추가)도 기존 DLQ들과 마찬가지로 격리까지만 하고 재처리 컨슈머는 없음 |
+| ~~DLQ 격리 메시지 재처리~~ | **완료(2026-09-05)** — `vehicle-anomaly-alerts-dlq` 재처리가 PostgreSQL에 중복 알림을 만드는지 측정했다. `UNIQUE(event_id)` + `ON CONFLICT DO NOTHING`으로 **행 중복 0**(두 번 되돌려도 증가 0). 대신 중복 *알림*(WebSocket)이 나가던 결함을 찾아 고쳤다 — [측정](load-test/anomaly-dlq-idempotency/), ADR-020. `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 여전히 재처리 미지원 |
 | 이상 감지 웹훅 동기 호출 | `notifier.send_webhook`이 이상 감지마다 동기로 호출됨 — 느려지면 전체 처리량에 영향 줄 수 있어 비동기화/타임아웃 튜닝 검토. **ML을 켜면 알림이 처리량의 약 5%(전 부하 환산 초당 480건)라 이 항목의 중요도가 크게 올라간다**(ADR-018) |
 
 ### ML 이상 감지 — 다음 작업 (2026-09-04 기준, 우선순위 순)
@@ -252,11 +252,25 @@ vehicle-telemetry-platform/
 
 | 단계 | 동작 |
 |------|------|
-| 장애 발생 | Mosquitto 컨테이너 재시작 |
-| Spring Boot | `MqttPahoMessageDrivenChannelAdapter`의 `automaticReconnect=true` 설정으로 자동 재연결 시도 |
-| 시뮬레이터 | `paho-mqtt`의 재연결 로직으로 자동 재구독 |
-| 재연결 소요 시간 | `connectionTimeout=10s`, `keepAliveInterval=60s` 기준 수 초 내 복구 |
-| 재연결 중 데이터 | 연결이 끊긴 사이 시뮬레이터가 발행한 메시지는 유실 (QoS 1 기준, 브로커 재시작이므로 세션 복원 불가) |
+**90초 정지를 실제로 주입해 측정했다**(2026-09-05,
+[`RESULT_20260905_mqtt_broker.md`](load-test/fault-injection/RESULT_20260905_mqtt_broker.md)).
+여기 적힌 내용은 그 실측 결과다 — 이전에 추정으로 적어둔 "재연결 중 데이터는 유실된다"는
+**틀렸었다.**
+
+| 단계 | 동작 |
+|------|------|
+| 장애 발생 | Mosquitto 컨테이너 정지(SIGTERM) 90초 |
+| Spring Boot | `automaticReconnect=true` + **`maxReconnectDelay=5s`** 로 자동 재연결 |
+| 시뮬레이터 | paho가 자동 재연결. QoS 1 메시지는 `publish()`가 `NO_CONN`을 반환해도 송신 큐에 남아 **재연결 시 재전송된다** |
+| 재연결 중 데이터 | `cleanSession=false`라 브로커가 백엔드 세션 앞으로 큐잉해준다(`max_queued_messages` 10,000) |
+| 실측 유실 | **0건.** 브로커가 PUBACK한 178,451건이 전부 backend·InfluxDB까지 도달 |
+
+> **여기서 실제 버그를 찾았다.** `setMaxReconnectDelay`를 지정하지 않으면 Paho 기본값이
+> **128초**다. 브로커가 살아난 뒤에도 백엔드가 한참 붙지 않고, 그동안 브로커가 큐를
+> 넘겨 **129,447건을 말없이 버렸다**(전체의 72.1%). 우리 쪽 지표는 전부 "받은 것"만
+> 세므로 정상으로 보였고, 유일하게 유실을 아는 지표가 브로커의
+> `$SYS/broker/publish/messages/dropped`였다. 상한을 5초로 낮춰 0이 됐다.
+> 상세는 ADR-021.
 
 ### 시나리오 4 — InfluxDB 쓰기 실패
 
@@ -266,7 +280,8 @@ vehicle-telemetry-platform/
 | 동작 | 동기 `WriteApiBlocking` 실패를 listener가 잡아 원본을 DLQ로 발행 |
 | Kafka offset | InfluxDB 쓰기 또는 DLQ 발행 성공 뒤에만 수동 커밋. DLQ 발행도 실패하면 미커밋 |
 | 로그 | 저장 실패와 DLQ 실패를 서로 다른 ERROR 로그로 기록 |
-| 미구현 한계 | DLQ 자동 재처리 consumer와 재시도 횟수 정책은 아직 없음 |
+| 재시도 예산 | `ExponentialBackOff` + 총 경과 시간 **180초**(`KAFKA_RETRY_BUDGET_MS`). 90초 장애 실측에서 **DLQ 76,878건 → 0건**이 됐다(ADR 없음, `load-test/fault-injection/`) |
+| 재처리 | 원인 분류·재처리 도구와 [Runbook](docs/runbook/dlq-reprocessing.md) 있음. 자동 재처리 컨슈머는 여전히 없음(의도) |
 
 ### 시나리오 5 — Redis 다운 (Rate Limiting / BruteForce)
 
@@ -309,6 +324,18 @@ vehicle-telemetry-platform/
   쌓인 8만 건 백로그는 90초에 따라잡았다.
   자세한 내용은 `docs/architecture-decisions.md` ADR-016, 원시 로그는
   `load-test/anomaly-detector-scale/`.
+- **MQTT 브로커 장애에서 72% 유실 발견·복구**: 브로커를 90초 정지시켰다 살리는 실험에서
+  **브로커가 PUBACK한 179,532건 중 backend에는 50,087건만 도착**했다(유실 129,445건).
+  원인은 우리 쪽 설정이었다 — `MqttConnectOptions.setMaxReconnectDelay()`를 지정하지 않아
+  Paho 기본값 **128초**가 적용됐고, `cleanSession=false`라 그동안 브로커가 우리 세션 앞으로
+  큐잉하다 `max_queued_messages`(10,000)를 넘기면 **말없이 버렸다.** 재연결 후 실제로 받은
+  건 10,002건으로 큐 크기와 정확히 일치한다.
+  상한을 5초로 낮춰 **유실 0**(브로커 `$SYS` dropped도 0)이 됐다.
+  이 측정의 절반은 **정답 기준을 만드는 일**이었다 — 브로커가 죽으면 그 아래 단계가 전부
+  비어 기준이 될 수 없어서, 시뮬레이터가 `publish()` 성공(= 클라이언트 큐 적재)과
+  PUBACK 수신(= 브로커가 받음)을 분리해 세도록 계측을 넣었다. 그 과정에서 기준을 두 번
+  틀렸고(강제 종료로 묵은 값을 읽음, `NO_CONN`을 유실로 오인), 둘 다 측정치의 모순이
+  잡아줬다. ADR-021, `load-test/fault-injection/RESULT_20260905_mqtt_broker.md`.
 - **수집 파이프라인 99.8% 유실 발견·복구 (처리량 약 1,170배)**: 위 soak의 "InfluxDB 저장이
   26초 만에 멈췄다"를 추적하다 훨씬 큰 문제를 찾았다. **시뮬레이터가 초당 약 10,000건을
   발행하고 MQTT 브로커가 전량 수신·응답하는 동안 Kafka에는 초당 20건만 도착하고 있었다.**

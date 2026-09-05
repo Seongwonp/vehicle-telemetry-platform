@@ -210,3 +210,59 @@ class TestDrift:
 
         state._started_at = vs.time.time() - 999.0   # 램프 종료 후
         assert state._drift_offset() == pytest.approx(10.0)
+
+
+class Test발행_통계:
+    """`queued`(클라이언트 큐 적재)와 `confirmed`(브로커 PUBACK)를 구분하는지.
+
+    MQTT 브로커 장애의 정합성 대조는 "몇 건을 실제로 발행했는가"를 발행 측에서
+    알아야 성립한다. `publish()`의 반환값은 그 기준이 아니다 — 큐에 넣은 것까지만
+    보장하고, 브로커가 죽어 있어도 이미 큐에 있던 것은 성공으로 반환될 수 있다.
+    브로커가 받았다는 증거는 QoS 1의 PUBACK(= `on_publish`)뿐이다.
+    """
+
+    def test_큐적재와_브로커확인을_따로_센다(self):
+        stats = vs.PublishStats()
+        stats.attempt(True)
+        stats.attempt(True)
+        stats.attempt(False)      # 브로커 미연결 — 큐에조차 못 넣음
+        stats.confirm()           # PUBACK 1건만 도착
+
+        snap = stats.snapshot()
+        assert snap["attempted"] == 3
+        assert snap["queued"] == 2
+        assert snap["rejected"] == 1
+        # 큐에 2건 들어갔지만 브로커가 확인한 건 1건 — 이 차이가 장애 구간에서 벌어진다
+        assert snap["confirmed"] == 1
+
+    def test_STATS줄은_고정_접두사로_파싱_가능하다(self):
+        stats = vs.PublishStats()
+        stats.attempt(True)
+        stats.confirm()
+        line = stats.line()
+
+        # 장애 주입 스크립트가 이 줄을 grep한다 — 형식이 바뀌면 측정이 조용히 깨진다
+        assert line.startswith("[STATS] ")
+        assert "confirmed=1" in line
+        assert "queued=1" in line
+
+    def test_여러_스레드가_동시에_세도_유실되지_않는다(self):
+        import threading
+
+        stats = vs.PublishStats()
+
+        def worker():
+            for _ in range(500):
+                stats.attempt(True)
+                stats.confirm()
+
+        threads = [threading.Thread(target=worker) for _ in range(8)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        snap = stats.snapshot()
+        assert snap["attempted"] == 4000
+        assert snap["queued"] == 4000
+        assert snap["confirmed"] == 4000

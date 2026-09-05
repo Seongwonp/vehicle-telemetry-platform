@@ -56,7 +56,13 @@ vehicle-telemetry-platform/
 
 ## 현재 최우선 작업 (2026-09-05)
 
-**우선순위 2번의 남은 갈래(이상 알림 DLQ 재처리 중복 검증) 완료** — 아래 2번 항목 참고.
+**우선순위 2번과 3번을 모두 닫았다.**
+
+- 2번 남은 갈래(이상 알림 DLQ 재처리 중복 검증): 행 중복 0. 대신 중복 *알림*을
+  찾아 고쳤다.
+- 3번 남은 갈래(MQTT 브로커 장애): **유실 129,445건(72.1%)을 찾아 0으로 고쳤다.**
+  Paho 재연결 백오프 상한이 기본 128초였다.
+
 다음 작업은 우선순위 1번의 남은 갈래(같은 밀리초 키 충돌 재현)이거나 7번(앱 실기기 검증)이다.
 
 ---
@@ -106,12 +112,26 @@ vehicle-telemetry-platform/
    `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
    분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
    (PostgreSQL 장애 예외 2종은 이번 실측에서 100% `transient`로 분류돼 문제없었다)
-3. ~~MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조~~ — **부분 완료(2026-09-04)**.
+3. ~~MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조~~ — **완료(2026-09-05)**.
+   **MQTT 브로커 장애까지 측정했고, 유실 129,445건(72.1%)을 찾아 0으로 고쳤다.**
+   정답 기준을 만드는 게 절반이었다 — 시뮬레이터에 `PublishStats`를 넣어
+   `publish()` 성공(= paho 큐 적재)과 PUBACK 수신(= 브로커가 받음)을 분리해서 센다.
+   원인은 `MqttConfig`에 `setMaxReconnectDelay`가 없어 Paho 기본값 **128초**가 적용된 것.
+   `cleanSession=false`라 그동안 브로커가 우리 세션 앞으로 큐잉하다
+   `max_queued_messages`(10,000)를 넘기면 말없이 버린다 — 브로커 로그
+   `Outgoing messages are being dropped for client telemetry-backend`가 그 순간이다.
+   5초로 낮춘 뒤 재측정: 유실 0, 브로커 `$SYS` dropped 0, 복구 후 브로커 수신
+   137,702 = backend 수신 증가분 137,702로 정확히 일치.
+   결과는 `load-test/fault-injection/RESULT_20260905_mqtt_broker.md`, 회귀 방지는
+   `MqttConnectOptionsTest`.
+   남은 갈래: 종료 시 flush 45초 안에 못 간 3,542건(발행 측 한계, 파이프라인 유실 아님),
+   재연결 실제 소요 시간 분해, `max_queued_messages` 10,000 적정성, mTLS 프로파일 미측정.
+
+   (이전 기록 — InfluxDB·Kafka, 2026-09-04)
    InfluxDB·Kafka 90초 장애를 주입해 **둘 다 유실 0**을 확인했다(InfluxDB는 DLQ 재처리로
    84,615 → 161,356 완전 복구, Kafka는 spool이 전량 보관). 도구·결과는
    `load-test/fault-injection/`. **다만 복구 경로가 둘 다 실용적이지 않다** —
-   아래 새 항목 참고. MQTT 브로커 장애는 미실행(시뮬레이터가 발행 성공 건수를 세지 않아
-   정답 기준을 먼저 만들어야 한다)
+   아래 5번 항목 참고(재시도 예산은 그 뒤 180초로 바꿔 해결했다).
 4. ~~spool 드레인 속도~~ — **완료(2026-09-04)**. `telemetry.spool.retry-batch`를
    설정으로 빼고 기본값을 100 → **10,000**으로 올렸다(계측 후 결정: 배치 100 = 19 msg/s,
    2,000 = 387 msg/s, 10,000 = 부하 정지 후 약 1분 내 완전 드레인). 스캔은 병목이
