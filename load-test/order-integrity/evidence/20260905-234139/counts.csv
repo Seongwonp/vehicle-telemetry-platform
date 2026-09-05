@@ -1,0 +1,8 @@
+key,value
+kafka_topic_end_offset,68501
+total_messages,68501
+vehicles,200
+vehicles_multi_partition,0
+inversions,0
+vehicles_with_inversion,0
+max_backward_ms,0

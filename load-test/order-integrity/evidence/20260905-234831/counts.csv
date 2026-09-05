@@ -1,0 +1,9 @@
+key,value
+spool_drained_total,0
+kafka_topic_end_offset,243323
+total_messages,243323
+vehicles,200
+vehicles_multi_partition,0
+inversions,924
+vehicles_with_inversion,200
+max_backward_ms,113722

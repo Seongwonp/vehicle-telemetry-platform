@@ -1,0 +1,6 @@
+key,value
+mode,normal
+vehicles,200
+publish_interval_sec,0.2
+load_sec,90
+kafka_outage_sec,0

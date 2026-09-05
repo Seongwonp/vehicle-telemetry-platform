@@ -1,0 +1,1 @@
+{"total_messages": 243323, "undecodable": 0, "bad_timestamp": 0, "vehicles": 200, "vehicles_multi_partition": 0, "inversions": 924, "vehicles_with_inversion": 200, "inversion_rate_pct": 0.3797, "max_backward_ms": 113722, "inversion_offset_min": 47385, "inversion_offset_max": 54359}
