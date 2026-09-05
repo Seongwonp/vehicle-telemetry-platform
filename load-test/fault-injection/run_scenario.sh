@@ -39,6 +39,17 @@ if [ "$PROFILE" = "tls" ]; then
 fi
 OUT="load-test/fault-injection/_result_${SCENARIO}${OUT_SUFFIX}.txt"
 
+# 원본 증거 보존(docs/evidence-policy.md P0-1). 이 스크립트의 출력과 집계에 쓴
+# 원문(offset, lag, Prometheus 스냅샷)을 evidence/<run-id>/에 남긴다.
+# shellcheck source=../lib/evidence.sh
+. load-test/lib/evidence.sh
+evidence_init "fault-injection" "PROFILE=$PROFILE bash load-test/fault-injection/run_scenario.sh $SCENARIO $OUTAGE_SEC"
+evidence_input scenario "$SCENARIO"
+evidence_input profile "$PROFILE"
+evidence_input vehicles "$VEHICLES"
+evidence_input publish_interval_sec 0.2
+evidence_input outage_sec "$OUTAGE_SEC"
+
 TOK=$(grep '^INFLUXDB_TOKEN=' .env | cut -d= -f2-)
 ORG=$(grep '^INFLUXDB_ORG=' .env | cut -d= -f2-)
 BKT=$(grep '^INFLUXDB_BUCKET=' .env | cut -d= -f2-)
@@ -79,9 +90,9 @@ log "=== 시나리오: $SCENARIO (장애 ${OUTAGE_SEC}초) ==="
 # ── 1. 깨끗한 스택 ─────────────────────────────────────────────
 $COMPOSE down -v >/dev/null 2>&1 || true
 $COMPOSE up -d mosquitto zookeeper kafka influxdb postgres redis backend >/dev/null 2>&1 || true
-until [ "$(docker inspect telemetry-postgres --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 10; done
+wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 $COMPOSE up -d backend >/dev/null 2>&1
-until curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health 2>/dev/null | grep -q 200; do sleep 5; done
+wait_until 300 "backend actuator 200" bash -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null | grep -q 200'
 log "스택 기동 완료"
 
 # ── 2. 부하 ────────────────────────────────────────────────────
@@ -170,6 +181,28 @@ DLQ=$(topic_end_offsets vehicle-telemetry-dlq)
 ROWS=$(influx_rows)
 WRITE_FAILURES=$(metric telemetry_influx_write_failures_total)
 
+# ── 원본 증거 ──────────────────────────────────────────────────
+# 집계에 쓴 원문을 그대로 남긴다. 아래 "결과"의 모든 수치는 이 파일들에서
+# 다시 계산할 수 있어야 한다.
+evidence_capture_prometheus final
+evidence_capture_kafka_groups telemetry-storage-group anomaly-detector-group
+evidence_capture_topic_offsets vehicle-telemetry vehicle-telemetry-dlq
+evidence_capture_log_lines telemetry-mosquitto \
+  "being dropped|as telemetry-backend \(|mosquitto version" mosquitto-key-lines.txt
+evidence_capture_log_lines telemetry-backend \
+  "Lost connection|Error subscribing|재시도" backend-key-lines.txt
+
+evidence_count sim_attempted "$SIM_ATTEMPTED"
+evidence_count sim_queued "$SIM_QUEUED"
+evidence_count sim_rejected "$SIM_REJECTED"
+evidence_count sim_confirmed_puback "$SIM_CONFIRMED"
+evidence_count backend_mqtt_received "$MQTT_RECEIVED"
+evidence_count backend_mqtt_invalid "$MQTT_INVALID"
+evidence_count kafka_topic_end_offset "$TOPIC"
+evidence_count kafka_dlq_end_offset "$DLQ"
+evidence_count influx_rows "$ROWS"
+evidence_count influx_write_failures "$WRITE_FAILURES"
+
 log ""
 log "=== 결과 ==="
 log "시뮬레이터 publish() 시도 : $SIM_ATTEMPTED"
@@ -197,4 +230,16 @@ else
   log "정답 기준 = Kafka 토픽($TOPIC). InfluxDB와의 차이 = $((TOPIC - ROWS))"
   log "  (그 차이가 DLQ($DLQ)로 설명되면 유실이 아니라 격리다 — 재처리로 복구 가능)"
 fi
+
+# 성공 기준을 실행 전에 정하고 판정까지 남긴다(docs/issue-guidelines.md).
+case "$SCENARIO" in
+  mosquitto) CRIT="브로커 확인(PUBACK) <= backend 수신"; DIFF=$((SIM_CONFIRMED - MQTT_RECEIVED)) ;;
+  kafka)     CRIT="MQTT 수신 == Kafka 토픽";             DIFF=$((MQTT_RECEIVED - TOPIC)) ;;
+  *)         CRIT="Kafka 토픽 == InfluxDB 행";            DIFF=$((TOPIC - ROWS)) ;;
+esac
+if [ "$DIFF" -le 0 ]; then VERDICT="PASS (차이 $DIFF)"; else VERDICT="FAIL (유실 $DIFF)"; fi
+log "판정: $CRIT → $VERDICT"
+
+evidence_capture_file "$OUT" console.log
+evidence_finish "$CRIT" "$VERDICT"
 log "DONE"

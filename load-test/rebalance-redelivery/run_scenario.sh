@@ -20,6 +20,15 @@ cd "$(dirname "$0")/../.."
 
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
 OUT="load-test/rebalance-redelivery/_result.txt"
+
+# 원본 증거 보존(docs/evidence-policy.md P0-1).
+# shellcheck source=../lib/evidence.sh
+. load-test/lib/evidence.sh
+evidence_init "rebalance-redelivery" "bash load-test/rebalance-redelivery/run_scenario.sh"
+evidence_input vehicles 100
+evidence_input publish_interval_sec 0.2
+evidence_input anomaly_rate 0.3
+evidence_input detector_scale_sequence "3 -> 1 -> 3"
 NET="vehicle-telemetry-platform_telemetry-net"
 IMG="vehicle-telemetry-platform-anomaly-detector"
 WINPWD=$(pwd -W 2>/dev/null || pwd)
@@ -71,9 +80,9 @@ log "=== 리밸런싱 재전달 측정 ==="
 
 $COMPOSE down -v >/dev/null 2>&1 || true
 $COMPOSE up -d mosquitto zookeeper kafka influxdb postgres redis >/dev/null 2>&1 || true
-until [ "$(docker inspect telemetry-postgres --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 10; done
+wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 $COMPOSE up -d backend anomaly-detector >/dev/null 2>&1
-until curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health 2>/dev/null | grep -q 200; do sleep 5; done
+wait_until 300 "backend actuator 200" bash -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null | grep -q 200'
 log "스택 기동 완료 (anomaly-detector $($COMPOSE ps -q anomaly-detector | wc -l)개)"
 
 docker rm -f telemetry-sim-0 >/dev/null 2>&1 || true
@@ -122,4 +131,33 @@ ground_truth | tee -a "$OUT"
 log ""
 log "  토픽 메시지 − 고유 event_id = 재전달량"
 log "  고유 event_id == PostgreSQL 행($ROWS) 이면 재전달이 행을 늘리지 않은 것이다"
+
+# ── 원본 증거 ──────────────────────────────────────────────────
+REBALANCES=$(rebalance_count)
+evidence_capture_prometheus final
+evidence_capture_kafka_groups anomaly-storage-group anomaly-detector-group
+evidence_capture_topic_offsets vehicle-anomaly-alerts vehicle-anomaly-alerts-dlq
+ground_truth > "$EVIDENCE_DIR/ground-truth.txt" 2>/dev/null || true
+$COMPOSE logs anomaly-detector 2>/dev/null \
+  | grep -iE "Revoking previously assigned|is rebalancing; rejoining|Setting newly assigned" \
+  | tail -100 > "$EVIDENCE_DIR/detector-rebalance-lines.txt" 2>/dev/null || true
+
+evidence_count kafka_alert_topic "$TOPIC"
+evidence_count kafka_alert_dlq "$DLQ"
+evidence_count postgres_rows "$ROWS"
+evidence_count anomaly_stored_new "$NEW"
+evidence_count anomaly_stored_duplicate "$DUP"
+evidence_count rebalance_log_lines "$REBALANCES"
+
+CRIT="리밸런싱 발생 AND PostgreSQL 행 == 토픽 고유 event_id"
+if [ "${REBALANCES:-0}" -gt 0 ] && [ "$ROWS" = "$((TOPIC - DUP))" ]; then
+  VERDICT="PASS (재전달 $DUP건, 행 증가 0)"
+elif [ "${REBALANCES:-0}" -eq 0 ]; then
+  VERDICT="INVALID (리밸런싱이 안 돌아 이 측정은 무의미)"
+else
+  VERDICT="FAIL (행 $ROWS, 토픽 $TOPIC, 중복 $DUP)"
+fi
+log "판정: $CRIT → $VERDICT"
+evidence_capture_file "$OUT" console.log
+evidence_finish "$CRIT" "$VERDICT"
 log "DONE"

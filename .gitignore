@@ -47,3 +47,7 @@ backend/data/
 .idea/
 .claude/
 __pycache__/
+
+# 실험 스크립트의 콘솔 출력. 보존이 필요한 것은 evidence/<run-id>/console.log에
+# 복사되므로 작업 트리의 원본은 추적하지 않는다.
+load-test/**/_result*.txt

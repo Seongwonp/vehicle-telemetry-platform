@@ -20,6 +20,16 @@ cd "$(dirname "$0")/../.."
 OUTAGE_SEC="${1:-60}"
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
 OUT="load-test/anomaly-dlq-idempotency/_result.txt"
+
+# 원본 증거 보존(docs/evidence-policy.md P0-1).
+# shellcheck source=../lib/evidence.sh
+. load-test/lib/evidence.sh
+evidence_init "anomaly-dlq-idempotency" \
+  "bash load-test/anomaly-dlq-idempotency/run_scenario.sh $OUTAGE_SEC"
+evidence_input vehicles 50
+evidence_input publish_interval_sec 0.2
+evidence_input anomaly_rate 0.3
+evidence_input postgres_outage_sec "$OUTAGE_SEC"
 NET="vehicle-telemetry-platform_telemetry-net"
 IMG="vehicle-telemetry-platform-anomaly-detector"
 
@@ -95,9 +105,9 @@ log "=== 이상 알림 DLQ 재처리 멱등성 (PostgreSQL 장애 ${OUTAGE_SEC}�
 # ── 1. 깨끗한 스택 ─────────────────────────────────────────────
 $COMPOSE down -v >/dev/null 2>&1 || true
 $COMPOSE up -d mosquitto zookeeper kafka influxdb postgres redis >/dev/null 2>&1 || true
-until [ "$(docker inspect telemetry-postgres --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 10; done
+wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 $COMPOSE up -d backend anomaly-detector >/dev/null 2>&1
-until curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health 2>/dev/null | grep -q 200; do sleep 5; done
+wait_until 300 "backend actuator 200" bash -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null | grep -q 200'
 log "스택 기동 완료"
 
 # ── 2. 부하 — 이상이 충분히 나오도록 ANOMALY_RATE를 올린다 ─────
@@ -116,7 +126,7 @@ log "장애 중 DLQ 토픽=$(topic_end_offsets vehicle-anomaly-alerts-dlq)"
 # ── 4. 복구 ────────────────────────────────────────────────────
 log "--- 복구: telemetry-postgres 재기동 ---"
 docker start telemetry-postgres >/dev/null
-until [ "$(docker inspect telemetry-postgres --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 5; done
+wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 log "PostgreSQL 복구 확인 — 30초 더"
 wait_sec 30
 
@@ -198,4 +208,36 @@ log "Kafka alerts-dlq 최종     : $(topic_end_offsets vehicle-anomaly-alerts-dl
 log ""
 log "최종 정답 기준 재산출:"
 ground_truth | tee -a "$OUT"
+
+# ── 원본 증거 ──────────────────────────────────────────────────
+DISTINCT_FINAL=$(distinct_ids)
+TOPIC_FINAL=$(topic_end_offsets vehicle-anomaly-alerts)
+evidence_capture_prometheus final
+evidence_capture_kafka_groups anomaly-storage-group anomaly-detector-group
+evidence_capture_topic_offsets vehicle-anomaly-alerts vehicle-anomaly-alerts-dlq
+evidence_capture_log_lines telemetry-backend \
+  "\[이상 저장\]|\[이상 중복\]|저장 실패|배치 저장 실패" backend-key-lines.txt
+ground_truth > "$EVIDENCE_DIR/ground-truth.txt" 2>/dev/null || true
+
+evidence_count topic_before_replay "$TOPIC"
+evidence_count dlq_records "$DLQ"
+evidence_count dlq_already_stored "$ALREADY"
+evidence_count rows_before_replay "$ROWS_BEFORE"
+evidence_count rows_after_replay1 "$ROWS_AFTER1"
+evidence_count rows_after_replay2 "$ROWS_AFTER2"
+evidence_count rows_distinct_event_id "$DISTINCT_FINAL"
+evidence_count topic_final "$TOPIC_FINAL"
+evidence_count save_log_delta "$((LOGS_AFTER2 - LOGS_BEFORE))"
+evidence_count duplicate_log_delta "$((DUPS_AFTER2 - DUPS_BEFORE))"
+evidence_count rebalance_log_lines "$(rebalance_count)"
+
+CRIT="재처리 2회 후 행 증가 0 AND 행 수 == 고유 event_id 수"
+if [ "$ROWS_AFTER2" = "$ROWS_AFTER1" ] && [ "$ROWS_AFTER2" = "$DISTINCT_FINAL" ]; then
+  VERDICT="PASS"
+else
+  VERDICT="FAIL (증가 $((ROWS_AFTER2 - ROWS_AFTER1)), 행 $ROWS_AFTER2 vs 고유 $DISTINCT_FINAL)"
+fi
+log "판정: $CRIT → $VERDICT"
+evidence_capture_file "$OUT" console.log
+evidence_finish "$CRIT" "$VERDICT"
 log "DONE"

@@ -95,6 +95,17 @@ PROFILE=tls bash load-test/fault-injection/run_scenario.sh mosquitto 90
 결과는 `_result_mosquitto_tls.txt`. 실측(2026-09-05): 유실 0, 재연결 약 2초.
 **이 실행에서 ACL 버그를 찾았다** — 자세한 내용은 `RESULT_20260905_mqtt_broker.md`.
 
+## 원본 증거
+
+실행마다 `evidence/<run-id>/`에 집계 원문이 남는다 — metadata(실행 시각, git SHA와
+작업 트리 dirty 여부, 명령, 성공 기준과 판정), inputs/counts CSV, 콘솔 로그,
+Prometheus 스냅샷, Kafka offset/lag 원문, 브로커·백엔드 로그 중 판단에 쓴 줄.
+한 실행당 약 30KB다. 구조와 설계 근거는 [`load-test/lib/README.md`](../lib/README.md).
+
+**결과 문서(`RESULT_*.md`)의 모든 수치는 해당 실행의 `counts.csv`에서 다시 계산할 수
+있어야 한다.** 2026-09-05 이전 결과는 이 구조가 없어서 재계산이 불가능하다 —
+그 사실을 각 결과 문서에 적어뒀다.
+
 ## 주의
 
 - 스크립트가 시작할 때 **`down -v`로 볼륨을 지운다.** 남겨야 할 데이터가 있으면 돌리지 마라.

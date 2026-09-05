@@ -1,0 +1,20 @@
+run_id           : 20260905-215457
+scenario         : fault-injection
+started_at       : 2026-09-05T21:54:57+09:00
+command          : PROFILE=dev bash load-test/fault-injection/run_scenario.sh influxdb 90
+git_branch       : master
+git_commit       : 5e3691d385341493cb5a8b9e451762c8de6d7bb5
+git_dirty        : yes (6개 변경)
+docker           : Docker version 29.7.2, build a7dcaa6
+docker_compose   : 5.4.0
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-09-05T22:01:55+09:00
+success_criteria : Kafka 토픽 == InfluxDB 행
+verdict          : PASS (차이 0)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2
+
+note             : 증거 수집 도구(load-test/lib/evidence.sh)를 처음 붙여 검증한 실행이다.
+                   prometheus_final.txt는 수집 후 필터를 좁혀 다시 저장했고(920줄 250KB →
+                   39줄 7.7KB) checksums.txt도 그때 다시 만들었다. 이후 실행은 처음부터
+                   좁은 필터로 저장되므로 이런 후처리가 없다.

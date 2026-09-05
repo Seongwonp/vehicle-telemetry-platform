@@ -18,7 +18,18 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 ## P0 — 신뢰성 주장을 다시 검증할 수 있게 만들기
 
-### P0-1. 실험 원본 증거 보존
+### P0-1. 실험 원본 증거 보존 — **도구 완료, 과거 실행 재수집은 남음(2026-09-05)**
+
+`load-test/lib/evidence.sh`를 만들어 네 시나리오 스크립트에 붙였다. 실행마다
+`evidence/<run-id>/`에 metadata(시각·git SHA·**작업 트리 dirty 여부**·명령·성공 기준·판정),
+inputs/counts CSV, 콘솔 로그, Prometheus 스냅샷, Kafka offset/lag 원문, 로그 발췌,
+checksums가 남는다(한 실행 약 30KB). 설계 근거는 `load-test/lib/README.md`.
+
+붙이면서 스크립트 결함도 하나 고쳤다 — health 대기 루프에 **타임아웃이 없어서**
+Docker Desktop이 죽은 채 20분을 대기하고도 로그에 아무 단서가 없었다.
+`wait_until`로 바꿔 300초 후 컨테이너 상태와 함께 중단한다.
+
+**남은 것**: 아래 대상의 과거 실행은 원본이 없다. 재수집은 P0-2(3회 반복)와 같이 한다.
 
 - 대상: 현재 핵심 장애 실험의 로그, 메트릭 스냅샷, 집계 CSV/JSON.
 - 범위: MQTT 브로커 장애, Kafka 장애와 spool, InfluxDB 장애, PostgreSQL 장애,

@@ -1,0 +1,6 @@
+key,value
+scenario,influxdb
+profile,dev
+vehicles,200
+publish_interval_sec,0.2
+outage_sec,90

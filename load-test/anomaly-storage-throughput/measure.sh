@@ -20,6 +20,17 @@ SAMPLES="${2:-12}"
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
 OUT="load-test/anomaly-storage-throughput/_result.txt"
 
+# 원본 증거 보존(docs/evidence-policy.md P0-1).
+# shellcheck source=../lib/evidence.sh
+. load-test/lib/evidence.sh
+evidence_init "anomaly-storage-throughput" \
+  "bash load-test/anomaly-storage-throughput/measure.sh $LOAD_SEC $SAMPLES $VEHICLES"
+evidence_input vehicles "$VEHICLES"
+evidence_input publish_interval_sec 0.2
+evidence_input anomaly_rate 0.3
+evidence_input load_sec "$LOAD_SEC"
+evidence_input samples "$SAMPLES"
+
 log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$OUT"; }
 wait_sec() { local s=$1 t0; t0=$(date +%s); until [ $(( $(date +%s) - t0 )) -ge "$s" ]; do sleep 5; done; }
 alert_lag() {
@@ -32,9 +43,9 @@ log "=== anomaly-storage-group 처리량 ==="
 
 $COMPOSE down -v >/dev/null 2>&1 || true
 $COMPOSE up -d mosquitto zookeeper kafka influxdb postgres redis >/dev/null 2>&1 || true
-until [ "$(docker inspect telemetry-postgres --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 10; done
+wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 $COMPOSE up -d backend anomaly-detector >/dev/null 2>&1
-until curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/actuator/health 2>/dev/null | grep -q 200; do sleep 5; done
+wait_until 300 "backend actuator 200" bash -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null | grep -q 200'
 log "스택 기동 완료"
 
 docker rm -f telemetry-sim-0 >/dev/null 2>&1 || true
@@ -48,13 +59,16 @@ docker stop -t 30 telemetry-sim-0 >/dev/null 2>&1 || true
 docker rm -f telemetry-sim-0 >/dev/null 2>&1 || true
 log "부하 정지 — 여기서부터 lag 감소분이 곧 처리량이다"
 
-PREV=$(alert_lag); T0=$(date +%s)
+PREV=$(alert_lag); T0=$(date +%s); LAG_START=$PREV
+# 회차별 값을 남긴다 — 평균만 적으면 편차를 알 수 없다(docs/evidence-policy.md).
+echo "sample,elapsed_sec,lag,drop,msg_per_sec" > "$EVIDENCE_DIR/lag-samples.csv"
 log "샘플 시작: lag=$PREV"
 for i in $(seq 1 "$SAMPLES"); do
   wait_sec 15
   NOW=$(alert_lag); T=$(date +%s)
   RATE=$(( (PREV - NOW) / 15 ))
   log "  +$(( T - T0 ))초  lag=$NOW  (감소 $((PREV - NOW)) → ${RATE} msg/s)"
+  echo "$i,$(( T - T0 )),$NOW,$((PREV - NOW)),$RATE" >> "$EVIDENCE_DIR/lag-samples.csv"
   [ "$NOW" = "0" ] && break
   PREV=$NOW
 done
@@ -63,4 +77,32 @@ log ""
 log "지표:"
 curl -s http://localhost:8080/actuator/prometheus 2>/dev/null \
   | grep -E "telemetry_anomaly_(stored|save)" | tee -a "$OUT"
+
+# ── 원본 증거 ──────────────────────────────────────────────────
+STORED=$(curl -s http://localhost:8080/actuator/prometheus 2>/dev/null \
+  | grep 'telemetry_anomaly_stored_total{.*result="new"' | awk '{print $2+0}' | tail -1)
+evidence_capture_prometheus final
+evidence_capture_kafka_groups anomaly-storage-group anomaly-detector-group
+evidence_capture_topic_offsets vehicle-anomaly-alerts
+
+evidence_count lag_at_load_end "$LAG_START"
+evidence_count lag_at_sampling_end "$(alert_lag)"
+evidence_count anomaly_stored_new "${STORED:-0}"
+# 샘플 구간의 중앙값이 아니라 회차별 값 전체를 lag-samples.csv에 남긴다.
+evidence_count drain_rate_min_msg_per_sec \
+  "$(awk -F, 'NR>1 && $5!="" {if(m==""||$5<m)m=$5} END{print m+0}' "$EVIDENCE_DIR/lag-samples.csv")"
+evidence_count drain_rate_max_msg_per_sec \
+  "$(awk -F, 'NR>1 && $5!="" {if($5>m)m=$5} END{print m+0}' "$EVIDENCE_DIR/lag-samples.csv")"
+
+CRIT="부하 중 lag이 발산하지 않고, 부하 정지 후 lag이 감소한다"
+if [ "$LAG_START" -lt 1000 ]; then
+  VERDICT="PASS (부하 중 lag=$LAG_START — 유입 전량 소화, 드레인 잴 백로그 없음)"
+elif [ "$(alert_lag)" -lt "$LAG_START" ]; then
+  VERDICT="관찰 (백로그 $LAG_START에서 드레인 중 — lag-samples.csv 참고)"
+else
+  VERDICT="FAIL (lag이 줄지 않음)"
+fi
+log "판정: $CRIT → $VERDICT"
+evidence_capture_file "$OUT" console.log
+evidence_finish "$CRIT" "$VERDICT"
 log "DONE"
