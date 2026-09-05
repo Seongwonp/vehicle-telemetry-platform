@@ -78,6 +78,17 @@ dlq_already_stored() {
 save_logs() { docker logs telemetry-backend 2>&1 | grep -c '\[이상 저장\]' || true; }
 dup_logs()  { docker logs telemetry-backend 2>&1 | grep -c '\[이상 중복\]' || true; }
 
+# 장애가 길어지면 리밸런싱이 도는지. `max.poll.interval.ms`(300초)를 넘기면
+# 브로커가 컨슈머를 죽은 것으로 보고 파티션을 회수한다. 그러면 그 구간의 처리가
+# 재전달되고 lag 계산도 흔들린다.
+#
+# 문구는 클라이언트마다 다르다 — 백엔드는 Java라 "Revoke previously assigned
+# partitions"다. kafka-python 문구로 찾으면 0이 나온다(리밸런싱 측정에서 겪었다).
+rebalance_count() {
+  docker logs telemetry-backend 2>&1 \
+    | grep -ciE "anomaly-storage-group.*(Revoke previously assigned|Attempt to heartbeat failed|leaving the group|poll timeout)" || true
+}
+
 : > "$OUT"
 log "=== 이상 알림 DLQ 재처리 멱등성 (PostgreSQL 장애 ${OUTAGE_SEC}초) ==="
 
@@ -169,6 +180,7 @@ DUPS_AFTER2=$(dup_logs)
 # ── 8. 집계 ────────────────────────────────────────────────────
 log ""
 log "=== 결과 ==="
+log "리밸런싱 관련 로그(anomaly-storage-group) : $(rebalance_count)"
 log "재처리 대상 중 이미 저장돼 있던 것 : $ALREADY / $DLQ"
 log "PostgreSQL 행 — 재처리 전 : $ROWS_BEFORE"
 log "PostgreSQL 행 — 1회차 후  : $ROWS_AFTER1  (증가 $((ROWS_AFTER1 - ROWS_BEFORE)))"

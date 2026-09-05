@@ -45,9 +45,9 @@ public class KafkaConfig {
     // (load-test/storage-integrity/ — 재전달 68건에 InfluxDB 행 증가 0),
     // 재시도 중 쌓이는 lag은 이미 KafkaConsumerLagHigh 알림으로 드러난다.
     //
-    // 예산은 총 경과 시간(budget-ms)으로 잡는다 — "몇 번 재시도하느냐"보다 "몇 초짜리
-    // 장애까지 견디느냐"가 실제로 정하고 싶은 값이다. 기본값 180초는 max.poll.interval.ms
-    // (5분)보다 작아야 한다 — 넘으면 컨슈머가 그룹에서 쫓겨나 리밸런싱이 돈다.
+    // 예산은 재시도 횟수가 아니라 시간(budget-ms)으로 잡는다 — "몇 번 재시도하느냐"보다
+    // "몇 초짜리 장애까지 견디느냐"가 실제로 정하고 싶은 값이다.
+    // **다만 이 값은 벽시계 시간이 아니다** — 자세한 내용은 buildBackOff 주석 참고.
     //
     // recoverer를 지정하지 않으면 재시도 소진 시 DefaultErrorHandler는 그 레코드를 로그만
     // 남기고 **버린다**(실제로 로그에 "Backoff FixedBackOff{...} exhausted for
@@ -85,8 +85,24 @@ public class KafkaConfig {
     }
 
     /**
-     * 지수 백오프. 예산을 <b>총 경과 시간</b>으로 잡는다 — "재시도를 몇 번 하느냐"보다
-     * "몇 초짜리 장애까지 견디느냐"가 우리가 실제로 정하고 싶은 값이기 때문이다.
+     * 지수 백오프. 예산을 재시도 <b>횟수</b>가 아니라 <b>시간</b>으로 잡는다 —
+     * 정하고 싶은 값이 "몇 번 재시도하느냐"가 아니라 "몇 초짜리 장애까지 견디느냐"이기
+     * 때문이다.
+     *
+     * <p><b>주의 — 이 예산은 벽시계 시간이 아니다.</b>
+     * {@link ExponentialBackOff#setMaxElapsedTime}이 세는 것은 <b>백오프로 쉰 시간의
+     * 합</b>이고, 리스너가 실패하는 데 쓴 시간은 포함되지 않는다. 그래서 실제로 견디는
+     * 시간은 예산보다 훨씬 길 수 있다.
+     *
+     * <p>PostgreSQL을 <b>300초</b> 정지시켜 재보니 DLQ가 <b>0건</b>이었다. 예산이 180초인데도
+     * 그렇다. 시도마다 HikariCP {@code connectionTimeout}(30초)을 기다리느라 실패 자체에
+     * 30초씩 쓰였고, 백오프 합(1+2+4+8+16+30…)은 그 사이 180초에 도달하지 못했기 때문이다.
+     * 기본값 기준 실효 내성은 대략 <b>8분</b> 수준이다
+     * ({@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}).
+     *
+     * <p>따라서 "예산 &lt; {@code max.poll.interval.ms}"라는 관계도 그대로 성립하지 않는다.
+     * 컨슈머가 쫓겨나는 기준은 <b>poll 사이의 벽시계 시간</b>이라, 리스너가 오래 붙잡히면
+     * 예산과 무관하게 리밸런싱이 돌 수 있다. 300초 장애에서는 실측으로 0건이었다.
      *
      * <p>{@code budgetMs <= 0}이면 재시도 없이 곧바로 recoverer로 보낸다
      * (설정으로 예전 동작에 가깝게 되돌릴 수 있어야 A/B 측정이 된다).

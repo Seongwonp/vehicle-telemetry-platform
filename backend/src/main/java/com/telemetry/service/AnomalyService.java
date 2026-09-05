@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
@@ -44,7 +45,20 @@ public class AnomalyService {
      * 안에서 터지면 **정상 알림 수천 건까지 함께 롤백된다.** 파싱을 먼저 끝내고
      * 레코드별로 격리해야(호출자가 catch → DLQ) 배치화가 안전해진다 —
      * 텔레메트리 경로에서 {@code TelemetryRepository.toPoint()}를 따로 뺀 것과 같은 이유다.
+     *
+     * <p><b>{@code NOT_SUPPORTED}가 반드시 필요하다.</b> 이 클래스에는 클래스 레벨로
+     * {@code @Transactional(readOnly = true)}가 붙어 있어서, 명시하지 않으면 DB를 전혀
+     * 건드리지 않는 이 메서드도 트랜잭션을 연다. 그러면 PostgreSQL 장애 중에
+     * {@code Could not open JPA EntityManager} 로 <b>변환 단계에서 실패</b>하고,
+     * 호출자는 그것을 "이 메시지가 잘못됐다"로 오해해 레코드를 하나씩 DLQ로 보낸다 —
+     * 배치화로 없애려던 바로 그 동작이다.
+     *
+     * <p>실제로 5분 장애를 주입해 발견했다: 저장할 것이 하나도 없는
+     * "배치 저장 실패 <b>0건</b>" 로그가 반복해서 찍혔고, DLQ에는 8건의 알림이
+     * 19개 레코드로 불어나 있었다
+     * ({@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}).
      */
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AnomalyAlert toEntity(Map<String, Object> payload) {
         AnomalyAlert alert = new AnomalyAlert();
         alert.setEventId(resolveEventId(payload));
@@ -79,6 +93,11 @@ public class AnomalyService {
      */
     @Transactional
     public List<SaveResult> saveAll(List<AnomalyAlert> alerts) {
+        // 빈 배치에 트랜잭션을 열지 않는다. 열면 DB가 죽어 있을 때 "저장할 것이
+        // 하나도 없는데 저장 실패"가 나고, 그 예외 때문에 offset이 커밋되지 않아
+        // 같은 배치가 계속 되돌아온다.
+        if (alerts.isEmpty()) return List.of();
+
         List<SaveResult> results = new ArrayList<>(alerts.size());
         for (AnomalyAlert alert : alerts) {
             results.add(saveOne(alert));

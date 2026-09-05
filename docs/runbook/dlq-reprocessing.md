@@ -164,7 +164,7 @@ Kafka 토픽 수와 정확히 일치). 하지만 그 복구는 **사람이 이 R
 그러면 DLQ에는 진짜 처리 불가능한 메시지만 남는다.
 
 **이 변경은 그 뒤에 했다.** `FixedBackOff(1000L, 2L)`를 `ExponentialBackOff` +
-총 경과 시간 예산 180초(`telemetry.kafka.retry.budget-ms`)로 바꿨고, 같은 InfluxDB
+재시도 예산 180초(`telemetry.kafka.retry.budget-ms`)로 바꿨고, 같은 InfluxDB
 90초 장애에서 **DLQ 76,878건 → 0건**이 됐다(InfluxDB 행이 토픽 수와 정확히 일치,
 리밸런싱·백오프 소진 로그 0건). 즉 위 수치는 **바뀌기 전의 기록**이다.
 
@@ -191,8 +191,27 @@ DLQ로 간 알림은 **9건뿐**이었고, 나머지는 전부 lag으로 쌓였�
 때문이다(파티션 3개 × 30초에 1건 = 초당 0.1건).
 
 운영상 함의: **PostgreSQL 장애 때는 DLQ가 아니라 lag을 봐야 한다.**
-이번 60초 장애에서는 리밸런싱이 없었지만(`generation 1` 유지),
-`max.poll.interval.ms`가 300초라 장애가 길어지면 도는지는 **재지 않았다.**
+
+### 300초 장애로도 재봤다 — DLQ 0건, 리밸런싱 0건, 유실 0건
+
+`max.poll.interval.ms`(300초)를 넘기는 장애가 어떻게 되는지 미측정으로 남아 있었다.
+300초로 늘려 돌린 결과는 위와 같다(행 43,347 = 토픽 고유 event_id 43,347).
+
+**"180초 예산"인데 300초를 견디는 이유**: `ExponentialBackOff.maxElapsedTime`이 세는 것은
+**백오프로 쉰 시간의 합**이지 벽시계 시간이 아니다. 시도마다 HikariCP
+`connectionTimeout`(30초)을 기다리느라 실패 자체에 30초씩 쓰이고, 백오프 합
+(1+2+4+8+16+30…)은 그 사이 180초에 도달하지 못한다. 기본값 기준 실효 내성은
+대략 **8분** 수준이다.
+
+같은 이유로 "예산 &lt; `max.poll.interval.ms`"라는 관계도 그대로 성립하지 않는다 —
+컨슈머가 쫓겨나는 기준은 **poll 사이의 벽시계 시간**이다. 300초에서는 0건이었지만
+**더 긴 장애에서 어디서 도는지는 재지 않았다.**
+
+> 이 300초 측정에서 **버그를 하나 찾아 고쳤다.** `AnomalyService`의 클래스 레벨
+> `@Transactional(readOnly = true)` 때문에 DB를 안 건드리는 `toEntity()`까지
+> 트랜잭션을 열고 있었고, 그래서 DB 장애 중 **변환 단계에서** 실패해 레코드가
+> 하나씩 DLQ로 갔다(DLQ 19건 = 고유 알림 8건). 고친 뒤 같은 장애에서 DLQ 0건.
+> 자세한 내용은 `load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md`.
 
 ## 5. 아직 안 한 것
 

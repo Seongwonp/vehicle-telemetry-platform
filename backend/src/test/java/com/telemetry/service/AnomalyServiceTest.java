@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.time.Instant;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -207,5 +209,32 @@ class AnomalyServiceTest {
             eventIds.capture(), any(), any(), any(), any(), any(), any(), any(), any(), any());
         assertThat(eventIds.getAllValues()).containsOnly(eventIds.getAllValues().get(0));
         assertThat(eventIds.getValue()).hasSize(64);
+    }
+    @Test
+    @DisplayName("빈 배치는 트랜잭션도 저장소도 건드리지 않는다")
+    void saveAll_빈배치_무동작() {
+        // 컨슈머는 배치의 모든 레코드가 변환에 실패해도 saveAll을 호출한다.
+        // 여기서 트랜잭션을 열면 DB 장애 중 "저장할 것이 하나도 없는데 저장 실패"가
+        // 나고, 그 예외로 offset이 커밋되지 않아 같은 배치가 계속 되돌아온다
+        // (5분 장애 실측에서 "배치 저장 실패 0건" 로그로 발견).
+        assertThat(anomalyService.saveAll(List.of())).isEmpty();
+        org.mockito.Mockito.verifyNoInteractions(anomalyAlertRepository);
+    }
+
+    @Test
+    @DisplayName("toEntity는 트랜잭션을 열지 않는다 — DB 장애 중 변환까지 실패하면 안 된다")
+    void toEntity_트랜잭션_없음() throws NoSuchMethodException {
+        // 이 클래스에는 클래스 레벨 @Transactional(readOnly = true)가 붙어 있어서,
+        // 명시하지 않으면 DB를 안 건드리는 메서드도 트랜잭션을 연다. 그러면
+        // PostgreSQL 장애 중 "변환 실패"로 오인돼 레코드가 하나씩 DLQ로 간다 —
+        // 배치화로 없애려던 동작이다. 실측으로 겪고 고쳤다.
+        //
+        // 동작이 아니라 설정이라 단위 테스트로는 애너테이션을 직접 확인한다.
+        Transactional annotation = AnomalyService.class
+            .getMethod("toEntity", Map.class)
+            .getAnnotation(Transactional.class);
+
+        assertThat(annotation).isNotNull();
+        assertThat(annotation.propagation()).isEqualTo(Propagation.NOT_SUPPORTED);
     }
 }

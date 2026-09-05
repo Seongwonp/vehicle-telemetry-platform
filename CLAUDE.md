@@ -75,10 +75,15 @@ DLQ에 남은 6건은 전부 이미 저장된 in-doubt 건이라 **복구가 필
 멱등성(재처리 2회에 행 증가 0)과 중복 알림 차단도 회귀 없이 유지된다.
 결과: `load-test/anomaly-storage-throughput/`, `load-test/anomaly-dlq-idempotency/`.
 
+PostgreSQL **300초** 장애도 재봤다 — DLQ 0건, 리밸런싱 0건, 유실 0건.
+그 과정에서 배치화하며 내가 만든 버그(`toEntity()`가 트랜잭션을 열어 DB 장애 중
+변환 단계에서 실패)를 찾아 고쳤고, **"180초 예산"이 벽시계가 아니라 백오프 합**임을
+확인해 코드·문서 서술을 바로잡았다.
+
 **남은 것은 대부분 실기기·실환경이 있어야 하는 것들이다.** 다음 후보:
-7번(앱 실기기 검증 — 기기 필요), PostgreSQL 장애 5분 초과 시 리밸런싱,
-mTLS 프로파일에서 브로커 장애 재측정, 알림 저장 처리량 상한 확정
-(시뮬레이터를 다중 프로세스로 띄워야 잴 수 있다).
+7번(앱 실기기 검증 — 기기 필요), mTLS 프로파일에서 브로커 장애 재측정,
+알림 저장 처리량 상한 확정(시뮬레이터를 다중 프로세스로 띄워야 잴 수 있다),
+HikariCP `connectionTimeout` 30초 조정 여부.
 
 ---
 
@@ -139,9 +144,17 @@ mTLS 프로파일에서 브로커 장애 재측정, 알림 저장 처리량 상�
    컨슈머가 HikariCP `connectionTimeout`만큼 30초씩 붙잡혀서 60초 장애에 DLQ 9건뿐이고
    나머지는 lag으로 쌓인다. 그리고 그 9건 중 **3건은 이미 저장돼 있었다**
    (서버 커밋은 끝났는데 연결이 끊긴 in-doubt 트랜잭션).
-   남은 갈래: PostgreSQL 장애가 5분(`max.poll.interval.ms`)을 넘을 때 리밸런싱이
-   도는지 **미측정**, `connectionTimeout` 30초를 줄일지 **미결정**,
-   알림 경로는 `KafkaConfig`의 180초 재시도 예산을 타지 않는데 의도인지 **미검토**,
+   **300초 장애도 측정 완료(2026-09-05)** — DLQ 0건, 리밸런싱 0건, 유실 0건
+   (행 43,347 = 토픽 고유 event_id 43,347). 그 과정에서 **내가 만든 버그**를 찾아
+   고쳤다: `AnomalyService`의 클래스 레벨 `@Transactional(readOnly = true)` 때문에
+   DB를 안 건드리는 `toEntity()`까지 트랜잭션을 열어, DB 장애 중 **변환 단계에서**
+   실패해 레코드가 하나씩 DLQ로 갔다(DLQ 19건 = 고유 알림 8건).
+   `NOT_SUPPORTED` + 빈 배치 early return으로 고쳤고 회귀 테스트 2건 추가.
+   또 **"180초 예산"이 벽시계가 아님**을 확인했다 — `maxElapsedTime`은 백오프로 쉰
+   시간의 합이라, 시도마다 HikariCP 30초를 기다리면 실효 내성이 약 8분이 된다.
+   코드·yaml·Runbook의 "총 경과 시간" 서술을 바로잡았다.
+   남은 갈래: `connectionTimeout` 30초를 줄일지 **미결정**,
+   8분을 넘는 장애에서 리밸런싱이 도는지 **미측정**,
    `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
    분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
    (PostgreSQL 장애 예외 2종은 이번 실측에서 100% `transient`로 분류돼 문제없었다)
@@ -175,7 +188,8 @@ mTLS 프로파일에서 브로커 장애 재측정, 알림 저장 처리량 상�
    더 키우려면 프로듀서 `buffer.memory`(기본 32MB)와 `max.block.ms`를 함께 봐야 하고
    **거기까지는 재지 않았다**
 5. ~~재시도 예산 재검토~~ — **완료(2026-09-04)**. `FixedBackOff(1000L, 2L)`(3회/약 2초) →
-   `ExponentialBackOff` + **총 경과 시간 예산 180초**(`telemetry.kafka.retry.budget-ms`).
+   `ExponentialBackOff` + **재시도 예산 180초**(`telemetry.kafka.retry.budget-ms`).
+   (이 값은 벽시계가 아니라 **백오프로 쉰 시간의 합**이다 — 아래 2번 항목 참고)
    같은 InfluxDB 90초 장애에서 **DLQ 76,878건(47.6%) → 0건**, InfluxDB 행이 토픽 수와
    정확히 일치(180,329)해 수동 재처리가 아예 불필요해졌다. 리밸런싱·백오프 소진 로그 0건.
    예전 값의 근거("한 레코드가 파티션을 막는다")는 이 코드에 해당하지 않았다 —

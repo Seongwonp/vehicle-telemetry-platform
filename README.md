@@ -280,7 +280,7 @@ vehicle-telemetry-platform/
 | 동작 | 동기 `WriteApiBlocking` 실패를 listener가 잡아 원본을 DLQ로 발행 |
 | Kafka offset | InfluxDB 쓰기 또는 DLQ 발행 성공 뒤에만 수동 커밋. DLQ 발행도 실패하면 미커밋 |
 | 로그 | 저장 실패와 DLQ 실패를 서로 다른 ERROR 로그로 기록 |
-| 재시도 예산 | `ExponentialBackOff` + 총 경과 시간 **180초**(`KAFKA_RETRY_BUDGET_MS`). 90초 장애 실측에서 **DLQ 76,878건 → 0건**이 됐다(ADR 없음, `load-test/fault-injection/`) |
+| 재시도 예산 | `ExponentialBackOff` + **180초**(`KAFKA_RETRY_BUDGET_MS`). 90초 장애 실측에서 **DLQ 76,878건 → 0건**. 이 값은 벽시계가 아니라 **백오프로 쉰 시간의 합**이라 실효 내성은 훨씬 길다 — PostgreSQL 300초 장애에서도 DLQ 0건이었다(ADR-022) |
 | 재처리 | 원인 분류·재처리 도구와 [Runbook](docs/runbook/dlq-reprocessing.md) 있음. 자동 재처리 컨슈머는 여전히 없음(의도) |
 
 ### 시나리오 5 — Redis 다운 (Rate Limiting / BruteForce)
