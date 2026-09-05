@@ -108,12 +108,12 @@ public class TelemetryConsumer {
         groupId = "anomaly-storage-group"
     )
     public void consumeAnomalyAlerts(ConsumerRecord<String, String> record, Acknowledgment acknowledgment) {
-        AnomalyAlert saved;
+        AnomalyService.SaveResult result;
         try {
             Map<String, Object> payload = objectMapper.readValue(
                 record.value(), new TypeReference<>() {}
             );
-            saved = anomalyService.save(payload);
+            result = anomalyService.save(payload);
             log.debug("[Kafka→Anomaly] 이상 이벤트 저장 완료 — vehicle={} offset={}",
                 record.key(), record.offset());
         } catch (Exception e) {
@@ -125,10 +125,21 @@ public class TelemetryConsumer {
             return;
         }
         acknowledgment.acknowledge();
-        messagingTemplate.convertAndSend(
-            "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
-            new AnomalyResponse(saved)
-        );
+        // 이미 저장돼 있던 이벤트면 알림을 보내지 않는다.
+        //
+        // 재처리는 "이미 저장된 알림"을 반드시 다시 넣게 된다. PostgreSQL 60초 장애를
+        // 주입해 재보니 DLQ 9건 중 3건은 이미 저장된 것이었고(서버 커밋은 끝났는데
+        // 연결이 끊겨 클라이언트만 실패로 본 경우), 재처리를 한 번 더 돌리면 9건 전부가
+        // 그렇게 된다. 행은 UNIQUE(event_id) + ON CONFLICT DO NOTHING이 막지만
+        // 브로드캐스트는 막을 것이 없어서, 예전 코드는 이 9건을 매번 다시 밀어냈다
+        // (load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md).
+        if (result.inserted()) {
+            AnomalyAlert saved = result.alert();
+            messagingTemplate.convertAndSend(
+                "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
+                new AnomalyResponse(saved)
+            );
+        }
     }
 
     // REST의 TelemetryResponse와 동일한 JSON 형태로 만들어 보낸다 — 앱이

@@ -169,7 +169,8 @@ class TelemetryConsumerTest {
         com.telemetry.entity.AnomalyAlert saved = new com.telemetry.entity.AnomalyAlert();
         saved.setVehicleId("SIM-001");
         saved.setAnomalyType("엔진 과열");
-        given(anomalyService.save(any())).willReturn(saved);
+        given(anomalyService.save(any()))
+            .willReturn(new com.telemetry.service.AnomalyService.SaveResult(saved, true));
         ConsumerRecord<String, String> record =
             new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", json);
 
@@ -178,6 +179,34 @@ class TelemetryConsumerTest {
         verify(anomalyService).save(any());
         verify(acknowledgment).acknowledge();
         verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
+        verify(messagingTemplate).convertAndSend(
+            org.mockito.ArgumentMatchers.eq("/topic/vehicle/SIM-001/anomalies"),
+            org.mockito.ArgumentMatchers.any(Object.class));
+    }
+
+    @Test
+    @DisplayName("이미 저장된 이상 이벤트는 알림을 다시 보내지 않는다 — DLQ 재처리 중복 방지")
+    void consumeAnomalyAlerts_중복이면_브로드캐스트안함() {
+        // DLQ 재처리는 이미 저장된 알림을 반드시 다시 넣는다. 행은 UNIQUE(event_id)가
+        // 막아주지만 브로드캐스트는 막을 것이 없어서, 예전 코드는 재처리 때마다 같은
+        // 알림을 다시 밀어냈다(PostgreSQL 장애 실측: 9건 재처리에 행 증가는 6건인데
+        // 저장 로그·알림은 9건 — load-test/anomaly-dlq-idempotency/).
+        String json = "{\"vehicle_id\":\"SIM-001\",\"anomaly_type\":\"엔진 과열\",\"severity\":\"HIGH\"}";
+        com.telemetry.entity.AnomalyAlert saved = new com.telemetry.entity.AnomalyAlert();
+        saved.setVehicleId("SIM-001");
+        given(anomalyService.save(any()))
+            .willReturn(new com.telemetry.service.AnomalyService.SaveResult(saved, false));
+        ConsumerRecord<String, String> record =
+            new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", json);
+
+        telemetryConsumer.consumeAnomalyAlerts(record, acknowledgment);
+
+        // offset은 커밋해야 한다 — 중복은 실패가 아니라 정상적으로 처리된 것이다.
+        verify(acknowledgment).acknowledge();
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
+        verify(messagingTemplate, never()).convertAndSend(
+            org.mockito.ArgumentMatchers.startsWith("/topic/vehicle/"),
+            org.mockito.ArgumentMatchers.any(Object.class));
     }
 
     @Test

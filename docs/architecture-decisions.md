@@ -781,3 +781,59 @@ spool로 보낸다. 그래야 `retryPending()`이 파일명(타임스탬프+시�
 **남은 과제**: 크래시 구간까지 지키려면 spool을 메시지당 파일이 아니라 append-only
 세그먼트 로그로 만들거나, MQTT 수동 ack(`setManualAcks(true)`)로 Kafka 확인 후 PUBACK하는
 방식이 필요하다. 둘 다 이번 범위를 벗어나 향후 과제로 남긴다.
+
+---
+
+## ADR-020: 이상 알림의 재처리 멱등성 — 저장은 event_id, 알림은 insert 성공에만
+
+**날짜**: 2026-09-05
+
+**배경**: DLQ 재처리 도구와 Runbook을 만들면서(ADR-017, `docs/runbook/dlq-reprocessing.md`)
+`vehicle-anomaly-alerts-dlq` 재처리가 PostgreSQL에 알림을 중복 저장하는지는 재지 않았다.
+텔레메트리 쪽은 InfluxDB 포인트 identity가 같은 키를 덮어써서 멱등이 확인돼 있었지만
+(ADR-014), 알림은 `INSERT`라 같은 보장이 없다. Runbook이 운영자에게 재처리를 지시하는
+경로라, 여기서 중복이 나면 문서가 사고를 유도하게 된다.
+
+**측정**: PostgreSQL을 60초 정지시킨 뒤 같은 DLQ 레코드를 **커서 그룹을 바꿔 두 번**
+되돌렸다(`load-test/anomaly-dlq-idempotency/`). 정답 기준은 토픽의 메시지 수가 아니라
+**고유 `event_id` 수**로 잡았다 — 저장이 `ON CONFLICT (event_id) DO NOTHING`이라
+설계상 "같은 event_id는 한 행"이기 때문이다.
+
+| | 행 | `[이상 저장]` 로그 |
+| --- | ---: | ---: |
+| 재처리 전 | 16,630 | 16,630 |
+| 1회차 후 | 16,636 (+6) | 16,639 (+9) |
+| 2회차 후 | **16,636 (+0)** | 16,648 (+9) |
+
+**결정 1 — 저장 멱등성은 지금 구조가 맞다.** `event_id`
+(`vehicle_id|timestamp|anomaly_type|field|detector`의 SHA-256, Python·Java 동일 식) +
+`UNIQUE` 인덱스 + `ON CONFLICT DO NOTHING`이 실제로 동작한다. 두 번 되돌려도 행이 늘지
+않았고 행 수가 정답 기준과 정확히 일치했다. 내용이 다른데 event_id가 같은 경우
+(= 서로 다른 이상이 한 행으로 합쳐지는 **알림 유실**)도 16,636건 중 0건이었다.
+
+**결정 2 — 알림은 `insert`가 실제로 일어났을 때만 보낸다.** 위 표의 오른쪽 열이 문제다.
+`consumeAnomalyAlerts`가 `insertIfAbsent`의 반환값을 버리고 무조건 WebSocket으로
+브로드캐스트하고 있어서, 재처리할 때마다 이미 저장된 알림이 다시 나갔다.
+`AnomalyService.save()`가 `SaveResult(alert, inserted)`를 돌려주게 하고, 컨슈머는
+`inserted`일 때만 보낸다. 로그도 `[이상 저장]`/`[이상 중복]`으로 나누고 지표
+`telemetry.anomaly.stored{result=new|duplicate}`를 추가했다 — 재처리 후 "몇 건이
+실제로 복구됐나"를 세려면 이 구분이 있어야 한다.
+
+> 영향 범위는 과장하지 않는다. Flutter 앱은 현재 `/telemetry`만 구독하고 이상 이력은
+> REST로 가져오므로 이 중복을 받는 클라이언트는 없었다. 잠재 결함이었고, 당장의 피해는
+> 재처리 후 로그를 세면 저장 건수가 부풀려지는 것이었다.
+
+**왜 중복이 "혹시"가 아니라 "반드시"인가**: DLQ 9건 중 **3건은 이미 저장돼 있었다.**
+서버에서는 커밋이 끝났는데 연결이 끊겨 클라이언트만 실패로 본 경우
+(`DataAccessResourceFailureException: Unable to commit`)다. 재처리 대상에는 항상
+이런 in-doubt 건이 섞이므로, 재처리는 반드시 중복 INSERT를 시도한다.
+
+**부수적으로 확인한 것**: PostgreSQL 장애는 DLQ를 거의 만들지 않는다. 컨슈머가 실패로
+빠르게 떨어지는 게 아니라 HikariCP `connectionTimeout`(기본 30초)만큼 붙잡혀 있어서,
+60초 장애에 DLQ는 9건뿐이고 나머지는 전부 lag으로 쌓였다. **장애 중에는 DLQ가 아니라
+lag을 봐야 한다.**
+
+**남은 과제**: 장애가 `max.poll.interval.ms`(300초)를 넘을 때 리밸런싱이 도는지 미측정.
+`connectionTimeout`을 줄일지 미결정(줄이면 DLQ 경로가 실제로 동작하지만 느린 DB에서
+정상 요청이 실패로 떨어진다). 알림 경로는 `KafkaConfig`의 180초 재시도 예산을 타지
+않는데(예외를 직접 잡아 DLQ로 보낸다) 의도인지 미검토.

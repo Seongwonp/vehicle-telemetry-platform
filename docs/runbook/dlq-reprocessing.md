@@ -117,9 +117,28 @@ python dlq.py --topic vehicle-telemetry-dlq inspect
 - **재처리는 중복을 만든다 — 하지만 InfluxDB에서는 흡수된다.** 포인트 identity가
   (measurement, `vehicle_id`, ms 타임스탬프)라 같은 메시지를 다시 써도 덮어써진다.
   실측으로 확인했다(`load-test/storage-integrity/RESULT_20260904_kill_redelivery.md`:
-  재전달 68건, 행 증가 0). **단 PostgreSQL로 가는 이상 알림 경로는 다르다** —
-  `vehicle-anomaly-alerts-dlq`를 재처리할 때는 알림이 중복 저장될 수 있으므로
-  `event_id`(payload 해시) 기준 중복 처리가 되는지 먼저 확인해야 한다.
+  재전달 68건, 행 증가 0).
+- **PostgreSQL로 가는 이상 알림도 중복되지 않는다 — 실측했다.**
+  `anomaly_alerts.event_id`(= `vehicle_id|timestamp|anomaly_type|field|detector`의 SHA-256)에
+  UNIQUE 인덱스가 있고 저장이 `ON CONFLICT DO NOTHING`이다.
+  같은 DLQ 레코드를 **커서를 바꿔 두 번** 되돌려도 행이 늘지 않았고, 행 수가 토픽의
+  고유 event_id 수와 정확히 일치했다(16,636)
+  — `load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md`.
+
+  **재처리는 이미 저장된 알림을 반드시 다시 넣는다.** 그 실측에서 DLQ 9건 중 3건이
+  이미 저장돼 있었다 — 서버 커밋은 끝났는데 연결이 끊겨 클라이언트만 실패로 본
+  경우(`Unable to commit`)다. 그러니 "재처리 건수 = 복구된 건수"가 아니다.
+  실제로 몇 건이 새로 들어갔는지는 지표로 본다:
+
+  ```bash
+  curl -s localhost:8080/actuator/prometheus | grep telemetry_anomaly_stored
+  # result="new"       … 실제로 저장된 건수
+  # result="duplicate" … 이미 있어서 건너뛴 건수
+  ```
+
+  로그로도 `[이상 저장]`(신규)과 `[이상 중복]`(건너뜀)이 나뉜다. 예전에는 둘 다
+  `[이상 저장]`으로 찍혀서 재처리 후 로그를 세면 저장 건수가 부풀려졌고,
+  **중복분까지 WebSocket 알림이 다시 나가고 있었다**(같은 문서에서 고쳤다).
 - **분류 목록은 완전하지 않다.** `dlq.py`의 `TRANSIENT_MARKERS`/`PERMANENT_MARKERS`는
   지금까지 본 예외만 담고 있다. 새 예외는 `unknown`으로 떨어지므로, `inspect`에서
   `unknown` 비중이 크면 목록을 늘려야 한다.
@@ -142,8 +161,27 @@ Kafka 토픽 수와 정확히 일치). 하지만 그 복구는 **사람이 이 R
 
 따라서 운영 관점에서는 **재시도 예산을 늘리는 편이 낫다**. 재시도는 멱등하고
 (`load-test/storage-integrity/`에서 확인), 재시도 중 쌓이는 lag은 이미 알림으로 드러난다.
-그러면 DLQ에는 진짜 처리 불가능한 메시지만 남는다. 이 변경은 **아직 하지 않았다** —
-백오프를 늘리면 `max.poll.interval.ms`를 넘겨 리밸런싱이 도는지부터 확인해야 한다.
+그러면 DLQ에는 진짜 처리 불가능한 메시지만 남는다.
+
+**이 변경은 그 뒤에 했다.** `FixedBackOff(1000L, 2L)`를 `ExponentialBackOff` +
+총 경과 시간 예산 180초(`telemetry.kafka.retry.budget-ms`)로 바꿨고, 같은 InfluxDB
+90초 장애에서 **DLQ 76,878건 → 0건**이 됐다(InfluxDB 행이 토픽 수와 정확히 일치,
+리밸런싱·백오프 소진 로그 0건). 즉 위 수치는 **바뀌기 전의 기록**이다.
+
+## 4-2. 이상 알림 경로는 재시도 예산을 타지 않는다
+
+위 180초 예산은 `KafkaConfig`의 에러 핸들러에 걸린 것이라, **예외를 직접 잡아
+DLQ로 보내는 경로에는 적용되지 않는다.** `consumeAnomalyAlerts`가 그렇다 —
+저장에 실패하면 재시도 없이 바로 DLQ로 간다.
+
+그런데 PostgreSQL 장애에서는 그 DLQ조차 거의 쌓이지 않는다. 60초 정지를 주입했더니
+DLQ로 간 알림은 **9건뿐**이었고, 나머지는 전부 lag으로 쌓였다. 컨슈머가 실패로
+빠르게 떨어지는 게 아니라 HikariCP `connectionTimeout`(기본 30초)만큼 **붙잡혀 있기**
+때문이다(파티션 3개 × 30초에 1건 = 초당 0.1건).
+
+운영상 함의: **PostgreSQL 장애 때는 DLQ가 아니라 lag을 봐야 한다.**
+이번 60초 장애에서는 리밸런싱이 없었지만(`generation 1` 유지),
+`max.poll.interval.ms`가 300초라 장애가 길어지면 도는지는 **재지 않았다.**
 
 ## 5. 아직 안 한 것
 
@@ -152,4 +190,8 @@ Kafka 토픽 수와 정확히 일치). 하지만 그 복구는 **사람이 이 R
   판정해야 하는데, 그 판정을 틀리면 루프가 된다.
 - **재처리 결과의 정합성 대조**는 이 도구 범위 밖이다. 되돌린 뒤 실제로 저장됐는지는
   `load-test/storage-integrity/measure_integrity.py`로 따로 확인한다.
-- `vehicle-anomaly-alerts-dlq` 재처리 시 중복 알림 여부는 **미검증**이다.
+- **PostgreSQL 장애가 5분을 넘을 때 리밸런싱이 도는지 미측정.** 컨슈머가 건당 30초씩
+  붙잡히므로 `max.poll.interval.ms`(300초) 안에 10건밖에 처리하지 못한다.
+- **HikariCP `connectionTimeout` 30초를 줄일지 정하지 않았다.** 줄이면 장애 중 DLQ가
+  정상적으로 쌓여 위 재처리 절차가 실제로 의미를 갖지만, 느린 DB에서 정상 요청이
+  실패로 떨어질 수 있다. 트레이드오프를 재지 않았다.

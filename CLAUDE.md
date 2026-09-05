@@ -54,7 +54,14 @@ vehicle-telemetry-platform/
 - **실제 OBD-II 연동 고려**: 시뮬레이터와 실제 OBD-II 동글 전환이 쉽도록 인터페이스 분리
 - **포트폴리오용**: 코드 가독성, README, 아키텍처 문서 품질 중요
 
-## 현재 최우선 작업 (2026-09-04)
+## 현재 최우선 작업 (2026-09-05)
+
+**우선순위 2번의 남은 갈래(이상 알림 DLQ 재처리 중복 검증) 완료** — 아래 2번 항목 참고.
+다음 작업은 우선순위 1번의 남은 갈래(같은 밀리초 키 충돌 재현)이거나 7번(앱 실기기 검증)이다.
+
+---
+
+## 이전 최우선 작업 (2026-09-04)
 
 **Kafka 저장 실패 계약 검증 완료** — Docker가 있는 데스크톱에서 실행해
 `KafkaStorageFailureContractTest` 3케이스가 skip 없이 통과했고(18.0초), 전체
@@ -79,9 +86,26 @@ vehicle-telemetry-platform/
    DLQ 레코드에 실패 원인 헤더(`x-dlq-*`)를 붙이고(Java·Python 동일 규약),
    `dlq-tools/dlq.py`로 원인별 분류(transient/permanent/unknown)와 재처리를 한다.
    Runbook은 `docs/runbook/dlq-reprocessing.md`.
-   남은 갈래: `vehicle-anomaly-alerts-dlq` 재처리 시 PostgreSQL 중복 알림 여부 **미검증**,
+   **`vehicle-anomaly-alerts-dlq` 중복 알림 검증도 완료(2026-09-05)** —
+   PostgreSQL 60초 장애 후 같은 DLQ 레코드를 커서를 바꿔 **두 번** 되돌려도
+   행 증가는 0건이었고(`UNIQUE(event_id)` + `ON CONFLICT DO NOTHING`),
+   행 수가 토픽의 고유 event_id 수와 정확히 일치했다(16,636 = 16,636, 유실 0).
+   측정 도구·결과는 `load-test/anomaly-dlq-idempotency/`.
+   **대신 결함을 하나 찾아 고쳤다** — 컨슈머가 `insertIfAbsent` 반환값을 버리고
+   무조건 WebSocket 브로드캐스트를 해서, 재처리 때마다 이미 저장된 알림이 다시
+   나가고 있었다(1회차 3건, 2회차 9건). `SaveResult(alert, inserted)`로 바꾸고
+   지표 `telemetry.anomaly.stored{result=new|duplicate}`를 추가했다.
+   현재 Flutter 앱은 이 토픽을 구독하지 않아 실피해는 없었다(잠재 결함).
+   같이 알아낸 것: **PostgreSQL 장애는 DLQ를 거의 만들지 않는다** —
+   컨슈머가 HikariCP `connectionTimeout`만큼 30초씩 붙잡혀서 60초 장애에 DLQ 9건뿐이고
+   나머지는 lag으로 쌓인다. 그리고 그 9건 중 **3건은 이미 저장돼 있었다**
+   (서버 커밋은 끝났는데 연결이 끊긴 in-doubt 트랜잭션).
+   남은 갈래: PostgreSQL 장애가 5분(`max.poll.interval.ms`)을 넘을 때 리밸런싱이
+   도는지 **미측정**, `connectionTimeout` 30초를 줄일지 **미결정**,
+   알림 경로는 `KafkaConfig`의 180초 재시도 예산을 타지 않는데 의도인지 **미검토**,
    `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
    분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
+   (PostgreSQL 장애 예외 2종은 이번 실측에서 100% `transient`로 분류돼 문제없었다)
 3. ~~MQTT/Kafka/InfluxDB 장애 주입과 복구 후 데이터 정합성 대조~~ — **부분 완료(2026-09-04)**.
    InfluxDB·Kafka 90초 장애를 주입해 **둘 다 유실 0**을 확인했다(InfluxDB는 DLQ 재처리로
    84,615 → 161,356 완전 복구, Kafka는 spool이 전량 보관). 도구·결과는

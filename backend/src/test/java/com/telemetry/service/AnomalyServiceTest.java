@@ -29,6 +29,12 @@ class AnomalyServiceTest {
     @Mock
     private AnomalyAlertRepository anomalyAlertRepository;
 
+    // 지표를 세는 것 자체가 검증 대상은 아니라 mock 대신 실제 구현을 쓴다 —
+    // mock이면 counter()가 null을 돌려줘 NPE가 난다.
+    @org.mockito.Spy
+    private io.micrometer.core.instrument.MeterRegistry meterRegistry =
+        new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+
     @InjectMocks
     private AnomalyService anomalyService;
 
@@ -67,6 +73,34 @@ class AnomalyServiceTest {
             org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("HIGH"),
             org.mockito.ArgumentMatchers.eq("RULE"),
             org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
+    }
+
+    @Test
+    @DisplayName("이미 저장된 이벤트면 inserted=false로 알려준다 — 재처리 시 중복 알림 방지")
+    void save_중복이면_inserted_false() {
+        // DLQ 재처리는 이미 저장된 알림을 반드시 다시 넣는다(PostgreSQL 장애 실측:
+        // DLQ 9건 중 3건이 이미 저장돼 있었다). 행은 ON CONFLICT DO NOTHING이 막지만,
+        // 호출자가 "새로 들어갔는지"를 모르면 WebSocket 알림이 그대로 다시 나간다.
+        Map<String, Object> payload = Map.of(
+            "vehicle_id", "SIM-001",
+            "anomaly_type", "엔진 과열",
+            "severity", "HIGH"
+        );
+        AnomalyAlert persisted = new AnomalyAlert();
+        persisted.setEventId("d".repeat(64));
+        persisted.setVehicleId("SIM-001");
+        persisted.setDetectedAt(Instant.now());
+        given(anomalyAlertRepository.findByEventId(any())).willReturn(Optional.of(persisted));
+
+        // insertIfAbsent가 0 = 충돌로 아무것도 안 들어감
+        given(anomalyAlertRepository.insertIfAbsent(
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).willReturn(0);
+        assertThat(anomalyService.save(payload).inserted()).isFalse();
+
+        // 1 = 새로 들어감
+        given(anomalyAlertRepository.insertIfAbsent(
+            any(), any(), any(), any(), any(), any(), any(), any(), any(), any())).willReturn(1);
+        assertThat(anomalyService.save(payload).inserted()).isTrue();
     }
 
     @Test

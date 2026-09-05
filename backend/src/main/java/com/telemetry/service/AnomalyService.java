@@ -3,6 +3,7 @@ package com.telemetry.service;
 import com.telemetry.dto.response.AnomalyResponse;
 import com.telemetry.entity.AnomalyAlert;
 import com.telemetry.repository.AnomalyAlertRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -27,9 +28,10 @@ import java.util.HexFormat;
 public class AnomalyService {
 
     private final AnomalyAlertRepository anomalyAlertRepository;
+    private final MeterRegistry meterRegistry;
 
     @Transactional
-    public AnomalyAlert save(Map<String, Object> payload) {
+    public SaveResult save(Map<String, Object> payload) {
         AnomalyAlert alert = new AnomalyAlert();
         alert.setEventId(resolveEventId(payload));
         alert.setVehicleId((String) payload.get("vehicle_id"));
@@ -48,16 +50,41 @@ public class AnomalyService {
         String detectedAt = (String) payload.get("detected_at");
         alert.setDetectedAt(detectedAt != null ? Instant.parse(detectedAt) : Instant.now());
 
-        anomalyAlertRepository.insertIfAbsent(
+        int inserted = anomalyAlertRepository.insertIfAbsent(
             alert.getEventId(), alert.getVehicleId(), alert.getAnomalyType(), alert.getField(),
             alert.getValue(), alert.getThreshold(), alert.getSeverity(), alert.getDetector(),
             alert.getVehicleTimestamp(), alert.getDetectedAt());
         AnomalyAlert saved = anomalyAlertRepository.findByEventId(alert.getEventId())
             .orElseThrow(() -> new IllegalStateException("이상 이벤트 저장 결과를 찾을 수 없습니다"));
-        log.info("[이상 저장] vehicle={} type={} severity={}",
-            alert.getVehicleId(), alert.getAnomalyType(), alert.getSeverity());
-        return saved;
+
+        boolean isNew = inserted > 0;
+        meterRegistry.counter("telemetry.anomaly.stored",
+            "result", isNew ? "new" : "duplicate").increment();
+        if (isNew) {
+            log.info("[이상 저장] vehicle={} type={} severity={}",
+                alert.getVehicleId(), alert.getAnomalyType(), alert.getSeverity());
+        } else {
+            // 재처리에서는 정상적인 결과다. 로그를 나누는 이유는 두 가지다 —
+            // (1) 예전엔 중복도 "[이상 저장]"으로 찍혀서, 재처리 후 로그를 세면 실제
+            //     저장된 건수보다 많이 나왔다(실측: 9건 재처리에 행 증가는 6건).
+            // (2) 중복 비율이 높으면 재처리 범위가 필요 이상으로 넓다는 신호다.
+            log.info("[이상 중복] 이미 저장된 이벤트라 건너뜀 vehicle={} type={} event={}",
+                alert.getVehicleId(), alert.getAnomalyType(), alert.getEventId());
+        }
+        return new SaveResult(saved, isNew);
     }
+
+    /**
+     * 저장 결과. <b>새로 들어갔는지</b>가 호출자에게 필요하다.
+     *
+     * <p>DLQ 재처리는 이미 저장된 알림을 필연적으로 다시 넣는다 — PostgreSQL 60초 장애를
+     * 주입해 재보니 DLQ 9건 중 <b>3건은 이미 저장돼 있었다</b>(서버에서는 커밋이 끝났는데
+     * 연결이 끊겨 클라이언트만 실패로 본 경우). 행 중복은
+     * {@code ON CONFLICT (event_id) DO NOTHING}이 막아주지만, 호출자가 이 구분을 모르면
+     * <b>알림은 그대로 다시 나간다.</b>
+     * ({@code load-test/anomaly-dlq-idempotency/})
+     */
+    public record SaveResult(AnomalyAlert alert, boolean inserted) {}
 
     public List<AnomalyResponse> getRecent(String vehicleId, int limit) {
         return anomalyAlertRepository
