@@ -1,0 +1,8 @@
+토픽                        : vehicle-anomaly-alerts
+메시지 총계                 : 39790
+  JSON 파싱 실패            : 0
+  event_id 없음(파생 사용)  : 0
+  event_id가 파생값과 불일치: 0
+고유 event_id (= 정답 기준) : 39784
+  2회 이상 나타난 event_id  : 6 (중복 발행분 6건)
+  내용이 다른데 event_id 같음: 0  ← 뭉개짐(알림 유실) 후보

@@ -1,0 +1,2 @@
+13:21:46 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+13:21:46 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost

@@ -1,0 +1,10 @@
+key,value
+sim_confirmed_puback,94512
+kafka_topic_end_offset,94512
+committed_offset_before_kill,25440
+batch_size_sum_before_kill,24638
+batch_size_sum_after_restart,68564
+batch_size_sum_total,93202
+redelivered,-1310
+influx_rows,94512
+overwrite_loss,0

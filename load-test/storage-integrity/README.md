@@ -29,7 +29,24 @@ Kafka는 at-least-once다. consumer가 offset을 커밋하기 전에 죽으면 �
 `telemetry_influx_write_batch_size_sum`이다 — 재전달분이 그대로 포함된다.
 `/actuator/prometheus`는 인증 없이 열려 있다(Prometheus 스크레이핑용).
 
-## 절차
+## 절차 — 자동화된 쪽을 쓴다
+
+```bash
+# 1회
+bash load-test/storage-integrity/run_scenario.sh
+
+# 반복 (docs/roadmap.md P0-2)
+bash load-test/lib/repeat.sh storage-integrity 3 \
+  bash load-test/storage-integrity/run_scenario.sh
+```
+
+**kill 시점을 시간이 아니라 커밋 offset으로 잡는다.** 부하 기동 속도는 실행마다
+달라서, "60초 뒤에 죽인다"로 하면 회차 간 조건이 달라진다. `20000` 같은 offset을
+기준으로 하면 어느 회차나 같은 처리량 지점에서 죽는다.
+
+실행마다 `evidence/<run-id>/`에 원본이 남는다(`load-test/lib/README.md`).
+
+## 절차 (수동 — 참고용)
 
 ```bash
 # 1. 스택 기동 (anomaly-detector는 이 측정과 무관하므로 띄우지 않는다)

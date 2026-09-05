@@ -1,0 +1,9 @@
+4b8d0810b69723e0351a0ba5bebae25609b05b52701b767f614e4cfca735a126 *./backend-key-lines.txt
+f276064642bfaf69c6b824ca3559efbe6392f909165d5c20c103478a943a9285 *./console.log
+c3d06144da5dd2ca693c0791195fa48c31981cd6efc507b9573c59be8dcea10a *./counts.csv
+4b9d00ed5a812dbdfe31ee6f889727a6ea068d2951a8dde3f6266a51acd3e52e *./inputs.csv
+dee8bf088b0f99f06ec38c51dabc6248a95777904449c6ea7e6b14631d3c370f *./kafka-consumer-groups.txt
+ff6f387fe453c8a7c043d9a8fd71a727c16f1dddb948dbeb9849c32c904ee820 *./kafka-topic-offsets.txt
+8fccb3ed28669a3af5d37e337f8107c78826b0ce396b5244c17d0ed04a5013a4 *./metadata.txt
+f612af8b41961c7841e17003a535fd571e7e2c5c11fad89463ee76743efe58fe *./mosquitto-key-lines.txt
+0d99faa6f38b4f1925a3d1e01766e92afef00c73aa3a9cccdad29763ac16537d *./prometheus_final.txt

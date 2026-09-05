@@ -1,0 +1,8 @@
+# vehicle-telemetry @ 2026-09-05T22:19:23+09:00
+vehicle-telemetry:0:56502
+vehicle-telemetry:1:58135
+vehicle-telemetry:2:63724
+
+# vehicle-telemetry-dlq @ 2026-09-05T22:19:24+09:00
+vehicle-telemetry-dlq:0:0
+

@@ -1,0 +1,7 @@
+key,value
+kafka_alert_topic,39696
+kafka_alert_dlq,0
+postgres_rows,39685
+anomaly_stored_new,39685
+anomaly_stored_duplicate,11
+rebalance_log_lines,11

@@ -1,0 +1,6 @@
+key,value
+vehicles,200
+publish_interval_sec,0.2
+warmup_sec,60
+kill_at_committed_offset,20000
+kill_signal,SIGKILL

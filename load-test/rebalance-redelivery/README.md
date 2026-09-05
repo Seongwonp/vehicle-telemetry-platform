@@ -1,6 +1,14 @@
 # 리밸런싱 구간 재전달 측정
 
-`bash run_scenario.sh`
+```bash
+# 1회
+bash load-test/rebalance-redelivery/run_scenario.sh
+
+# 반복 (docs/roadmap.md P0-2) — 재전달량은 리밸런싱 시점의 in-flight에 좌우돼
+# 회차마다 달라진다. 변동 폭을 보려면 반복해야 한다.
+bash load-test/lib/repeat.sh rebalance-redelivery 3 \
+  bash load-test/rebalance-redelivery/run_scenario.sh
+```
 
 ## 무엇을 재나
 

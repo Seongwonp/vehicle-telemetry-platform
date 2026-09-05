@@ -1,0 +1,11 @@
+key,value
+sim_attempted,179053
+sim_queued,41179
+sim_rejected,137874
+sim_confirmed_puback,178359
+backend_mqtt_received,178361
+backend_mqtt_invalid,0
+kafka_topic_end_offset,178361
+kafka_dlq_end_offset,0
+influx_rows,178359
+influx_write_failures,0

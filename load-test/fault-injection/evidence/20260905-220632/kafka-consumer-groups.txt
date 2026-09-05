@@ -1,0 +1,11 @@
+# telemetry-storage-group @ 2026-09-05T22:12:36+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          61882           61882           0               telemetry-backend-consumer-1-ffcf8cb9-c500-46f3-8cdb-b8ab39087364 /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 2          68514           68514           0               telemetry-backend-consumer-2-7c13fbd8-4831-4aa7-b7f9-91b33907ba79 /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 0          60144           60144           0               telemetry-backend-consumer-0-d8d3603d-3cd2-475d-8237-c82d9243aec6 /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+
+# anomaly-detector-group @ 2026-09-05T22:12:38+09:00
+
+Error: Consumer group 'anomaly-detector-group' does not exist.
+

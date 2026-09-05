@@ -1,0 +1,18 @@
+anomaly-detector-3  | 13:43:25 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions set() for group anomaly-detector-group
+anomaly-detector-3  | 13:43:28 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=0)} for group anomaly-detector-group
+anomaly-detector-2  | 13:43:22 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions set() for group anomaly-detector-group
+anomaly-detector-2  | 13:43:24 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=2)} for group anomaly-detector-group
+anomaly-detector-2  | 13:43:27 [INFO] kafka.coordinator.heartbeat: Group anomaly-detector-group is rebalancing; rejoining.
+anomaly-detector-2  | 13:43:28 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=2)} for group anomaly-detector-group
+anomaly-detector-2  | 13:43:28 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=2)} for group anomaly-detector-group
+anomaly-detector-1  | 13:40:45 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions set() for group anomaly-detector-group
+anomaly-detector-1  | 13:40:51 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=1)} for group anomaly-detector-group
+anomaly-detector-1  | 13:42:03 [INFO] kafka.coordinator.heartbeat: Group anomaly-detector-group is rebalancing; rejoining.
+anomaly-detector-1  | 13:42:03 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=1)} for group anomaly-detector-group
+anomaly-detector-1  | 13:42:03 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=0), TopicPartition(topic='vehicle-telemetry', partition=1), TopicPartition(topic='vehicle-telemetry', partition=2)} for group anomaly-detector-group
+anomaly-detector-1  | 13:43:24 [INFO] kafka.coordinator.heartbeat: Group anomaly-detector-group is rebalancing; rejoining.
+anomaly-detector-1  | 13:43:24 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=0), TopicPartition(topic='vehicle-telemetry', partition=1), TopicPartition(topic='vehicle-telemetry', partition=2)} for group anomaly-detector-group
+anomaly-detector-1  | 13:43:24 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=0), TopicPartition(topic='vehicle-telemetry', partition=1)} for group anomaly-detector-group
+anomaly-detector-1  | 13:43:27 [INFO] kafka.coordinator.heartbeat: Group anomaly-detector-group is rebalancing; rejoining.
+anomaly-detector-1  | 13:43:27 [INFO] kafka.coordinator.consumer: Revoking previously assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=0), TopicPartition(topic='vehicle-telemetry', partition=1)} for group anomaly-detector-group
+anomaly-detector-1  | 13:43:28 [INFO] kafka.coordinator.consumer: Setting newly assigned partitions {TopicPartition(topic='vehicle-telemetry', partition=1)} for group anomaly-detector-group

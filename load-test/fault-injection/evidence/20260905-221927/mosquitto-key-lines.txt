@@ -1,0 +1,2 @@
+1788614436: New client connected from 172.18.0.8:45482 as telemetry-backend (p2, c0, k60).
+1788614601: New client connected from 172.18.0.8:58012 as telemetry-backend (p2, c0, k60).

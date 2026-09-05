@@ -1,0 +1,8 @@
+# vehicle-anomaly-alerts @ 2026-09-05T22:45:19+09:00
+vehicle-anomaly-alerts:0:14260
+vehicle-anomaly-alerts:1:12992
+vehicle-anomaly-alerts:2:12444
+
+# vehicle-anomaly-alerts-dlq @ 2026-09-05T22:45:20+09:00
+vehicle-anomaly-alerts-dlq:0:0
+

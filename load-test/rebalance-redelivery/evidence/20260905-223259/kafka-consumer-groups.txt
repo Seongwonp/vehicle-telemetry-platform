@@ -1,0 +1,14 @@
+# anomaly-storage-group @ 2026-09-05T22:38:45+09:00
+
+GROUP                 TOPIC                  PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+anomaly-storage-group vehicle-anomaly-alerts 0          14125           14125           0               telemetry-backend-consumer-0-37bac59e-f10c-4865-9793-ce87dced557b /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-0
+anomaly-storage-group vehicle-anomaly-alerts 1          12852           12852           0               telemetry-backend-consumer-1-abed6fb6-1ada-4bae-ac62-29578b11176b /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-1
+anomaly-storage-group vehicle-anomaly-alerts 2          12813           12813           0               telemetry-backend-consumer-2-90a0ea6f-183e-4540-939b-0c28863eb87e /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-2
+
+# anomaly-detector-group @ 2026-09-05T22:38:47+09:00
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          32363           32363           0               kafka-python-3.0.9-1626d143-453e-4b64-a9e3-4b8e4e2e0bf1 /172.18.0.8     kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          32349           32349           0               kafka-python-3.0.9-cdca3f2f-8426-4e8e-9de1-1ac61f97aa6c /172.18.0.10    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          36254           36254           0               kafka-python-3.0.9-0682ba13-fcda-4618-a261-30bfe48974b0 /172.18.0.11    kafka-python-3.0.9
+
