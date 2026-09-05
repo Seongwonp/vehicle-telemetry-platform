@@ -70,7 +70,10 @@ vehicle-telemetry-platform/
 유입(193 msg/s)의 1/4만 처리하고 있었다. 배치 리스너 + 배치당 트랜잭션 1건으로
 같은 부하의 lag이 **20,128 → 238**이 됐고, 4배 부하에서도 유입을 전량 소화한다.
 DB 장애 시 DLQ 직행이던 것도 재시도(180초 예산)로 바꿔 텔레메트리 경로와 정책을 맞췄다.
-결과: `load-test/anomaly-storage-throughput/`.
+같은 PostgreSQL 60초 장애를 다시 주입해 확인하니 **유실 6건 → 0건**이고,
+DLQ에 남은 6건은 전부 이미 저장된 in-doubt 건이라 **복구가 필요한 알림이 하나도 없다.**
+멱등성(재처리 2회에 행 증가 0)과 중복 알림 차단도 회귀 없이 유지된다.
+결과: `load-test/anomaly-storage-throughput/`, `load-test/anomaly-dlq-idempotency/`.
 
 **남은 것은 대부분 실기기·실환경이 있어야 하는 것들이다.** 다음 후보:
 7번(앱 실기기 검증 — 기기 필요), PostgreSQL 장애 5분 초과 시 리밸런싱,
