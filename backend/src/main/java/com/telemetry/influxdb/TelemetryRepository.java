@@ -97,6 +97,19 @@ public class TelemetryRepository {
             // 여러 포인트가 (측정값, 태그, 타임스탬프)가 같아져 뒤 포인트가 앞 포인트를 조용히
             // 덮어썼다 — 부하 테스트로 발견한 실데이터 유실 버그. 시뮬레이터가 이제 밀리초까지
             // 보내므로 정밀도를 맞춘다.
+            //
+            // ★ 발행 주기를 줄이려면 여기부터 보라. 이 identity는 **차량당 1,000 msg/s**에서
+            // 무너진다(밀리초당 1건). 실측 임계값이다:
+            //   500 msg/s → 유실 0.02% | 1,000 → 0.64% | 2,000 → 50.20%
+            // 그 위로는 대략 (1 - 1000/R)만큼 조용히 사라진다. 에러도 로그도 없고,
+            // MQTT·Kafka·InfluxDB 쓰기가 전부 성공으로 보인다 — 행 수를 직접 세야 보인다
+            // (같은 타임스탬프 500건 발행 → 1행: load-test/storage-integrity/
+            //  RESULT_20260905_ms_collision.md).
+            //
+            // 현재는 차량당 5 msg/s라 200배 여유가 있어 그대로 둔다. 총량은 차량 수로
+            // 늘리므로(vehicle_id가 태그라 identity가 갈린다) 총 처리량과는 무관하다.
+            // 차량당 속도를 올려야 한다면 시퀀스 태그가 아니라 WritePrecision.US로 가라 —
+            // 태그는 포인트마다 시리즈를 하나씩 만들어 인덱스를 무너뜨린다.
             .time(Instant.parse(telemetry.getTimestamp()), WritePrecision.MS);
 
         if (telemetry.getGps() != null) {
