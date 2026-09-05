@@ -300,6 +300,12 @@ vehicle-telemetry-platform/
 
 > 로컬 Docker Compose 환경(2026-07~08)에서 부하 테스트로 측정. 상세 방법론·전체 표는
 > [부하 테스트 계획 및 결과](docs/load-test-plan.md) 참고.
+>
+> **읽는 법**: 아래 수치는 전부 **단일 머신 Docker Compose** 결과이고, 2026-09-05
+> 장애 실험은 **각 조건 1회 관찰**이다(`부분 검증`). 운영 규모의 고가용성이나 무제한
+> 확장성을 뜻하지 않는다. 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지는
+> [검증 증거 정책](docs/evidence-policy.md)에, 다음에 무엇을 반복 측정할지는
+> [로드맵 P0-2](docs/roadmap.md)에 있다.
 
 - **수집 파이프라인**: 시뮬레이터를 3→1,000대까지 스케일해 측정. 단일 프로세스로는 Python
   GIL/스레드 오버헤드로 약 1,000-1,250 msg/s에서 먼저 벽에 부딪혀 백엔드의 진짜 한계를 잴 수
@@ -326,7 +332,8 @@ vehicle-telemetry-platform/
   쌓인 8만 건 백로그는 90초에 따라잡았다.
   자세한 내용은 `docs/architecture-decisions.md` ADR-016, 원시 로그는
   `load-test/anomaly-detector-scale/`.
-- **MQTT 브로커 장애에서 72% 유실 발견·복구**: 브로커를 90초 정지시켰다 살리는 실험에서
+- **MQTT 브로커 장애에서 72% 유실 발견·복구** (200대·약 1,000 msg/s의 단일 Docker Compose
+  환경, 각 조건 1회 관찰): 브로커를 90초 정지시켰다 살리는 실험에서
   **브로커가 PUBACK한 179,532건 중 backend에는 50,087건만 도착**했다(유실 129,445건).
   원인은 우리 쪽 설정이었다 — `MqttConnectOptions.setMaxReconnectDelay()`를 지정하지 않아
   Paho 기본값 **128초**가 적용됐고, `cleanSession=false`라 그동안 브로커가 우리 세션 앞으로
@@ -345,7 +352,8 @@ vehicle-telemetry-platform/
   원인이 둘이었고 첫 번째만 고쳐둔 상태였다. `max_queued_messages`를 10,000 → 100,000으로
   올려 0이 됐다. 세 번 모두 내 계산과 브로커의 `$SYS` dropped가 독립적으로 일치했다.
   ADR-021, `load-test/fault-injection/RESULT_20260905_mqtt_broker.md`.
-- **이상 알림 저장이 유입의 1/4만 처리하고 있었다**: 두 번의 다른 실험에서 "따라잡는 데
+- **이상 알림 저장이 유입의 1/4만 처리하고 있었다** (100대·이상률 0.3, 1회 관찰):
+  두 번의 다른 실험에서 "따라잡는 데
   13분이 걸린다"를 보고도 "느리다"고만 적고 넘어갔었다. 재보니 **49 msg/s**, 같은 부하의
   알림 발생량이 193 msg/s라 **lag이 쌓이는 게 정상 동작**이었던 셈이다.
   원인은 레코드 단위 리스너 + 즉시 커밋이라 알림 한 건마다 PostgreSQL fsync 1회와 브로커

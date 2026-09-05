@@ -1,5 +1,18 @@
 # 리밸런싱 구간 재전달 — 실측 (2026-09-05)
 
+| 항목 | 값 |
+| --- | --- |
+| **검증 상태** | **부분 검증** — 1회 실행 |
+| 적용 범위 | 단일 Docker Compose, 100대 / 0.2초 / 이상률 0.3, `anomaly-detector` 3 → 1 → 3 |
+| 코드 상태 | `4afaf23`로 커밋됨 |
+| 실행 명령 | `bash load-test/rebalance-redelivery/run_scenario.sh` |
+| 환경 | [`docs/verification/2026-09-05-environment.md`](../../docs/verification/2026-09-05-environment.md) |
+| 원본 증거 | **보존하지 않음** — 아래 "이 문서의 한계" 참고 |
+
+> **1회 실행이다.** "재전달 40건(0.100%)"은 리밸런싱 시점의 in-flight 양에 좌우되는
+> 값이라 **반복하면 달라진다.** 이 문서가 보이는 것은 "재전달이 생기지만 행은 안 는다"는
+> 불변식이지, 40이라는 수가 아니다.
+
 우선순위 1번의 마지막 남은 갈래. 강제 종료(`docker kill`) 시 재전달은 이미 쟀지만
 (`load-test/storage-integrity/RESULT_20260904_kill_redelivery.md`),
 **다중 인스턴스가 붙었다 떨어질 때** 도는 리밸런싱 구간은 안 쟀다.
@@ -71,6 +84,14 @@ DLQ 재처리뿐 아니라 리밸런싱 재전달에도 그대로 작동한다�
   `container_name`과 포트 바인딩이 고정돼 있어 스케일이 안 된다.
 - **드레인이 13분 걸렸다**(12:05 정지 → 12:18 lag 0). `anomaly-storage-group`이
   레코드 단위 리스너 + `MANUAL_IMMEDIATE`이라 느리다. PostgreSQL 장애 실험에서도
-  같은 현상을 봤다(`load-test/anomaly-dlq-idempotency/`). 배치화 여지가 있지만
-  이번 범위 밖이다.
-- 1회 실행이다.
+  같은 현상을 봤다(`load-test/anomaly-dlq-idempotency/`). **이후 배치화했고
+  49 msg/s → 유입 전량이 됐다**(`../anomaly-storage-throughput/`, ADR-022).
+
+## 이 문서의 한계
+
+- **1회 실행이다.** 재전달량은 리밸런싱 시점의 in-flight에 좌우되므로 40이라는 수는
+  재현되지 않는다. `docs/roadmap.md` P0-2가 이 실험의 3회 반복을 요구한다.
+- **원본 로그를 보존하지 않았다.** `_result.txt`를 요약 후 지웠다
+  (`docs/evidence-policy.md` P0-1 위반).
+- **리밸런싱 횟수는 하한이다.** 스케일 다운으로 사라진 인스턴스의 로그도 함께 사라진다.
+- 단일 머신, 단일 백엔드 인스턴스 결과다.

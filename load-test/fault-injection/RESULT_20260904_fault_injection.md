@@ -1,5 +1,15 @@
 # 의존성 장애 주입 → 복구 → 정합성 대조 (2026-09-04)
 
+| 항목 | 값 |
+| --- | --- |
+| **검증 상태** | **부분 검증** — 각 시나리오 1회 실행 |
+| 적용 범위 | 단일 Docker Compose, 200대 / 0.2초(약 1,700 msg/s), 백엔드 1인스턴스, 장애 90초 |
+| 실행 명령 | `bash load-test/fault-injection/run_scenario.sh <influxdb\|kafka> 90` |
+| 원본 증거 | **보존하지 않음** (`_result_*.txt`를 커밋하지 않았다) |
+
+> 이 문서의 재시도 예산 관련 수치는 **`ExponentialBackOff` 도입 전** 기록이다.
+> 도입 후 같은 InfluxDB 90초 장애에서 DLQ가 76,878건 → 0건이 됐다.
+
 CLAUDE.md 우선순위 3번. 각 의존성을 90초 정지시키고, 복구 후 데이터가 실제로
 전부 남는지 세었다. 절차와 스크립트는 같은 폴더의 `README.md` / `run_scenario.sh`.
 
