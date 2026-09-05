@@ -30,7 +30,14 @@ else
   COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
   VEHICLES="${VEHICLES:-200}"
 fi
-OUT="load-test/fault-injection/_result_${SCENARIO}${PROFILE:+_}${PROFILE#dev}.txt"
+# `set -e` 아래에서는 `$(test && echo ...)` 형태를 쓰면 안 된다 — test가 거짓일 때
+# 명령 치환의 종료 코드가 1이라 **대입문 자체가 실패해 스크립트가 조용히 끝난다**
+# (실제로 그렇게 만들어 놓고 "출력 없이 exit 0"으로 한 번 헤맸다).
+OUT_SUFFIX=""
+if [ "$PROFILE" = "tls" ]; then
+  OUT_SUFFIX="_tls"
+fi
+OUT="load-test/fault-injection/_result_${SCENARIO}${OUT_SUFFIX}.txt"
 
 TOK=$(grep '^INFLUXDB_TOKEN=' .env | cut -d= -f2-)
 ORG=$(grep '^INFLUXDB_ORG=' .env | cut -d= -f2-)

@@ -153,7 +153,10 @@ HikariCP `connectionTimeout` 30초 조정 여부.
    또 **"180초 예산"이 벽시계가 아님**을 확인했다 — `maxElapsedTime`은 백오프로 쉰
    시간의 합이라, 시도마다 HikariCP 30초를 기다리면 실효 내성이 약 8분이 된다.
    코드·yaml·Runbook의 "총 경과 시간" 서술을 바로잡았다.
-   남은 갈래: `connectionTimeout` 30초를 줄일지 **미결정**,
+   `connectionTimeout` 30초는 **줄이지 않기로 결정** — 원래 근거("줄이면 DLQ가 쌓여
+   재처리 절차가 의미를 갖는다")가 사라졌고(300초 장애에 DLQ 0건), 오히려 그 30초가
+   백오프 합을 천천히 차게 해 실효 내성 8분을 만들어낸다. 줄이면 DLQ로 더 빨리 간다.
+   남은 갈래:
    8분을 넘는 장애에서 리밸런싱이 도는지 **미측정**,
    `vehicle-telemetry-mqtt-dlq`는 payload가 envelope이라 재처리 미지원,
    분류 목록(`TRANSIENT_MARKERS`/`PERMANENT_MARKERS`)은 지금까지 본 예외만 담고 있음
@@ -171,7 +174,15 @@ HikariCP `connectionTimeout` 30초 조정 여부.
    결과는 `load-test/fault-injection/RESULT_20260905_mqtt_broker.md`, 회귀 방지는
    `MqttConnectOptionsTest`.
    남은 갈래: 종료 시 flush 45초 안에 못 간 3,542건(발행 측 한계, 파이프라인 유실 아님),
-   재연결 실제 소요 시간 분해, `max_queued_messages` 10,000 적정성.
+   재연결 실제 소요 시간 분해.
+   **`max_queued_messages`도 측정·결정 완료(2026-09-05)** — 90초는 유실 0이었지만
+   **300초로 늘리자 17,243건(4.7%)이 다시 버려졌다.** 원인이 다르다: 128초 백오프 때는
+   *백엔드가 없어서*였고, 이번엔 2초 만에 붙었는데도 밀린 32만 건이 한꺼번에 쏟아져
+   **구독자 드레인 속도를 잠깐 넘어섰기** 때문이다. 같은 증상에 원인이 둘이었고
+   첫 번째만 고쳐둔 상태였다. 10,000 → **100,000**으로 올려 유실 0
+   (InfluxDB 행 364,802 = 정답 기준 일치, dropped 0). 약 30MB.
+   이걸로 유실이 없어지는 게 아니라 뒤로 밀릴 뿐이라, 진짜 방어선은
+   `MqttBrokerDroppingMessages` 알림이다(이번에 실제로 값을 냈다).
    **mTLS 프로파일에서도 재측정 완료(2026-09-05)** — 100대 기준 유실 0,
    브로커 `$SYS` dropped 0, 재연결 약 2초로 TLS 핸드셰이크가 붙어도 5초 상한 안이다.
    여기서 **ACL 버그**를 찾았다: 코드는 `$SYS/broker/publish/messages/received`를
