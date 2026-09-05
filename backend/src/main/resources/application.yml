@@ -50,8 +50,9 @@ spring:
         # poll 간격을 잠깐 넘겨도 세션을 유지한 채 재가입할 수 있어 이 rebalance storm을
         # 피할 수 있다.
         group.instance.id: ${GROUP_INSTANCE_ID_BASE:telemetry-backend-consumer}
-        # 저장 경로가 배치 리스너(KafkaConfig.telemetryBatchListenerContainerFactory)라
-        # 이 값이 곧 InfluxDB 쓰기 1건에 묶이는 포인트 수 = 처리량 튜닝 손잡이다.
+        # 두 리스너가 모두 배치(KafkaConfig.telemetryBatchListenerContainerFactory)라
+        # 이 값이 곧 한 번에 묶이는 건수다 — 저장 경로는 InfluxDB 쓰기 1건,
+        # 알림 경로는 PostgreSQL 트랜잭션 1건에 대응한다. 처리량 튜닝 손잡이다.
         #
         # 실측(부하 ~9,000 msg/s)에서 InfluxDB 쓰기 비용은 배치 크기에 거의 비례하지 않는다:
         # 14포인트 0.81초, 89포인트 0.97초, 460포인트 0.91초 — 요청당 고정비가 약 0.8초로
@@ -61,6 +62,9 @@ spring:
         # 안전하게 올릴 수 있고, 배치 처리 시간은 max.poll.interval.ms(5분)에 한참 못 미친다.
         max.poll.records: ${KAFKA_MAX_POLL_RECORDS:2000}
     listener:
+      # 이 아래 값들은 KafkaConfig가 ConcurrentKafkaListenerContainerFactoryConfigurer로
+      # 물려받는다. 예전에는 커스텀 팩토리가 이 설정을 안 물려받고 같은 값을 Java에
+      # 하드코딩하고 있어서, **여기를 고쳐도 동작이 안 바뀌는** 상태였다(P0-3에서 발견).
       ack-mode: manual_immediate
       # 부하 테스트 결과(docs/load-test-plan.md 5절): 파티션 3개에 맞춘 기본값.
       # 멀티프로세스 시뮬레이터로 실제 배압(anomaly-detector-group lag 200만+)이 걸리는

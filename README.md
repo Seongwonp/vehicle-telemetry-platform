@@ -32,8 +32,8 @@ flowchart TD
     subgraph SpringBoot["Spring Boot (Java 17)"]
         MQTT_H["MqttMessageHandler\n@ServiceActivator"]
         PROD["TelemetryProducer\n파티션 키: vehicle_id"]
-        CONS_S["TelemetryConsumer\ntelemetry-storage-group"]
-        CONS_A["TelemetryConsumer\nanomalydetector-group"]
+        CONS_S["TelemetryConsumer.consumeForStorage\ntelemetry-storage-group (배치)"]
+        CONS_AL["TelemetryConsumer.consumeAnomalyAlerts\nanomaly-storage-group (배치)"]
         API["REST API\nJWT + Rate Limiting"]
     end
 
@@ -65,18 +65,17 @@ flowchart TD
     MQTT_H --> PROD
     PROD -->|"vehicle_id 키"| T1
 
-    T1 -->|"storage-group"| CONS_S
-    T1 -->|"anomaly-group"| CONS_A
+    T1 -->|"telemetry-storage-group"| CONS_S
+    T1 -->|"anomaly-detector-group"| RULES
+    T1 -->|"anomaly-detector-group"| ML
 
     CONS_S --> INFLUX
-    CONS_S --> PG
 
-    CONS_A -->|"Kafka Consumer"| RULES
-    CONS_A -->|"Kafka Consumer"| ML
     RULES -->|"이상 감지 시"| T2
     ML -->|"이상 감지 시"| T2
-    T2 --> NOTIFY
-    T2 -->|"anomaly-storage-group"| PG
+    RULES -.->|"발행과 같은 루프에서 동기 호출"| NOTIFY
+    T2 -->|"anomaly-storage-group"| CONS_AL
+    CONS_AL --> PG
 
     API --- INFLUX
     API --- PG
@@ -264,7 +263,7 @@ vehicle-telemetry-platform/
 | 장애 발생 | Mosquitto 컨테이너 정지(SIGTERM) 90초 |
 | Spring Boot | `automaticReconnect=true` + **`maxReconnectDelay=5s`** 로 자동 재연결 |
 | 시뮬레이터 | paho가 자동 재연결. QoS 1 메시지는 `publish()`가 `NO_CONN`을 반환해도 송신 큐에 남아 **재연결 시 재전송된다** |
-| 재연결 중 데이터 | `cleanSession=false`라 브로커가 백엔드 세션 앞으로 큐잉해준다(`max_queued_messages` 10,000) |
+| 재연결 중 데이터 | `cleanSession=false`라 브로커가 백엔드 세션 앞으로 큐잉해준다(`max_queued_messages` **100,000**). 10,000이던 것을 300초 장애에서 4.7% 유실이 나 올렸다 |
 | 실측 유실 | **0건.** 브로커가 PUBACK한 178,451건이 전부 backend·InfluxDB까지 도달 |
 
 > **여기서 실제 버그를 찾았다.** `setMaxReconnectDelay`를 지정하지 않으면 Paho 기본값이

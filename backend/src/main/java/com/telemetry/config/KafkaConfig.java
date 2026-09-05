@@ -6,11 +6,11 @@ import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaOperations;
-import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.DeadLetterPublishingRecoverer;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.util.backoff.BackOff;
@@ -127,24 +127,37 @@ public class KafkaConfig {
     }
 
     /**
-     * 저장 경로(Kafka→InfluxDB) 전용 배치 리스너 팩토리.
+     * 배치 리스너 팩토리. <b>두 리스너가 모두 이것을 쓴다</b>
+     * ({@code consumeForStorage}, {@code consumeAnomalyAlerts}).
      *
-     * <p>전역 {@code spring.kafka.listener.type: batch} 대신 별도 팩토리를 두는 이유:
-     * 이상 이벤트 리스너({@code consumeAnomalyAlerts})는 배치화 이득이 없어 레코드
-     * 리스너로 남겨야 하는데, 전역 설정을 바꾸면 둘 다 배치가 된다.
+     * <p>전역 {@code spring.kafka.listener.type: batch}를 쓰지 않고 명시적 팩토리를 두는
+     * 이유는, 어떤 리스너가 배치인지가 {@code @KafkaListener}에서 바로 보여야 하기
+     * 때문이다. 전역 설정은 리스너를 하나 추가할 때 조용히 따라붙는다.
+     *
+     * <p><b>{@code configurer}로 Spring Boot의 listener 설정을 물려받는다.</b>
+     * 예전에는 {@code new ConcurrentKafkaListenerContainerFactory<>()}만 만들고
+     * concurrency와 ack-mode를 여기 하드코딩했는데, 그러면 {@code application.yml}의
+     * {@code spring.kafka.listener.*}가 <b>아무 효과 없는 설정</b>이 된다 —
+     * 값을 바꿔도 동작이 안 바뀌는데 읽는 사람은 바뀔 거라고 믿는다.
+     * 팩토리를 쓰는 리스너가 둘뿐이라 지금은 우연히 같은 값이었지만, 한쪽만 고치면
+     * 문서와 구현이 갈린다.
+     *
+     * <p>순서가 중요하다: {@code configure()} 다음에 배치 여부와 에러 핸들러를 덮어쓴다.
+     * configurer는 {@code listener.type}(기본 single)과 Boot 기본 에러 핸들러를 넣기 때문이다.
+     *
+     * <p>제네릭이 {@code <Object, Object>}인 것은 Boot의 configurer 시그니처에 맞추기
+     * 위해서다. Boot가 만드는 {@code ConsumerFactory}도 {@code <Object, Object>}이고,
+     * 실제 타입은 {@code value-deserializer}(StringDeserializer)가 정한다.
      */
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> telemetryBatchListenerContainerFactory(
-            ConsumerFactory<String, String> consumerFactory,
+    public ConcurrentKafkaListenerContainerFactory<Object, Object> telemetryBatchListenerContainerFactory(
+            ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
+            ConsumerFactory<Object, Object> consumerFactory,
             DefaultErrorHandler kafkaErrorHandler) {
-        ConcurrentKafkaListenerContainerFactory<String, String> factory =
+        ConcurrentKafkaListenerContainerFactory<Object, Object> factory =
             new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory);
+        configurer.configure(factory, consumerFactory);
         factory.setBatchListener(true);
-        // 커스텀 팩토리는 Spring Boot의 listener 자동 설정(application.yml의
-        // ack-mode/concurrency)을 물려받지 않으므로 여기서 같은 값을 명시한다.
-        factory.setConcurrency(3);
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         factory.setCommonErrorHandler(kafkaErrorHandler);
         return factory;
     }

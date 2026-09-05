@@ -73,12 +73,39 @@ mTLS·300초 조건은 아직 1회다.
 
 </details>
 
-### P0-3. 문서와 구현의 계약 드리프트 제거
+### P0-3. 문서와 구현의 계약 드리프트 제거 — **1차 완료(2026-09-05)**
+
+코드에서 계약(리스너 방식·Consumer Group·토픽·지표 이름·설정값)을 뽑아 문서·설정과
+대조했다. 찾은 것:
+
+| 드리프트 | 실태 | 조치 |
+| --- | --- | --- |
+| **`spring.kafka.listener.*`가 무효** | 커스텀 팩토리가 Boot 설정을 안 물려받고 같은 값을 Java에 하드코딩 — **yml을 고쳐도 동작이 안 바뀌는데** 우연히 값이 같아 아무도 몰랐다 | `ConcurrentKafkaListenerContainerFactoryConfigurer`로 yml을 권위로. 회귀 테스트 `KafkaListenerContractTest` 3건 |
+| KafkaConfig Javadoc | "알림 리스너는 배치화 이득이 없어 레코드 리스너로 남긴다" — 당일 배치로 바꿔 거짓이 됨 | 수정 |
+| README 아키텍처 다이어그램 | `TelemetryConsumer / anomalydetector-group`(그룹명 오타 + 주체 오류), 저장 경로가 PostgreSQL에 쓴다고 표시, webhook이 알림 토픽 구독자로 표시 | 실제 흐름으로 교체 |
+| `application.yml` 주석 | "저장 경로가 배치 리스너라" — 지금은 둘 다 배치 | 수정 |
+| `max_queued_messages` | 현재 동작 서술 3곳이 10,000(실제 100,000) | 수정. 그 시점을 서술하는 곳은 그대로 |
+| ADR-021 남은 과제 | 이미 해결한 항목이 미해결로 남아 있음 | 후속 결과로 갱신 |
+| `vehicle-dtc-events` 토픽 | `init-topics.sh`가 만드는데 코드 어디서도 안 쓴다(DTC는 텔레메트리 payload 안에 있다) | **아래 참고** |
+
+지표 이름은 대조 결과 **불일치 없음** — 알림·대시보드가 참조하는 9개가 모두 실재한다.
+Consumer Group·토픽 목록도 코드와 일치한다(위 다이어그램 오류 제외).
+
+**남은 것**:
+- `vehicle-dtc-events`는 죽은 토픽이다. 지우면 배포마다 빈 토픽이 안 생기지만,
+  기존 환경에 이미 존재하므로 제거 영향(모니터링·대시보드)을 확인하고 지워야 한다.
+- 앱 저장소에 CI가 없다 — P1-4.
+- `telemetry.anomaly.stored`(당일 추가)가 알림·대시보드에 없다. Runbook에서 수동
+  조회로만 쓴다.
+
+<details><summary>원래 항목</summary>
 
 - Kafka listener 방식, retry 의미, topic·Consumer Group, 앱 테스트 상태를 코드와
   대조한다.
 - 완료 조건: 같은 동작을 설명하는 README, ADR, Runbook, 설정 주석 사이에 상충하는
   문장이 없고, 미실행 테스트를 `검증 완료`라고 표현하지 않는다.
+
+</details>
 
 ## P1 — 채용 포트폴리오에 직접 도움이 되는 경계 검증
 
