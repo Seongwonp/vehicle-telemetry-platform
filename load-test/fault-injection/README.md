@@ -78,9 +78,29 @@ flush를 기다린다 — 안 기다리면 그 건들이 PUBACK 전에 버려져
   찾아 0으로 고쳤다.** 원인은 Paho 재연결 백오프 상한이 기본 128초라, 브로커가 살아난
   뒤에도 백엔드가 한참 붙지 않는 동안 브로커가 큐를 넘겨 버리고 있었던 것.
 
+## mTLS(운영) 프로파일로 돌리기
+
+브로커 장애 시나리오는 TLS 핸드셰이크가 재연결 시간에 얹히므로 따로 재봐야 한다.
+
+```bash
+# 1) 차량 인증서를 필요한 수만큼 만든다 (Windows Git Bash는 MSYS_NO_PATHCONV 필수)
+cd broker/certs
+IDS=$(for i in $(seq -w 1 100); do printf "SIM-%s," "$i"; done | sed 's/,$//')
+MSYS_NO_PATHCONV=1 MQTT_VEHICLE_IDS="$IDS" bash generate-certs.sh
+
+# 2) 운영 프로파일로 실행 (차량 수는 인증서 개수를 넘을 수 없다)
+PROFILE=tls bash load-test/fault-injection/run_scenario.sh mosquitto 90
+```
+
+결과는 `_result_mosquitto_tls.txt`. 실측(2026-09-05): 유실 0, 재연결 약 2초.
+**이 실행에서 ACL 버그를 찾았다** — 자세한 내용은 `RESULT_20260905_mqtt_broker.md`.
+
 ## 주의
 
 - 스크립트가 시작할 때 **`down -v`로 볼륨을 지운다.** 남겨야 할 데이터가 있으면 돌리지 마라.
+- **시뮬레이터를 SIGKILL로 죽이면 안 된다** — 정답 기준이 그 안에 있다. 스크립트는
+  `docker stop` 후 **종료 마커가 로그에 보일 때까지** 기다린 뒤 집계를 읽는다.
+  이걸 안 하면 묵은 주기 로그를 읽어 "저장이 발행보다 많다"는 불가능한 결과가 나온다.
 - InfluxDB 시나리오는 DLQ에 수만 건이 쌓인다(설계상 그렇다 — 아래 결과 문서 참고).
   이어서 `dlq-tools/dlq.py replay`로 복구까지 확인하는 것이 이 측정의 후반부다.
 - 각 시나리오 1회 실행이다. 장애 지속 시간·부하에 따라 DLQ 비율이 크게 달라진다.

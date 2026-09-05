@@ -18,8 +18,19 @@ cd "$(dirname "$0")/../.."
 
 SCENARIO="${1:?시나리오를 지정해라: influxdb | kafka | mosquitto}"
 OUTAGE_SEC="${2:-90}"
-COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
-OUT="load-test/fault-injection/_result_${SCENARIO}.txt"
+# 기본은 평문(dev) 프로파일이다. `PROFILE=tls`를 주면 운영 프로파일(8883/mTLS)로 돌린다 —
+# 브로커 장애 시나리오는 TLS 핸드셰이크가 재연결 시간에 얹히므로 결과가 달라질 수 있어
+# 따로 재봐야 한다. 미리 `broker/certs/generate-certs.sh`로 차량 인증서를 만들어 둬야 하고,
+# 차량 수는 인증서를 만들어 둔 개수(MQTT_VEHICLE_IDS)를 넘을 수 없다.
+PROFILE="${PROFILE:-dev}"
+if [ "$PROFILE" = "tls" ]; then
+  COMPOSE="docker compose -f docker-compose.yml"
+  VEHICLES="${VEHICLES:-100}"
+else
+  COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
+  VEHICLES="${VEHICLES:-200}"
+fi
+OUT="load-test/fault-injection/_result_${SCENARIO}${PROFILE:+_}${PROFILE#dev}.txt"
 
 TOK=$(grep '^INFLUXDB_TOKEN=' .env | cut -d= -f2-)
 ORG=$(grep '^INFLUXDB_ORG=' .env | cut -d= -f2-)
@@ -72,8 +83,8 @@ log "스택 기동 완료"
 # docker stop(SIGTERM)으로 정상 종료시켜 최종 집계를 남기고, 읽은 뒤 직접 지운다.
 docker rm -f telemetry-sim-0 >/dev/null 2>&1 || true
 $COMPOSE run -d --name telemetry-sim-0 \
-  -e VEHICLE_COUNT=200 -e PUBLISH_INTERVAL=0.2 simulator >/dev/null 2>&1
-log "시뮬레이터 기동 — 60초 정상 구간"
+  -e VEHICLE_COUNT=$VEHICLES -e PUBLISH_INTERVAL=0.2 simulator >/dev/null 2>&1
+log "시뮬레이터 기동 (${VEHICLES}대, 프로파일 ${PROFILE}) — 60초 정상 구간"
 wait_sec 60
 
 # ── 3. 장애 주입 ───────────────────────────────────────────────
@@ -91,9 +102,20 @@ case "$SCENARIO" in
   influxdb)
     until [ "$(docker inspect telemetry-influxdb --format '{{.State.Health.Status}}' 2>/dev/null)" = "healthy" ]; do sleep 5; done ;;
   mosquitto)
-    # healthcheck가 없어서 실제로 PUBLISH가 받아들여지는지로 판정한다.
-    until docker exec telemetry-mosquitto \
-      mosquitto_pub -h localhost -p 1883 -t healthcheck -m up >/dev/null 2>&1; do sleep 5; done ;;
+    # healthcheck가 없어서 리스너 포트가 열렸는지로 판정한다.
+    #
+    # MQTT로 붙어보는 쪽이 더 정확하지만 두 프로파일 모두에서 안 된다 —
+    # TLS 프로파일은 1883이 아예 없고, mTLS로 붙으려면 클라이언트 인증서가 필요한데
+    # 키 파일이 0600이라 컨테이너 안의 mosquitto 사용자가 읽지 못한다
+    # ("Problem setting TLS options: File not found"로 나온다).
+    # 헬스체크 메시지를 텔레메트리 토픽에 쏘는 것도 안 된다 — backend가 그것을
+    # 형식 오류로 세어 측정이 오염된다.
+    #
+    # 그래서 TCP 연결만 확인한다. 브로커가 리스너를 열었다는 뜻이면 충분하고,
+    # 이 시나리오가 실제로 재는 것은 그 뒤 backend가 얼마나 빨리 따라붙느냐다.
+    MQ_PORT=$([ "$PROFILE" = "tls" ] && echo 8883 || echo 1883)
+    until docker exec telemetry-kafka bash -c \
+      "timeout 3 bash -c '</dev/tcp/telemetry-mosquitto/$MQ_PORT'" >/dev/null 2>&1; do sleep 5; done ;;
   *)
     until docker exec telemetry-kafka kafka-topics --bootstrap-server localhost:29092 --list >/dev/null 2>&1; do sleep 5; done ;;
 esac
@@ -106,7 +128,18 @@ wait_sec 60
 # 초당 1,000건 부하에서 5초는 5,000건이고, 실제로 그것 때문에 "정답 기준"이
 # backend 수신량보다 작게 나와 기준 구실을 못 한 적이 있다.
 log "부하 정지 (SIGTERM) — 최종 집계 대기"
-docker stop -t 60 telemetry-sim-0 >/dev/null 2>&1 || true
+docker stop -t 90 telemetry-sim-0 >/dev/null 2>&1 || true
+# `docker stop`이 돌아와도 마지막 로그 줄이 아직 안 보일 수 있다(로그 드라이버 flush 경합).
+# 그러면 최종 집계가 아니라 **최대 STATS_INTERVAL초 묵은 주기 로그**를 읽게 된다.
+# 100대 부하(초당 500건)에서 2초만 묵어도 약 1,000건이 빠져, 정답 기준이 실제보다
+# 작아지고 "저장이 발행보다 많다"는 불가능한 결과가 나온다 — 실제로 그렇게 나와서 찾았다.
+# 종료 마커가 보일 때까지 기다린 뒤에 읽는다.
+for _ in $(seq 1 30); do
+  docker logs telemetry-sim-0 2>&1 | grep -q "전체 시뮬레이터 종료 완료" && break
+  sleep 2
+done
+docker logs telemetry-sim-0 2>&1 | grep -q "전체 시뮬레이터 종료 완료" \
+  || log "** 시뮬레이터 최종 집계 줄을 못 찾았다 — 아래 수치는 주기 로그라 실제보다 작다"
 SIM_ATTEMPTED=$(sim_stat attempted)
 SIM_QUEUED=$(sim_stat queued)
 SIM_REJECTED=$(sim_stat rejected)

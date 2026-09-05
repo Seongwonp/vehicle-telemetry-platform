@@ -171,7 +171,16 @@ HikariCP `connectionTimeout` 30초 조정 여부.
    결과는 `load-test/fault-injection/RESULT_20260905_mqtt_broker.md`, 회귀 방지는
    `MqttConnectOptionsTest`.
    남은 갈래: 종료 시 flush 45초 안에 못 간 3,542건(발행 측 한계, 파이프라인 유실 아님),
-   재연결 실제 소요 시간 분해, `max_queued_messages` 10,000 적정성, mTLS 프로파일 미측정.
+   재연결 실제 소요 시간 분해, `max_queued_messages` 10,000 적정성.
+   **mTLS 프로파일에서도 재측정 완료(2026-09-05)** — 100대 기준 유실 0,
+   브로커 `$SYS` dropped 0, 재연결 약 2초로 TLS 핸드셰이크가 붙어도 5초 상한 안이다.
+   여기서 **ACL 버그**를 찾았다: 코드는 `$SYS/broker/publish/messages/received`를
+   구독하는데 `broker/config/acl`은 옛 토픽만 허용해, **운영 프로파일에서만**
+   파이프라인 대조 대시보드 1단계가 비었다(평문은 ACL이 없어 안 드러났다).
+   고친 뒤 복구 후 브로커 수신 70,810 = backend 수신 증가분 70,811로 확인.
+   측정 도구도 둘 고쳤다 — 복구 판정을 TCP 확인으로(키 파일 0600이라 컨테이너 안에서
+   mTLS 클라이언트로 못 붙는다), 시뮬레이터 최종 집계는 종료 마커를 기다린 뒤 읽도록
+   (묵은 주기 로그를 읽어 "저장이 발행보다 많다"는 불가능한 결과가 나왔었다).
 
    (이전 기록 — InfluxDB·Kafka, 2026-09-04)
    InfluxDB·Kafka 90초 장애를 주입해 **둘 다 유실 0**을 확인했다(InfluxDB는 DLQ 재처리로

@@ -9,6 +9,13 @@
 #   vehicles/<ID>.crt/.key  — 차량별 발행자 인증서(CN=vehicle_id)
 #   truststore.p12          — CA 인증서만 담은 트러스트스토어 (PKCS12, Spring Boot용)
 #
+# Windows(Git Bash)에서 돌릴 때 두 가지가 걸린다:
+#   1) `-subj "/C=KR/..."`를 Git Bash가 Windows 경로로 바꿔버린다.
+#      → `MSYS_NO_PATHCONV=1`을 앞에 붙여 실행할 것.
+#   2) `keytool`이 PATH에 없을 수 있다(JDK는 있는데 bin이 안 잡힌 경우).
+#      → `PATH="/c/Program Files/Java/jdk-17/bin:$PATH"` 같은 식으로 넣고 실행할 것.
+#   예: MSYS_NO_PATHCONV=1 MQTT_VEHICLE_IDS="SIM-001,SIM-002" bash generate-certs.sh
+#
 # Phase 4: MQTT 연결 시 서버/클라이언트 상호 인증 (mTLS)
 # Phase 10: Spring Boot 백엔드에서 mTLS로 접속하려면 PKCS12 형식이 필요하다.
 #           openssl req가 만드는 backend.key는 PKCS#1 형식인데 Java는 이를 직접 못 읽는다 —
