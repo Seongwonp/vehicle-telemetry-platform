@@ -33,6 +33,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -162,44 +163,94 @@ class TelemetryConsumerTest {
         verify(acknowledgment, never()).acknowledge();
     }
 
-    @Test
-    @DisplayName("정상 이상감지 이벤트는 저장하고 DLQ로 보내지 않는다")
-    void consumeAnomalyAlerts_정상_저장() {
-        String json = "{\"vehicle_id\":\"SIM-001\",\"anomaly_type\":\"엔진 과열\",\"severity\":\"HIGH\"}";
+    private ConsumerRecord<String, String> alertRecord(long offset, String json) {
+        return new ConsumerRecord<>("vehicle-anomaly-alerts", 0, offset, "SIM-001", json);
+    }
+
+    private static final String ALERT_JSON =
+        "{\"vehicle_id\":\"SIM-001\",\"anomaly_type\":\"엔진 과열\",\"severity\":\"HIGH\"}";
+
+    private com.telemetry.entity.AnomalyAlert alertEntity() {
         com.telemetry.entity.AnomalyAlert saved = new com.telemetry.entity.AnomalyAlert();
         saved.setVehicleId("SIM-001");
         saved.setAnomalyType("엔진 과열");
-        given(anomalyService.save(any()))
-            .willReturn(new com.telemetry.service.AnomalyService.SaveResult(saved, true));
-        ConsumerRecord<String, String> record =
-            new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", json);
+        return saved;
+    }
 
-        telemetryConsumer.consumeAnomalyAlerts(record, acknowledgment);
+    @Test
+    @DisplayName("정상 이상감지 배치는 한 번에 저장하고 커밋도 한 번만 한다")
+    void consumeAnomalyAlerts_정상_저장() {
+        // 배치당 트랜잭션 1건 + offset 커밋 1건이 배치화의 요점이다. 레코드마다 커밋하면
+        // 알림 한 건당 PostgreSQL fsync와 브로커 왕복이 붙어 49 msg/s까지 떨어졌다
+        // (load-test/anomaly-storage-throughput/).
+        com.telemetry.entity.AnomalyAlert saved = alertEntity();
+        given(anomalyService.toEntity(any())).willReturn(saved);
+        given(anomalyService.saveAll(any())).willReturn(List.of(
+            new com.telemetry.service.AnomalyService.SaveResult(saved, true),
+            new com.telemetry.service.AnomalyService.SaveResult(saved, true)));
 
-        verify(anomalyService).save(any());
-        verify(acknowledgment).acknowledge();
+        telemetryConsumer.consumeAnomalyAlerts(
+            List.of(alertRecord(0L, ALERT_JSON), alertRecord(1L, ALERT_JSON)), acknowledgment);
+
+        verify(anomalyService, times(1)).saveAll(any());
+        verify(acknowledgment, times(1)).acknowledge();
         verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
-        verify(messagingTemplate).convertAndSend(
+        verify(messagingTemplate, times(2)).convertAndSend(
             org.mockito.ArgumentMatchers.eq("/topic/vehicle/SIM-001/anomalies"),
             org.mockito.ArgumentMatchers.any(Object.class));
     }
 
     @Test
-    @DisplayName("이미 저장된 이상 이벤트는 알림을 다시 보내지 않는다 — DLQ 재처리 중복 방지")
-    void consumeAnomalyAlerts_중복이면_브로드캐스트안함() {
-        // DLQ 재처리는 이미 저장된 알림을 반드시 다시 넣는다. 행은 UNIQUE(event_id)가
-        // 막아주지만 브로드캐스트는 막을 것이 없어서, 예전 코드는 재처리 때마다 같은
-        // 알림을 다시 밀어냈다(PostgreSQL 장애 실측: 9건 재처리에 행 증가는 6건인데
-        // 저장 로그·알림은 9건 — load-test/anomaly-dlq-idempotency/).
-        String json = "{\"vehicle_id\":\"SIM-001\",\"anomaly_type\":\"엔진 과열\",\"severity\":\"HIGH\"}";
-        com.telemetry.entity.AnomalyAlert saved = new com.telemetry.entity.AnomalyAlert();
-        saved.setVehicleId("SIM-001");
-        given(anomalyService.save(any()))
-            .willReturn(new com.telemetry.service.AnomalyService.SaveResult(saved, false));
-        ConsumerRecord<String, String> record =
-            new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", json);
+    @DisplayName("변환 실패한 레코드만 DLQ로 가고 나머지는 정상 저장된다")
+    void consumeAnomalyAlerts_혼합배치_그레코드만_DLQ() {
+        // 배치를 한 트랜잭션으로 묶으므로, 잘못된 레코드 하나가 배치 전체를 롤백시키면
+        // 안 된다. 그래서 파싱·변환을 트랜잭션 밖에서 레코드별로 격리한다.
+        givenDlqSendSucceeds();
+        com.telemetry.entity.AnomalyAlert saved = alertEntity();
+        given(anomalyService.toEntity(any())).willReturn(saved);
+        given(anomalyService.saveAll(any()))
+            .willReturn(List.of(new com.telemetry.service.AnomalyService.SaveResult(saved, true)));
 
-        telemetryConsumer.consumeAnomalyAlerts(record, acknowledgment);
+        telemetryConsumer.consumeAnomalyAlerts(
+            List.of(alertRecord(0L, ALERT_JSON), alertRecord(1L, "not-json-at-all")),
+            acknowledgment);
+
+        assertDlqRecord("vehicle-anomaly-alerts-dlq", "SIM-001", "not-json-at-all",
+            "JsonParseException");
+        verify(acknowledgment, times(1)).acknowledge();
+    }
+
+    @Test
+    @DisplayName("배치 저장이 실패하면 offset을 커밋하지 않고 예외를 던진다 — 재시도 유도")
+    void consumeAnomalyAlerts_배치저장실패_offset미커밋() {
+        // 레코드 단위였을 때는 DB 장애에도 곧바로 DLQ로 보내고 커밋했다. 배치에서
+        // 그러면 수천 건이 한꺼번에 DLQ로 간다. 재시도(180초 예산)에 맡기는 편이 낫다.
+        given(anomalyService.toEntity(any())).willReturn(alertEntity());
+        given(anomalyService.saveAll(any()))
+            .willThrow(new RuntimeException("PostgreSQL 연결 실패"));
+
+        assertThatThrownBy(() -> telemetryConsumer.consumeAnomalyAlerts(
+            List.of(alertRecord(0L, ALERT_JSON)), acknowledgment))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessageContaining("PostgreSQL 연결 실패");
+
+        verify(acknowledgment, never()).acknowledge();
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
+    }
+
+    @Test
+    @DisplayName("이미 저장된 이상 이벤트는 알림을 다시 보내지 않는다 — 재처리·재전달 중복 방지")
+    void consumeAnomalyAlerts_중복이면_브로드캐스트안함() {
+        // DLQ 재처리와 리밸런싱 재전달 둘 다 이미 저장된 알림을 다시 넣는다. 행은
+        // UNIQUE(event_id)가 막아주지만 브로드캐스트는 막을 것이 없어서, 예전 코드는
+        // 같은 알림을 다시 밀어냈다(재처리 실측 9건 중 3건, 리밸런싱 실측 40건 —
+        // load-test/anomaly-dlq-idempotency/, load-test/rebalance-redelivery/).
+        com.telemetry.entity.AnomalyAlert saved = alertEntity();
+        given(anomalyService.toEntity(any())).willReturn(saved);
+        given(anomalyService.saveAll(any()))
+            .willReturn(List.of(new com.telemetry.service.AnomalyService.SaveResult(saved, false)));
+
+        telemetryConsumer.consumeAnomalyAlerts(List.of(alertRecord(0L, ALERT_JSON)), acknowledgment);
 
         // offset은 커밋해야 한다 — 중복은 실패가 아니라 정상적으로 처리된 것이다.
         verify(acknowledgment).acknowledge();
@@ -214,12 +265,10 @@ class TelemetryConsumerTest {
     void consumeAnomalyAlerts_역직렬화실패_DLQ이동() {
         givenDlqSendSucceeds();
         String badJson = "not-json-at-all";
-        ConsumerRecord<String, String> record =
-            new ConsumerRecord<>("vehicle-anomaly-alerts", 0, 0L, "SIM-001", badJson);
 
-        telemetryConsumer.consumeAnomalyAlerts(record, acknowledgment);
+        telemetryConsumer.consumeAnomalyAlerts(List.of(alertRecord(0L, badJson)), acknowledgment);
 
-        verify(anomalyService, never()).save(any());
+        verify(anomalyService, never()).toEntity(any());
         assertDlqRecord("vehicle-anomaly-alerts-dlq", "SIM-001", badJson, "JsonParseException");
         verify(acknowledgment).acknowledge();
     }

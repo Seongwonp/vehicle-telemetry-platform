@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
@@ -32,6 +33,19 @@ public class AnomalyService {
 
     @Transactional
     public SaveResult save(Map<String, Object> payload) {
+        return saveAll(List.of(toEntity(payload))).get(0);
+    }
+
+    /**
+     * Kafka 페이로드를 엔티티로 옮긴다. <b>DB를 건드리지 않는다.</b>
+     *
+     * <p>파싱을 저장에서 떼어낸 이유는 {@link #saveAll}이 배치를 한 트랜잭션으로
+     * 묶기 때문이다. 잘못된 타임스탬프({@link Instant#parse} 실패) 하나가 트랜잭션
+     * 안에서 터지면 **정상 알림 수천 건까지 함께 롤백된다.** 파싱을 먼저 끝내고
+     * 레코드별로 격리해야(호출자가 catch → DLQ) 배치화가 안전해진다 —
+     * 텔레메트리 경로에서 {@code TelemetryRepository.toPoint()}를 따로 뺀 것과 같은 이유다.
+     */
+    public AnomalyAlert toEntity(Map<String, Object> payload) {
         AnomalyAlert alert = new AnomalyAlert();
         alert.setEventId(resolveEventId(payload));
         alert.setVehicleId((String) payload.get("vehicle_id"));
@@ -49,7 +63,30 @@ public class AnomalyService {
 
         String detectedAt = (String) payload.get("detected_at");
         alert.setDetectedAt(detectedAt != null ? Instant.parse(detectedAt) : Instant.now());
+        return alert;
+    }
 
+    /**
+     * 배치를 <b>한 트랜잭션</b>으로 저장한다.
+     *
+     * <p>레코드마다 트랜잭션을 열면 알림 한 건당 PostgreSQL 커밋(=fsync)이 한 번씩 돈다.
+     * 실측으로 이 경로의 처리량이 <b>49 msg/s</b>였다 — 100대 부하의 유입(200건/s 이상)을
+     * 못 따라가서 lag이 계속 쌓였고, 부하를 끊은 뒤 따라잡는 데 13분이 걸렸다
+     * ({@code load-test/anomaly-storage-throughput/}).
+     *
+     * <p>배치를 한 트랜잭션으로 묶으면 커밋이 배치당 1회가 된다. 저장 경로(InfluxDB)에서
+     * 같은 이유로 배치화해 처리량을 회복시킨 적이 있다(ADR-011).
+     */
+    @Transactional
+    public List<SaveResult> saveAll(List<AnomalyAlert> alerts) {
+        List<SaveResult> results = new ArrayList<>(alerts.size());
+        for (AnomalyAlert alert : alerts) {
+            results.add(saveOne(alert));
+        }
+        return results;
+    }
+
+    private SaveResult saveOne(AnomalyAlert alert) {
         int inserted = anomalyAlertRepository.insertIfAbsent(
             alert.getEventId(), alert.getVehicleId(), alert.getAnomalyType(), alert.getField(),
             alert.getValue(), alert.getThreshold(), alert.getSeverity(), alert.getDetector(),

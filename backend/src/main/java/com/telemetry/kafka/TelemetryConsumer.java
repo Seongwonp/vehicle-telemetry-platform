@@ -103,27 +103,59 @@ public class TelemetryConsumer {
         converted.forEach(this::broadcastTelemetry);
     }
 
+    /**
+     * poll 한 번에 받은 알림을 묶어서 <b>PostgreSQL 트랜잭션 1건 + offset 커밋 1건</b>으로
+     * 처리한다.
+     *
+     * <p>레코드 단위 리스너 + {@code MANUAL_IMMEDIATE}였을 때 이 경로의 처리량은
+     * <b>49 msg/s</b>였다. 알림 한 건마다 PostgreSQL 커밋(=fsync) 1회와 Kafka offset
+     * 커밋(브로커 왕복) 1회가 붙기 때문이다. 100대 부하의 유입(200건/s 이상)을 못 따라가
+     * lag이 계속 쌓였고, 부하를 끊은 뒤 따라잡는 데 13분이 걸렸다
+     * ({@code load-test/anomaly-storage-throughput/}).
+     *
+     * <p>저장 경로(InfluxDB)에서 같은 이유로 배치화해 처리량을 회복시킨 적이 있다(ADR-011).
+     * 여기도 같은 모양이다 — 역직렬화와 엔티티 변환은 레코드별로 격리하고(실패 시 그 한
+     * 건만 DLQ), DB 쓰기만 배치로 묶는다.
+     */
     @KafkaListener(
         topics = "vehicle-anomaly-alerts",
-        groupId = "anomaly-storage-group"
+        groupId = "anomaly-storage-group",
+        containerFactory = "telemetryBatchListenerContainerFactory"
     )
-    public void consumeAnomalyAlerts(ConsumerRecord<String, String> record, Acknowledgment acknowledgment) {
-        AnomalyService.SaveResult result;
-        try {
-            Map<String, Object> payload = objectMapper.readValue(
-                record.value(), new TypeReference<>() {}
-            );
-            result = anomalyService.save(payload);
-            log.debug("[Kafka→Anomaly] 이상 이벤트 저장 완료 — vehicle={} offset={}",
-                record.key(), record.offset());
-        } catch (Exception e) {
-            // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 — 알림 누락으로 이어질 수 있어 DLQ로 격리한다
-            log.error("[Kafka→Anomaly] 저장 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
-                record.key(), record.offset(), record.partition(), e);
-            sendToDlq(ANOMALY_DLQ_TOPIC, record, e);
-            acknowledgment.acknowledge();
-            return;
+    public void consumeAnomalyAlerts(List<ConsumerRecord<String, String>> records,
+                                     Acknowledgment acknowledgment) {
+        List<AnomalyAlert> toSave = new ArrayList<>(records.size());
+
+        for (ConsumerRecord<String, String> record : records) {
+            try {
+                Map<String, Object> payload = objectMapper.readValue(
+                    record.value(), new TypeReference<>() {}
+                );
+                // 파싱·변환은 트랜잭션 밖에서 끝낸다. 잘못된 타임스탬프 하나가 트랜잭션
+                // 안에서 터지면 같은 배치의 정상 알림 수천 건까지 롤백되기 때문이다.
+                toSave.add(anomalyService.toEntity(payload));
+            } catch (Exception e) {
+                // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 —
+                // 알림 누락으로 이어질 수 있어 DLQ로 격리한다.
+                log.error("[Kafka→Anomaly] 변환 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
+                    record.key(), record.offset(), record.partition(), e);
+                sendToDlq(ANOMALY_DLQ_TOPIC, record, e);
+            }
         }
+
+        List<AnomalyService.SaveResult> results;
+        try {
+            results = anomalyService.saveAll(toSave);
+        } catch (Exception e) {
+            // DB 장애로 배치 전체가 실패한 경우. 예전(레코드 단위)에는 여기서 곧바로
+            // DLQ로 보내고 offset을 커밋했는데, 배치에서는 그러면 수천 건이 한꺼번에
+            // DLQ로 간다. offset을 커밋하지 않고 예외를 던져 재시도(KafkaConfig의
+            // 180초 예산)에 맡기고, 소진되면 DeadLetterPublishingRecoverer가 처리한다.
+            log.error("[Kafka→Anomaly] 배치 저장 실패 {}건 — offset 미커밋, 재시도한다",
+                toSave.size(), e);
+            throw e;
+        }
+
         acknowledgment.acknowledge();
         // 이미 저장돼 있던 이벤트면 알림을 보내지 않는다.
         //
@@ -133,13 +165,16 @@ public class TelemetryConsumer {
         // 그렇게 된다. 행은 UNIQUE(event_id) + ON CONFLICT DO NOTHING이 막지만
         // 브로드캐스트는 막을 것이 없어서, 예전 코드는 이 9건을 매번 다시 밀어냈다
         // (load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md).
-        if (result.inserted()) {
+        for (AnomalyService.SaveResult result : results) {
+            if (!result.inserted()) continue;
             AnomalyAlert saved = result.alert();
             messagingTemplate.convertAndSend(
                 "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
                 new AnomalyResponse(saved)
             );
         }
+        log.debug("[Kafka→Anomaly] 배치 처리 완료 — 수신 {}건 중 저장 시도 {}건",
+            records.size(), toSave.size());
     }
 
     // REST의 TelemetryResponse와 동일한 JSON 형태로 만들어 보낸다 — 앱이
