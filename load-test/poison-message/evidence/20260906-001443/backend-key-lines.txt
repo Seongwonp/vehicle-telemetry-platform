@@ -1,0 +1,4 @@
+15:16:51 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-MALFORMED-JS offset=51 partition=0
+15:17:24 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-BAD-TIMESTAM offset=51 partition=2
+15:18:02 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-WRONG-SCHEMA offset=152 partition=2
+15:18:40 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-INFINITY offset=152 partition=0

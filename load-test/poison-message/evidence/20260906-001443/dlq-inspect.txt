@@ -1,0 +1,34 @@
+======================================================================
+vehicle-telemetry-dlq: 4건
+----------------------------------------------------------------------
+판정
+  transient        0  (  0.0%)  일시적 — 재처리 대상
+  permanent        4  (100.0%)  영구 — 재처리하면 루프
+  unknown          0  (  0.0%)  불명 — 사람이 봐야 함
+----------------------------------------------------------------------
+원인별
+        2  com.fasterxml.jackson.core.JsonParseException
+        1  java.time.format.DateTimeParseException
+        1  java.lang.NullPointerException
+----------------------------------------------------------------------
+원본 토픽별
+        4  vehicle-telemetry
+----------------------------------------------------------------------
+원인별 표본 1건
+
+  [com.fasterxml.jackson.core.JsonParseException]
+    key      : POISON-MALFORMED-JS
+    원인 메시지: Unexpected character ('t' (code 116)): was expecting double-quote to start field name
+ at [Source: (String)"{this is not json"; line: 1, column: 3]
+    payload  : {this is not json
+
+  [java.time.format.DateTimeParseException]
+    key      : POISON-BAD-TIMESTAM
+    원인 메시지: Text '어제쯤' could not be parsed at index 0
+    payload  : {"vehicle_id": "POISON-BAD-TIMESTAM", "timestamp": "어제쯤", "speed": 60.0, "rpm": 2000, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage": 13.8, "gps": {"lat": 37.5, 
+
+  [java.lang.NullPointerException]
+    key      : POISON-WRONG-SCHEMA
+    원인 메시지: text
+    payload  : {"sensor": "temp", "reading": 12.3}
+======================================================================

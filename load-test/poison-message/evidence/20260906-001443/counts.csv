@@ -1,0 +1,8 @@
+key,value
+controls_stored_malformed_json,100
+controls_stored_bad_timestamp,100
+controls_stored_wrong_schema,100
+controls_stored_infinity,100
+controls_stored_huge_payload,101
+telemetry_dlq_records,4
+telemetry_topic,505

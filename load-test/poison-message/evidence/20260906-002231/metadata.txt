@@ -1,0 +1,15 @@
+run_id           : 20260906-002231
+scenario         : poison-message
+started_at       : 2026-09-06T00:22:31+09:00
+command          : bash load-test/poison-message/run_scenario.sh 100
+git_branch       : master
+git_commit       : a17daed76c7436a181d76d415c6dd0f406ee02eb
+git_dirty        : yes (1개 변경)
+docker           : Docker version 29.7.2, build a7dcaa6
+docker_compose   : 5.4.0
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-09-06T00:25:28+09:00
+success_criteria : 독성 1건이 같은 배치의 정상 레코드를 막지 않는다
+verdict          : PASS (모든 유형에서 대조군 전량 저장)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2

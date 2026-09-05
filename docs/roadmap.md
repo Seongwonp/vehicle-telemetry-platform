@@ -147,12 +147,40 @@ Consumer Group·토픽 목록도 코드와 일치한다(위 다이어그램 오�
 
 </details>
 
-### P1-2. poison message와 DLQ 재처리 경계
+### P1-2. poison message와 DLQ 재처리 경계 — **1차 완료(2026-09-06)**
+
+독성 5유형을 Kafka 토픽에 직접 주입하고, 유형마다 **같은 키의 정상 레코드 100건**을
+함께 넣어 "정상 레코드가 함께 막히는가"를 셌다.
+
+| 유형 | 대조군 | 독성의 종착지 |
+| --- | ---: | --- |
+| `malformed_json` | 100/100 | DLQ (`JsonParseException`) |
+| `bad_timestamp` | 100/100 | DLQ (`DateTimeParseException`) |
+| `wrong_schema` | 100/100 | DLQ (`NullPointerException`) |
+| `huge_payload`(300KB) | 101/100 | 정상 저장 — 독성이 아니었다 |
+| `infinity`(`1e309`) | 100/100 | **저장됐지만 `speed` 필드가 사라졌다** |
+
+**정상 레코드가 함께 막힌 유형은 없다.** DLQ 4건은 전부 `permanent`로 분류되고
+`x-dlq-*` 헤더로 원본 토픽·파티션·offset이 추적된다.
+
+**발견**: `{"speed": 1e309}`는 유효한 JSON이고 Jackson이 `Infinity`로 파싱하는데,
+InfluxDB 쓰기가 실패하지 않고 **그 필드만 조용히 빠진 채 저장된다.** DLQ 0, 에러 0,
+카운터 변화 0 — 정합성 대조(토픽 수 = 행 수)로도 안 잡힌다(행은 있으므로).
+
+결과: `load-test/poison-message/RESULT_20260906_poison.md`.
+
+**남은 것**: 재처리 횟수 초과를 이번 `permanent` 레코드로 다시 밀지 않았다.
+Infinity 부분 유실을 막을지 **미결정**(발생 가능성을 확인하지 않은 상태에서
+모든 메시지에 유한값 검사 비용을 물릴지). MQTT 단계 경계(`max_packet_size` 초과)는 범위 밖.
+
+<details><summary>원래 항목</summary>
 
 - 비정상적으로 큰 메시지, 다른 schema, 잘못된 timestamp, 영구 InfluxDB 필드 충돌,
   재처리 횟수 초과를 검증한다.
 - 정상 레코드는 함께 막히지 않고, 실패 원인과 원본 위치를 추적할 수 있어야 한다.
 - DLQ 재처리 실패가 원본 삭제나 무한 반복으로 이어지지 않아야 한다.
+
+</details>
 
 ### P1-3. 장기 장애와 retry/rebalance 경계
 
