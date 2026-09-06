@@ -182,18 +182,73 @@ Infinity 부분 유실을 막을지 **미결정**(발생 가능성을 확인하�
 
 </details>
 
-### P1-3. 장기 장애와 retry/rebalance 경계
+### P1-3. 장기 장애와 retry/rebalance 경계 — **완료(2026-09-06)**
+
+같은 **720초** 장애를 의존성만 바꿔 두 번 주입했다. 지금까지의 장애 실험은 전부
+90~300초여서 **재시도 예산이 소진되는 모습을 한 번도 못 봤다.**
+
+| | InfluxDB(즉시 실패) | PostgreSQL(30초 블로킹) |
+| --- | ---: | ---: |
+| 첫 DLQ 발생 | **t=220초** | **t=485초** |
+| DLQ 증가 | 6,158 | 21 |
+| 리밸런싱 | 0 | 0 |
+| 유실 | 0 | 0 |
+| 복구 후 lag 0 | 부하 정지 +10초 | 부하 정지 +7초 |
+
+**"같은 180초 예산이 의존성에 따라 3분과 8분이 된다"가 추정에서 측정이 됐다.**
+PostgreSQL 쪽은 백엔드 로그의 재시도 간격(31, 32, 34, 38, 46, 60, 60…초)에서
+30초를 빼면 백오프 값(1, 2, 4, 8, 16, 30, 30…)이 정확히 나온다 — 시도마다 HikariCP
+`connectionTimeout` 30초를 실패에 쓰고 그 시간은 예산에 안 세어진다.
+
+부수적으로 드러난 것 셋:
+
+1. **백로그는 DLQ로 가지 않는다.** DLQ에 간 6,158건은 전부 장애 시작 직후 26초 구간
+   레코드다. 나머지 17만 건은 lag으로 쌓였다가 복구 후 정상 저장됐다.
+2. **DLQ에 있다 = 저장 안 됐다가 아니다.** InfluxDB 47건, PostgreSQL은 **21건 전부**가
+   이미 저장돼 있었다(in-doubt). PostgreSQL 쪽은 복구가 필요한 알림이 하나도 없었다.
+3. **DLQ 6,158건이 생겼는데 로그에 한 줄도 없었다** — 알림 경로는 배치 실패마다 ERROR를
+   남기는데 저장 경로는 아무것도 안 남긴다. 두 경로의 비대칭이었다.
+   → `KafkaConfig` recoverer에 `[DLQ 이동]` WARN, `consumeForStorage`에 배치 실패 ERROR
+   추가. 회귀 테스트 `KafkaDlqLoggingTest`.
+
+결과: `load-test/long-outage/RESULT_20260906_influxdb.md`, `RESULT_20260906_postgres.md`.
+
+**남은 것**: 각 1회 실행. **리밸런싱이 안 도는 이유를 구분하지 못했다** — 정적 멤버십
+(`group.instance.id`)이 버티는 것인지, Spring Kafka가 백오프 동안 파티션을 pause한 채
+poll을 계속하는 것인지. 가르려면 `group.instance.id`를 빼고 같은 조건을 돌려야 한다.
+더 긴 장애에서 DLQ가 주기당 한 번씩 계속 느는지도 미측정.
+
+<details><summary>원래 항목</summary>
 
 - 현재 retry budget은 벽시계 시간이 아니라 백오프 대기 합이다.
 - 8분 이상 의존성 장애에서 실제 poll 간격, 리밸런싱, DLQ 이동, 복구 시간을 측정한다.
 - 설정 변경은 측정 후에만 결정한다.
 
-### P1-4. 앱 자동 검증과 실제 기기 확인
+</details>
+
+### P1-4. 앱 자동 검증과 실제 기기 확인 — **CI 완료(2026-09-06), 실기기는 남음**
+
+앱 저장소에 `.github/workflows/ci.yml`을 넣었다(`Seongwonp/vehicle-telemetry-app@6adca8a`).
+AGENTS.md "데스크톱 필수 검증"의 앞 세 단계와 **같은 명령**을 돌린다 —
+`dart format --set-exit-if-changed`, `flutter analyze`, `flutter test`.
+Flutter 버전은 3.41.6으로 **고정**했다(`channel: stable`만 주면 앱 코드가 그대로인데
+어느 날 러너가 받은 최신 stable 때문에 깨져 CI 실패가 잡음이 된다).
+
+첫 실행 success. 로컬(Windows, Flutter 3.41.6)에서도 format 변경 0, analyze 0,
+**테스트 255 통과 / 1 skip(골든)**.
+
+**남은 것**: CI가 대체하지 못하는 것 셋 — 통합 테스트(백엔드 필요), 골든 스냅샷
+(플랫폼 폰트 차이), **실기기 확인(스크롤·터치·키보드·네트워크 재연결)**. 기기가 필요하다.
+반응형은 위젯 테스트로만 검증돼 있다.
+
+<details><summary>원래 항목</summary>
 
 - 앱 저장소에 format, analyze, unit/widget test CI를 추가한다.
 - 320/360/400px, 글자 1.3/1.5배, 라이트/다크, 오류·빈 상태를 확인한다.
 - 실제 기기에서 스크롤, 터치, 키보드, 네트워크 재연결을 확인하고 앱·백엔드 SHA를
   함께 기록한다.
+
+</details>
 
 ### P1-5. MQTT → Kafka → DB → 앱 E2E
 

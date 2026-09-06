@@ -1,0 +1,12 @@
+# DLQ 21건이 이미 저장돼 있는지 확인 (토픽 106,047 == 행 106,047인데 DLQ가 21건이라
+# 산술적으로 "21건이 양쪽에 다 있다"가 되는 상황)
+#
+#   docker run --rm --network ..._telemetry-net -v "$PWD/load-test/anomaly-dlq-idempotency:/w" -w /w \
+#     vehicle-telemetry-platform-anomaly-detector python dlq_event_ids.py --topic vehicle-anomaly-alerts-dlq
+#   psql -tAc "SELECT count(*) FROM anomaly_alerts WHERE event_id IN (<21개>);"
+#
+DLQ event_id 수: 21
+그중 PostgreSQL에 이미 저장된 것: 21
+
+# 즉 이 DLQ에는 "복구가 필요한 알림"이 하나도 없다. 서버 커밋은 끝났는데 연결이 끊겨
+# 클라이언트만 실패로 본 in-doubt 트랜잭션이다(2026-09-05 60초 장애에서는 9건 중 3건이었다).

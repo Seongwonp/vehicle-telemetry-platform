@@ -1,0 +1,21 @@
+# anomaly-storage-group @ 2026-09-06T09:54:48+09:00
+
+GROUP                 TOPIC                  PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+anomaly-storage-group vehicle-anomaly-alerts 0          33954           33954           0               telemetry-backend-consumer-0-fa385122-8e37-47af-8b4e-e20c18ec6556 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-0
+anomaly-storage-group vehicle-anomaly-alerts 2          34140           34140           0               telemetry-backend-consumer-2-eae3f2b4-e621-45b5-9f20-b9deac654bf6 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-2
+anomaly-storage-group vehicle-anomaly-alerts 1          37953           37953           0               telemetry-backend-consumer-1-c8758da6-f2c3-466f-89cc-8f1119a2b2ab /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-1
+
+# telemetry-storage-group @ 2026-09-06T09:54:50+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          86923           86923           0               telemetry-backend-consumer-0-debb577d-4924-483d-9d26-727e5266e086 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 2          86941           86941           0               telemetry-backend-consumer-2-20057e03-310b-47ee-8a5b-388a21431016 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 1          97786           97786           0               telemetry-backend-consumer-1-ca4d591b-13d6-42df-a08c-a43b1dd5d1c8 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+
+# anomaly-storage-group @ 2026-09-06T09:54:51+09:00
+
+GROUP                 TOPIC                  PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+anomaly-storage-group vehicle-anomaly-alerts 0          33954           33954           0               telemetry-backend-consumer-0-fa385122-8e37-47af-8b4e-e20c18ec6556 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-0
+anomaly-storage-group vehicle-anomaly-alerts 2          34140           34140           0               telemetry-backend-consumer-2-eae3f2b4-e621-45b5-9f20-b9deac654bf6 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-2
+anomaly-storage-group vehicle-anomaly-alerts 1          37953           37953           0               telemetry-backend-consumer-1-c8758da6-f2c3-466f-89cc-8f1119a2b2ab /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-1
+

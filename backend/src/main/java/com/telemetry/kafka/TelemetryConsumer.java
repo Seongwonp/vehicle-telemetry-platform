@@ -96,7 +96,18 @@ public class TelemetryConsumer {
         //
         // 트레이드오프: 배치가 재시도되면 위 루프에서 이미 DLQ로 보낸 역직렬화 실패
         // 레코드가 중복 발행된다. DLQ는 조사/재처리용이라 중복이 유실보다 낫다고 판단.
-        telemetryRepository.saveAll(points);
+        // 실패를 **로그에도** 남긴다. 알림 경로(consumeAnomalyAlerts)는 배치 실패마다
+        // ERROR를 남기는데 이 경로는 아무것도 안 남겨서, InfluxDB 12분 장애 동안
+        // 로그만 보면 정상으로 보였다(load-test/long-outage/RESULT_20260906_influxdb.md).
+        // 지표는 있었지만 사고 후 로그를 되짚는 경로가 비어 있었다. 두 경로의 관측
+        // 가능성을 같게 맞춘다.
+        try {
+            telemetryRepository.saveAll(points);
+        } catch (RuntimeException e) {
+            log.error("[Kafka→InfluxDB] 배치 저장 실패 {}건 — offset 미커밋, 재시도한다 ({})",
+                points.size(), e.getClass().getSimpleName());
+            throw e;
+        }
         log.debug("[Kafka→InfluxDB] 배치 저장 완료 — 수신 {}건 중 {}건 저장",
             records.size(), points.size());
         acknowledgment.acknowledge();

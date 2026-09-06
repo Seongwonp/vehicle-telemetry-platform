@@ -1,0 +1,16 @@
+key,value
+dlq_before,0
+dlq_after,21
+dlq_growth,21
+src_topic_end_offset,106047
+stored_rows,106047
+stored_distinct_event_id,106047
+rebalance_log_lines,0
+backoff_exhausted_log_lines,0
+first_exhaust_t_sec,none
+first_dlq_growth_t_sec,485
+restore_t_sec,744
+sim_stop_t_sec,990
+drain_done_t_sec,997
+dlq_event_ids,21
+dlq_already_stored_in_postgres,21

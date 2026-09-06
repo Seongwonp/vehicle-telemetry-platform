@@ -1,0 +1,12 @@
+key,value
+scenario,influxdb
+dependency,telemetry-influxdb
+consumer_group,telemetry-storage-group
+vehicles,50
+publish_interval_sec,0.2
+anomaly_rate,0.3
+outage_sec,720
+sample_interval_sec,30
+post_restore_load_sec,180
+retry_budget_ms,180000
+max_poll_interval_ms,300000

@@ -1,0 +1,16 @@
+key,value
+dlq_before,0
+dlq_after,6158
+dlq_growth,6158
+src_topic_end_offset,258726
+stored_rows,252615
+rebalance_log_lines,0
+backoff_exhausted_log_lines,0
+first_exhaust_t_sec,none
+first_dlq_growth_t_sec,220
+restore_t_sec,740
+sim_stop_t_sec,943
+drain_done_t_sec,953
+dlq_in_influx_sampled_hit,9
+dlq_in_influx_sampled_total,20
+dlq_transient_classified,6158

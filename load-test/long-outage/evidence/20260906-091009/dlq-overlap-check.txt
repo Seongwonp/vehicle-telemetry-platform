@@ -1,0 +1,32 @@
+# DLQ와 InfluxDB 중복 확인 (토픽 258,726 < 저장 252,615 + DLQ 6,158 = 258,773, 차이 47)
+#
+# 방법: dlq_keys.py로 DLQ 전량의 (vehicle_id, timestamp)를 뽑고, 가장 이른 20건을
+#       InfluxDB에 그 키로 직접 조회했다. 명령은 아래와 같다.
+#
+#   docker run --rm --network ..._telemetry-net -v "$PWD/load-test/long-outage:/w" -w /w \
+#     vehicle-telemetry-platform-anomaly-detector python dlq_keys.py \
+#     --topic vehicle-telemetry-dlq --sample 20
+#   docker exec telemetry-influxdb influx query '... r.vehicle_id == "<vid>" ... r._time == time(v:"<ts>") |> count()'
+#
+# DLQ 전량 통계
+STAT total=6158 decodable=6158 unique=6158 undecodable=0 dup_in_dlq=0
+# DLQ 레코드의 타임스탬프 범위: 2026-09-06T00:13:22.1Z ~ 00:13:48.0Z
+#   = 장애 시작(00:13:22) 직후 약 26초 구간뿐. 장애 한복판(00:14~00:25) 레코드는 없다.
+#
+# 가장 이른 20건 조회 결과
+HEAD 20건 중 InfluxDB에 있음=9 없음=11
+# 있음(= in-doubt: 서버는 적용했는데 클라이언트는 실패로 봤다)
+SIM-038 2026-09-06T00:13:22.170Z
+SIM-012 2026-09-06T00:13:22.172Z
+SIM-022 2026-09-06T00:13:22.173Z
+SIM-050 2026-09-06T00:13:22.174Z
+SIM-044 2026-09-06T00:13:22.181Z
+SIM-030 2026-09-06T00:13:22.182Z
+SIM-046 2026-09-06T00:13:22.185Z
+SIM-005 2026-09-06T00:13:22.270Z
+SIM-003 2026-09-06T00:13:22.272Z
+# 없음은 전부 .365~.471 구간이다 — 파티션마다 배치가 갈려 한쪽만 서버에 닿았다.
+#
+# DLQ 분류(dlq.py inspect): transient 6,158 (100%), 원인 전부 com.influxdb.exceptions.InfluxException
+# 재처리 실행은 이 세션에서 수행하지 못했다(도구 실행이 승인되지 않음). 같은 토픽의
+# 재처리 복구 경로는 2026-09-04 storage-integrity, 2026-09-05 anomaly-dlq-idempotency에서 확인됨.

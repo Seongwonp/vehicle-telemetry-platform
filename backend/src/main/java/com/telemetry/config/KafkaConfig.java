@@ -1,6 +1,7 @@
 package com.telemetry.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,6 +20,7 @@ import org.springframework.util.backoff.FixedBackOff;
 
 import java.time.Duration;
 
+@Slf4j
 @Configuration
 public class KafkaConfig {
 
@@ -80,6 +82,17 @@ public class KafkaConfig {
             // 올려야 이 경로로 나간 것도 같이 잡힌다.
             meterRegistry.counter("telemetry.kafka.dlq.published",
                 "topic", resolveDlqTopic(record.topic())).increment();
+            // 재시도 소진은 **로그에 아무 흔적을 남기지 않고 있었다.** 저장소는 실패를
+            // 카운터로만 세고 예외를 다시 던지고(TelemetryRepository), Spring Kafka의
+            // 재시도·복구 로그는 DEBUG인데 logging.level.org.springframework.kafka가 WARN이다.
+            // InfluxDB 12분 장애에서 6,158건이 DLQ로 갔는데 로그에는 한 줄도 없었다
+            // (load-test/long-outage/RESULT_20260906_influxdb.md). Runbook은 운영자에게
+            // "DLQ를 조사하라"고 하는데 DLQ가 생겼다는 사실 자체가 로그에 없으면,
+            // 사고 후 로그를 되짚는 경로가 비어 있는 것이다.
+            log.warn("[DLQ 이동] 재시도 예산 소진 — {}-{}@{} → {} ({}: {})",
+                record.topic(), record.partition(), record.offset(),
+                resolveDlqTopic(record.topic()),
+                exception.getClass().getSimpleName(), rootMessage(exception));
             recoverer.accept(record, exception);
         }, buildBackOff(initialIntervalMs, multiplier, maxIntervalMs, budgetMs));
     }
@@ -116,6 +129,20 @@ public class KafkaConfig {
         backOff.setMaxInterval(maxIntervalMs);
         backOff.setMaxElapsedTime(budgetMs);
         return backOff;
+    }
+
+    /**
+     * 원인 예외의 메시지. 에러 핸들러가 받는 예외는 대개
+     * {@code ListenerExecutionFailedException}으로 한 겹 싸여 있어, 그대로 찍으면
+     * "Listener failed"만 남고 <b>정작 왜 실패했는지가 안 보인다</b>.
+     */
+    private static String rootMessage(Throwable e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage();
+        return message == null ? cause.getClass().getName() : message;
     }
 
     private static String resolveDlqTopic(String sourceTopic) {
