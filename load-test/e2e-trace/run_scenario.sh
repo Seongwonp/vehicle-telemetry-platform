@@ -58,7 +58,7 @@ set +e
 MSYS_NO_PATHCONV=1 docker run --rm --network "$NET" \
   -v "$WINPWD/load-test/e2e-trace:/w" -w /w \
   --env-file .env \
-  "$IMG" python trace.py --vehicle-id "$VEHICLE_ID" --count "$COUNT" --gap-sec "$GAP" \
+  "$IMG" python -u trace.py --vehicle-id "$VEHICLE_ID" --count "$COUNT" --gap-sec "$GAP" \
   2>&1 | tee -a "$OUT"
 TRACE_RC=${PIPESTATUS[0]}
 set -e

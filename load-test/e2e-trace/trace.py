@@ -47,7 +47,7 @@ from datetime import datetime, timezone
 import paho.mqtt.client as mqtt
 import requests
 import websocket
-from kafka import KafkaConsumer
+from kafka import KafkaConsumer, TopicPartition
 
 STOMP_NULL = "\x00"
 
@@ -190,18 +190,43 @@ def publish_markers(host: str, port: int, vehicle_id: str, count: int,
 
 
 def kafka_arrivals(bootstrap: str, topic: str, vehicle_id: str,
-                   timeout_ms: int) -> set[str]:
-    consumer = KafkaConsumer(topic, bootstrap_servers=bootstrap,
-                             auto_offset_reset="earliest", enable_auto_commit=False,
+                   since_ms: int, timeout_ms: int) -> set[str]:
+    """마커가 Kafka 토픽에 있는지.
+
+    **끝을 미리 정해놓고 읽는다.** 처음에는 `consumer_timeout_ms`(무입력 20초)로
+    끝내려 했는데, 배경 부하가 계속 쓰는 토픽에서는 조용해지는 순간이 오지 않아
+    **영원히 안 끝났다**(실제로 4분 넘게 돌다 죽였다). 시작 지점도 마커 발행 직전으로
+    잡는다 — 토픽 전체를 훑을 이유가 없다.
+    """
+    consumer = KafkaConsumer(bootstrap_servers=bootstrap, enable_auto_commit=False,
                              consumer_timeout_ms=timeout_ms, group_id=None)
+    partitions = [TopicPartition(topic, p) for p in consumer.partitions_for_topic(topic)]
+    consumer.assign(partitions)
+
+    # 끝 지점을 **지금** 찍어둔다. 여기서 멈추지 않으면 배경 부하를 따라가며 끝나지 않는다.
+    end_offsets = consumer.end_offsets(partitions)
+    starts = consumer.offsets_for_times({tp: since_ms for tp in partitions})
+    for tp in partitions:
+        found = starts.get(tp)
+        if found is None:
+            consumer.seek_to_beginning(tp)
+        else:
+            consumer.seek(tp, found.offset)
+
     seen = set()
+    remaining = {tp for tp in partitions if consumer.position(tp) < end_offsets[tp]}
     for msg in consumer:
+        tp = TopicPartition(msg.topic, msg.partition)
         try:
             payload = json.loads(msg.value.decode("utf-8"))
+            if payload.get("vehicle_id") == vehicle_id and payload.get("timestamp"):
+                seen.add(payload["timestamp"])
         except Exception:
-            continue
-        if payload.get("vehicle_id") == vehicle_id and payload.get("timestamp"):
-            seen.add(payload["timestamp"])
+            pass
+        if msg.offset >= end_offsets[tp] - 1:
+            remaining.discard(tp)
+            if not remaining:
+                break
     consumer.close()
     return seen
 
@@ -247,26 +272,50 @@ def normalize(ts: str) -> str:
     return f"{ts[:-1]}.000Z"
 
 
-def rest_visibility(base: str, token: str, vehicle_id: str, markers: list[str],
-                    timeout_sec: float, interval_sec: float) -> dict[str, float]:
-    """REST 응답에 각 마커가 보이기 시작한 시각. 분해능은 interval_sec다."""
-    h = {"Authorization": f"Bearer {token}"}
-    seen: dict[str, float] = {}
-    deadline = time.time() + timeout_sec
-    while time.time() < deadline and len(seen) < len(markers):
-        try:
-            r = requests.get(f"{base}/api/vehicles/{vehicle_id}/telemetry",
-                             params={"limit": 100}, headers=h, timeout=10)
-            if r.status_code == 200:
-                now = time.time()
-                for item in r.json():
-                    ts = item.get("timestamp")
-                    if ts:
-                        seen.setdefault(normalize(ts), now)
-        except requests.RequestException:
-            pass
-        time.sleep(interval_sec)
-    return seen
+class RestPoller:
+    """REST 응답에 각 마커가 보이기 시작한 시각. 분해능은 `interval_sec`다.
+
+    **발행보다 먼저 시작해야 한다.** 처음에는 발행이 다 끝난 뒤에 폴링을 시작했는데,
+    그러면 첫 폴링 한 번에 20건이 한꺼번에 보이면서 마커 순서대로 정확히 500ms씩
+    줄어드는 지연값이 나온다(9583, 9082, … 1072ms — 발행 간격 그대로다).
+    시스템의 성질이 아니라 **측정 시작 시점의 그림자**였다. WebSocket 수집기처럼
+    별도 스레드로 먼저 띄운다.
+    """
+
+    def __init__(self, base: str, token: str, vehicle_id: str, interval_sec: float):
+        self.base = base
+        self.token = token
+        self.vehicle_id = vehicle_id
+        self.interval = interval_sec
+        self.seen: dict[str, float] = {}
+        self._stop = threading.Event()
+
+    def start(self) -> None:
+        threading.Thread(target=self._run, daemon=True).start()
+
+    def _run(self) -> None:
+        h = {"Authorization": f"Bearer {self.token}"}
+        while not self._stop.is_set():
+            try:
+                r = requests.get(f"{self.base}/api/vehicles/{self.vehicle_id}/telemetry",
+                                 params={"limit": 100}, headers=h, timeout=10)
+                if r.status_code == 200:
+                    now = time.time()
+                    for item in r.json():
+                        ts = item.get("timestamp")
+                        if ts:
+                            self.seen.setdefault(normalize(ts), now)
+            except requests.RequestException:
+                pass
+            self._stop.wait(self.interval)
+
+    def wait_for(self, expected: int, timeout_sec: float) -> None:
+        deadline = time.time() + timeout_sec
+        while time.time() < deadline and len(self.seen) < expected:
+            time.sleep(0.5)
+
+    def stop(self) -> None:
+        self._stop.set()
 
 
 def pct(values: list[float], p: float) -> float:
@@ -305,18 +354,24 @@ def main() -> int:
     else:
         print("[3/6] WebSocket 구독 OK")
 
+    # 발행보다 **먼저** 띄운다 — 뒤에 시작하면 첫 폴링에 전량이 한꺼번에 보여서
+    # 지연이 발행 간격의 그림자가 된다(RestPoller 주석 참고).
+    poller = RestPoller(args.api, token, args.vehicle_id, interval_sec=0.5)
+    poller.start()
+
     markers = publish_markers(args.mqtt_host, args.mqtt_port, args.vehicle_id,
                               args.count, args.gap_sec)
     print(f"[4/6] 마커 {len(markers)}건 발행(PUBACK 확인)")
 
-    rest_seen = rest_visibility(args.api, token, args.vehicle_id,
-                                [m[0] for m in markers],
-                                timeout_sec=args.settle_sec + 30, interval_sec=0.5)
+    poller.wait_for(len(markers), timeout_sec=args.settle_sec + 30)
+    poller.stop()
+    rest_seen = dict(poller.seen)
     print(f"[5/6] REST 가시성 폴링 종료 — {len(rest_seen)}건")
 
     time.sleep(2)
     ws.stop()
-    kafka_seen = kafka_arrivals(args.bootstrap, args.topic, args.vehicle_id, 20000)
+    kafka_seen = kafka_arrivals(args.bootstrap, args.topic, args.vehicle_id,
+                                int((markers[0][1] - 5) * 1000), 20000)
     influx_seen = {normalize(t) for t in
                    influx_arrivals(args.influx, os.environ["INFLUXDB_ORG"],
                                    os.environ["INFLUXDB_BUCKET"],
