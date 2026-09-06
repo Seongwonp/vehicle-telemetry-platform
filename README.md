@@ -589,6 +589,9 @@ print(response.value)  # 예: 87 kph
 | [DB 스키마](docs/db-schema.md) | PostgreSQL(메타데이터/이상 이력) + InfluxDB(시계열) 스키마 |
 | [배포 가이드](docs/deployment-guide.md) | AWS EC2 배포 절차 |
 | [보안 자체 점검 보고서](docs/security-report.md) | OWASP Top 10, UN R155 / ISO SAE 21434 기준 점검 결과 |
+| [데이터 보존·삭제와 개인정보](docs/data-retention.md) | 저장소별로 무엇이 얼마나 남는지, 삭제 절차, **안 정한 것** |
+| [검증 증거 정책](docs/evidence-policy.md) | 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지 |
+| [고도화 로드맵](docs/roadmap.md) | 다음 작업을 고르는 기준과 의도적으로 미룬 것 |
 | [개발 일지](docs/devlog.md) | 날짜별 작업 내용, 결정 사항, 막힌 부분 기록 |
 
 ---

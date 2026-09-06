@@ -414,11 +414,26 @@ in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니
   중복과 유실이 상쇄된다). 실패 양상만 유효하다.
 - Kafka `replication-factor`는 여전히 1이다. **브로커가 1대라 상향 자체가 지금은 의미 없다.**
 
+### 데이터 보존·삭제와 개인정보 — **1차 완료(2026-09-06)**
+
+설정을 확인해보니 **InfluxDB 버킷 보존이 무기한**이었다(`DOCKER_INFLUXDB_INIT_RETENTION`
+미설정 → InfluxDB 2.x 기본이 무제한). 거기에 GPS(`lat`/`lng`)가 담긴 텔레메트리가 계속
+쌓이고 있었다.
+
+정한 것: 버킷 보존 **90일**(`INFLUXDB_RETENTION`, 90일 넘겨 조회하는 기능이 하나도 없다),
+`backend` 컨테이너 로그 로테이션(50m × 3 — 요청 로그에 `clientIp`가 들어간다),
+Kafka 리텐션 1시간 유지, 차량 삭제는 소프트 삭제 유지 + 즉시 삭제는 수동 절차.
+
+문서: `docs/data-retention.md`(저장소별 데이터 목록·성격·보존, 수동 삭제 명령 포함).
+
+**남은 것**: `DOCKER_INFLUXDB_INIT_*`는 **버킷 최초 생성에만** 적용돼 기존 환경은
+`influx bucket update`가 필요한데 마이그레이션 절차가 없다. `anomaly_alerts` 보존 기간
+미정(무기한). 삭제 요청 API와 권한 모델 미정. 로그의 **기간 기준** 보존 미정.
+`vehicles.owner`가 자유 입력이라 실명이 들어갈 수 있는데 안내·마스킹이 없다.
+
 ### 아직 안 한 것
 
 - schema 버전과 호환성 정책
-- 데이터 보존·삭제와 개인정보 처리 정책(Kafka retention 1시간, InfluxDB 버킷 보존 미확인,
-  GPS는 위치정보)
 - 성능 회귀 기준선 및 정기 soak test
 - 배포 롤백 자동화
 - 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증
