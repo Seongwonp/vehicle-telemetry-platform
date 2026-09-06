@@ -1,1 +1,6 @@
 key,value
+markers_published,20
+arrived_kafka,20
+arrived_influx,0
+arrived_rest,0
+arrived_websocket,0

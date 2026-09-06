@@ -4,3 +4,4 @@ marker_gap_sec,0.5
 marker_vehicle_id,E2E-TRACE-01
 background_vehicles,50
 publish_interval_sec,0.2
+fault_container,telemetry-influxdb

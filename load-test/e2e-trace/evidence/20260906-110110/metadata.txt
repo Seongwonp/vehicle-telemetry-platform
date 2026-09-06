@@ -9,3 +9,7 @@ docker           : Docker version 29.7.2, build a7dcaa6
 docker_compose   : 5.4.0
 host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
 machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-09-06T11:05:20+09:00
+success_criteria : 마커 전량이 5단계(MQTT·Kafka·InfluxDB·REST·WebSocket)에 도달
+verdict          : 관찰 (kafka 20, influx 0, rest 0, ws 0 / 20)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2
