@@ -1,0 +1,16 @@
+t_sec,phase,group_state,members,lag,topic_offset,influx_rows_skipped,storage_instances
+193,baseline,Stable,3,95,23322,,1
+243,scaled-out,Stable,9,126,35575,,3
+267,scaled-out,Stable,9,139,41775,,3
+293,scaled-out,Stable,9,125,48039,,3
+317,scaled-out,Stable,9,146,54250,,3
+342,scaled-out,Stable,9,144,60375,,3
+367,scaled-out,Stable,9,135,66600,,3
+392,scaled-out,Stable,9,120,72825,,3
+417,scaled-out,Stable,9,84,79075,,3
+449,scaled-in,Stable,9,102,86925,,1
+474,scaled-in,Stable,9,118,93225,,1
+499,scaled-in,Stable,3,133,99410,,1
+524,scaled-in,Stable,3,93,105650,,1
+548,scaled-in,Stable,3,109,111839,,1
+579,draining,Stable,3,0,117125,,1

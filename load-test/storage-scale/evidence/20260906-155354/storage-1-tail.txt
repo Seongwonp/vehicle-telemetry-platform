@@ -1,0 +1,60 @@
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Resetting generation and member id due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Request joining group due to: consumer pro-actively leaving the group
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+07:01:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-telemetry-storage-group-telemetry-storage-1-0 unregistered
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-anomaly-storage-group-telemetry-storage-1-1 unregistered
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-anomaly-storage-group-telemetry-storage-1-0 unregistered
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-telemetry-storage-group-telemetry-storage-1-2 unregistered
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-anomaly-storage-group-telemetry-storage-1-2 unregistered
+07:01:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.consumer for consumer-telemetry-storage-group-telemetry-storage-1-1 unregistered
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Removing {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+07:01:13 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 0 subscriber(s).
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - stopped bean '_org.springframework.integration.errorLogger'
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Removing {service-activator:mqttBrokerMetricsHandler.handle.serviceActivator} as a subscriber to the 'mqttBrokerMetricsChannel' channel
+07:01:13 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttBrokerMetricsChannel' has 0 subscriber(s).
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - stopped bean 'mqttBrokerMetricsHandler.handle.serviceActivator'
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Removing {service-activator:mqttMessageHandler.handle.serviceActivator} as a subscriber to the 'mqttInputChannel' channel
+07:01:13 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttInputChannel' has 0 subscriber(s).
+07:01:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - stopped bean 'mqttMessageHandler.handle.serviceActivator'
+07:01:13 [-] [-] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+07:01:13 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown initiated...
+07:01:13 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Shutdown completed.

@@ -2,6 +2,7 @@ package com.telemetry.config;
 
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.integration.channel.DirectChannel;
@@ -128,7 +129,20 @@ public class MqttConfig {
         return new DirectChannel();
     }
 
+    /**
+     * MQTT 수집 어댑터. <b>인스턴스마다 켜고 끌 수 있어야 한다.</b>
+     *
+     * <p>이 애플리케이션은 <b>MQTT 수집</b>과 <b>Kafka→InfluxDB 저장</b>을 겸한다. 저장
+     * 처리량을 늘리려고 통째로 복제하면 수집까지 이중화되는데, MQTT client-id가 고정이라
+     * 같은 id로 두 번 붙어 브로커가 앞 세션을 끊는다 — 두 인스턴스가 서로를 끊는 상태가 된다
+     * (2026-09-06 실측: 원본 인스턴스에서 연결 끊김 44건).
+     *
+     * <p>그래서 <b>수집 1대 + 저장 N대</b>로 역할을 나눌 수 있게 스위치를 뺐다.
+     * 기본값은 {@code true}라 단일 인스턴스 구성은 그대로 동작한다.
+     * {@code $SYS} 구독도 같이 꺼진다 — 브로커 통계는 수집 담당 인스턴스가 대표로 센다.
+     */
     @Bean
+    @ConditionalOnProperty(name = "mqtt.ingest.enabled", havingValue = "true", matchIfMissing = true)
     public MqttPahoMessageDrivenChannelAdapter mqttInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter =
             new MqttPahoMessageDrivenChannelAdapter(clientId, mqttClientFactory(), topic);
@@ -157,6 +171,7 @@ public class MqttConfig {
      * 한 번 놓쳐도 다음 주기에 정확한 누적값이 오므로 재전송 보장이 필요 없다.
      */
     @Bean
+    @ConditionalOnProperty(name = "mqtt.ingest.enabled", havingValue = "true", matchIfMissing = true)
     public MqttPahoMessageDrivenChannelAdapter mqttBrokerMetricsInbound() {
         MqttPahoMessageDrivenChannelAdapter adapter = new MqttPahoMessageDrivenChannelAdapter(
             clientId + "-sys", mqttClientFactory(),

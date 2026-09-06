@@ -1,0 +1,8 @@
+key,value
+sim_confirmed_puback,132051
+backend_mqtt_received_before,23382
+backend_mqtt_received_after,114672
+kafka_topic_end_offset,133220
+kafka_dlq_end_offset,0
+influx_rows,133158
+rebalance_log_lines,6

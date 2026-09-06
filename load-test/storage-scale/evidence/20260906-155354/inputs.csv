@@ -1,0 +1,6 @@
+key,value
+mode,split
+extra_instances,2
+vehicles,50
+publish_interval_sec,0.2
+observe_sec,180

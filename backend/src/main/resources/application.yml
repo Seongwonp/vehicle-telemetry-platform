@@ -79,6 +79,12 @@ mqtt:
   port: ${MQTT_PORT:8883}
   topic: "vehicle/telemetry/#"
   client-id: ${MQTT_CLIENT_ID:telemetry-backend}
+  # MQTT 수집을 이 인스턴스에서 할지. 이 앱은 수집과 저장을 겸해서, 저장 처리량을 늘리려고
+  # 통째로 복제하면 수집까지 이중화된다 — client-id가 같아 브로커가 앞 세션을 끊고
+  # 두 인스턴스가 서로를 끊는다(2026-09-06 실측). 저장 전용 인스턴스는 false로 띄운다.
+  # 그때 group.instance.id도 인스턴스별로 갈라야 한다(GROUP_INSTANCE_ID_BASE).
+  ingest:
+    enabled: ${MQTT_INGEST_ENABLED:true}
   # 자동 재연결 백오프의 상한. Paho 기본값은 128초인데, 그동안 브로커는 우리 세션
   # 앞으로 온 메시지를 max_queued_messages(10,000)까지만 담고 나머지를 버린다.
   # 브로커 90초 장애를 주입해 재보니 복구 후 재연결까지 벌어진 틈에 129,447건이
