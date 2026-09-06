@@ -1,0 +1,16 @@
+# telemetry-storage-group @ 2026-09-06T17:20:03+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 4          1609451         5100627         3491176         telemetry-backend-consumer-1-8b8e63ec-343b-434c-944b-5b71ee5458fd /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 5          1611392         5739910         4128518         telemetry-backend-consumer-1-8b8e63ec-343b-434c-944b-5b71ee5458fd /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 6          2048311         5744010         3695699         telemetry-backend-consumer-1-8b8e63ec-343b-434c-944b-5b71ee5458fd /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 7          2030228         5884403         3854175         telemetry-backend-consumer-1-8b8e63ec-343b-434c-944b-5b71ee5458fd /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 8          2049017         5732968         3683951         telemetry-backend-consumer-2-71723519-752d-4d53-8c74-4e69d1ee7107 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 9          2055395         5057161         3001766         telemetry-backend-consumer-2-71723519-752d-4d53-8c74-4e69d1ee7107 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 10         2056482         5063914         3007432         telemetry-backend-consumer-2-71723519-752d-4d53-8c74-4e69d1ee7107 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 11         2039863         5226027         3186164         telemetry-backend-consumer-2-71723519-752d-4d53-8c74-4e69d1ee7107 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 0          1611295         4792977         3181682         telemetry-backend-consumer-0-831cf54d-3872-4a1f-b3e1-619243392015 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 1          1609800         5162758         3552958         telemetry-backend-consumer-0-831cf54d-3872-4a1f-b3e1-619243392015 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 2          1615695         5584320         3968625         telemetry-backend-consumer-0-831cf54d-3872-4a1f-b3e1-619243392015 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 3          1618396         4107534         2489138         telemetry-backend-consumer-0-831cf54d-3872-4a1f-b3e1-619243392015 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+

@@ -1,0 +1,6 @@
+key,value
+mode,throughput
+partitions,12
+producer_shards,6
+producer_mode,구간 내내 계속 발행
+phase_sec,150

@@ -1,0 +1,11 @@
+key,value
+partitions_actual,12
+lag_zero_samples_a,0
+lag_zero_samples_b,0
+lag_zero_samples_a2,0
+produce_a_median,81398
+produce_b_median,84143
+produce_a2_median,88699
+rate_a_1inst_median,19428
+rate_b_3inst_median,50894
+rate_a2_1inst_median,24697
