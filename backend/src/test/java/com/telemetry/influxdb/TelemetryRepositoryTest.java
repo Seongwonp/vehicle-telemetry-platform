@@ -70,6 +70,40 @@ class TelemetryRepositoryTest {
         verify(writeApi, never()).writePoints(anyList());
     }
 
+    @Test
+    void 유한하지_않은_값은_필드가_사라지는_대신_예외가_된다() {
+        // 실측에서 나온 테스트다. {"speed": 1e309}는 유효한 JSON이고 Jackson이 Infinity로
+        // 파싱하는데, 쓰기가 **성공하면서 speed 필드만 조용히 빠진 채** 저장됐다
+        // (DLQ 0, 에러 0, 카운터 변화 0 — load-test/poison-message/RESULT_20260906_poison.md).
+        // 던져야 컨슈머의 레코드 단위 catch가 그 레코드만 DLQ로 보내 유실이 보이게 된다.
+        repository = new TelemetryRepository(writeApi, new SimpleMeterRegistry());
+
+        VehicleTelemetry infinite = telemetry();
+        infinite.setSpeed(Double.POSITIVE_INFINITY);
+        assertThatThrownBy(() -> repository.toPoint(infinite))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("speed");
+
+        VehicleTelemetry nan = telemetry();
+        nan.setEngineTemp(Double.NaN);
+        assertThatThrownBy(() -> repository.toPoint(nan))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("engine_temp");
+
+        // GPS도 같은 경로를 탄다 — 별도 블록이라 빠뜨리기 쉽다.
+        VehicleTelemetry badGps = telemetry();
+        VehicleTelemetry.GpsLocation gps = new VehicleTelemetry.GpsLocation();
+        gps.setLat(Double.NEGATIVE_INFINITY);
+        gps.setLng(127.0);
+        badGps.setGps(gps);
+        assertThatThrownBy(() -> repository.toPoint(badGps))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("lat");
+
+        // 정상 값은 그대로 통과한다.
+        assertThat(repository.toPoint(telemetry())).isNotNull();
+    }
+
     private VehicleTelemetry telemetry() {
         VehicleTelemetry telemetry = new VehicleTelemetry();
         telemetry.setVehicleId("SIM-001");

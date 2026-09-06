@@ -69,6 +69,12 @@ PERMANENT_MARKERS = (
     "UnicodeDecodeError",
     "NumberFormatException",
     "NullPointerException",
+    # 유한하지 않은 값(Infinity/NaN)을 toPoint()가 거부할 때 나온다. Spring이 우리
+    # IllegalArgumentException을 InvalidDataAccessApiUsageException으로 번역한다.
+    # 되돌려도 값은 그대로 Infinity라 영구다 — 2026-09-06 실측에서 이게 `unknown`으로
+    # 분류돼(목록에 없어서) 운영자가 손으로 봐야 하는 상태였다.
+    "InvalidDataAccessApiUsageException",
+    "IllegalArgumentException",
 )
 
 REPLAY_COUNT_HEADER = "x-dlq-replay-count"

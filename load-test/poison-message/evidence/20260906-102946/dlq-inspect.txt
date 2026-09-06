@@ -1,0 +1,21 @@
+======================================================================
+vehicle-telemetry-dlq: 1건
+----------------------------------------------------------------------
+판정
+  transient        0  (  0.0%)  일시적 — 재처리 대상
+  permanent        0  (  0.0%)  영구 — 재처리하면 루프
+  unknown          1  (100.0%)  불명 — 사람이 봐야 함
+----------------------------------------------------------------------
+원인별
+        1  org.springframework.dao.InvalidDataAccessApiUsageException
+----------------------------------------------------------------------
+원본 토픽별
+        1  vehicle-telemetry
+----------------------------------------------------------------------
+원인별 표본 1건
+
+  [org.springframework.dao.InvalidDataAccessApiUsageException]
+    key      : POISON-INFINITY
+    원인 메시지: InfluxDB에 쓸 수 없는 값 — speed=Infinity (유한하지 않은 값은 필드가 조용히 사라진다)
+    payload  : {"vehicle_id": "POISON-INFINITY", "timestamp": "2026-09-06T01:30:48.611Z", "speed": 1e309, "rpm": 2000, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage": 13.8, "gp
+======================================================================

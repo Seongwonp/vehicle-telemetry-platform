@@ -233,7 +233,12 @@ evidence_capture_prometheus final
 evidence_capture_kafka_groups "$GROUP" telemetry-storage-group anomaly-storage-group
 evidence_capture_topic_offsets "$SRC_TOPIC" "$DLQ_TOPIC"
 evidence_capture_log_lines telemetry-backend \
-  "Revoke previously assigned|Attempt to heartbeat|leaving the group|poll timeout|exhausted|Rebalanc|재시도" backend-key-lines.txt
+  "Revoke previously assigned|Attempt to heartbeat|leaving the group|poll timeout|exhausted|Rebalanc|재시도|DLQ 이동" backend-key-lines.txt
+# LISTENER_LOG_LEVEL=DEBUG로 돌렸을 때만 내용이 있다. 리스너가 백오프 동안 파티션을
+# pause한 채 poll을 계속하는지("Pausing"/"Resuming"), 아니면 poll을 멈추는지가 여기 남는다 —
+# 리밸런싱이 안 도는 이유를 가르는 유일한 직접 증거다(P1.5-2).
+evidence_capture_log_lines telemetry-backend \
+  "Pausing|Resuming|paused|Backing off|Retrying|Skipping seek|partitions assigned" listener-debug-lines.txt
 
 evidence_count dlq_before "$DLQ_BEFORE"
 evidence_count dlq_after "$DLQ_AFTER"

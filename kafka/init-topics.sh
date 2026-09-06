@@ -43,8 +43,11 @@ create_topic "vehicle-telemetry" 3 1
 # 이상 감지 결과 알림 (Phase 3에서 사용)
 create_topic "vehicle-anomaly-alerts" 3 1
 
-# DTC 진단 코드 이벤트 (Phase 3에서 사용)
-create_topic "vehicle-dtc-events" 1 1
+# `vehicle-dtc-events`는 2026-09-06에 제거했다. Phase 3을 계획할 때 만들어뒀지만 코드
+# 어디서도 발행하지도 구독하지도 않는다 — DTC는 텔레메트리 payload의 `dtc_codes` 배열로
+# 들어와 이상 감지 룰이 거기서 읽는다. 배포마다 빈 토픽이 생겨 "이건 뭐지"를 반복하게
+# 만들 뿐이라 지웠다(P0-3에서 발견, 참조하는 대시보드·알림 없음을 확인).
+# 다시 필요해지면 그때 만들면 된다.
 
 # DLQ — 저장 실패한 원본 메시지 격리 (Phase 8, backend KafkaConfig가 부팅 시에도 자동 생성함)
 create_topic "vehicle-telemetry-dlq" 1 1

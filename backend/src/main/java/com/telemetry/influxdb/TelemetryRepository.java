@@ -85,12 +85,12 @@ public class TelemetryRepository {
         // "특정 차량의 데이터만 조회"하는 쿼리가 field 필터보다 훨씬 빠르다.
         Point point = Point.measurement("vehicle_telemetry")
             .addTag("vehicle_id", telemetry.getVehicleId())
-            .addField("speed", telemetry.getSpeed())
+            .addField("speed", finite("speed", telemetry.getSpeed()))
             .addField("rpm", (double) telemetry.getRpm())
-            .addField("engine_temp", telemetry.getEngineTemp())
-            .addField("throttle_position", telemetry.getThrottlePosition())
-            .addField("fuel_level", telemetry.getFuelLevel())
-            .addField("battery_voltage", telemetry.getBatteryVoltage())
+            .addField("engine_temp", finite("engine_temp", telemetry.getEngineTemp()))
+            .addField("throttle_position", finite("throttle_position", telemetry.getThrottlePosition()))
+            .addField("fuel_level", finite("fuel_level", telemetry.getFuelLevel()))
+            .addField("battery_voltage", finite("battery_voltage", telemetry.getBatteryVoltage()))
             // timestamp는 시뮬레이터가 보낸 ISO-8601 문자열을 파싱한다.
             // 형식이 맞지 않으면 Instant.parse()에서 DateTimeParseException이 발생한다.
             // WritePrecision.S(초 단위)였을 때는 PUBLISH_INTERVAL이 1초 미만이면 같은 차량의
@@ -113,8 +113,8 @@ public class TelemetryRepository {
             .time(Instant.parse(telemetry.getTimestamp()), WritePrecision.MS);
 
         if (telemetry.getGps() != null) {
-            point.addField("lat", telemetry.getGps().getLat())
-                 .addField("lng", telemetry.getGps().getLng());
+            point.addField("lat", finite("lat", telemetry.getGps().getLat()))
+                 .addField("lng", finite("lng", telemetry.getGps().getLng()));
         }
 
         if (telemetry.getDtcCodes() != null && !telemetry.getDtcCodes().isEmpty()) {
@@ -122,5 +122,33 @@ public class TelemetryRepository {
         }
 
         return point;
+    }
+
+    /**
+     * 유한하지 않은 값(Infinity, NaN)이면 예외를 던진다.
+     *
+     * <p><b>이 검사가 없을 때 무슨 일이 있었나:</b> {@code {"speed": 1e309}}는 유효한
+     * JSON이고 Jackson이 {@code Double.POSITIVE_INFINITY}로 파싱한다. 쓰기가 실패할 것으로
+     * 예상했는데 실제로는 <b>성공했고, speed 필드만 빠진 채 저장됐다</b> — DLQ 0, 에러 로그 0,
+     * 카운터 변화 0. 행은 남으므로 정합성 대조(토픽 수 = 행 수)로도 안 잡힌다.
+     * 레코드 단위 유실만 세는 지금 방식이 <b>필드 단위 유실은 못 본다</b>
+     * ({@code load-test/poison-message/RESULT_20260906_poison.md}).
+     *
+     * <p><b>왜 건너뛰지 않고 던지나:</b> 던지면 컨슈머의 레코드 단위 catch가 그 레코드만
+     * DLQ로 보낸다 — 유실이 <b>보이고 되돌릴 수 있는</b> 형태가 된다. 필드만 빼고 저장하면
+     * 아무 신호 없이 값이 사라진다.
+     *
+     * <p><b>비용:</b> 포인트당 비교 8회다. 같은 포인트를 쓰는 HTTP 요청 하나가 이 호스트에서
+     * 약 0.8초(요청당 고정비, 배치 크기와 거의 무관)라 측정 가능한 수준이 아니다.
+     * 2026-09-06까지는 "발생 가능성을 확인하지 않은 채 모든 메시지에 비용을 물릴지"를
+     * 판단하지 못해 미결정으로 뒀는데, 비용 쪽이 이 정도면 판단할 것이 없다.
+     */
+    private static double finite(String field, double value) {
+        if (!Double.isFinite(value)) {
+            throw new IllegalArgumentException(
+                "InfluxDB에 쓸 수 없는 값 — " + field + "=" + value
+                    + " (유한하지 않은 값은 필드가 조용히 사라진다)");
+        }
+        return value;
     }
 }
