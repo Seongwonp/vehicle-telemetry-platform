@@ -52,6 +52,15 @@ wait_sec 60
 # 자격 증명은 .env에서 읽어 **환경변수로만** 넘긴다. 출력에도 증거에도 남기지 않는다
 # (docs/evidence-policy.md).
 docker build -q -t "$IMG" load-test/e2e-trace >/dev/null
+
+# `FAULT=<컨테이너>`를 주면 추적 직전에 그 의존성을 세운다. 정상 경로만 돌리면
+# trace.py의 "최초 미도달 단계" 출력은 **한 번도 실행되지 않는다** — 전 단계 20/20이면
+# 그 코드는 죽은 코드다. 실패 지점 구분이 실제로 동작하는지 보려면 끊고 봐야 한다.
+if [ -n "${FAULT:-}" ]; then
+  log "장애 주입: $FAULT 정지 (추적 구간 내내 정지 상태)"
+  docker stop "$FAULT" >/dev/null
+  evidence_input fault_container "$FAULT"
+fi
 WINPWD=$(pwd -W 2>/dev/null || pwd)
 log "추적 시작"
 set +e
@@ -67,6 +76,10 @@ log "추적 종료 (rc=$TRACE_RC)"
 # ── 4. 정리 ────────────────────────────────────────────────────
 docker stop -t 60 telemetry-sim-0 >/dev/null 2>&1 || true
 docker rm -f telemetry-sim-0 >/dev/null 2>&1 || true
+if [ -n "${FAULT:-}" ]; then
+  log "장애 해제: $FAULT 재기동"
+  docker start "$FAULT" >/dev/null 2>&1 || true
+fi
 
 # ── 5. 집계 ────────────────────────────────────────────────────
 # 마커별 원본은 trace.py가 CSV_BEGIN/CSV_END 사이에 찍는다. 그 구간만 잘라 남긴다.

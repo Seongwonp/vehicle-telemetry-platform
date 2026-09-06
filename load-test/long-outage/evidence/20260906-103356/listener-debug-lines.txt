@@ -1,0 +1,6 @@
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - anomaly-storage-group: partitions assigned: [vehicle-anomaly-alerts-2]
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - telemetry-storage-group: partitions assigned: [vehicle-telemetry-2]
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - anomaly-storage-group: partitions assigned: [vehicle-anomaly-alerts-0]
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - anomaly-storage-group: partitions assigned: [vehicle-anomaly-alerts-1]
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - telemetry-storage-group: partitions assigned: [vehicle-telemetry-1]
+01:35:36 [-] [-] INFO  o.s.k.l.KafkaMessageListenerContainer - telemetry-storage-group: partitions assigned: [vehicle-telemetry-0]

@@ -1,0 +1,4 @@
+01:37:21 [-] [-] DEBUG o.s.k.l.FallbackBatchErrorHandler - Retry failed for: vehicle-telemetry-2@7609,vehicle-telemetry-2@7610,vehicle-telemetry-2@7611,vehicle-telemetry-2@7612,vehicle-telemetry-2@761
+	at org.springframework.kafka.listener.FallbackBatchErrorHandler.handleBatch(FallbackBatchErrorHandler.java:152)
+01:37:21 [-] [-] DEBUG o.s.k.l.FallbackBatchErrorHandler - Retry failed for: vehicle-telemetry-0@7578,vehicle-telemetry-0@7579,vehicle-telemetry-0@7580,vehicle-telemetry-0@7581,vehicle-telemetry-0@758
+	at org.springframework.kafka.listener.FallbackBatchErrorHandler.handleBatch(FallbackBatchErrorHandler.java:152)

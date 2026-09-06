@@ -114,8 +114,17 @@ public class KafkaConfig {
      * ({@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}).
      *
      * <p>따라서 "예산 &lt; {@code max.poll.interval.ms}"라는 관계도 그대로 성립하지 않는다.
-     * 컨슈머가 쫓겨나는 기준은 <b>poll 사이의 벽시계 시간</b>이라, 리스너가 오래 붙잡히면
-     * 예산과 무관하게 리밸런싱이 돌 수 있다. 300초 장애에서는 실측으로 0건이었다.
+     * 컨슈머가 쫓겨나는 기준은 <b>poll 사이의 벽시계 시간</b>이지만, <b>이 경로에서는
+     * 그것 때문에 리밸런싱이 돌지 않는다.</b> 배치 리스너가 던지면
+     * {@code FallbackBatchErrorHandler}가 받는데, 그 안의 {@code ErrorHandlingUtils.retryBatch}가
+     * 백오프로 쉬는 동안 <b>파티션을 pause한 채 {@code poll(Duration.ZERO)}를 계속 호출한다</b>
+     * (spring-kafka 3.1.4 바이트코드로 확인). poll이 계속 불리므로
+     * {@code max.poll.interval.ms}가 만료되지 않는다.
+     *
+     * <p>실측도 같다 — PostgreSQL 720초 장애에서 재시도 주기가 약 8분(poll 간격의 2배 이상)
+     * 이었는데 리밸런싱 0건, 파티션 재할당 0건이었다
+     * ({@code load-test/long-outage/RESULT_20260906_influxdb_repeat.md}).
+     * 다만 정적 멤버십을 끈 대조군은 돌리지 않았다.
      *
      * <p>{@code budgetMs <= 0}이면 재시도 없이 곧바로 recoverer로 보낸다
      * (설정으로 예전 동작에 가깝게 되돌릴 수 있어야 A/B 측정이 된다).

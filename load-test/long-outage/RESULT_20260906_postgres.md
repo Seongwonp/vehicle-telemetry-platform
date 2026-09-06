@@ -83,10 +83,13 @@ DLQ event_id 수: 21
 `max.poll.interval.ms`(300초)를 **두 배 이상 넘겼는데도** 컨슈머가 쫓겨나지 않았다.
 
 `KafkaConfig.buildBackOff` 주석은 "리스너가 오래 붙잡히면 예산과 무관하게 리밸런싱이
-돌 수 있다"고 적어뒀는데, 720초 장애에서는 **돌지 않았다.** 두 가지 중 하나다 —
-정적 멤버십(`group.instance.id`)이 버텨주거나, Spring Kafka가 백오프 동안 파티션을
-pause한 채 poll을 계속하거나. **이 실험은 둘을 구분하지 못한다**(정적 멤버십을 끄고
-같은 조건을 돌려야 갈린다). 미측정으로 남긴다.
+돌 수 있다"고 적어뒀는데, 720초 장애에서는 **돌지 않았다.**
+
+이 문서를 쓸 때는 정적 멤버십(`group.instance.id`) 덕인지 Spring Kafka가 컨슈머를
+살려두는 것인지 구분하지 못했다. **같은 날 오후에 갈랐다** —
+`FallbackBatchErrorHandler`가 백오프 동안 파티션을 pause한 채 `poll(0)`을 계속 호출한다
+(바이트코드 확인). 정적 멤버십이 버텨준 것이 아니다.
+근거는 [`RESULT_20260906_influxdb_repeat.md`](RESULT_20260906_influxdb_repeat.md).
 
 ## 5. 복구
 

@@ -1,0 +1,25 @@
+# 리밸런싱이 안 도는 이유 — 바이트코드로 확인 (P1.5-2)
+#
+# spring-kafka 3.1.4 (build.gradle 의존성 그대로, Gradle 캐시의 jar를 javap로 열었다)
+#
+#   jar xf spring-kafka-3.1.4.jar org/springframework/kafka/listener/ErrorHandlingUtils.class
+#   javap -p -c org/springframework/kafka/listener/ErrorHandlingUtils.class
+#
+# 배치 리스너가 던지면 DefaultErrorHandler → FallbackBatchErrorHandler →
+# ErrorHandlingUtils.retryBatch로 간다. FallbackBatchErrorHandler가 부르는 것:
+#   Consumer.assignment, Consumer.pause, ErrorHandlingUtils.retryBatch
+# retryBatch가 부르는 것(호출 횟수):
+#   Consumer.assignment 4 / Consumer.poll 2 / Consumer.resume 3
+#   ConsumerPauseResumeEventPublisher.publishConsumerResumedEvent 3
+#   CommonErrorHandler.handleBatch 5 / BackOffExecution.nextBackOff 2
+#
+# poll 호출부는 둘 다 Duration.ZERO다:
+#   149: getstatic  Duration.ZERO
+#   152: invokeinterface Consumer.poll:(Ljava/time/Duration;)...
+#   323: getstatic  Duration.ZERO
+#   326: invokeinterface Consumer.poll:(Ljava/time/Duration;)...
+#
+# 즉 백오프로 쉬는 동안 **파티션을 pause한 채 poll(0)을 계속 호출한다.**
+# poll이 계속 불리므로 max.poll.interval.ms(300초)가 만료되지 않는다.
+# 정적 멤버십(group.instance.id)이 버텨준 것이 아니라, 에러 핸들러가 컨슈머를
+# 살려둔 것이다.

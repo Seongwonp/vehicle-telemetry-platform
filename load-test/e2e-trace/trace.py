@@ -233,15 +233,27 @@ def kafka_arrivals(bootstrap: str, topic: str, vehicle_id: str,
 
 def influx_arrivals(url: str, org: str, bucket: str, token: str,
                     vehicle_id: str) -> set[str]:
+    """InfluxDB에 그 마커가 있는지.
+
+    **조회가 실패하면 빈 집합으로 돌려준다.** 처음에는 예외를 그대로 던졌는데,
+    InfluxDB를 세워놓고 추적하는 시나리오(장애 중 실패 지점 구분)에서 이름 해석이
+    실패하면서 `requests.exceptions.ConnectionError`로 **도구가 통째로 죽었다** —
+    측정하려던 바로 그 상황에서 못 쓰는 도구였다. "저장소에 못 물어봤다"는
+    "저장 안 됐다"와 같은 결론(미도달)으로 처리하고, 실패 사실을 위로 알린다.
+    """
     flux = (f'from(bucket: "{bucket}") |> range(start: -1h) '
             f'|> filter(fn: (r) => r._measurement == "vehicle_telemetry" '
             f'and r.vehicle_id == "{vehicle_id}" and r._field == "speed")')
-    r = requests.post(f"{url}/api/v2/query", params={"org": org},
-                      headers={"Authorization": f"Token {token}",
-                               "Content-Type": "application/vnd.flux",
-                               "Accept": "application/csv"},
-                      data=flux, timeout=60)
-    r.raise_for_status()
+    try:
+        r = requests.post(f"{url}/api/v2/query", params={"org": org},
+                          headers={"Authorization": f"Token {token}",
+                                   "Content-Type": "application/vnd.flux",
+                                   "Accept": "application/csv"},
+                          data=flux, timeout=60)
+        r.raise_for_status()
+    except requests.RequestException as e:
+        print(f"  ** InfluxDB 조회 실패 — 미도달로 센다: {type(e).__name__}")
+        return set()
     seen = set()
     header: list[str] = []
     for line in r.text.splitlines():
@@ -370,8 +382,14 @@ def main() -> int:
 
     time.sleep(2)
     ws.stop()
-    kafka_seen = kafka_arrivals(args.bootstrap, args.topic, args.vehicle_id,
-                                int((markers[0][1] - 5) * 1000), 20000)
+    # Kafka 조회도 같은 이유로 감싼다 — 어느 단계가 죽어 있든 **집계까지는 가야** 한다.
+    # 이 도구의 존재 이유가 "어디서 끊겼나"라서, 끊긴 단계를 조회하다 죽으면 쓸모가 없다.
+    try:
+        kafka_seen = kafka_arrivals(args.bootstrap, args.topic, args.vehicle_id,
+                                    int((markers[0][1] - 5) * 1000), 20000)
+    except Exception as e:
+        print(f"  ** Kafka 조회 실패 — 미도달로 센다: {type(e).__name__}")
+        kafka_seen = set()
     influx_seen = {normalize(t) for t in
                    influx_arrivals(args.influx, os.environ["INFLUXDB_ORG"],
                                    os.environ["INFLUXDB_BUCKET"],

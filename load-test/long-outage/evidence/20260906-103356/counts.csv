@@ -1,1 +1,13 @@
 key,value
+dlq_before,0
+dlq_after,6185
+dlq_growth,6185
+src_topic_end_offset,264661
+stored_rows,258499
+rebalance_log_lines,0
+backoff_exhausted_log_lines,0
+first_exhaust_t_sec,none
+first_dlq_growth_t_sec,222
+restore_t_sec,757
+sim_stop_t_sec,970
+drain_done_t_sec,979

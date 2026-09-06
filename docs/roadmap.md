@@ -313,11 +313,27 @@ Infinity라 영구다). 결과는 `load-test/poison-message/RESULT_20260906_pois
 ### P1.5-2. 리밸런싱이 왜 안 도는지 구분 — **완료(2026-09-06)**
 
 P1-3에서 재시도가 `max.poll.interval.ms`(300초)를 두 배 넘게 초과했는데도 리밸런싱이
-0이었다. 정적 멤버십(`group.instance.id`) 덕인지, Spring Kafka가 백오프 동안 파티션을
-pause한 채 poll을 계속해서인지 **구분하지 못한 채** 닫았다.
+0이었다. 정적 멤버십(`group.instance.id`) 덕인지, 리스너가 컨슈머를 살려두는 것인지
+**구분하지 못한 채** 닫았다.
 
-`org.springframework.kafka.listener`를 DEBUG로 올려 같은 장애를 다시 주입해 확인한다.
-결과는 `load-test/long-outage/RESULT_20260906_influxdb_repeat.md`.
+**답: 에러 핸들러가 컨슈머를 살려둔다.** 리스너 로거를 DEBUG로 올리니 재시도 주체가
+`FallbackBatchErrorHandler`로 찍혔고, 그 클래스가 부르는
+`ErrorHandlingUtils.retryBatch`가 **파티션을 pause한 채 `poll(Duration.ZERO)`를 계속
+호출한다**(spring-kafka 3.1.4 바이트코드로 확인 — `Consumer.pause` / `Consumer.poll` ×2 /
+`Consumer.resume` ×3). poll이 계속 불리므로 poll 간격이 만료되지 않는다.
+파티션 할당 로그도 기동 시 한 번뿐이고 12분간 재할당이 없다.
+
+`KafkaConfig.buildBackOff`의 "리스너가 오래 붙잡히면 리밸런싱이 돌 수 있다"는 서술을
+정정했다.
+
+**같은 조건 2회차를 겸했다**(P1.5-5): 첫 DLQ 220 → **222초**, DLQ 6,158 → **6,185**(0.4%),
+리밸런싱 0 → 0. **in-doubt 건수만 47 → 23으로 흔들린다** — `docker stop` 순간 서버까지
+닿은 쓰기가 몇 건이냐는 타이밍 문제라 성질처럼 인용하면 안 된다.
+
+결과: `load-test/long-outage/RESULT_20260906_influxdb_repeat.md`.
+
+**남은 것**: 정적 멤버십을 끈 대조군은 안 돌렸다(빈 값을 주면 Kafka가 설정을 거부해
+코드 변경이 필요하다). 2회이고 3회는 아니다.
 
 ### P1.5-3. 장애 중 엔드투엔드 추적 — **완료(2026-09-06)**
 
