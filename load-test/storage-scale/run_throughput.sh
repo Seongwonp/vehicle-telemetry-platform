@@ -190,6 +190,12 @@ sample_for() {  # $1 = 총 초, $2 = phase, $3 = 인스턴스 수
 }
 
 # 저장 전용 인스턴스(수집 끄고 정적 멤버 id 분리). run_scenario.sh split과 같은 방식이다.
+#
+# **이름에 `-exp-`가 붙는 이유**: 2026-09-07에 같은 구성을 compose 프로파일 `scale`로
+# 옮기면서 `telemetry-backend-storage-1..3`이 compose가 관리하는 이름이 됐다. 실험은
+# 최대 7개를 띄워야 해서 `docker run`을 유지하는데, 이름이 겹치면 실험 시작의
+# `docker rm -f`가 **compose로 띄운 운영 인스턴스를 지운다.** 이름을 갈라 그 사고를 막는다.
+# (`cpu_backend_sum`은 `telemetry-backend` 접두사로 매칭하므로 집계는 그대로 잡힌다.)
 start_storage() {  # $1 = 번호
   local env_args count
   env_args=$(docker inspect telemetry-backend --format '{{range .Config.Env}}{{println .}}{{end}}' \
@@ -201,8 +207,8 @@ start_storage() {  # $1 = 번호
     log "** 환경변수 복사 실패($count개) — 중단"; exit 1
   fi
   # shellcheck disable=SC2086
-  eval docker run -d --name "telemetry-backend-storage-$1" --network "$NET" $env_args "$IMG" >/dev/null
-  log "  telemetry-backend-storage-$1 기동 (환경변수 ${count}개)"
+  eval docker run -d --name "telemetry-backend-storage-exp-$1" --network "$NET" $env_args "$IMG" >/dev/null
+  log "  telemetry-backend-storage-exp-$1 기동 (환경변수 ${count}개)"
 }
 
 : > "$OUT"
@@ -212,7 +218,7 @@ log "=== 저장 경로 처리량 A/B/A (파티션 $PARTITIONS, 프로듀서 ${SH
 # anomaly-detector는 띄우지 않는다 — 같은 토픽을 다른 그룹으로 읽어 CPU를 나눠 쓰므로
 # 저장 경로만 보려면 빼는 게 맞다.
 $COMPOSE down -v >/dev/null 2>&1 || true
-for i in $(seq 1 7); do docker rm -f "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
+for i in $(seq 1 7); do docker rm -f "telemetry-backend-storage-exp-$i" >/dev/null 2>&1 || true; done
 # kafka-init을 **반드시 함께 띄운다.** 이 서비스가 init-topics.sh로 토픽을 만든다.
 # 처음에 빼먹었더니 토픽을 만들 주체가 없는데 backend는 토픽 대기 뒤에 뜨도록 짜서
 # 데드락이 됐다(다른 시나리오는 backend를 먼저 띄워 자동 생성에 기대고 있었다).
@@ -299,7 +305,7 @@ done
 # 그만큼 흔들린다는 걸 모르면 스윕 곡선의 기울기를 실제보다 정밀하게 믿게 된다.
 log "--- A': 다시 1개로 (${PHASE_SEC}초) — 차이가 조건 변화가 아님을 확인 ---"
 for i in $(seq 1 7); do
-  docker stop -t 30 "telemetry-backend-storage-$i" >/dev/null 2>&1 || true
+  docker stop -t 30 "telemetry-backend-storage-exp-$i" >/dev/null 2>&1 || true
 done
 wait_sec 40
 sample_for "$PHASE_SEC" A2-1inst 1

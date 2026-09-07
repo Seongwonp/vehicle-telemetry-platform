@@ -121,7 +121,7 @@ log "=== 저장 경로 수평 확장: $MODE (추가 인스턴스 $EXTRA개) ==="
 
 # ── 1. 스택 ────────────────────────────────────────────────────
 $COMPOSE down -v >/dev/null 2>&1 || true
-for i in $(seq 1 "$EXTRA"); do docker rm -f "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
+for i in $(seq 1 "$EXTRA"); do docker rm -f "telemetry-backend-storage-exp-$i" >/dev/null 2>&1 || true; done
 $COMPOSE up -d mosquitto zookeeper kafka influxdb postgres redis >/dev/null 2>&1 || true
 wait_until 300 "PostgreSQL healthy" bash -c '[ "$(docker inspect telemetry-postgres --format "{{.State.Health.Status}}" 2>/dev/null)" = healthy ]'
 $COMPOSE up -d backend anomaly-detector >/dev/null 2>&1
@@ -150,22 +150,22 @@ for i in $(seq 1 "$EXTRA"); do
     exit 1
   fi
   # shellcheck disable=SC2046,SC2086
-  eval docker run -d --name "telemetry-backend-storage-$i" --network "$NET" \
+  eval docker run -d --name "telemetry-backend-storage-exp-$i" --network "$NET" \
     $ENV_ARGS "$IMG" >/dev/null
-  log "  telemetry-backend-storage-$i 기동 (환경변수 ${ENV_COUNT}개 복사)"
+  log "  telemetry-backend-storage-exp-$i 기동 (환경변수 ${ENV_COUNT}개 복사)"
 done
 # 새 인스턴스가 실제로 살아서 그룹에 붙는지 본다. naive 모드에서는 여기서 죽는 것이
 # 결과의 일부이므로 **중단하지 않고 상태만 남긴다.**
 sleep 30
 for i in $(seq 1 "$EXTRA"); do
-  st=$(docker inspect "telemetry-backend-storage-$i" --format '{{.State.Status}} exit={{.State.ExitCode}}' 2>/dev/null || echo "없음")
-  log "  telemetry-backend-storage-$i 상태: $st"
+  st=$(docker inspect "telemetry-backend-storage-exp-$i" --format '{{.State.Status}} exit={{.State.ExitCode}}' 2>/dev/null || echo "없음")
+  log "  telemetry-backend-storage-exp-$i 상태: $st"
 done
 sample_for "$OBSERVE_SEC" scaled-out $((1 + EXTRA))
 
 # ── 4. 스케일 인 ───────────────────────────────────────────────
 log "--- 추가 인스턴스 제거 ---"
-for i in $(seq 1 "$EXTRA"); do docker stop -t 30 "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
+for i in $(seq 1 "$EXTRA"); do docker stop -t 30 "telemetry-backend-storage-exp-$i" >/dev/null 2>&1 || true; done
 sample_for 120 scaled-in 1
 
 # ── 5. 부하 정지 후 드레인 ──────────────────────────────────────
@@ -195,7 +195,7 @@ evidence_capture_topic_offsets vehicle-telemetry vehicle-telemetry-dlq
 evidence_capture_log_lines telemetry-backend \
   "Revoke previously assigned|leaving the group|already rebalancing|Lost connection|Connection lost|client id|FencedInstanceId|UnreleasedInstanceId" backend-key-lines.txt
 for i in $(seq 1 "$EXTRA"); do
-  docker logs "telemetry-backend-storage-$i" 2>&1 | tail -60 \
+  docker logs "telemetry-backend-storage-exp-$i" 2>&1 | tail -60 \
     > "$EVIDENCE_DIR/storage-$i-tail.txt" 2>/dev/null || true
 done
 

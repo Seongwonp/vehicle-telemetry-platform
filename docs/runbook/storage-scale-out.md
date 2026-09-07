@@ -105,13 +105,17 @@ bash scripts/scale-storage.sh down
 `docker-compose.yml`에 `backend-storage-4`를 추가한다 — 앵커를 쓰므로 8줄이고,
 `GROUP_INSTANCE_ID_BASE`만 다르게 준다. `scripts/scale-storage.sh`의 `MAX`도 같이 올린다.
 
-## 부하 실험과 이름이 겹친다
+## 부하 실험과의 관계
 
-`load-test/storage-scale/run_throughput.sh`는 같은 이름
-(`telemetry-backend-storage-N`)으로 최대 7개를 **`docker run`으로** 띄운다. 실험 목적상
-compose가 선언한 3개보다 많아야 해서 그대로 뒀다. 실험 스크립트는 시작할 때
-`docker rm -f`로 같은 이름을 먼저 지우므로 **실험을 돌리면 compose로 띄운 저장 인스턴스가
-사라진다.** 둘을 동시에 쓰지 마라.
+`load-test/storage-scale/run_throughput.sh`와 `run_scenario.sh`는 같은 구성을
+**`docker run`으로** 최대 7개까지 띄운다(실험은 compose가 선언한 3개보다 많아야 한다).
+
+이름은 **`telemetry-backend-storage-exp-N`으로 갈라놨다.** 실험 스크립트는 시작할 때
+같은 이름을 `docker rm -f`로 지우는데, 이름이 겹쳐 있으면 **실험을 돌리는 순간 compose로
+띄운 저장 인스턴스가 지워진다.** 처음엔 겹쳐 있었고, 2026-09-07에 갈랐다.
+
+그래도 **둘은 같은 컨슈머 그룹과 같은 InfluxDB를 쓴다.** 동시에 띄우면 서로의 부하가 된다.
+측정할 때는 `scripts/scale-storage.sh down`으로 먼저 내려라.
 
 ## 관련 문서
 
