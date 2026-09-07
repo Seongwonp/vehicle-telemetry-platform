@@ -77,7 +77,11 @@ KEYS="$(for d in "${RUNS[@]}"; do awk -F, 'NR>1{print $1}' "$d/counts.csv"; done
     if [ -n "$vals" ]; then
       mn="$(echo $vals | tr ' ' '\n' | sort -n | head -1)"
       mx="$(echo $vals | tr ' ' '\n' | sort -n | tail -1)"
-      printf " %s | %s | %s |\n" "$mn" "$mx" "$((mx - mn))"
+      # **awk로 뺀다.** 예전에는 `$((mx - mn))`이었는데 bash 산술은 정수만 다뤄서,
+      # 소수 지표(CPU %, 쓰기 지연 ms)가 들어오자 **문서 생성이 그 줄에서 조용히 끊겼다**
+      # (2026-09-07). 값이 정수면 정수로, 소수면 소수 한 자리로 찍는다.
+      printf " %s | %s | %s |\n" "$mn" "$mx" \
+        "$(awk -v a="$mx" -v b="$mn" 'BEGIN{d=a-b; if (d==int(d)) printf "%d", d; else printf "%.1f", d}')"
     else
       printf " - | - | - |\n"
     fi

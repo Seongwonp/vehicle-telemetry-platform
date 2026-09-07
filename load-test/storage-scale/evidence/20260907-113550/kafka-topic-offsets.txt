@@ -1,0 +1,26 @@
+# vehicle-telemetry @ 2026-09-07T12:01:40+09:00
+vehicle-telemetry:0:4300000
+vehicle-telemetry:1:4500000
+vehicle-telemetry:2:5700000
+vehicle-telemetry:3:3500000
+vehicle-telemetry:4:4800000
+vehicle-telemetry:5:5700000
+vehicle-telemetry:6:7000000
+vehicle-telemetry:7:6600000
+vehicle-telemetry:8:5300000
+vehicle-telemetry:9:4900000
+vehicle-telemetry:10:5300000
+vehicle-telemetry:11:4600000
+vehicle-telemetry:12:4800000
+vehicle-telemetry:13:5300000
+vehicle-telemetry:14:4900000
+vehicle-telemetry:15:4300000
+vehicle-telemetry:16:4900000
+vehicle-telemetry:17:5200000
+vehicle-telemetry:18:3900000
+vehicle-telemetry:19:4600000
+vehicle-telemetry:20:5600000
+vehicle-telemetry:21:4700000
+vehicle-telemetry:22:4300000
+vehicle-telemetry:23:5300000
+
