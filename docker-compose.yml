@@ -1,3 +1,105 @@
+# ════════════════════════════════════════════════════════════
+# 백엔드 공통 정의 (YAML 앵커)
+#
+# 이 앱은 **MQTT 수집과 Kafka→InfluxDB 저장을 겸한다.** 저장 처리량을 늘리려고
+# 통째로 복제하면 수집까지 이중화되는데, MQTT `client-id`(cleanSession=false)와
+# Kafka `group.instance.id`가 둘 다 고정이라 브로커가 앞 세션을 끊고 정적 멤버가
+# 서로를 밀어낸다 — 2026-09-06 실측에서 fencing 45건·연결 끊김 44건이 나고
+# **컨슈머 멤버가 3에서 늘지 않았다.**
+#
+# 그래서 아래 `backend-storage-*`는 **수집을 끄고 저장만 하는** 인스턴스다
+# (`MQTT_INGEST_ENABLED=false` + 인스턴스별 `GROUP_INSTANCE_ID_BASE`).
+# 지금까지는 이 구성이 실험 스크립트의 `docker run`에만 있었다 — compose로 옮긴 것이
+# 이 앵커다.
+#
+# 환경변수를 한 곳에 모아두는 이유: 저장 인스턴스가 주 backend와 **다른 설정으로
+# 조용히 흘러가면** 그건 측정에서 드러나지 않는다(둘 다 정상 동작하고 숫자만 달라진다).
+# ════════════════════════════════════════════════════════════
+x-backend-env: &backend-env
+  MQTT_HOST: mosquitto
+  MQTT_PORT: 8883
+  MQTT_TLS_ENABLED: "true"
+  MQTT_TLS_KEYSTORE_PATH: /app/certs/backend.p12
+  MQTT_TLS_TRUSTSTORE_PATH: /app/certs/truststore.p12
+  MQTT_TLS_STORE_PASSWORD: ${MQTT_TLS_STORE_PASSWORD:-changeit}
+  KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+  INFLUXDB_URL: http://influxdb:8086
+  INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+  INFLUXDB_ORG: ${INFLUXDB_ORG}
+  INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
+  POSTGRES_HOST: postgres
+  POSTGRES_PORT: 5432
+  POSTGRES_DB: ${POSTGRES_DB}
+  POSTGRES_USER: ${POSTGRES_USER}
+  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  SERVER_PORT: 8080
+  JWT_SECRET: ${JWT_SECRET}
+  JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-600000}
+  # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값들 — 부하 테스트/코드 점검 중 발견해 추가.
+  RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
+  LOGIN_RATE_LIMIT_RPM: ${LOGIN_RATE_LIMIT_RPM:-10}
+  DIAGNOSIS_RATE_LIMIT_RPH: ${DIAGNOSIS_RATE_LIMIT_RPH:-5}
+  TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-}
+  ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+  ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
+  CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
+  GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+  GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
+  GEMINI_CACHE_TTL_MS: ${GEMINI_CACHE_TTL_MS:-300000}
+  GEMINI_MAX_CONCURRENT_CALLS: ${GEMINI_MAX_CONCURRENT_CALLS:-4}
+  GEMINI_CIRCUIT_FAILURE_THRESHOLD: ${GEMINI_CIRCUIT_FAILURE_THRESHOLD:-3}
+  GEMINI_CIRCUIT_OPEN_MS: ${GEMINI_CIRCUIT_OPEN_MS:-60000}
+  # Kafka 리스너 재시도 예산(총 경과 시간). 짧으면 짧은 장애에도 DLQ가 주 경로가 된다
+  # — 2초 예산일 때 InfluxDB 90초 장애에서 트래픽의 47.6%가 DLQ로 갔다.
+  KAFKA_RETRY_BUDGET_MS: ${KAFKA_RETRY_BUDGET_MS:-180000}
+  TELEMETRY_SPOOL_PATH: /app/data/telemetry-spool
+  TELEMETRY_SPOOL_RETRY_MS: ${TELEMETRY_SPOOL_RETRY_MS:-5000}
+  # 한 주기에 처리할 spool 파일 수. retry-ms와 곱해져 드레인 속도 상한이 된다
+  # (100/5초 = 20 msg/s였고, 유입 1,700 msg/s에 비해 89배 느렸다).
+  TELEMETRY_SPOOL_RETRY_BATCH: ${TELEMETRY_SPOOL_RETRY_BATCH:-10000}
+  # InfluxDB 저장 배치 크기 = 처리량 튜닝 손잡이 (application.yml 주석 참고).
+  # 재빌드 없이 값만 바꿔 재기동하면 되도록 노출한다.
+  KAFKA_MAX_POLL_RECORDS: ${KAFKA_MAX_POLL_RECORDS:-2000}
+  # 리스너 컨테이너의 재시도·pause·리밸런싱 동작은 이 로거가 DEBUG여야 보인다.
+  # 기본은 WARN이라 장애 중에 아무것도 안 남는다 — 2026-09-06 장기 장애 측정에서
+  # "왜 리밸런싱이 안 도는가"를 로그로 확인할 수 없어 노출했다.
+  # 상시 DEBUG는 정상 부하에서 로그가 폭주하므로 측정할 때만 켠다.
+  LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_KAFKA_LISTENER: ${LISTENER_LOG_LEVEL:-WARN}
+  TRIP_DEFAULT_HOURS: ${TRIP_DEFAULT_HOURS:-1}
+  TRIP_POINT_LIMIT: ${TRIP_POINT_LIMIT:-10000}
+  TRIP_GAP_THRESHOLD: ${TRIP_GAP_THRESHOLD:-3m}
+  TRIP_MIN_POINTS: ${TRIP_MIN_POINTS:-3}
+  TRIP_MAX_GPS_SPEED_KMH: ${TRIP_MAX_GPS_SPEED_KMH:-250}
+
+x-backend-base: &backend-base
+  build: ./backend
+  # 요청 로그 패턴에 clientIp가 들어간다(logging.pattern.console). 접속 IP는 개인을
+  # 식별할 수 있는 정보인데 보존 정책이 없어 컨테이너 로그가 무한히 쌓이고 있었다.
+  # 상한을 준다 — 다만 이건 **용량 기준**이라 트래픽에 따라 보관 기간이 달라진다.
+  # 기간 기준이 필요하면 로그 수집기를 붙여야 한다(현재 없음). docs/data-retention.md.
+  logging:
+    driver: json-file
+    options:
+      max-size: "50m"
+      max-file: "3"
+  depends_on:
+    kafka:
+      condition: service_healthy
+    influxdb:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    mosquitto:
+      condition: service_started
+  networks:
+    - telemetry-net
+  restart: unless-stopped
+
 services:
 
   # ════════════════════════════════════════════════════════════
@@ -21,30 +123,11 @@ services:
 
   # ════════════════════════════════════════════════════════════
   # Spring Boot 백엔드 — MQTT Consumer + Kafka Producer/Consumer + InfluxDB 저장
+  # 수집과 저장을 겸하는 **유일한** 인스턴스다(수집은 여기서만 한다).
   # ════════════════════════════════════════════════════════════
   backend:
-    build: ./backend
+    <<: *backend-base
     container_name: telemetry-backend
-    # 요청 로그 패턴에 clientIp가 들어간다(logging.pattern.console). 접속 IP는 개인을
-    # 식별할 수 있는 정보인데 보존 정책이 없어 컨테이너 로그가 무한히 쌓이고 있었다.
-    # 상한을 준다 — 다만 이건 **용량 기준**이라 트래픽에 따라 보관 기간이 달라진다.
-    # 기간 기준이 필요하면 로그 수집기를 붙여야 한다(현재 없음). docs/data-retention.md.
-    logging:
-      driver: json-file
-      options:
-        max-size: "50m"
-        max-file: "3"
-    depends_on:
-      kafka:
-        condition: service_healthy
-      influxdb:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-      mosquitto:
-        condition: service_started
     ports:
       - "${SERVER_PORT:-8080}:8080"
     volumes:
@@ -52,66 +135,66 @@ services:
       - ./broker/certs:/app/certs:ro
       - backend-spool:/app/data/telemetry-spool
     environment:
-      MQTT_HOST: mosquitto
-      MQTT_PORT: 8883
-      MQTT_TLS_ENABLED: "true"
-      MQTT_TLS_KEYSTORE_PATH: /app/certs/backend.p12
-      MQTT_TLS_TRUSTSTORE_PATH: /app/certs/truststore.p12
-      MQTT_TLS_STORE_PASSWORD: ${MQTT_TLS_STORE_PASSWORD:-changeit}
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
-      INFLUXDB_URL: http://influxdb:8086
-      INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
-      INFLUXDB_ORG: ${INFLUXDB_ORG}
-      INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      SERVER_PORT: 8080
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-600000}
-      # 이전까지 .env에 있어도 컨테이너에 전달되지 않던 값들 — 부하 테스트/코드 점검 중 발견해 추가.
-      RATE_LIMIT_RPM: ${RATE_LIMIT_RPM:-60}
-      LOGIN_RATE_LIMIT_RPM: ${LOGIN_RATE_LIMIT_RPM:-10}
-      DIAGNOSIS_RATE_LIMIT_RPH: ${DIAGNOSIS_RATE_LIMIT_RPH:-5}
-      TRUSTED_PROXY_IPS: ${TRUSTED_PROXY_IPS:-}
-      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD is required}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:*,http://127.0.0.1:*}
-      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-2.0-flash}
-      GEMINI_CACHE_TTL_MS: ${GEMINI_CACHE_TTL_MS:-300000}
-      GEMINI_MAX_CONCURRENT_CALLS: ${GEMINI_MAX_CONCURRENT_CALLS:-4}
-      GEMINI_CIRCUIT_FAILURE_THRESHOLD: ${GEMINI_CIRCUIT_FAILURE_THRESHOLD:-3}
-      GEMINI_CIRCUIT_OPEN_MS: ${GEMINI_CIRCUIT_OPEN_MS:-60000}
-      # Kafka 리스너 재시도 예산(총 경과 시간). 짧으면 짧은 장애에도 DLQ가 주 경로가 된다
-      # — 2초 예산일 때 InfluxDB 90초 장애에서 트래픽의 47.6%가 DLQ로 갔다.
-      KAFKA_RETRY_BUDGET_MS: ${KAFKA_RETRY_BUDGET_MS:-180000}
-      TELEMETRY_SPOOL_PATH: /app/data/telemetry-spool
-      TELEMETRY_SPOOL_RETRY_MS: ${TELEMETRY_SPOOL_RETRY_MS:-5000}
-      # 한 주기에 처리할 spool 파일 수. retry-ms와 곱해져 드레인 속도 상한이 된다
-      # (100/5초 = 20 msg/s였고, 유입 1,700 msg/s에 비해 89배 느렸다).
-      TELEMETRY_SPOOL_RETRY_BATCH: ${TELEMETRY_SPOOL_RETRY_BATCH:-10000}
-      # InfluxDB 저장 배치 크기 = 처리량 튜닝 손잡이 (application.yml 주석 참고).
-      # 재빌드 없이 값만 바꿔 재기동하면 되도록 노출한다.
-      KAFKA_MAX_POLL_RECORDS: ${KAFKA_MAX_POLL_RECORDS:-2000}
-      # 리스너 컨테이너의 재시도·pause·리밸런싱 동작은 이 로거가 DEBUG여야 보인다.
-      # 기본은 WARN이라 장애 중에 아무것도 안 남는다 — 2026-09-06 장기 장애 측정에서
-      # "왜 리밸런싱이 안 도는가"를 로그로 확인할 수 없어 노출했다.
-      # 상시 DEBUG는 정상 부하에서 로그가 폭주하므로 측정할 때만 켠다.
-      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_KAFKA_LISTENER: ${LISTENER_LOG_LEVEL:-WARN}
-      TRIP_DEFAULT_HOURS: ${TRIP_DEFAULT_HOURS:-1}
-      TRIP_POINT_LIMIT: ${TRIP_POINT_LIMIT:-10000}
-      TRIP_GAP_THRESHOLD: ${TRIP_GAP_THRESHOLD:-3m}
-      TRIP_MIN_POINTS: ${TRIP_MIN_POINTS:-3}
-      TRIP_MAX_GPS_SPEED_KMH: ${TRIP_MAX_GPS_SPEED_KMH:-250}
-    networks:
-      - telemetry-net
-    restart: unless-stopped
+      <<: *backend-env
+
+  # ════════════════════════════════════════════════════════════
+  # 저장 전용 백엔드 — 프로파일 `scale`에서만 뜬다
+  #
+  #   docker compose --profile scale up -d backend-storage-1 backend-storage-2
+  #
+  # **먼저 알아야 할 것: 파티션이 3개면 이걸 띄워도 이득이 없다.**
+  # `concurrency: 3`이라 backend 하나가 이미 파티션 3개를 다 차지한다. 늘어난
+  # 컨슈머는 **유휴 멤버로만 붙는다**(2026-09-06에 멤버 9 중 6이 유휴였다).
+  # 파티션을 먼저 늘려야 한다:
+  #
+  #   docker exec telemetry-kafka kafka-topics --bootstrap-server localhost:29092 \
+  #     --alter --topic vehicle-telemetry --partitions 12
+  #
+  # **그리고 늘린다고 처리량이 비례해서 늘지도 않는다.** 2026-09-07 실측에서
+  # 병목은 CPU가 아니라 **InfluxDB 쓰기 지연**이었고(1개 388ms → 4개 665ms),
+  # 이득의 배수는 시스템의 성질이 아니라 **부하 조건의 함수**였다.
+  # 같은 조건 3회에서 8 인스턴스가 56,985 / 44,279 / 26,564 msg/s로 흔들렸다 —
+  # **여기서 나오는 숫자를 성능 사양처럼 인용하지 마라.**
+  # 근거: `load-test/storage-scale/RESULT_20260907_repeat3.md`.
+  #
+  # 각 인스턴스가 주 backend와 다른 점은 셋뿐이다:
+  #   1. MQTT_INGEST_ENABLED=false  — 수집을 안 한다(client-id 충돌 회피)
+  #   2. GROUP_INSTANCE_ID_BASE     — 정적 멤버십 id가 겹치면 서로 fencing 한다
+  #   3. spool 볼륨 없음            — 수집을 안 하니 쌓일 게 없고, 같은 볼륨을 여러
+  #                                   인스턴스가 스캔하면 드레인이 서로를 덮친다
+  # ════════════════════════════════════════════════════════════
+  backend-storage-1:
+    <<: *backend-base
+    profiles: ["scale"]
+    container_name: telemetry-backend-storage-1
+    volumes:
+      - ./broker/certs:/app/certs:ro
+    environment:
+      <<: *backend-env
+      MQTT_INGEST_ENABLED: "false"
+      GROUP_INSTANCE_ID_BASE: telemetry-storage-1
+
+  backend-storage-2:
+    <<: *backend-base
+    profiles: ["scale"]
+    container_name: telemetry-backend-storage-2
+    volumes:
+      - ./broker/certs:/app/certs:ro
+    environment:
+      <<: *backend-env
+      MQTT_INGEST_ENABLED: "false"
+      GROUP_INSTANCE_ID_BASE: telemetry-storage-2
+
+  backend-storage-3:
+    <<: *backend-base
+    profiles: ["scale"]
+    container_name: telemetry-backend-storage-3
+    volumes:
+      - ./broker/certs:/app/certs:ro
+    environment:
+      <<: *backend-env
+      MQTT_INGEST_ENABLED: "false"
+      GROUP_INSTANCE_ID_BASE: telemetry-storage-3
 
   # ════════════════════════════════════════════════════════════
   # 이상 감지 모듈 — Python Kafka Consumer (룰 기반 + IsolationForest)
@@ -343,6 +426,9 @@ services:
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/prometheus/alerts.yml:/etc/prometheus/rules/alerts.yml:ro
+      # 저장 전용 백엔드(profile `scale`)의 스크레이프 대상. file_sd_configs가 읽는다.
+      # 디렉터리째 마운트하므로 파일이 없어도 기동에 문제가 없다 — 대상이 0개일 뿐이다.
+      - ./monitoring/prometheus/targets:/etc/prometheus/targets:ro
       - prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'

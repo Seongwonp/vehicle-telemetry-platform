@@ -19,3 +19,22 @@ services:
       TLS_CLIENT_CERT: ""
       TLS_CLIENT_KEY: ""
       TLS_VEHICLE_CERT_DIR: ""
+
+  # 저장 전용 인스턴스(profile `scale`)도 같은 평문 설정을 받아야 한다.
+  # 이들은 MQTT 수집을 안 하므로(MQTT_INGEST_ENABLED=false) 실제로 브로커에 붙지는
+  # 않지만, 여기서 빼두면 나중에 수집을 켜보려는 순간 **평문 브로커에 mTLS로 붙으려다**
+  # 실패한다. 설정이 갈라지는 지점을 만들지 않는다.
+  backend-storage-1:
+    environment:
+      MQTT_PORT: 1883
+      MQTT_TLS_ENABLED: "false"
+
+  backend-storage-2:
+    environment:
+      MQTT_PORT: 1883
+      MQTT_TLS_ENABLED: "false"
+
+  backend-storage-3:
+    environment:
+      MQTT_PORT: 1883
+      MQTT_TLS_ENABLED: "false"

@@ -52,3 +52,6 @@ __pycache__/
 # 재현에 필요한 핵심 로그는 evidence/<run-id>/의 요약 파일로 보존한다. 전체 로그가
 # 필요하면 외부 저장 위치와 별도 checksum을 결과 문서에 기록한다.
 load-test/**/_result*.txt
+
+# 스케일 프로파일이 만드는 동적 스크레이프 대상 (scripts/scale-storage.sh)
+monitoring/prometheus/targets/*.json

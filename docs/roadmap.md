@@ -461,14 +461,27 @@ in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니
   (`storage_wal_*`·디스크 IOPS 필요), 쓰기 지연은 **주 backend 하나**에서만 쟀다.
   **다음 측정의 조건**: 회차 사이 휴지, **구간 순서 섞기**(지금은 인스턴스 수와 경과
   시간이 같이 움직인다), CPU 온도·클럭 계측.
-- **split 구성을 compose에 반영하지 않았다.** 지금은 실험 스크립트가 `docker run`으로
-  임시 기동할 때만 성립한다.
-  결합 범위를 실제로 세어봤다(2026-09-07) — **실행 코드 17개 파일**이다:
-  부하 스크립트 9개, 모니터링 설정 3개(`prometheus.yml`·`alerts.yml`·대시보드 1),
-  `docker-compose.yml`, `application.yml`, 인증서 스크립트 1.
-  `localhost:8080`은 14개 파일.
-  (이전에 "수십 개"로 적었던 것은 **증거 파일과 결과 텍스트를 같이 센 잘못된 견적**이다 —
-  soak 로그 한 개에만 `telemetry-backend`가 916번 나온다. 실행 코드만 세야 한다.)
+- ~~**split 구성을 compose에 반영하지 않았다.**~~ — **완료(2026-09-07)**.
+  compose 프로파일 `scale`에 저장 전용 서비스 `backend-storage-1..3`을 선언했다.
+  환경변수는 YAML 앵커(`x-backend-env`) 하나로 공유하고, 주 backend와의 차이는
+  **의도한 두 키뿐**임을 렌더링된 설정 비교로 확인했다(`MQTT_INGEST_ENABLED`,
+  `GROUP_INSTANCE_ID_BASE`). 기존 `backend` 서비스의 렌더링 결과는 앵커 도입 전후로
+  **바이트 단위 동일**이다.
+  Prometheus는 `file_sd_configs`로 잡는다 — `static_configs`로 고정하면 프로파일을 안 켠
+  동안 계속 `up == 0`으로 보여서 **장애처럼 보이는 정상**이 된다. 대상 파일은
+  `scripts/scale-storage.sh`가 인스턴스와 함께 만들고 지운다(`.gitignore`).
+  구조 검증: 인스턴스 3개(수집 1 + 저장 2)가 파티션 9개를 정확히 3개씩 나눠 가졌고,
+  정적 id 9종 무충돌, fencing 0, MQTT 세션은 주 backend 하나뿐.
+  근거: ADR-023, `docs/verification/2026-09-07-compose-scale-profile.md`,
+  Runbook `docs/runbook/storage-scale-out.md`.
+  **새로 잰 대가**: 스케일 다운은 즉시 반영되지 않는다 — 컨슈머 그룹 재할당까지
+  **약 45초**(실측 44초, 1회). 정적 멤버십이라 `session.timeout.ms`(클라이언트 기본 45초)를
+  기다린다. 그동안 그 파티션은 소비되지 않는다(유실 아님, 지연).
+  **새로 생긴 미검증**: `session.timeout.ms`가 설정으로 고정돼 있지 않다(기본값 의존),
+  dev(평문) 프로파일은 렌더링만 확인하고 기동 안 함, 부하 실험 스크립트와 **컨테이너 이름이
+  겹친다**(실험이 `docker rm -f`로 지운다 — 동시 사용 금지),
+  파티션 확장이 키 해싱을 바꿔 같은 `vehicle_id`가 다른 파티션으로 갈 때의 영향 미검증,
+  **처리량 이득은 이 변경으로 재지 않았다**(같은 날 회차 간 비교가 깨져 지금 재는 것은 값이 없다).
 - naive의 중복·유실 수치는 **무효**다(연결 경합이 QoS 1 재전송을 유발해 총량에서
   중복과 유실이 상쇄된다). 실패 양상만 유효하다.
 - Kafka `replication-factor`는 여전히 1이다. **브로커가 1대라 상향 자체가 지금은 의미 없다.**
