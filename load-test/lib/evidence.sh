@@ -93,6 +93,17 @@ evidence_init() {
 
   echo "key,value" > "$EVIDENCE_DIR/counts.csv"
   echo "key,value" > "$EVIDENCE_DIR/inputs.csv"
+
+  # **중단된 실행을 알아볼 수 있게 한다.** 2026-09-07에 스크립트가 두 번 중간에 죽었는데
+  # (`set -u` 미정의 변수, Git Bash 경로 변환), 남은 증거 디렉터리에는 metadata·counts·
+  # inputs가 다 있어서 **정상 실행과 구분이 안 됐다.** 나중에 집계하면 조용히 섞인다.
+  # 이 파일이 RUNNING으로 남아 있으면 그 실행은 끝까지 못 간 것이다.
+  echo "RUNNING $EVIDENCE_STARTED_AT" > "$EVIDENCE_DIR/status.txt"
+}
+
+# 이 실행이 끝까지 갔는지. 집계 도구가 중단된 실행을 걸러낼 때 쓴다.
+evidence_is_complete() {  # $1 = evidence 디렉터리
+  [ -f "$1/status.txt" ] && grep -q '^COMPLETE' "$1/status.txt"
 }
 
 _evidence_ready() { [ -n "$EVIDENCE_DIR" ] && [ -d "$EVIDENCE_DIR" ]; }
@@ -195,6 +206,9 @@ evidence_finish() {
     echo "verdict          : ${2:-(미기재)}"
     echo "verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2"
   } >> "$EVIDENCE_DIR/metadata.txt"
+
+  # 여기까지 왔다는 것은 스크립트가 끝까지 갔다는 뜻이다(evidence_init의 RUNNING 참고).
+  echo "COMPLETE $(date -Iseconds)" > "$EVIDENCE_DIR/status.txt"
 
   # 파일이 나중에 바뀌지 않았음을 확인할 수 있게 한다.
   ( cd "$EVIDENCE_DIR" && sha256sum ./* > checksums.txt 2>/dev/null ) || true

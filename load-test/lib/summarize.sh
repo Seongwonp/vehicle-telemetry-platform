@@ -19,11 +19,22 @@ OUT="load-test/$SCENARIO/REPEAT_$(date +%Y%m%d_%H%M%S).md"
 [ -d "$BASE" ] || { echo "[summarize] $BASE 가 없다."; exit 1; }
 
 # 대상 실행 디렉터리 목록 (run-id가 곧 시각이라 이름순 = 시간순)
+#
+# **중단된 실행은 세지 않는다.** 2026-09-07에 스크립트가 중간에 죽어 남긴 디렉터리가
+# 정상 실행과 섞여 "4회 반복 → 검증 완료"로 집계됐다(실제 완주는 3회). `status.txt`가
+# COMPLETE가 아니면 반복 횟수에서 빼고, 아래 판정 표에 **중단**으로 남긴다.
 RUNS=()
+ABORTED=()
 for d in "$BASE"/*/; do
   [ -f "$d/counts.csv" ] || continue
   id="$(basename "$d")"
   if [ -n "$SINCE" ] && [ "$id" \< "$SINCE" ]; then continue; fi
+  # status.txt가 없는 것은 이 표식을 넣기 전(2026-09-07 이전)의 실행이다.
+  # 옛 실행을 소급해서 중단으로 몰면 안 되므로 "없으면 완주로 본다".
+  if [ -f "$d/status.txt" ] && ! grep -q '^COMPLETE' "$d/status.txt"; then
+    ABORTED+=("$d")
+    continue
+  fi
   RUNS+=("$d")
 done
 
@@ -38,7 +49,8 @@ KEYS="$(for d in "${RUNS[@]}"; do awk -F, 'NR>1{print $1}' "$d/counts.csv"; done
   echo "| 항목 | 값 |"
   echo "| --- | --- |"
   echo "| 생성 시각 | $(date -Iseconds) |"
-  echo "| 반복 횟수 | ${#RUNS[@]} |"
+  echo "| 반복 횟수 | ${#RUNS[@]} (완주만) |"
+  echo "| 중단된 실행 | ${#ABORTED[@]} |"
   echo "| 실패 횟수 | $FAILED |"
   echo "| **검증 상태** | $([ "${#RUNS[@]}" -ge 3 ] && echo '**검증 완료(반복 기준)** — 3회 이상' || echo '**부분 검증** — 3회 미만') |"
   echo
@@ -101,6 +113,20 @@ KEYS="$(for d in "${RUNS[@]}"; do awk -F, 'NR>1{print $1}' "$d/counts.csv"; done
     printf "| %d | \`%s\` | %s (%s) | %s |\n" "$n" "$id" "${sha:-?}" "${dirty:-?}" "${verdict:-미기재}"
     n=$((n+1))
   done
+
+  # **중단된 실행도 적는다.** 지우지 않는 이유는 "몇 번 시도해서 몇 번 완주했나"가
+  # 그 자체로 결과이기 때문이다(도구가 불안정하면 그것도 측정의 일부다).
+  if [ "${#ABORTED[@]}" -gt 0 ]; then
+    echo
+    echo "## 중단된 실행 (집계에서 제외)"
+    echo
+    echo "| run-id | 상태 | 왜 중요한가 |"
+    echo "| --- | --- | --- |"
+    for d in "${ABORTED[@]}"; do
+      printf "| \`%s\` | %s | 완주하지 못했으므로 반복 횟수에 넣지 않는다 |\n" \
+        "$(basename "$d")" "$(head -1 "$d/status.txt" 2>/dev/null || echo '?')"
+    done
+  fi
 
   echo
   echo "## 원본"
