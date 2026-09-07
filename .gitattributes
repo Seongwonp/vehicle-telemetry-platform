@@ -5,3 +5,6 @@ load-test/**/evidence/**/*.txt text eol=lf
 load-test/**/evidence/**/*.csv text eol=lf
 load-test/**/evidence/**/*.json text eol=lf
 load-test/**/evidence/**/*.log text eol=lf
+
+# 운영 스크립트도 같은 이유로 LF 고정 — CRLF로 체크아웃되면 Linux에서 실행이 깨진다.
+scripts/**/*.sh text eol=lf
