@@ -63,6 +63,15 @@ Docker Desktop이 죽은 채 20분을 대기하고도 로그에 아무 단서가
 **남은 것**: 재전달 수를 재려면 프로세스 밖 처리 카운터가 필요하다(미구현).
 mTLS·300초 조건은 아직 1회다.
 
+**집계 도구를 두 번 고쳤다(2026-09-07)** — 둘 다 **조용한 실패**였다.
+(1) `summarize.sh`의 편차 계산이 bash 정수 산술(`$((mx - mn))`)이라 CPU %·쓰기 지연 같은
+**소수 지표에서 문서 생성이 그 줄에서 끊겼다**(리다이렉트 안이라 에러도 안 보였다). awk로 교체.
+(2) **중단된 실행이 완주와 구분되지 않았다** — 죽은 실행의 `evidence/<run-id>/`에도
+metadata·counts·inputs가 다 있어서, 첫 집계가 "4회 반복 → 검증 완료"로 나왔다(진짜 완주 3회).
+이제 `evidence_init`이 `status.txt`에 `RUNNING`을, `evidence_finish`가 `COMPLETE`를 쓰고
+`summarize.sh`는 **완주만 세고 중단은 별도 표에 남긴다**(지우지 않는다 — 몇 번 시도해
+몇 번 완주했는지도 결과다). `status.txt`가 없는 옛 실행은 완주로 본다.
+
 <details><summary>원래 항목</summary>
 
 - 우선 MQTT 90초 장애, storage consumer 강제 종료, anomaly detector 리밸런싱을
