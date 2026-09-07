@@ -1,0 +1,15 @@
+run_id           : 20260907-093318
+scenario         : storage-scale
+started_at       : 2026-09-07T09:33:18+09:00
+command          : bash load-test/storage-scale/run_throughput.sh 12 6
+git_branch       : master
+git_commit       : 1b3f79ddb4dc9eedd9b90d2696a0497654d0a4f1
+git_dirty        : yes (2개 변경)
+docker           : Docker version 29.7.2, build a7dcaa6
+docker_compose   : 5.4.0
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-09-07T09:56:46+09:00
+success_criteria : 인스턴스를 늘리며 처리량이 꺾이는 지점과 그때의 CPU를 함께 본다 (lag>0인 구간만 유효)
+verdict          : 관찰 — A=24390 최대(4개)=57864 A'=26695 msg/s (lag=0 표본 A 0 / A' 0)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2

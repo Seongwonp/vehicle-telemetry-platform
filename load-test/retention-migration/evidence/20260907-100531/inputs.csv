@@ -1,0 +1,4 @@
+key,value
+retention_check_interval,60s
+observe_sec,420
+bucket,telemetry

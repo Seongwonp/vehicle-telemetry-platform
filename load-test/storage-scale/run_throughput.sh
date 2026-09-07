@@ -87,8 +87,27 @@ group_state() {
 
 TIMELINE="$EVIDENCE_DIR/throughput.csv"
 echo "t_sec,phase,instances,state,members,lag,current_offset,topic_end_offset,consume_msg_s,produce_msg_s" > "$TIMELINE"
+CPUFILE="$EVIDENCE_DIR/cpu.csv"
+echo "t_sec,phase,instances,container,cpu_pct,mem_usage" > "$CPUFILE"
 T0=$(date +%s)
 PREV_CUR=""; PREV_END=""; PREV_T=""
+
+# **처리량 상한이 어디인지 가르려고** 찍는다. 인스턴스를 늘려도 처리량이 안 오를 때,
+# InfluxDB CPU가 포화면 저장이 상한이고, 호스트 전체가 포화면 측정 환경이 상한이다.
+# 후자는 결론이 아니라 한계다 — 노트북 한 대에서 프로듀서 6 + 백엔드 N을 같이 돌린다.
+#
+# **반드시 offset을 읽은 뒤에 부른다.** `docker stats --no-stream`은 호출당 1~2초가
+# 걸려서, offset 읽기 전에 부르면 그 사이에 수만 건이 흘러 처리량 계산이 흔들린다.
+sample_cpu() {  # $1 = t_sec, $2 = phase, $3 = 인스턴스 수
+  local names
+  names=$(docker ps --format '{{.Names}}' | grep -E '^(telemetry-influxdb|telemetry-kafka|telemetry-backend)' | tr '\n' ' ')
+  [ -z "$names" ] && return 0
+  # shellcheck disable=SC2086
+  docker stats --no-stream --format '{{.Name}},{{.CPUPerc}},{{.MemUsage}}' $names 2>/dev/null \
+    | tr -d '\r' | while IFS= read -r line; do
+        [ -n "$line" ] && echo "$1,$2,$3,$line" >> "$CPUFILE"
+      done
+}
 
 sample() {  # $1 = phase, $2 = 인스턴스 수
   local now st state members lag cur end crate="" prate=""
@@ -104,6 +123,7 @@ sample() {  # $1 = phase, $2 = 인스턴스 수
   echo "$now,$1,$2,$state,$members,$lag,$cur,$end,$crate,$prate" >> "$TIMELINE"
   log "  ts ${now}s $1 inst=$2 members=$members lag=$lag 처리=${crate:-–} 발행=${prate:-–} msg/s"
   LAST_LAG="$lag"
+  sample_cpu "$now" "$1" "$2"
 }
 
 sample_for() {  # $1 = 총 초, $2 = phase, $3 = 인스턴스 수
@@ -140,7 +160,7 @@ log "=== 저장 경로 처리량 A/B/A (파티션 $PARTITIONS, 프로듀서 ${SH
 # anomaly-detector는 띄우지 않는다 — 같은 토픽을 다른 그룹으로 읽어 CPU를 나눠 쓰므로
 # 저장 경로만 보려면 빼는 게 맞다.
 $COMPOSE down -v >/dev/null 2>&1 || true
-for i in 1 2; do docker rm -f "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
+for i in 1 2 3 4 5; do docker rm -f "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
 # kafka-init을 **반드시 함께 띄운다.** 이 서비스가 init-topics.sh로 토픽을 만든다.
 # 처음에 빼먹었더니 토픽을 만들 주체가 없는데 backend는 토픽 대기 뒤에 뜨도록 짜서
 # 데드락이 됐다(다른 시나리오는 backend를 먼저 띄워 자동 생성에 기대고 있었다).
@@ -175,21 +195,40 @@ done
 wait_sec 60
 log "발행 안정화 — lag=$(group_state | awk '{print $3}')"
 
-# ── 4. A: 인스턴스 1개 ─────────────────────────────────────────
+# ── 4. 인스턴스 스윕 ───────────────────────────────────────────
+# 2026-09-06에는 1개와 3개만 재서 "3개가 더 빠르다"까지만 알았다. **왜 3배가 아닌지**를
+# 가르려면 곡선이 어디서 꺾이는지 봐야 한다. 그래서 1→2→3→4로 훑는다.
+#
+# **왜 4에서 멈추나**: 리스너 `concurrency=3`(application.yml)이라 인스턴스 하나가
+# 컨슈머 스레드 3개다. 파티션이 12개면 **4개(12스레드)에서 파티션이 다 찬다.**
+# 5개째부터는 붙어도 파티션을 못 받아 유휴다 — 늘려도 이득이 없는 게 아니라
+# **측정 자체가 무의미**하다. 파티션을 더 늘리면 그때 5개 이상을 볼 수 있다.
+MAX_INST=$(( PARTITIONS / 3 ))
+[ "$MAX_INST" -gt 4 ] && MAX_INST=4
+log "스윕 상한: ${MAX_INST}개 (파티션 ${PARTITIONS} / concurrency 3)"
+
 log "--- A: 인스턴스 1개로 드레인 (${PHASE_SEC}초) ---"
-sample_for "$PHASE_SEC" A-1inst 1
+sample_for "$PHASE_SEC" "A-1inst" 1
 
-# ── 5. B: 인스턴스 3개 ─────────────────────────────────────────
-log "--- B: 인스턴스 3개로 드레인 (${PHASE_SEC}초) ---"
-start_storage 1; start_storage 2
-wait_sec 40   # 리밸런싱이 끝나고 나서부터 재야 한다
-sample_for "$PHASE_SEC" B-3inst 3
+PHASES="A-1inst"
+for n in $(seq 2 "$MAX_INST"); do
+  log "--- 인스턴스 ${n}개로 드레인 (${PHASE_SEC}초) ---"
+  start_storage $(( n - 1 ))
+  wait_sec 40   # 리밸런싱이 끝나고 나서부터 재야 한다
+  sample_for "$PHASE_SEC" "B-${n}inst" "$n"
+  PHASES="$PHASES B-${n}inst"
+done
 
-# ── 6. A': 다시 1개 ────────────────────────────────────────────
-log "--- A': 다시 1개로 (${PHASE_SEC}초) — B의 차이가 조건 변화가 아님을 확인 ---"
-for i in 1 2; do docker stop -t 30 "telemetry-backend-storage-$i" >/dev/null 2>&1 || true; done
+# ── 5. A': 다시 1개 ────────────────────────────────────────────
+# **이 구간을 빼면 안 된다.** 2026-09-06 실행에서 A와 A'가 27% 차이 났다. 기준선이
+# 그만큼 흔들린다는 걸 모르면 스윕 곡선의 기울기를 실제보다 정밀하게 믿게 된다.
+log "--- A': 다시 1개로 (${PHASE_SEC}초) — 차이가 조건 변화가 아님을 확인 ---"
+for i in $(seq 1 $(( MAX_INST - 1 ))); do
+  docker stop -t 30 "telemetry-backend-storage-$i" >/dev/null 2>&1 || true
+done
 wait_sec 40
 sample_for "$PHASE_SEC" A2-1inst 1
+PHASES="$PHASES A2-1inst"
 
 # ── 7. 정리와 집계 ─────────────────────────────────────────────
 log "발행 정지"
@@ -205,37 +244,66 @@ phase_median() {  # $1 = phase, $2 = 열 번호(9=처리, 10=발행)
 phase_idle() {  # $1 = phase
   awk -F, -v p="$1" 'NR>1 && $2==p && $6+0==0 {n++} END{print n+0}' "$TIMELINE"
 }
+# 컨테이너별 CPU 중앙값. 상한이 InfluxDB인지 호스트인지 가르는 값이다.
+cpu_median() {  # $1 = phase, $2 = 컨테이너 이름(정확히) 또는 prefix
+  awk -F, -v p="$1" -v c="$2" 'NR>1 && $2==p && index($4,c)==1 {gsub(/%/,"",$5); print $5}' "$CPUFILE" \
+    | sort -n | awk '{a[NR]=$1} END{if(NR==0){print "-"} else if(NR%2){print a[(NR+1)/2]} else {printf "%.1f",(a[NR/2]+a[NR/2+1])/2}}'
+}
+# 백엔드가 여러 개면 합이 그 구간의 저장 경로 총 CPU다.
+cpu_backend_sum() {  # $1 = phase
+  awk -F, -v p="$1" 'NR>1 && $2==p && index($4,"telemetry-backend")==1 {gsub(/%/,"",$5); s[$1]+=$5}
+    END{n=0; for(t in s){v[n++]=s[t]}; if(n==0){print "-"; exit}
+        for(i=0;i<n;i++)for(j=i+1;j<n;j++)if(v[i]>v[j]){x=v[i];v[i]=v[j];v[j]=x}
+        if(n%2) printf "%.1f", v[(n-1)/2]; else printf "%.1f", (v[n/2-1]+v[n/2])/2}' "$CPUFILE"
+}
+
+RESULT_ROWS=""
+for p in $PHASES; do
+  r=$(phase_median "$p" 9); pr=$(phase_median "$p" 10); idl=$(phase_idle "$p")
+  ci=$(cpu_median "$p" telemetry-influxdb); ck=$(cpu_median "$p" telemetry-kafka); cb=$(cpu_backend_sum "$p")
+  n=$(awk -F, -v ph="$p" 'NR>1 && $2==ph {print $3; exit}' "$TIMELINE")
+  RESULT_ROWS="${RESULT_ROWS}${p}|${n}|${r}|${pr}|${idl}|${ci}|${ck}|${cb}
+"
+  key=$(echo "$p" | tr 'A-Z-' 'a-z_')
+  evidence_count "rate_${key}" "$r"
+  evidence_count "produce_${key}" "$pr"
+  evidence_count "lag_zero_${key}" "$idl"
+  evidence_count "cpu_influxdb_${key}" "$ci"
+  evidence_count "cpu_backend_sum_${key}" "$cb"
+done
+
 RATE_A=$(phase_median A-1inst 9);  PROD_A=$(phase_median A-1inst 10);  IDLE_A=$(phase_idle A-1inst)
-RATE_B=$(phase_median B-3inst 9);  PROD_B=$(phase_median B-3inst 10);  IDLE_B=$(phase_idle B-3inst)
-RATE_A2=$(phase_median A2-1inst 9); PROD_A2=$(phase_median A2-1inst 10); IDLE_A2=$(phase_idle A2-1inst)
-evidence_count lag_zero_samples_a "$IDLE_A"
-evidence_count lag_zero_samples_b "$IDLE_B"
-evidence_count lag_zero_samples_a2 "$IDLE_A2"
-evidence_count produce_a_median "$PROD_A"
-evidence_count produce_b_median "$PROD_B"
-evidence_count produce_a2_median "$PROD_A2"
+RATE_B=$(phase_median "B-${MAX_INST}inst" 9)
+RATE_A2=$(phase_median A2-1inst 9); IDLE_A2=$(phase_idle A2-1inst)
 
 evidence_capture_prometheus final
 evidence_capture_kafka_groups "$GROUP"
 evidence_capture_topic_offsets vehicle-telemetry
 evidence_capture_log_lines telemetry-backend "Revoke previously assigned|partitions assigned|FencedInstance" backend-key-lines.txt
-evidence_count rate_a_1inst_median "$RATE_A"
-evidence_count rate_b_3inst_median "$RATE_B"
-evidence_count rate_a2_1inst_median "$RATE_A2"
+evidence_capture_file "$CPUFILE" cpu.csv
 
 log ""
-log "=== 결과 (구간별 중앙값, msg/s) ==="
-log "A  인스턴스 1개 : 처리 ${RATE_A} / 발행 ${PROD_A}   (lag=0 표본 ${IDLE_A}개)"
-log "B  인스턴스 3개 : 처리 ${RATE_B} / 발행 ${PROD_B}   (lag=0 표본 ${IDLE_B}개)"
-log "A' 인스턴스 1개 : 처리 ${RATE_A2} / 발행 ${PROD_A2}  (lag=0 표본 ${IDLE_A2}개)"
+log "=== 결과 (구간별 중앙값) ==="
+log "구간         인스턴스  처리    발행    lag0  influxCPU%  kafkaCPU%  backendCPU합%"
+printf '%s' "$RESULT_ROWS" | while IFS='|' read -r p n r pr idl ci ck cb; do
+  [ -z "$p" ] && continue
+  log "$(printf '%-12s %5s %8s %8s %5s %10s %10s %13s' "$p" "$n" "$r" "$pr" "$idl" "$ci" "$ck" "$cb")"
+done
 log ""
-log "읽는 법: lag=0 표본이 있는 구간의 처리 값은 **처리 능력이 아니라 발행 속도**다."
+log "읽는 법:"
+log "  - lag=0 표본이 있는 구간의 처리 값은 **처리 능력이 아니라 발행 속도**다."
+log "  - 인스턴스를 늘려도 처리가 안 오르는데 influxCPU가 포화면 **InfluxDB가 상한**이다."
+log "  - influxCPU에 여유가 있는데 안 오르면 호스트 CPU나 발행 속도를 봐야 한다."
+log "  - A와 A'의 차이가 기준선의 흔들림이다. 그보다 작은 차이는 해석하지 마라."
 if [ "$RATE_A" != "-" ] && [ "$RATE_B" != "-" ] && [ "$RATE_A" -gt 0 ] 2>/dev/null; then
-  log "B/A 배수: $(awk -v b="$RATE_B" -v a="$RATE_A" 'BEGIN{printf "%.2f", b/a}')"
+  log "최대(${MAX_INST}개)/A 배수: $(awk -v b="$RATE_B" -v a="$RATE_A" 'BEGIN{printf "%.2f", b/a}')"
+fi
+if [ "$RATE_A" != "-" ] && [ "$RATE_A2" != "-" ] && [ "$RATE_A" -gt 0 ] 2>/dev/null; then
+  log "기준선 흔들림 A'/A: $(awk -v b="$RATE_A2" -v a="$RATE_A" 'BEGIN{printf "%.2f", b/a}')"
 fi
 
-CRIT="A'가 A와 같은 수준이고, B가 A보다 빠르면 확장 이득이 있다 (단 lag>0인 구간에서만 유효)"
-VERDICT="관찰 — A=${RATE_A} B=${RATE_B} A'=${RATE_A2} msg/s (lag=0 표본 ${IDLE_A}/${IDLE_B}/${IDLE_A2})"
+CRIT="인스턴스를 늘리며 처리량이 꺾이는 지점과 그때의 CPU를 함께 본다 (lag>0인 구간만 유효)"
+VERDICT="관찰 — A=${RATE_A} 최대(${MAX_INST}개)=${RATE_B} A'=${RATE_A2} msg/s (lag=0 표본 A ${IDLE_A} / A' ${IDLE_A2})"
 log "판정: $CRIT → $VERDICT"
 
 evidence_capture_file "$OUT" console.log

@@ -1,0 +1,10 @@
+key,value
+initial_retention_h,2160h0m0s
+old_rows_before,400
+recent_rows_before,200
+old_rows_immediately_after,400
+old_rows_after,0
+recent_rows_after,220
+deleted_after_sec,65
+write_failures_during,0
+old_rows_after_revert,0
