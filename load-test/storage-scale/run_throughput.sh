@@ -110,6 +110,55 @@ sample_cpu() {  # $1 = t_sec, $2 = phase, $3 = 인스턴스 수
       done
 }
 
+# **InfluxDB 쓰기 지연.** 2026-09-07 파티션 24 스윕에서 천장(약 57,000 msg/s)을 찾았는데
+# **CPU가 범인이 아니었다** — 호스트 923%/1600%, backend CPU 합은 인스턴스를 2배로 늘려도
+# 142 → 147로 정체. 새 컨슈머가 일하는 게 아니라 **기다린다**는 뜻이라, 다음에 볼 것은
+# CPU가 아니라 **쓰기가 얼마나 걸리는가**다.
+#
+# `telemetry.influx.write` Timer는 이미 있다(`TelemetryRepository`). 새로 만들지 않고
+# 구간별로 뽑는다. Prometheus 카운터라 **차분**을 봐야 한다:
+#     구간 평균 지연 = (write_seconds_sum 증가분) / (write_seconds_count 증가분)
+#
+# **주 backend 하나만 본다.** 추가 인스턴스는 포트를 안 뚫어서 밖에서 못 긁는데,
+# 같은 InfluxDB를 같은 방식으로 쓰므로 대표성이 있다. 다만 이건 **가정**이고,
+# 인스턴스마다 지연이 다를 가능성은 확인하지 않았다.
+# **측정 루프 안에서 부르지 않는다.** 처음엔 `sample()` 안에서 직접 긁었는데 **측정
+# 루프가 통째로 멈췄다** — 로그가 첫 표본에서 3분간 안 움직였고, curl은 손으로 재면
+# 97ms인데도 그랬다. 원인을 특정하지 못했다(Git Bash에서 353KB 응답을 명령 치환으로
+# 받는 것과 관련된 듯하다). **계측이 측정을 망치면 안 되므로 별도 프로세스로 분리한다.**
+# 감시자가 죽거나 멈춰도 스윕은 그대로 돈다.
+WRITEFILE="$EVIDENCE_DIR/influx_write.csv"
+PHASEFILE="$EVIDENCE_DIR/.current_phase"
+echo "t_sec,phase,instances,write_count,write_sum_sec,batch_count,batch_sum,failures" > "$WRITEFILE"
+echo "init,0" > "$PHASEFILE"
+
+start_write_watcher() {
+  (
+    while :; do
+      local_phase=$(cut -d, -f1 "$PHASEFILE" 2>/dev/null || echo '?')
+      local_inst=$(cut -d, -f2 "$PHASEFILE" 2>/dev/null || echo '?')
+      curl -s --max-time 5 http://localhost:8080/actuator/prometheus 2>/dev/null \
+        | tr -d '\r' \
+        | awk -v t="$(( $(date +%s) - T0 ))" -v p="$local_phase" -v i="$local_inst" '
+            /^telemetry_influx_write_seconds_count/ && wc=="" {wc=$2}
+            /^telemetry_influx_write_seconds_sum/   && ws=="" {ws=$2}
+            /^telemetry_influx_write_batch_size_count/ && bc=="" {bc=$2}
+            /^telemetry_influx_write_batch_size_sum/   && bs=="" {bs=$2}
+            /^telemetry_influx_write_failures_total/   && wf=="" {wf=$2}
+            END{ if (wc != "") printf "%s,%s,%s,%s,%s,%s,%s,%s\n", t, p, i, wc, ws, bc, bs, wf }' \
+        >> "$WRITEFILE" 2>/dev/null || true
+      sleep 15
+    done
+  ) &
+  WRITE_WATCHER_PID=$!
+  log "쓰기 지연 감시자 시작 (pid $WRITE_WATCHER_PID) — 측정 루프와 분리"
+}
+stop_write_watcher() {
+  [ -n "${WRITE_WATCHER_PID:-}" ] && kill "$WRITE_WATCHER_PID" 2>/dev/null || true
+}
+# 측정 루프는 이 파일에 현재 구간만 적는다(비용 0).
+set_phase() { echo "$1,$2" > "$PHASEFILE"; }
+
 sample() {  # $1 = phase, $2 = 인스턴스 수
   local now st state members lag cur end crate="" prate=""
   now=$(( $(date +%s) - T0 ))
@@ -124,11 +173,13 @@ sample() {  # $1 = phase, $2 = 인스턴스 수
   echo "$now,$1,$2,$state,$members,$lag,$cur,$end,$crate,$prate" >> "$TIMELINE"
   log "  ts ${now}s $1 inst=$2 members=$members lag=$lag 처리=${crate:-–} 발행=${prate:-–} msg/s"
   LAST_LAG="$lag"
+
   sample_cpu "$now" "$1" "$2"
 }
 
 sample_for() {  # $1 = 총 초, $2 = phase, $3 = 인스턴스 수
   local t0; t0=$(date +%s)
+  set_phase "$2" "$3"
   while [ $(( $(date +%s) - t0 )) -lt "$1" ]; do
     sample "$2" "$3"
     # lag이 0이 되면 컨슈머가 놀고 있다는 뜻이라 그때부터는 처리 능력이 아니라 발행
@@ -181,6 +232,7 @@ evidence_count partitions_actual "$ACTUAL"
 $COMPOSE up -d backend >/dev/null 2>&1
 wait_until 300 "backend actuator 200" bash -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/actuator/health 2>/dev/null | grep -q 200'
 log "backend 기동 완료 (1개)"
+start_write_watcher
 
 # ── 3. 발행 시작 (구간 내내 계속 돈다) ─────────────────────────
 # 기다리지 않는다. 컨슈머보다 빠르게 계속 넣어야 lag이 유지되고, lag이 유지돼야
@@ -254,6 +306,7 @@ sample_for "$PHASE_SEC" A2-1inst 1
 PHASES="$PHASES A2-1inst"
 
 # ── 7. 정리와 집계 ─────────────────────────────────────────────
+stop_write_watcher
 log "발행 정지"
 for s in $(seq 0 $((SHARDS - 1))); do docker rm -f "telemetry-producer-$s" >/dev/null 2>&1 || true; done
 
@@ -289,14 +342,32 @@ cpu_host_sum() {  # $1 = phase
         if(n%2) printf "%.1f", v[(n-1)/2]; else printf "%.1f", (v[n/2-1]+v[n/2])/2}' "$CPUFILE"
 }
 
+# 구간의 쓰기 지연(ms)과 평균 배치 크기. **카운터 차분**이라 구간의 첫 표본과 마지막
+# 표본만 쓰면 된다 — 중간값을 평균 내면 누적값이 섞여 틀린다.
+write_latency_ms() {  # $1 = phase
+  awk -F, -v p="$1" 'NR>1 && $2==p && $4!="" && $5!="" {
+      if (c0=="") {c0=$4; s0=$5} ; c1=$4; s1=$5 }
+    END{ if (c0=="" || c1-c0 <= 0) {print "-"; exit}
+         printf "%.1f", (s1-s0)/(c1-c0)*1000 }' "$WRITEFILE"
+}
+write_batch_avg() {  # $1 = phase
+  awk -F, -v p="$1" 'NR>1 && $2==p && $6!="" && $7!="" {
+      if (c0=="") {c0=$6; s0=$7} ; c1=$6; s1=$7 }
+    END{ if (c0=="" || c1-c0 <= 0) {print "-"; exit}
+         printf "%.0f", (s1-s0)/(c1-c0) }' "$WRITEFILE"
+}
+
 RESULT_ROWS=""
 for p in $PHASES; do
   r=$(phase_median "$p" 9); pr=$(phase_median "$p" 10); idl=$(phase_idle "$p")
   ci=$(cpu_median "$p" telemetry-influxdb); ck=$(cpu_median "$p" telemetry-kafka); cb=$(cpu_backend_sum "$p")
   ch=$(cpu_host_sum "$p")
+  wl=$(write_latency_ms "$p"); wb=$(write_batch_avg "$p")
+  evidence_count "write_latency_ms_$(echo "$p" | tr 'A-Z-' 'a-z_')" "$wl"
+  evidence_count "write_batch_avg_$(echo "$p" | tr 'A-Z-' 'a-z_')" "$wb"
   evidence_count "cpu_host_sum_$(echo "$p" | tr 'A-Z-' 'a-z_')" "$ch"
   n=$(awk -F, -v ph="$p" 'NR>1 && $2==ph {print $3; exit}' "$TIMELINE")
-  RESULT_ROWS="${RESULT_ROWS}${p}|${n}|${r}|${pr}|${idl}|${ci}|${ck}|${cb}|${ch}
+  RESULT_ROWS="${RESULT_ROWS}${p}|${n}|${r}|${pr}|${idl}|${cb}|${ch}|${wl}|${wb}
 "
   key=$(echo "$p" | tr 'A-Z-' 'a-z_')
   evidence_count "rate_${key}" "$r"
@@ -318,10 +389,10 @@ evidence_capture_file "$CPUFILE" cpu.csv
 
 log ""
 log "=== 결과 (구간별 중앙값) ==="
-log "구간         인스턴스  처리    발행    lag0  influxCPU%  kafkaCPU%  backendCPU합%  호스트CPU합%"
-printf '%s' "$RESULT_ROWS" | while IFS='|' read -r p n r pr idl ci ck cb ch; do
+log "구간         인스턴스  처리    발행    lag0  backendCPU합%  호스트CPU합%  쓰기지연ms  평균배치"
+printf '%s' "$RESULT_ROWS" | while IFS='|' read -r p n r pr idl cb ch wl wb; do
   [ -z "$p" ] && continue
-  log "$(printf '%-12s %5s %8s %8s %5s %10s %10s %13s %13s' "$p" "$n" "$r" "$pr" "$idl" "$ci" "$ck" "$cb" "$ch")"
+  log "$(printf '%-12s %5s %8s %8s %5s %13s %13s %11s %9s' "$p" "$n" "$r" "$pr" "$idl" "$cb" "$ch" "$wl" "$wb")"
 done
 [ -n "${NCPU:-}" ] && log "  (호스트CPU합의 포화 기준: ${NCPU}00% — 코어 ${NCPU}개)"
 log ""
