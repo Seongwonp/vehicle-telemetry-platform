@@ -100,12 +100,14 @@ metadata·counts·inputs가 다 있어서, 첫 집계가 "4회 반복 → 검증
 지표 이름은 대조 결과 **불일치 없음** — 알림·대시보드가 참조하는 9개가 모두 실재한다.
 Consumer Group·토픽 목록도 코드와 일치한다(위 다이어그램 오류 제외).
 
+**후속 반영 (2026-09-06)**:
+- 미사용 `vehicle-dtc-events` 토픽을 docker-compose와 코드에서 제거 완료(P1.5-4).
+- 앱 저장소에 format/analyze/test CI 추가 완료(P1-4).
+
 **남은 것**:
-- `vehicle-dtc-events`는 죽은 토픽이다. 지우면 배포마다 빈 토픽이 안 생기지만,
-  기존 환경에 이미 존재하므로 제거 영향(모니터링·대시보드)을 확인하고 지워야 한다.
-- 앱 저장소에 CI가 없다 — P1-4.
 - `telemetry.anomaly.stored`(당일 추가)가 알림·대시보드에 없다. Runbook에서 수동
   조회로만 쓴다.
+- 문서·설정 drift audit을 정기적으로 반복한다.
 
 <details><summary>원래 항목</summary>
 

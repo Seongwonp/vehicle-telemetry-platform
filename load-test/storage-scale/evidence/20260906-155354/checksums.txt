@@ -1,5 +1,4 @@
 2514015a4da66f7f7f9c5b980480414cf2c65aed9c248be5db7cce7fb6aba385 *./backend-key-lines.txt
-384b61e34fb5dc5bb940171f1d53afb9b27b7464a7c9ae5dbf8afb35a01ae70b *./console.log
 ebd017175d28d7431022b4f8bb054053cad7c88ca704fb9185c296de4dcf1c13 *./counts.csv
 3b8a998b54f3b6435d59230bf124dcb014788f4b710700ede3774d292d983871 *./inputs.csv
 e3f04fef93f3b0bf945eb397be623cfee619b377de95dfb57d5d8c5d0d7ec1ff *./kafka-consumer-groups.txt

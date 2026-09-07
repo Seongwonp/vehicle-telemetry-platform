@@ -21,12 +21,12 @@ load-test/<scenario>/evidence/<YYYYMMDD-HHMMSS>/
 │                             #   성공 기준과 판정, 검증 상태
 ├── inputs.csv                # 입력 조건 (차량 수, 장애 시간, 이상률 …)
 ├── counts.csv                # 집계 결과 — 결과 문서의 모든 수치가 여기 한 줄씩 있어야 한다
-├── console.log               # 스크립트 출력 원문
+├── console.log               # 로컬 진단용 전체 출력(Git·checksums.txt 제외)
 ├── prometheus_final.txt      # telemetry_*/kafka_* 지표 스냅샷
 ├── kafka-consumer-groups.txt # offset/lag 원문
 ├── kafka-topic-offsets.txt   # end offset 원문
 ├── *-key-lines.txt           # 컨테이너 로그 중 판단에 쓴 줄만
-└── checksums.txt             # 위 파일들의 sha256
+└── checksums.txt             # Git에 보존하는 증거 파일들의 sha256
 ```
 
 ### 설계에서 신경 쓴 것
@@ -39,6 +39,9 @@ load-test/<scenario>/evidence/<YYYYMMDD-HHMMSS>/
 - **성공 기준을 스크립트가 판정한다.** 사람이 결과를 보고 기준을 정하면 사후 합리화가 된다.
 - **비밀정보를 담지 않는다.** `.env` 값, 토큰, 인증서는 넣지 않고, Prometheus도
   `telemetry_*`/`kafka_*`만 걸러 저장한다.
+- **추적하지 않는 파일을 checksum에 넣지 않는다.** `*.log` 전체본과
+  `checksums.txt` 자기 자신은 manifest에서 제외한다. 필요한 로그 구간은
+  `*-key-lines.txt`로 보존하고, 전체본이 필요하면 외부 위치와 별도 checksum을 적는다.
 
 ### 쓰는 법
 
@@ -50,7 +53,7 @@ evidence_input vehicles 200
 evidence_count kafka_topic_end_offset "$TOPIC"
 evidence_capture_prometheus final
 evidence_capture_kafka_groups telemetry-storage-group
-evidence_capture_file "$OUT" console.log
+evidence_capture_file "$OUT" console.log  # 로컬 진단용; Git/manifest 제외
 evidence_finish "성공 기준" "PASS"
 ```
 

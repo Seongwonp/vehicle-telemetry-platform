@@ -48,6 +48,7 @@ backend/data/
 .claude/
 __pycache__/
 
-# 실험 스크립트의 콘솔 출력. 보존이 필요한 것은 evidence/<run-id>/console.log에
-# 복사되므로 작업 트리의 원본은 추적하지 않는다.
+# 실험 스크립트의 전체 콘솔 출력은 로컬 진단용이며 Git에 추적하지 않는다.
+# 재현에 필요한 핵심 로그는 evidence/<run-id>/의 요약 파일로 보존한다. 전체 로그가
+# 필요하면 외부 저장 위치와 별도 checksum을 결과 문서에 기록한다.
 load-test/**/_result*.txt

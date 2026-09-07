@@ -1,0 +1,7 @@
+# Evidence checksums are generated from Git Bash. Keep their bytes stable across
+# Windows and Linux clones so sha256sum verification stays reproducible.
+load-test/**/*.sh text eol=lf
+load-test/**/evidence/**/*.txt text eol=lf
+load-test/**/evidence/**/*.csv text eol=lf
+load-test/**/evidence/**/*.json text eol=lf
+load-test/**/evidence/**/*.log text eol=lf

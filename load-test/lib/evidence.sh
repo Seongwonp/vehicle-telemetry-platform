@@ -18,7 +18,7 @@
 #   evidence_count kafka_topic 162402    # 집계 결과
 #   evidence_capture_prometheus
 #   evidence_capture_kafka_groups telemetry-storage-group
-#   evidence_capture_file "$OUT" console.log
+#   evidence_capture_file "$OUT" console.log  # 로컬 진단용; Git/manifest 제외
 #   evidence_finish "성공 기준 문장" "판정"
 #
 # 저장 위치: `load-test/<scenario>/evidence/<run-id>/`
@@ -210,7 +210,16 @@ evidence_finish() {
   # 여기까지 왔다는 것은 스크립트가 끝까지 갔다는 뜻이다(evidence_init의 RUNNING 참고).
   echo "COMPLETE $(date -Iseconds)" > "$EVIDENCE_DIR/status.txt"
 
-  # 파일이 나중에 바뀌지 않았음을 확인할 수 있게 한다.
-  ( cd "$EVIDENCE_DIR" && sha256sum ./* > checksums.txt 2>/dev/null ) || true
+  # *.log는 로컬 진단용(Git 제외)이고 checksums.txt는 자기 자신을
+  # 해시하면 안 된다. 따라서 manifest에는 커밋 가능한 증거 파일만 기록한다.
+  (
+    cd "$EVIDENCE_DIR" &&
+      find . -maxdepth 1 -type f \
+        ! -name 'checksums.txt' \
+        ! -name '*.log' \
+        -print0 \
+        | sort -z \
+        | xargs -0 -r sha256sum > checksums.txt
+  ) || true
   echo "[evidence] 저장됨: $EVIDENCE_DIR"
 }

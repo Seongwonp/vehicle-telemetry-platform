@@ -310,9 +310,10 @@ vehicle-telemetry-platform/
 > 로컬 Docker Compose 환경(2026-07~08)에서 부하 테스트로 측정. 상세 방법론·전체 표는
 > [부하 테스트 계획 및 결과](docs/load-test-plan.md) 참고.
 >
-> **읽는 법**: 아래 수치는 전부 **단일 머신 Docker Compose** 결과이고, 2026-09-05
-> 장애 실험은 **각 조건 1회 관찰**이다(`부분 검증`). 운영 규모의 고가용성이나 무제한
-> 확장성을 뜻하지 않는다. 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지는
+> **읽는 법**: 아래 수치는 전부 **단일 머신 Docker Compose** 결과다. 2026-09-05의
+> 최초 장애 실험은 대부분 조건별 1회 관찰이었고, 이후 MQTT 90초 장애·anomaly
+> rebalancing·storage consumer SIGKILL은 각각 3회 반복했다. 운영 규모의 고가용성이나
+> 무제한 확장성을 뜻하지 않는다. 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지는
 > [검증 증거 정책](docs/evidence-policy.md)에, 다음에 무엇을 반복 측정할지는
 > [로드맵 P0-2](docs/roadmap.md)에 있다.
 
@@ -342,7 +343,8 @@ vehicle-telemetry-platform/
   자세한 내용은 `docs/architecture-decisions.md` ADR-016, 원시 로그는
   `load-test/anomaly-detector-scale/`.
 - **MQTT 브로커 장애에서 72% 유실 발견·복구** (200대·약 1,000 msg/s의 단일 Docker Compose
-  환경, 각 조건 1회 관찰): 브로커를 90초 정지시켰다 살리는 실험에서
+  환경. 초기 결함/1차 수정 비교는 각 1회, 최종 90초 복구 조건은 이후 3회 반복):
+  브로커를 90초 정지시켰다 살리는 최초 실험에서
   **브로커가 PUBACK한 179,532건 중 backend에는 50,087건만 도착**했다(유실 129,445건).
   원인은 우리 쪽 설정이었다 — `MqttConnectOptions.setMaxReconnectDelay()`를 지정하지 않아
   Paho 기본값 **128초**가 적용됐고, `cleanSession=false`라 그동안 브로커가 우리 세션 앞으로

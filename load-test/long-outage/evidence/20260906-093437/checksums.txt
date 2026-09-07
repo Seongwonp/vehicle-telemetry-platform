@@ -1,6 +1,4 @@
 d1ad3b9217c750d70b0f10efda563fe4e1517e6f98c4ef10cca65bb9ba3c5b0f *./backend-key-lines.txt
-f533f7cab53599819dae7d2035cda53f5b41fcf576daae33296f56fa104d3eb2 *./checksums.txt
-1f15f58773e4f5da4660ed2dc544a014c1d26070b9c2a67d1462b69b21ded7fb *./console.log
 b62c5c0c8889f2b9f6ac40186bc929ebcf984cd7fc1b1cf12d4609d2f45ee46e *./counts.csv
 a72dc7b36c9015526848b7639f4f8bd822ed7194d52b5c034b80b1d3a5dd415d *./dlq-already-stored.txt
 c0b8be0b6402aea5d9b10831e7849167b05bbf22b0b8a37494a9e780caefacbe *./inputs.csv
