@@ -1,0 +1,24 @@
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-2-e44988e4-f3bb-4c2c-bb61-100bbe62fa82', protocol='range'}
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-0-a863e60b-dc78-485f-a10c-50c4ca3b0130', protocol='range'}
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-1-d774935a-28e5-4ec3-8548-6a3f0c26bcf1', protocol='range'}
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-1-d73aeb3a-4e3f-4d9a-85d9-6b7555ba8949', protocol='range'}
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-2-d7c9208d-7e4e-48e1-ade3-1d2eaa05efa5', protocol='range'}
+16:05:28 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=1, memberId='telemetry-storage-1-0-9b89f51f-0422-4d78-990f-7d58a38e9db2', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-anomaly-storage-group-telemetry-storage-1-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-0-9938a73e-b549-4e64-8e14-dedcc123971c', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-telemetry-storage-group-telemetry-storage-1-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-1-dd291a97-1d87-43d7-b910-5ee54cbe8a32', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-telemetry-storage-group-telemetry-storage-1-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-2-fe4907ae-e401-4929-ac2c-1e21d985e929', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-1, clientId=consumer-anomaly-storage-group-telemetry-storage-1-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-1-af9573d8-14c5-42a1-b69e-76b02be0293a', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-2, clientId=consumer-anomaly-storage-group-telemetry-storage-1-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-2-67efd946-f3e2-4664-ae73-eb8f9c8e395e', protocol='range'}
+16:11:52 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-storage-1-0, clientId=consumer-telemetry-storage-group-telemetry-storage-1-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=3, memberId='telemetry-storage-1-0-581c80dd-e53b-4d6a-a8e7-e9fb54f47cf5', protocol='range'}

@@ -1,0 +1,5 @@
+key,value
+mode,static_membership_stress
+pause_sec,330
+partitions,9
+conditions,A=정적 멤버십 ON / B=OFF

@@ -1,0 +1,7 @@
+condition,static_membership,phase,t_sec,members,generation,storm_markers
+Aon,on,before,0,6,1,0
+Aon,on,during,350,3,2,6
+Aon,on,after,475,6,3,12
+Boff,off,before,0,6,1,6
+Boff,off,during,351,3,2,12
+Boff,off,after,476,6,3,18

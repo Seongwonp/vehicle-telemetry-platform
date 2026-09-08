@@ -1,0 +1,13 @@
+# telemetry-storage-group @ 2026-09-09T01:23:59+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                             HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          -               0               -               consumer-telemetry-storage-group-1-687a3a1c-eb7d-4563-8005-d7ddd6c1dca0 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 1          -               0               -               consumer-telemetry-storage-group-1-687a3a1c-eb7d-4563-8005-d7ddd6c1dca0 /172.18.0.9     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 2          -               0               -               consumer-telemetry-storage-group-1-b0b9ea9e-d268-479e-b9c1-d247c0880828 /172.18.0.8     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 3          -               0               -               consumer-telemetry-storage-group-1-b0b9ea9e-d268-479e-b9c1-d247c0880828 /172.18.0.8     consumer-telemetry-storage-group-1
+telemetry-storage-group vehicle-telemetry 4          -               0               -               consumer-telemetry-storage-group-2-165e41c7-23c0-4b17-8de4-1129d2967b4d /172.18.0.8     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 5          -               0               -               consumer-telemetry-storage-group-2-165e41c7-23c0-4b17-8de4-1129d2967b4d /172.18.0.8     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 8          -               0               -               consumer-telemetry-storage-group-3-a3213cbb-25d1-41fb-ba31-762a259633b2 /172.18.0.9     consumer-telemetry-storage-group-3
+telemetry-storage-group vehicle-telemetry 6          -               0               -               consumer-telemetry-storage-group-2-f307bbb6-168f-4c7a-be6c-baeffa180ed6 /172.18.0.9     consumer-telemetry-storage-group-2
+telemetry-storage-group vehicle-telemetry 7          -               0               -               consumer-telemetry-storage-group-3-9241460a-7bea-4897-bfda-754bde4c833a /172.18.0.8     consumer-telemetry-storage-group-3
+

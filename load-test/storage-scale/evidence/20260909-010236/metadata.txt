@@ -1,0 +1,15 @@
+run_id           : 20260909-010236
+scenario         : storage-scale
+started_at       : 2026-09-09T01:02:36+09:00
+command          : bash load-test/storage-scale/run_static_membership_stress.sh 330
+git_branch       : master
+git_commit       : fbd47ebe706d7843f3c7be6cd47d0d0b4af36131
+git_dirty        : yes (2개 변경)
+docker           : Docker version 29.7.2, build a7dcaa6
+docker_compose   : 5.4.0
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-09-09T01:24:00+09:00
+success_criteria : max.poll.interval.ms 초과 정지에서 정적 멤버십 on/off의 리밸런싱 차이
+verdict          : 이 조건에서는 차이가 안 보인다 — 폭풍 재현 실패(차이가 없다는 뜻이 아니다)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2
