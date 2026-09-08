@@ -99,10 +99,25 @@ case "${1:-}" in
     echo
     echo "=== Prometheus 스크레이프 대상 ==="
     if [ -f "$TARGETS_FILE" ]; then cat "$TARGETS_FILE"; else echo "(대상 파일 없음 — 저장 인스턴스 미기동)"; fi
-    curl -s --get 'http://localhost:9090/api/v1/query' \
-         --data-urlencode 'query=up{job="telemetry-backend-storage"}' 2>/dev/null \
-      | tr '{},' '\n\n\n' | grep -E '"instance":|"value"|^"1"|^"0"' \
-      | sed 's/^/  /' || echo "  (Prometheus 응답 없음)"
+    # **"응답 없음"과 "아직 대상이 없음"을 구분한다.** 처음엔 curl|grep 파이프라인에
+    # `|| echo "(Prometheus 응답 없음)"`를 붙였는데, grep이 0건이면 파이프라인이 실패로
+    # 끝나서 **Prometheus가 멀쩡한데도 "응답 없음"이 찍혔다**(2026-09-08에 실제로 그랬다).
+    # 대상 파일을 쓴 직후에는 file_sd refresh_interval(30초)만큼 비어 있는 게 정상이다.
+    # 정상을 장애처럼 보이게 하는 메시지는 알림 피로와 같은 종류의 실수다.
+    if ! curl -s -o /dev/null --max-time 5 http://localhost:9090/-/ready 2>/dev/null; then
+      echo "  (Prometheus에 못 붙었다 — 컨테이너가 떠 있는지 확인하라)"
+    else
+      up_lines=$(curl -s --get --max-time 5 'http://localhost:9090/api/v1/query' \
+                   --data-urlencode 'query=up{job="telemetry-backend-storage"}' 2>/dev/null \
+                 | tr '{},' '\n\n\n' | grep -E '"instance":"[^"]*"' -o | sed 's/.*:"//;s/"//')
+      if [ -z "$up_lines" ]; then
+        echo "  대상 0개 — file_sd 갱신 주기(30초)를 아직 안 지났을 수 있다. 잠시 뒤 다시 보라."
+      else
+        curl -s --get --max-time 5 'http://localhost:9090/api/v1/query' \
+             --data-urlencode 'query=up{job="telemetry-backend-storage"}' 2>/dev/null \
+          | tr '{},' '\n\n\n' | grep -E '"instance":|^"1"|^"0"' | sed 's/^/  /'
+      fi
+    fi
     ;;
   *) usage;;
 esac
