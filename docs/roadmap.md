@@ -109,6 +109,18 @@ Consumer Group·토픽 목록도 코드와 일치한다(위 다이어그램 오�
   조회로만 쓴다.
 - 문서·설정 drift audit을 정기적으로 반복한다.
 
+**같은 종류의 드리프트를 하나 더 찾아 닫았다(2026-09-08)** — `session.timeout.ms`가
+**어디에도 안 적혀 있었다.** 그런데 2026-09-07에 "스케일 다운은 45초짜리"라고 측정해
+Runbook에 써뒀다. 즉 **문서가 설명하는 동작이 문서에 없는 클라이언트 기본값에 매달려
+있었다.** P0-3에서 찾은 "yml을 고쳐도 동작이 안 바뀐다"의 반대 방향이다 —
+이번엔 **동작이 있는데 설정이 없었다.**
+같은 값(45,000ms)을 `application.yml`에 명시하고 `KAFKA_SESSION_TIMEOUT_MS`로 노출했다.
+동작은 안 바뀐다. 회귀는 `KafkaConsumerContractTest` 3건이 막는데, 이 테스트는
+**테스트에 값을 다시 적지 않고 실제 `application.yml`을 읽어서** 단언한다 —
+그렇게 안 하면 "테스트는 통과하는데 운영 설정에는 없는" 상태를 못 잡는다.
+테스트가 실제로 무는지는 두 방향으로 확인했다(값을 45001로 바꿨을 때 실패,
+yml에서 줄을 지웠을 때 2건 실패).
+
 <details><summary>원래 항목</summary>
 
 - Kafka listener 방식, retry 의미, topic·Consumer Group, 앱 테스트 상태를 코드와
@@ -480,7 +492,10 @@ in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니
   이름 충돌은 같은 날 고쳤다 — 실험 컨테이너를 `telemetry-backend-storage-exp-N`으로
   갈랐다(겹쳐 있으면 실험 시작의 `docker rm -f`가 compose 인스턴스를 지운다).
   다만 **같은 컨슈머 그룹·같은 InfluxDB를 쓰므로 동시 기동은 서로의 부하**다.
-  **남은 미검증**: `session.timeout.ms`가 설정으로 고정돼 있지 않다(클라이언트 기본값 의존),
+  `session.timeout.ms`는 **2026-09-08에 명시로 고정했다** — 같은 값(45,000ms)을
+  `application.yml`에 적고 `KAFKA_SESSION_TIMEOUT_MS`로 노출했다(동작 변화 없음).
+  회귀는 `KafkaConsumerContractTest`가 막는다. **줄였을 때의 대가는 아직 안 쟀다.**
+  **남은 미검증**:
   dev(평문) 프로파일 **실기동 안 함**(렌더링만 확인 — 기동을 시도했으나 그 시점에
   Docker Desktop이 내려가 있었다),
   파티션 확장이 키 해싱을 바꿔 같은 `vehicle_id`가 다른 파티션으로 갈 때의 영향 미검증,

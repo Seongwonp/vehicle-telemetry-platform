@@ -63,6 +63,11 @@ x-backend-env: &backend-env
   # InfluxDB 저장 배치 크기 = 처리량 튜닝 손잡이 (application.yml 주석 참고).
   # 재빌드 없이 값만 바꿔 재기동하면 되도록 노출한다.
   KAFKA_MAX_POLL_RECORDS: ${KAFKA_MAX_POLL_RECORDS:-2000}
+  # 정적 멤버가 그룹을 떠났다고 판정되기까지의 시간. **스케일 다운 지연이 이 값이다** —
+  # 저장 인스턴스를 내리면 컨슈머 그룹 재할당까지 이만큼 걸린다(2026-09-07 실측 44초).
+  # 줄이면 리밸런싱에 민감해진다(정적 멤버십을 켠 이유가 그 폭풍을 피하려는 것이다).
+  # application.yml의 주석과 docs/runbook/storage-scale-out.md를 먼저 읽어라.
+  KAFKA_SESSION_TIMEOUT_MS: ${KAFKA_SESSION_TIMEOUT_MS:-45000}
   # 리스너 컨테이너의 재시도·pause·리밸런싱 동작은 이 로거가 DEBUG여야 보인다.
   # 기본은 WARN이라 장애 중에 아무것도 안 남는다 — 2026-09-06 장기 장애 측정에서
   # "왜 리밸런싱이 안 도는가"를 로그로 확인할 수 없어 노출했다.
