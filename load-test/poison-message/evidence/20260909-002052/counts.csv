@@ -1,0 +1,6 @@
+key,value
+controls_stored_dtc_null,101
+controls_stored_dtc_comma,101
+controls_stored_dtc_scalar,100
+telemetry_dlq_records,1
+telemetry_topic,303

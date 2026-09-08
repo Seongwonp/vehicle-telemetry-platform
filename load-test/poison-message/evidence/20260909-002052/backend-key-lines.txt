@@ -1,0 +1,1 @@
+15:23:17 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-DTC-SCALAR offset=152 partition=0

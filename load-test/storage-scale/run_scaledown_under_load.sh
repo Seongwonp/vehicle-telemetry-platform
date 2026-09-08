@@ -28,9 +28,27 @@ PER_SHARD="${PER_SHARD:-20000000}"
 WARMUP_SEC="${WARMUP_SEC:-90}"
 OBSERVE_SEC="${OBSERVE_SEC:-180}"   # 스케일 다운 후 관찰 시간
 
+# 정적 멤버십 on/off. **off가 이 실험의 대조군이다.**
+#
+# 정적 멤버십(group.instance.id)은 12시간 soak test에서 겪은 리밸런싱 폭풍을 피하려고 켰다.
+# 그런데 **끈 상태와 비교한 적이 없다** — 근거는 있는데 대조군이 없었다.
+# 그리고 켠 대가(스케일 다운 45초)는 2026-09-07~08에 쟀다. 그 대가가 정적 멤버십 때문인지
+# 확인하려면 끄고 같은 실험을 돌려봐야 한다.
+#
+#   STATIC_MEMBERSHIP=off bash load-test/storage-scale/run_scaledown_under_load.sh 9 2
+#
+# 끄는 방법은 GROUP_INSTANCE_ID_BASE를 빈 값으로 주는 것이다(KafkaConfig가 속성을 뺀다).
+STATIC_MEMBERSHIP="${STATIC_MEMBERSHIP:-on}"
+if [ "$STATIC_MEMBERSHIP" = "off" ]; then
+  export GROUP_INSTANCE_ID_BASE="" \
+         STORAGE_1_GROUP_INSTANCE_ID="" \
+         STORAGE_2_GROUP_INSTANCE_ID="" \
+         STORAGE_3_GROUP_INSTANCE_ID=""
+fi
+
 COMPOSE="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
 SCALE_ENV="-f docker-compose.yml -f docker-compose.dev.yml"
-OUT="load-test/storage-scale/_result_scaledown_load.txt"
+OUT="load-test/storage-scale/_result_scaledown_load_${STATIC_MEMBERSHIP}.txt"
 TOOLS="vehicle-telemetry-platform-anomaly-detector"
 NET="vehicle-telemetry-platform_telemetry-net"
 GROUP="telemetry-storage-group"
@@ -39,6 +57,7 @@ GROUP="telemetry-storage-group"
 . load-test/lib/evidence.sh
 evidence_init "storage-scale" "bash load-test/storage-scale/run_scaledown_under_load.sh $PARTITIONS $SHARDS"
 evidence_input mode scaledown_under_load
+evidence_input static_membership "$STATIC_MEMBERSHIP"
 evidence_input partitions "$PARTITIONS"
 evidence_input producer_shards "$SHARDS"
 evidence_input warmup_sec "$WARMUP_SEC"
@@ -113,7 +132,7 @@ sample_for() {  # $1 = 초, $2 = phase
 }
 
 : > "$OUT"
-log "=== 부하 중 스케일 다운 (파티션 $PARTITIONS, 프로듀서 ${SHARDS}프로세스) ==="
+log "=== 부하 중 스케일 다운 (파티션 $PARTITIONS, 프로듀서 ${SHARDS}프로세스, 정적멤버십=$STATIC_MEMBERSHIP) ==="
 
 # ── 1. 스택 ────────────────────────────────────────────────────
 $COMPOSE --profile scale down -v >/dev/null 2>&1 || true

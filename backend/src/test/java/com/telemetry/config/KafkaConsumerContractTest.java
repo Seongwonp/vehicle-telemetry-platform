@@ -1,5 +1,7 @@
 package com.telemetry.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -104,5 +106,38 @@ class KafkaConsumerContractTest {
                     .containsEntry(ConsumerConfig.SESSION_TIMEOUT_MS_CONFIG, "20000")
                     .containsEntry(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "telemetry-storage-1");
             });
+    }
+
+    /** 위 runner에 {@link KafkaConfig}까지 올린다 — 정적 멤버십 끄기 커스터마이저가 거기 있다. */
+    private ApplicationContextRunner runnerWithKafkaConfig() {
+        return runner()
+            .withUserConfiguration(KafkaConfig.class)
+            .withBean(MeterRegistry.class, SimpleMeterRegistry::new);
+    }
+
+    @Test
+    @DisplayName("GROUP_INSTANCE_ID_BASE가 비면 정적 멤버십이 꺼진다 — 속성 자체가 사라진다")
+    void 빈_값이면_정적_멤버십이_꺼진다() {
+        // Kafka는 group.instance.id에 빈 문자열을 허용하지 않는다(NonEmptyString 검증).
+        // 그래서 "빈 값 = 끄기"로 해석하고 속성을 제거한다 — 안 그러면 기동이 실패한다.
+        runnerWithKafkaConfig()
+            .withPropertyValues("GROUP_INSTANCE_ID_BASE=")
+            .run(context -> {
+                ConsumerFactory<?, ?> consumerFactory = context.getBean(ConsumerFactory.class);
+
+                assertThat(consumerFactory.getConfigurationProperties())
+                    .doesNotContainKey(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG);
+            });
+    }
+
+    @Test
+    @DisplayName("값이 있으면 그대로 남는다 — 기본은 켜짐이다")
+    void 값이_있으면_정적_멤버십이_유지된다() {
+        runnerWithKafkaConfig().run(context -> {
+            ConsumerFactory<?, ?> consumerFactory = context.getBean(ConsumerFactory.class);
+
+            assertThat(consumerFactory.getConfigurationProperties())
+                .containsEntry(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG, "telemetry-backend-consumer");
+        });
     }
 }

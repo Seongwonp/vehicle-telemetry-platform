@@ -1,0 +1,13 @@
+# telemetry-storage-group @ 2026-09-09T00:04:17+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 0          941412          941412          0               telemetry-backend-consumer-0-4cc8604f-bf65-40ae-94a1-e35f93a2352a /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 1          957935          957935          0               telemetry-backend-consumer-0-4cc8604f-bf65-40ae-94a1-e35f93a2352a /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 2          772885          772885          0               telemetry-backend-consumer-0-4cc8604f-bf65-40ae-94a1-e35f93a2352a /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 6          772214          772214          0               telemetry-backend-consumer-2-8b150fd8-1675-46cd-a2f9-37da60462ae1 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 7          1022986         1022986         0               telemetry-backend-consumer-2-8b150fd8-1675-46cd-a2f9-37da60462ae1 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 8          1133889         1133889         0               telemetry-backend-consumer-2-8b150fd8-1675-46cd-a2f9-37da60462ae1 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 3          816704          816704          0               telemetry-backend-consumer-1-dba540fb-feed-4bc1-ac98-513e2b768169 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 4          877033          877033          0               telemetry-backend-consumer-1-dba540fb-feed-4bc1-ac98-513e2b768169 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 5          1064101         1064101         0               telemetry-backend-consumer-1-dba540fb-feed-4bc1-ac98-513e2b768169 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+

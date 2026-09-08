@@ -128,6 +128,21 @@ public class TelemetryRepository {
         }
 
         if (telemetry.getDtcCodes() != null && !telemetry.getDtcCodes().isEmpty()) {
+            // **배열을 문자열로 접는 유일한 자리다. 여기서 두 가지가 샌다**
+            // (2026-09-09 실측, load-test/poison-message/RESULT_20260909_dtc_codes.md):
+            //   1. null 원소는 String.join이 **"null"이라는 네 글자**로 만든다(NPE가 아니다).
+            //   2. 코드 자체에 쉼표가 있으면 구분자와 충돌해, 저장된 문자열만으로는
+            //      코드 1개인지 2개인지 **되돌릴 수 없다**.
+            // 둘 다 DLQ·에러·카운터에 아무 신호가 없다.
+            //
+            // 고치지 않기로 했다 — 값이 사라지지 않고(형식이 안 맞아 눈에 띈다),
+            // 쉼표는 스펙(`[PBCU]\d{4}`)을 지키는 입력에서 나올 수 없으며,
+            // 이상 감지는 원본 JSON을 보므로 영향이 없다. 구분자를 바꾸는 것은
+            // 저장 포맷 계약을 바꾸는 일이라 대가가 더 크다.
+            //
+            // **다시 볼 조건**: 실제 장치에서 null 원소나 쉼표 포함 코드가 한 번이라도
+            // 관찰되면 이 결정을 뒤집고 finite()처럼 예외를 던진다.
+            // 저장된 dtc_codes를 다시 쪼개 세는 코드를 쓸 사람은 위 두 경우를 알고 써야 한다.
             point.addField("dtc_codes", String.join(",", telemetry.getDtcCodes()));
         }
 

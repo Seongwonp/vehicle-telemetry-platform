@@ -1,0 +1,22 @@
+======================================================================
+vehicle-telemetry-dlq: 1건
+----------------------------------------------------------------------
+판정
+  transient        0  (  0.0%)  일시적 — 재처리 대상
+  permanent        1  (100.0%)  영구 — 재처리하면 루프
+  unknown          0  (  0.0%)  불명 — 사람이 봐야 함
+----------------------------------------------------------------------
+원인별
+        1  com.fasterxml.jackson.databind.exc.MismatchedInputException
+----------------------------------------------------------------------
+원본 토픽별
+        1  vehicle-telemetry
+----------------------------------------------------------------------
+원인별 표본 1건
+
+  [com.fasterxml.jackson.databind.exc.MismatchedInputException]
+    key      : POISON-DTC-SCALAR
+    원인 메시지: Cannot construct instance of `java.util.ArrayList` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value ('P0301')
+ at [Source: (String
+    payload  : {"vehicle_id": "POISON-DTC-SCALAR", "timestamp": "2026-09-08T15:23:16.824Z", "speed": 60.0, "rpm": 2000, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage": 13.8, "g
+======================================================================

@@ -1,0 +1,6 @@
+15:14:55 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-anomaly-storage-group-5, groupId=anomaly-storage-group] Revoke previously assigned partitions 
+15:14:55 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-anomaly-storage-group-6, groupId=anomaly-storage-group] Revoke previously assigned partitions 
+15:14:55 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-anomaly-storage-group-4, groupId=anomaly-storage-group] Revoke previously assigned partitions vehicle-anomaly-alerts-2
+15:14:56 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-telemetry-storage-group-1, groupId=telemetry-storage-group] Revoke previously assigned partitions vehicle-telemetry-2
+15:14:56 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-telemetry-storage-group-2, groupId=telemetry-storage-group] Revoke previously assigned partitions vehicle-telemetry-4
+15:14:57 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer clientId=consumer-telemetry-storage-group-3, groupId=telemetry-storage-group] Revoke previously assigned partitions vehicle-telemetry-7

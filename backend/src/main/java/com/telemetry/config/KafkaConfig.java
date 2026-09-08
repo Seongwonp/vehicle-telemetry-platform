@@ -3,11 +3,13 @@ package com.telemetry.config;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
+import org.springframework.boot.autoconfigure.kafka.DefaultKafkaConsumerFactoryCustomizer;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -196,6 +198,43 @@ public class KafkaConfig {
         factory.setBatchListener(true);
         factory.setCommonErrorHandler(kafkaErrorHandler);
         return factory;
+    }
+
+    /**
+     * {@code group.instance.id}가 빈 값이면 그 속성을 <b>아예 제거</b>한다 — 즉 정적 멤버십을 끈다.
+     *
+     * <p><b>왜 필요한가</b>: Kafka는 {@code group.instance.id}에 빈 문자열을 허용하지 않는다
+     * ({@code NonEmptyString} 검증에 걸려 기동이 실패한다). 그래서 설정만으로는 정적 멤버십을
+     * 끌 방법이 없었다 — 끄려면 {@code application.yml}에서 줄을 지우고 다시 빌드해야 했다.
+     *
+     * <p>이게 문제가 되는 지점이 둘이다.
+     * <ol>
+     *   <li><b>대조군을 만들 수 없다.</b> "정적 멤버십 덕분에 리밸런싱 폭풍을 피한다"는 것이
+     *       이 프로젝트의 근거 중 하나인데(12시간 soak test), 끈 상태와 비교한 적이 없었다.</li>
+     *   <li><b>운영에서 되돌릴 수 없다.</b> 정적 멤버십은 스케일 다운을 45초짜리로 만드는
+     *       대가가 있다(2026-09-07~08 실측). 그 대가가 문제가 되는 상황에서 재빌드 없이
+     *       끌 수 있어야 한다.</li>
+     * </ol>
+     *
+     * <p>그래서 <b>빈 값 = 끄기</b>로 정한다. {@code GROUP_INSTANCE_ID_BASE=}로 띄우면
+     * 정적 멤버십 없이 동작하고, 값을 주면 켜진다. 기본값은 켜짐이다.
+     *
+     * <p>끄면 컨슈머가 종료할 때 LeaveGroup을 보내 <b>즉시</b> 재할당된다(45초 대기 없음).
+     * 대신 GC 정지나 순단으로 {@code max.poll.interval.ms}를 넘기면 그룹을 완전히 떠났다가
+     * 재가입해야 하고, concurrency=3에서 여러 컨슈머가 동시에 그 경로를 타면
+     * "MemberIdRequiredException → group is already rebalancing"에 갇힐 수 있다.
+     * <b>그 위험을 피하려고 켠 것이므로 끌 때는 근거가 있어야 한다.</b>
+     */
+    @Bean
+    public DefaultKafkaConsumerFactoryCustomizer staticMembershipOffWhenBlank() {
+        return factory -> {
+            Object id = factory.getConfigurationProperties().get(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG);
+            if (id == null || id.toString().isBlank()) {
+                factory.removeConfig(ConsumerConfig.GROUP_INSTANCE_ID_CONFIG);
+                log.warn("group.instance.id가 비어 있어 정적 멤버십을 끕니다 — "
+                    + "스케일 다운은 즉시 재할당되지만 리밸런싱 폭풍 위험이 돌아옵니다");
+            }
+        };
     }
 
     // init-topics.sh에서 이미 생성하지만, 백엔드 단독 실행 시 자동 생성 보장

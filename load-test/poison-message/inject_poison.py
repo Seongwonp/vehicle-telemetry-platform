@@ -87,6 +87,22 @@ def poison_payloads(vehicle_id: str) -> dict:
     # 어느 쪽인지 모르면 나중에 방어를 지울 때 판단을 못 한다.
     nan_json = json.dumps(p).replace('"speed": 60.0', '"speed": NaN')
 
+    # ── dtc_codes(배열)의 경계 ────────────────────────────────
+    # toPoint()는 `String.join(",", dtcCodes)`로 하나의 문자열 필드에 넣는다.
+    # 배열을 문자열로 접는 순간 두 가지가 가능해진다 — 둘 다 확인한 적이 없다.
+
+    # null 원소. String.join은 null을 **"null"이라는 글자**로 만든다.
+    # 예외도 안 나고 그냥 그렇게 저장된다면 조용한 값 변형이다.
+    dtc_null_json = json.dumps(p).replace('"dtc_codes": []', '"dtc_codes": [null]')
+
+    # 코드 자체에 쉼표가 든 경우. 구분자와 충돌해서, 저장된 문자열만 보면
+    # **코드 1개인지 2개인지 구분할 수 없다.**
+    dtc_comma_json = json.dumps(p).replace('"dtc_codes": []', '"dtc_codes": ["P0301,P0420"]')
+
+    # 배열이 아니라 문자열 하나. Jackson의 ACCEPT_SINGLE_VALUE_AS_ARRAY는 기본 꺼져 있어
+    # 역직렬화에서 거부될 것으로 예상한다(= 레코드별 격리).
+    dtc_scalar_json = json.dumps(p).replace('"dtc_codes": []', '"dtc_codes": "P0301"')
+
     # ── 정수 필드(rpm)의 경계 ──────────────────────────────────
     # `rpm`은 int이고 toPoint()에서 finite() 검사를 거치지 않는다(정수는 Infinity가 될 수
     # 없으니 맞다). 대신 **역직렬화 단계에서 무슨 일이 나는지**를 확인한 적이 없다.
@@ -118,6 +134,9 @@ def poison_payloads(vehicle_id: str) -> dict:
         "rpm_overflow": (rpm_overflow_json, "int 범위 초과 — 미지"),
         "rpm_float": (rpm_float_json, "조용히 잘릴 가능성 — 미지"),
         "rpm_infinity": (rpm_infinity_json, "int 필드에 1e309 — 미지"),
+        "dtc_null": (dtc_null_json, "String.join이 \"null\" 글자로 만들 가능성 — 미지"),
+        "dtc_comma": (dtc_comma_json, "구분자 충돌 — 미지"),
+        "dtc_scalar": (dtc_scalar_json, "역직렬화 거부 예상"),
         "huge_payload": (json.dumps(huge), "저장 또는 브로커(미지)"),
     }
 

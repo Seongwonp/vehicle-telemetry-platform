@@ -114,7 +114,7 @@ bash scripts/scale-storage.sh down
 > 대가이고(12시간 soak test에서 그 폭풍에 갇힌 적이 있다), 지금은 이 트레이드오프를
 > 유지한다.
 
-### 부하 중에 내리면 어떻게 보이는가 (2026-09-08 실측, 2회)
+### 부하 중에 내리면 어떻게 보이는가 (실측 3회)
 
 추론이 아니라 재봤다. 파티션 9 · 인스턴스 3 · 프로듀서 2로 부하를 걸고 내렸다.
 
@@ -124,11 +124,11 @@ bash scripts/scale-storage.sh down
 | +20s | 109,408 | **1,812** |
 | +38s | 177,952 | 12,891 |
 | +43s | 199,501 | **1,324** |
-| +46~52s | 재할당 — backend가 전부 인수 | |
+| +46~54s | 재할당 — backend가 전부 인수 | |
 
 **그 6개는 완전히 멈추고, 살아있는 3개는 평평하다.** 격리는 성립하고, 대가는 그 6개다.
 정지 구간에 파티션당 약 17만 건(합계 약 100만 건)이 쌓였고 재할당 후 주 backend가
-통째로 인수한다. **유실은 0**이다(토픽 총 offset = InfluxDB 행 수, 2회 모두 일치).
+통째로 인수한다. **유실은 0**이다(토픽 총 offset = InfluxDB 행 수, **3회 모두 일치**).
 
 > **⚠ `--describe`로 "주인이 다 있으니 정상"이라고 판단하면 틀린다.**
 > 정적 멤버십에서는 **죽은 멤버가 세션 만료까지 소유권을 유지한다.** 내린 직후에도
@@ -153,6 +153,33 @@ bash scripts/scale-storage.sh down
 있고 정적 멤버십은 그걸 피하려고 켠 것이다. **줄이려면 그 대가를 먼저 재라 — 아직 안 쟀다.**
 9초 밑으로 내리려면 `heartbeat.interval.ms`(기본 3초, 세션의 1/3 이하 권장)도 같이 봐야 한다.
 
+
+### 정적 멤버십을 끄면 45초가 9초가 된다 — 그리고 폭풍 위험이 돌아온다
+
+이 45초는 **정적 멤버십의 대가**다. 대조군으로 확인했다(2026-09-09).
+
+| | 정적 멤버십 ON (3회) | OFF (1회) |
+| --- | ---: | ---: |
+| 멤버 9 → 3 | 다운 후 46 / 52 / 54초 | **다운 후 9초** |
+| 동시 정지 파티션 | **6개** | **0개** |
+| 유실 | 0 (3/3) | 0 |
+
+끄는 방법 — `GROUP_INSTANCE_ID_BASE`를 **빈 값**으로 준다(Kafka가 빈 문자열을 거부하므로
+`KafkaConfig`가 속성 자체를 제거한다). 저장 인스턴스도 같이 꺼야 한다.
+
+```bash
+GROUP_INSTANCE_ID_BASE= STORAGE_1_GROUP_INSTANCE_ID= STORAGE_2_GROUP_INSTANCE_ID= docker compose --profile scale up -d
+```
+
+기동 로그에 `group.instance.id가 비어 있어 정적 멤버십을 끕니다` 경고가 찍히면 꺼진 것이다.
+`kafka-consumer-groups --describe --members` 출력에서 `GROUP-INSTANCE-ID` 컬럼이 사라진다.
+
+> **⚠ 근거 없이 끄지 마라.** 정적 멤버십은 스케일 다운을 느리게 하려고 켠 게 아니라
+> **리밸런싱 폭풍을 피하려고** 켠 것이다(12시간 soak test에서 `MemberIdRequiredException →
+> group is already rebalancing`에 갇혀 복구가 안 됐다). 끄면 GC 정지나 순단으로
+> `max.poll.interval.ms`(5분)를 넘길 때 그 위험이 돌아온다.
+> **그 대가는 아직 측정하지 않았다** — 이득만 재고 끄는 것은 반쪽 판단이다.
+> 기본값은 **켜짐**이다.
 ## 4개 이상이 필요하면
 
 `docker-compose.yml`에 `backend-storage-4`를 추가한다 — 앵커를 쓰므로 8줄이고,
@@ -172,7 +199,9 @@ bash scripts/scale-storage.sh down
 
 ## 관련 문서
 
-- 왜 이 구조인가: [`docs/architecture-decisions.md`](../architecture-decisions.md) ADR-023
+- 왜 이 구조인가: [`docs/architecture-decisions.md`](../architecture-decisions.md) ADR-023(수집/저장 분리), ADR-024(정적 멤버십 끄기)
 - 구조 검증 기록: [`docs/verification/2026-09-07-compose-scale-profile.md`](../verification/2026-09-07-compose-scale-profile.md)
 - 처리량 측정과 그 한계: `load-test/storage-scale/RESULT_20260907_repeat3.md`
 - 관측 지표 읽는 법: [`docs/runbook/pipeline-observability.md`](pipeline-observability.md)
+- 부하 중 스케일 다운 실측: `load-test/storage-scale/RESULT_20260908_scaledown_under_load.md`
+- 정적 멤버십 대조군: `load-test/storage-scale/RESULT_20260909_static_membership_control.md`

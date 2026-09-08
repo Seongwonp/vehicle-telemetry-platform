@@ -1,0 +1,7 @@
+# telemetry-storage-group @ 2026-09-09T00:24:49+09:00
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          -               0               -               telemetry-backend-consumer-1-a03c8a7a-dc4b-46cb-8847-577f8f404dbb /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 2          101             101             0               telemetry-backend-consumer-2-61f8b362-0034-462a-ba59-79d8e6fc21bc /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-2
+telemetry-storage-group vehicle-telemetry 0          202             202             0               telemetry-backend-consumer-0-a8961fa1-9047-4d9e-9b7c-3ad46976e896 /172.18.0.8     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+

@@ -68,6 +68,11 @@ x-backend-env: &backend-env
   # 줄이면 리밸런싱에 민감해진다(정적 멤버십을 켠 이유가 그 폭풍을 피하려는 것이다).
   # application.yml의 주석과 docs/runbook/storage-scale-out.md를 먼저 읽어라.
   KAFKA_SESSION_TIMEOUT_MS: ${KAFKA_SESSION_TIMEOUT_MS:-45000}
+  # 정적 멤버십 식별자. **빈 값으로 주면 정적 멤버십이 꺼진다**
+  # (KafkaConfig.staticMembershipOffWhenBlank — Kafka가 빈 문자열을 거부하므로 속성을 뺀다).
+  # `:-`가 아니라 `-`인 것이 중요하다: `:-`는 빈 값도 기본값으로 되돌려서 끌 수가 없다.
+  # 끄면 스케일 다운이 즉시 재할당되지만 리밸런싱 폭풍 위험이 돌아온다 — 근거 없이 끄지 마라.
+  GROUP_INSTANCE_ID_BASE: ${GROUP_INSTANCE_ID_BASE-telemetry-backend-consumer}
   # 리스너 컨테이너의 재시도·pause·리밸런싱 동작은 이 로거가 DEBUG여야 보인다.
   # 기본은 WARN이라 장애 중에 아무것도 안 남는다 — 2026-09-06 장기 장애 측정에서
   # "왜 리밸런싱이 안 도는가"를 로그로 확인할 수 없어 노출했다.
@@ -177,7 +182,7 @@ services:
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
-      GROUP_INSTANCE_ID_BASE: telemetry-storage-1
+      GROUP_INSTANCE_ID_BASE: ${STORAGE_1_GROUP_INSTANCE_ID-telemetry-storage-1}
 
   backend-storage-2:
     <<: *backend-base
@@ -188,7 +193,7 @@ services:
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
-      GROUP_INSTANCE_ID_BASE: telemetry-storage-2
+      GROUP_INSTANCE_ID_BASE: ${STORAGE_2_GROUP_INSTANCE_ID-telemetry-storage-2}
 
   backend-storage-3:
     <<: *backend-base
@@ -199,7 +204,7 @@ services:
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
-      GROUP_INSTANCE_ID_BASE: telemetry-storage-3
+      GROUP_INSTANCE_ID_BASE: ${STORAGE_3_GROUP_INSTANCE_ID-telemetry-storage-3}
 
   # ════════════════════════════════════════════════════════════
   # 이상 감지 모듈 — Python Kafka Consumer (룰 기반 + IsolationForest)

@@ -1,0 +1,7 @@
+key,value
+mode,scaledown_under_load
+static_membership,off
+partitions,9
+producer_shards,2
+warmup_sec,60
+observe_sec,150
