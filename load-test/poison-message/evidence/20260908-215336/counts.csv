@@ -1,0 +1,6 @@
+key,value
+controls_stored_rpm_overflow,100
+controls_stored_rpm_float,101
+controls_stored_rpm_infinity,100
+telemetry_dlq_records,2
+telemetry_topic,303

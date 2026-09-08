@@ -1,0 +1,22 @@
+======================================================================
+vehicle-telemetry-dlq: 2건
+----------------------------------------------------------------------
+판정
+  transient        0  (  0.0%)  일시적 — 재처리 대상
+  permanent        2  (100.0%)  영구 — 재처리하면 루프
+  unknown          0  (  0.0%)  불명 — 사람이 봐야 함
+----------------------------------------------------------------------
+원인별
+        2  com.fasterxml.jackson.databind.JsonMappingException
+----------------------------------------------------------------------
+원본 토픽별
+        2  vehicle-telemetry
+----------------------------------------------------------------------
+원인별 표본 1건
+
+  [com.fasterxml.jackson.databind.JsonMappingException]
+    key      : POISON-RPM-OVERFLOW
+    원인 메시지: Numeric value (99999999999) out of range of int (-2147483648 - 2147483647)
+ at [Source: (String)"{"vehicle_id": "POISON-RPM-OVERFLOW", "timestamp": "2026-09-08T12:56:14.027Z", "speed": 60.0, "rpm": 99
+    payload  : {"vehicle_id": "POISON-RPM-OVERFLOW", "timestamp": "2026-09-08T12:56:14.027Z", "speed": 60.0, "rpm": 99999999999, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage":
+======================================================================

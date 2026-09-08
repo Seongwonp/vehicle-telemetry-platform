@@ -87,6 +87,22 @@ def poison_payloads(vehicle_id: str) -> dict:
     # 어느 쪽인지 모르면 나중에 방어를 지울 때 판단을 못 한다.
     nan_json = json.dumps(p).replace('"speed": 60.0', '"speed": NaN')
 
+    # ── 정수 필드(rpm)의 경계 ──────────────────────────────────
+    # `rpm`은 int이고 toPoint()에서 finite() 검사를 거치지 않는다(정수는 Infinity가 될 수
+    # 없으니 맞다). 대신 **역직렬화 단계에서 무슨 일이 나는지**를 확인한 적이 없다.
+    # 위 double 필드들과 다른 경로일 수 있어서 셋으로 나눠 넣는다.
+
+    # int 범위(±2,147,483,647)를 넘는 정수.
+    rpm_overflow_json = json.dumps(p).replace('"rpm": 2000', '"rpm": 99999999999')
+
+    # 소수점이 붙은 값. **조용히 잘릴 가능성이 있다** — Jackson의
+    # ACCEPT_FLOAT_AS_INT가 기본 활성이라 2000.7이 2000이 될 수 있다.
+    # 그렇다면 speed의 Infinity와 같은 종류(신호 없는 값 변형)이므로 확인해야 한다.
+    rpm_float_json = json.dumps(p).replace('"rpm": 2000', '"rpm": 2000.7')
+
+    # double 쪽에서 Infinity를 만들던 리터럴을 int 필드에 넣으면.
+    rpm_infinity_json = json.dumps(p).replace('"rpm": 2000', '"rpm": 1e309')
+
     # 큰 메시지. Kafka 기본 max.message.bytes(1MB) 아래로 잡아 토픽에는 들어가게 한다 —
     # 브로커가 거부하면 컨슈머 격리를 볼 수 없기 때문이다.
     huge = dict(p)
@@ -99,6 +115,9 @@ def poison_payloads(vehicle_id: str) -> dict:
         "infinity": (infinity_json, "saveAll(배치 전체 실패 예상)"),
         "negative_infinity": (negative_infinity_json, "toPoint의 finite() 검사 예상"),
         "nan": (nan_json, "역직렬화 거부 예상 — finite()에 도달 못 함"),
+        "rpm_overflow": (rpm_overflow_json, "int 범위 초과 — 미지"),
+        "rpm_float": (rpm_float_json, "조용히 잘릴 가능성 — 미지"),
+        "rpm_infinity": (rpm_infinity_json, "int 필드에 1e309 — 미지"),
         "huge_payload": (json.dumps(huge), "저장 또는 브로커(미지)"),
     }
 

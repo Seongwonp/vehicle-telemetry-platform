@@ -86,6 +86,16 @@ public class TelemetryRepository {
         Point point = Point.measurement("vehicle_telemetry")
             .addTag("vehicle_id", telemetry.getVehicleId())
             .addField("speed", finite("speed", telemetry.getSpeed()))
+            // rpm은 int라 finite() 검사가 필요 없다 — 정수는 Infinity/NaN이 될 수 없고,
+            // 범위를 넘는 값(1e309, 99999999999)은 **역직렬화 단계에서** Jackson이 막는다
+            // (2026-09-08 실측, load-test/poison-message/RESULT_20260908_rpm_int.md).
+            // 같은 1e309가 speed(double)에서는 파싱에 성공해 아래 finite()까지 온다 —
+            // **막는 문이 타입에 따라 다르다.**
+            //
+            // 다만 `"rpm": 2000.7`은 아무 데서도 안 걸리고 **2000으로 잘려 저장된다**
+            // (Jackson ACCEPT_FLOAT_AS_INT 기본 활성). DLQ·에러·카운터 전부 0이다.
+            // 손실이 1 rpm 미만이고 이상 감지는 원본 JSON을 보므로 고치지 않기로 했다.
+            // **주의**: 저장 데이터로 룰을 다시 돌리면 6000.9가 6000이라 안 걸린다.
             .addField("rpm", (double) telemetry.getRpm())
             .addField("engine_temp", finite("engine_temp", telemetry.getEngineTemp()))
             .addField("throttle_position", finite("throttle_position", telemetry.getThrottlePosition()))
