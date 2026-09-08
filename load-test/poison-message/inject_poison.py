@@ -75,6 +75,18 @@ def poison_payloads(vehicle_id: str) -> dict:
     infinity_json = json.dumps(p)
     infinity_json = infinity_json.replace('"speed": 60.0', '"speed": 1e309')
 
+    # 위와 같은 메커니즘의 음수 쪽. Jackson이 -1e309를 Double.NEGATIVE_INFINITY로
+    # 파싱하고, toPoint()의 finite() 검사에 걸린다.
+    # 2026-09-06에는 양수만 봤다 — 부호가 다르면 다른 경로를 타는지 확인한 적이 없다.
+    negative_infinity_json = json.dumps(p).replace('"speed": 60.0', '"speed": -1e309')
+
+    # **NaN은 JSON 리터럴이 아니다.** `NaN`은 비표준 확장이고, Boot 기본 ObjectMapper는
+    # ALLOW_NON_NUMERIC_NUMBERS가 꺼져 있어 역직렬화 단계에서 거부한다.
+    # 즉 toPoint()의 finite() 검사에는 **도달하지 못한다**. 그걸 확인하려고 넣는다 —
+    # "검사가 있으니 안전하다"와 "그 경로로 들어올 수 없다"는 다른 말이고,
+    # 어느 쪽인지 모르면 나중에 방어를 지울 때 판단을 못 한다.
+    nan_json = json.dumps(p).replace('"speed": 60.0', '"speed": NaN')
+
     # 큰 메시지. Kafka 기본 max.message.bytes(1MB) 아래로 잡아 토픽에는 들어가게 한다 —
     # 브로커가 거부하면 컨슈머 격리를 볼 수 없기 때문이다.
     huge = dict(p)
@@ -85,6 +97,8 @@ def poison_payloads(vehicle_id: str) -> dict:
         "bad_timestamp": (json.dumps(bad_ts, ensure_ascii=False), "toPoint(레코드별 격리 예상)"),
         "wrong_schema": (json.dumps(wrong_schema), "toPoint 또는 저장(미지)"),
         "infinity": (infinity_json, "saveAll(배치 전체 실패 예상)"),
+        "negative_infinity": (negative_infinity_json, "toPoint의 finite() 검사 예상"),
+        "nan": (nan_json, "역직렬화 거부 예상 — finite()에 도달 못 함"),
         "huge_payload": (json.dumps(huge), "저장 또는 브로커(미지)"),
     }
 

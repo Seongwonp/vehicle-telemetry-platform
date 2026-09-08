@@ -142,6 +142,17 @@ public class TelemetryRepository {
      * 약 0.8초(요청당 고정비, 배치 크기와 거의 무관)라 측정 가능한 수준이 아니다.
      * 2026-09-06까지는 "발생 가능성을 확인하지 않은 채 모든 메시지에 비용을 물릴지"를
      * 판단하지 못해 미결정으로 뒀는데, 비용 쪽이 이 정도면 판단할 것이 없다.
+     *
+     * <p><b>어떤 값이 실제로 여기까지 오는가(2026-09-08 실측):</b>
+     * {@code 1e309}와 {@code -1e309}는 온다 — 유효한 JSON이고 Jackson이 각각
+     * {@code POSITIVE_INFINITY}/{@code NEGATIVE_INFINITY}로 파싱한다. 부호와 무관하게
+     * 같은 예외로 DLQ({@code permanent})로 간다.
+     * <b>NaN은 오지 않는다.</b> {@code NaN}은 JSON 리터럴이 아니고 Boot 기본
+     * {@code ObjectMapper}는 {@code ALLOW_NON_NUMERIC_NUMBERS}가 꺼져 있어
+     * <b>역직렬화 단계에서 거부</b>한다. 즉 {@code Double.isFinite}의 NaN 쪽은
+     * 현재 입구(Kafka/MQTT JSON)에 대해서는 잉여다 — 산술로 NaN이 생기는 경로가
+     * 새로 들어오면 그때 유효해진다. 지우지 않는 이유가 그것이다.
+     * ({@code load-test/poison-message/RESULT_20260908_nan_neginf.md})
      */
     private static double finite(String field, double value) {
         if (!Double.isFinite(value)) {

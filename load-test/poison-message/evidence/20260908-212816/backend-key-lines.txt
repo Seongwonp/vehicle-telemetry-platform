@@ -1,0 +1,2 @@
+12:31:00 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-NEGATIVE-INF offset=51 partition=2
+12:31:32 [-] [-] ERROR c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle=POISON-NAN offset=152 partition=2

@@ -1,0 +1,28 @@
+======================================================================
+vehicle-telemetry-dlq: 2건
+----------------------------------------------------------------------
+판정
+  transient        0  (  0.0%)  일시적 — 재처리 대상
+  permanent        2  (100.0%)  영구 — 재처리하면 루프
+  unknown          0  (  0.0%)  불명 — 사람이 봐야 함
+----------------------------------------------------------------------
+원인별
+        1  org.springframework.dao.InvalidDataAccessApiUsageException
+        1  com.fasterxml.jackson.core.JsonParseException
+----------------------------------------------------------------------
+원본 토픽별
+        2  vehicle-telemetry
+----------------------------------------------------------------------
+원인별 표본 1건
+
+  [org.springframework.dao.InvalidDataAccessApiUsageException]
+    key      : POISON-NEGATIVE-INF
+    원인 메시지: InfluxDB에 쓸 수 없는 값 — speed=-Infinity (유한하지 않은 값은 필드가 조용히 사라진다)
+    payload  : {"vehicle_id": "POISON-NEGATIVE-INF", "timestamp": "2026-09-08T12:30:53.729Z", "speed": -1e309, "rpm": 2000, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage": 13.8
+
+  [com.fasterxml.jackson.core.JsonParseException]
+    key      : POISON-NAN
+    원인 메시지: Non-standard token 'NaN': enable `JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS` to allow
+ at [Source: (String)"{"vehicle_id": "POISON-NAN", "timestamp": "2026-09-08T12:31:32.216Z", "speed": NaN, "rpm": 2
+    payload  : {"vehicle_id": "POISON-NAN", "timestamp": "2026-09-08T12:31:32.216Z", "speed": NaN, "rpm": 2000, "engine_temp": 90.0, "throttle_position": 30.0, "fuel_level": 50.0, "battery_voltage": 13.8, "gps": {"l
+======================================================================
