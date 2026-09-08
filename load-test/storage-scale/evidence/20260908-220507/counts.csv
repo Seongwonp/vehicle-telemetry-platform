@@ -1,0 +1,11 @@
+key,value
+partitions_actual,9
+scaledown_at_sec,208
+down_return_sec,11
+drain_after_stop_sec,182
+topic_total,8180533
+influx_rows,8180533
+orphan_first_sec,0
+orphan_last_sec,0
+max_partition_lag_before,71859
+max_partition_lag_after,553551
