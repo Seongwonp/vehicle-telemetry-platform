@@ -1,0 +1,7 @@
+condition,session_timeout_ms,phase,t_sec,members,generation
+A45000,45000,before,0,6,1
+A45000,45000,during,25,6,1
+A45000,45000,after,89,6,1
+B10000,10000,before,0,6,1
+B10000,10000,during,24,3,2
+B10000,10000,after,88,6,3

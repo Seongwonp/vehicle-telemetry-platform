@@ -1,0 +1,5 @@
+key,value
+mode,session_timeout_cost
+pause_sec,20
+partitions,9
+conditions,A=45000ms(현재) / B=10000ms(줄인 값)

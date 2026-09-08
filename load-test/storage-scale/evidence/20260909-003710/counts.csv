@@ -1,0 +1,9 @@
+key,value
+A45000_generation_before,1
+A45000_generation_after,1
+A45000_rebalances,0
+A45000_members_during_pause,6
+B10000_generation_before,1
+B10000_generation_after,3
+B10000_rebalances,2
+B10000_members_during_pause,3

@@ -548,7 +548,13 @@ in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니
   다만 **같은 컨슈머 그룹·같은 InfluxDB를 쓰므로 동시 기동은 서로의 부하**다.
   `session.timeout.ms`는 **2026-09-08에 명시로 고정했다** — 같은 값(45,000ms)을
   `application.yml`에 적고 `KAFKA_SESSION_TIMEOUT_MS`로 노출했다(동작 변화 없음).
-  회귀는 `KafkaConsumerContractTest`가 막는다. **줄였을 때의 대가는 아직 안 쟀다.**
+  회귀는 `KafkaConsumerContractTest`가 막는다.
+  **줄였을 때의 대가도 쟀다(2026-09-09)** — 같은 20초 정지(`docker pause`)에서
+  45,000ms는 리밸런싱 **0회**(멤버 6 유지), 10,000ms는 **2회**(정지 중 멤버 6 → 3)다.
+  스케일 다운은 계획할 수 있지만 GC 정지·순단은 고를 수 없어 **45,000ms를 유지한다.**
+  결과: `load-test/storage-scale/RESULT_20260909_session_timeout_cost.md`.
+  **남은 미검증**: 10,000ms에서 스케일 다운이 얼마나 빨라지는지(이득 쪽은 추정),
+  정지 길이를 20초 하나만 봄, `docker pause`와 실제 GC 정지의 차이.
   dev(평문) 프로파일도 **2026-09-08에 실기동했다** — 구조는 기본(mTLS) 프로파일과 같고
   (멤버 9 / 정적 id 9 / 호스트 3 / 할당 9, fencing 0), dev 오버레이가 저장 인스턴스에도
   먹는 것(`MQTT_PORT=1883`, `MQTT_TLS_ENABLED=false`)을 확인했다.
