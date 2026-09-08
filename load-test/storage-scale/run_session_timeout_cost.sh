@@ -153,6 +153,11 @@ elif [ "${B_REB:-0}" = "${A_REB:-0}" ]; then
 fi
 log "판정: $VERDICT"
 
+# **정리한다.** `scale-storage.sh up`이 만든 Prometheus 대상 파일은 compose `down`으로는
+# 안 지워진다 — 남겨두면 다음 기동 때 없는 인스턴스를 긁으려 하고, 그게 정확히
+# `static_configs`를 피한 이유(장애처럼 보이는 정상)를 되살린다. 실제로 한 번 남겼다.
+COMPOSE_FILES="$SCALE_ENV" bash scripts/scale-storage.sh down >/dev/null 2>&1 || true
+
 evidence_capture_kafka_groups "$GROUP"
 evidence_capture_file "$OUT" console.log
 evidence_finish "같은 길이의 정지가 session.timeout.ms에 따라 리밸런싱이 되는지" "$VERDICT"
