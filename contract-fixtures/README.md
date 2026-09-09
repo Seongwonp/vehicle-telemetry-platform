@@ -46,8 +46,18 @@
 
 ## 읽는 쪽
 
-- Java: `backend/src/test/java/com/telemetry/domain/SharedFixtureContractTest.java` (미구현)
-- Python: `anomaly-detector/tests/test_shared_fixtures.py` (미구현)
+| 읽는 칸 | 테스트 |
+| --- | --- |
+| `storage` | `backend/src/test/java/com/telemetry/domain/SharedFixtureContractTest.java` |
+| `detector` | `anomaly-detector/tests/test_shared_fixtures.py` |
 
-**둘 다 아직 없다.** 이 파일은 P0-2a 조사 단계에서 **현재 동작을 기록하는 용도**로
-먼저 만들었다. 구현은 정책을 확정한 뒤다 — `docs/anomaly-path-contract.md`.
+**둘 다 특성화 테스트다 — 정책 테스트가 아니다.** 지금 적힌 값은 2026-09-09에 **실측한
+현재 동작**이고, 그게 옳다는 뜻이 아니다. 실제로 8칸이 두 경로에서 갈리고 그중 5칸은
+**조용히 눈이 머는** 동작이다(`docs/anomaly-path-contract.md` 1-1절).
+
+고정하는 이유는 **정책이 확정되기 전에 아무도 모르게 달라지는 것**을 막기 위해서다.
+동작을 바꾸면 테스트가 깨진다 — 그때 **테스트를 지우지 말고 이 파일의 기대값을 옮겨라.**
+그래야 무엇이 어떻게 바뀌었는지가 diff에 남는다.
+
+**Gradle 주의**: 이 파일은 `backend/` 밖이라 `build.gradle`에 테스트 입력으로 선언해뒀다.
+그 선언이 없으면 이 파일을 고쳐도 `:test UP-TO-DATE`로 건너뛴다 — 실제로 겪었다.

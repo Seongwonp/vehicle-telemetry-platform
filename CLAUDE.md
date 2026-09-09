@@ -163,7 +163,12 @@ strict한 건 **필드 집합과 값의 범위**이지 표현 타입이 아니�
   `KafkaTimeoutError`는 **일시인데도** unknown이다. 고치지 않고 `test_dlq.py`에 고정했다.
   **두 경로가 무조건 같아야 한다는 전제는 버렸다** — 저장은 다시 읽을 데이터를 남기고
   감지는 지금 위험을 알린다. `speed: 300`은 저장 계약 밖이지만 감지로는 과속이 맞다.
-  다음은 그 문서 3-2절의 6개 결정을 확정하는 것이고, **구현은 그 뒤다.**
+  **드리프트는 막아뒀다** — `contract-fixtures/cases.json`을 양쪽 테스트가 읽는다
+  (`SharedFixtureContractTest` 22 / `test_shared_fixtures.py` 22). **정책 테스트가 아니라
+  특성화 테스트**이고 **감지기 동작은 하나도 안 바꿨다.**
+  만들면서 검사가 안 도는 것을 하나 잡았다 — fixture가 `backend/` 밖이라 Gradle이 입력으로
+  몰라서 `:test UP-TO-DATE`로 건너뛰었다(`build.gradle`의 `inputs.file`로 고침).
+  다음은 그 문서 3-2절의 결정(1번 필드 누락, 4번 필수 필드)을 확정하는 것이고, **구현은 그 뒤다.**
 - **P0-2b — 거부 사유별 지표 없음.** 사유가 4종인데 카운터는 `messages.invalid` 하나다.
   `{entrance, reason}` 8 시계열까지만. **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다** —
   카디널리티도 문제지만 Prometheus 라벨은 보존 기간 내내 남아 개인정보가 샌다.
