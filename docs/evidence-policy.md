@@ -50,6 +50,27 @@ Telemetrix에서 “검증했다”는 표현은 코드가 그럴듯하거나 �
 요약 파일로 보존한다. 전체본이 필요하면 외부 보관 위치와 별도 checksum을 결과 문서에
 기록한다. 토큰, 비밀번호, 개인 인증서와 `.env` 내용은 증거에 포함하지 않는다.
 
+### 증거는 "남겼다"가 아니라 "다시 계산된다"여야 한다
+
+`checksums.txt`를 남기는 것만으로는 부족하다. **제3자의 clean checkout에서 그 해시가
+다시 나와야** 증거다. 2026-09-09 감사에서 세 실행의 manifest가 Windows clean checkout에서
+깨져 있는 것이 드러났다 — 확장자 없는 작업 파일이 `.gitattributes`의 LF 규칙 밖이라
+`core.autocrlf=true`가 CRLF로 바꿨다. **작업하던 사람의 트리에서는 원본 파일이 그대로라
+안 보였고, 새로 클론해야 보였다.**
+
+그래서 세 가지를 규칙으로 둔다.
+
+- **작업 파일을 `evidence/`에 두지 않는다.** 다음 계산에 쓰는 중간 상태는 증거가 아니다.
+  판단 기준은 "이 파일 없이 결과를 다시 계산할 수 있는가"다. 있다면 증거가 아니다.
+  숨김 파일(`.`으로 시작)은 `evidence_finish`가 manifest에서 자동으로 뺀다.
+- **`evidence/` 아래는 통째로 LF로 고정한다**(`.gitattributes`). 확장자 목록으로 관리하면
+  새 파일이 생길 때마다 조용히 뚫린다.
+- **manifest는 만든 직후 스스로 검증한다.** 결과는 `checksum_selfcheck.txt`에 남고,
+  전체 검사는 `bash load-test/lib/verify_evidence.sh`로 언제든 다시 돌릴 수 있다.
+  CI가 매 푸시마다 이 검사를 수행한다.
+
+검증 기록: `docs/verification/2026-09-09-evidence-checksum.md`.
+
 권장 디렉터리 형태:
 
 ```text
@@ -61,7 +82,8 @@ load-test/<scenario>/
     ├── metadata.txt
     ├── metrics.json
     ├── counts.csv
-    └── checksums.txt
+    ├── checksums.txt            # 이 디렉터리의 증거 파일 해시
+    └── checksum_selfcheck.txt   # manifest 자체 검증 결과(의도적으로 manifest 밖)
 ```
 
 ## 정합성 검증 규칙

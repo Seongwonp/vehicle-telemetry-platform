@@ -54,27 +54,24 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 
 순서를 건너뛰지 않는다. 각 작업은 별도 커밋과 검증 기록으로 닫는다.
 
-### 1. P0 — evidence checksum 이식성 복구
+### 1. ~~P0 — evidence checksum 이식성 복구~~ — **완료(2026-09-09)**
 
-현재 Windows checkout에서 다음 세 manifest의 `.prev_offsets` hash가 일치하지 않는다.
+감사가 지목한 대로였다. clean clone 전수 검사에서 **39개 중 3개**가 깨져 있었다
+(전부 `.prev_offsets`, 전부 CRLF). 확장자 없는 숨김 파일이 `.gitattributes` 목록 밖이라
+`core.autocrlf=true`가 적용됐고, **작업 트리에서는 원본 LF 파일이 남아 있어 안 보였다.**
 
-- `load-test/storage-scale/evidence/20260908-221713/checksums.txt`
-- `load-test/storage-scale/evidence/20260908-235532/checksums.txt`
-- `load-test/storage-scale/evidence/20260909-001140/checksums.txt`
+git blob 해시가 manifest와 일치하므로 **증거는 처음부터 옳았고 checkout만 망가뜨렸다.**
+그래서 evidence를 고치지 않고 규칙으로 살렸다.
 
-원인은 확장자 없는 `.prev_offsets`가 `.gitattributes`의 `*.txt/csv/json/log` LF 규칙 밖에
-있는데 Windows의 `core.autocrlf=true`가 적용되는 것으로 추정한다. 마지막 파일의 manifest
-기대값은 `388dd7ca...`, 현재 working tree hash는 `CC8927AF...`다.
+- `.gitattributes`: `load-test/**/evidence/** text eol=lf` (확장자별 목록은 뚫린다)
+- `load-test/lib/verify_evidence.sh`: 전수 검사. 통과 0 / 실패 1, CI가 본다
+- `evidence_finish`: 숨김 파일 제외 + 생성 직후 자체 검증(`checksum_selfcheck.txt`)
+- 실험 스크립트의 작업 파일을 evidence 밖으로
 
-완료 조건:
+수정 전 3 실패 / 39 → 수정 후 **0 실패 / 39**(Windows clean clone, `autocrlf=true`).
+`docs/verification/2026-09-09-evidence-checksum.md`.
 
-- `.prev_offsets`를 scratch로 제외할지 증거로 보존할지 먼저 결정
-- 전체 evidence manifest를 순회하는 검사 스크립트
-- Windows clean checkout과 Linux CI 모두 통과
-- 새 실험은 manifest 생성 직후 자체 검증
-- `docs/verification/`에 결과 기록
-
-이 작업에는 telemetry 동작 변경을 섞지 않는다.
+**남은 것**: Linux CI 통과는 다음 푸시에서 확인. macOS 미확인.
 
 ### 2. P0 — strict telemetry schema
 

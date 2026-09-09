@@ -170,7 +170,11 @@ vehicle-telemetry-platform/
 
 ### 현재 우선순위
 
-1. evidence checksum의 Windows/Linux clean-checkout 재현성 복구
+1. ~~evidence checksum의 clean-checkout 재현성 복구~~ — **완료(2026-09-09)**.
+   clean clone 전수 검사에서 39개 중 3개가 CRLF 변환으로 깨져 있었다. 증거 자체는
+   옳았고(git blob = manifest) checkout만 망가뜨려서, evidence를 고치지 않고
+   `.gitattributes` 규칙과 전수 검사 스크립트·CI 단계로 닫았다 →
+   [검증 기록](docs/verification/2026-09-09-evidence-checksum.md)
 2. 누락/null/type mismatch를 포함한 strict telemetry schema와 공통 ingress 검증
 3. Redis 장애 시 endpoint별 가용성/보안 정책 결정 및 장애 실험
 4. 하나의 `event_id`로 MQTT→Kafka→저장→알림을 잇는 상관관계

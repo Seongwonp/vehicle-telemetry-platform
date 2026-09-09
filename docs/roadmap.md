@@ -24,7 +24,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 | 순서 | 작업 | 이유 | 완료 조건 |
 | ---: | --- | --- | --- |
-| 1 | evidence checksum 이식성 복구 | Windows checkout에서 확장자 없는 `.prev_offsets`의 hash가 manifest와 다르다 | Windows/Linux clean checkout에서 전체 manifest 통과 |
+| 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | Windows clean clone 39/39 통과. Linux CI는 다음 푸시에서 확인 |
 | 2 | strict telemetry schema | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
 | 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
 | 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
@@ -36,21 +36,40 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 ## P0 — 신뢰성 주장을 다시 검증할 수 있게 만들기
 
-### P0-1. 실험 원본 증거 보존 — **재개방: checksum 이식성 수정 필요(2026-09-09)**
+### P0-1. 실험 원본 증거 보존 — **checksum 이식성 복구 완료(2026-09-09)**
 
-2026-09-09 Windows checkout에서 storage-scale evidence 세 실행의 `.prev_offsets` hash가
-manifest와 다름을 확인했다. 확장자 없는 파일이 `.gitattributes`의 LF 고정 규칙 밖에 있고
-`core.autocrlf=true`가 적용되는 것이 원인으로 추정된다. 원본 수집 도구가 있어도 clean
-checkout에서 검증하지 못하면 증거 체인이 완성된 것이 아니므로 P0를 다시 연다.
+감사가 제기한 P0을 확인했고 **사실이었다.** 그리고 고쳤다.
 
-대상 manifest:
+전수 검사(`load-test/lib/verify_evidence.sh`)를 만들어 clean clone에서 돌리니
+**39개 manifest 중 3개**가 깨져 있었다 — 전부 `.prev_offsets`이고 전부 CRLF다.
+확장자 없는 숨김 파일이 `.gitattributes`의 `*.txt`/`*.csv`/`*.json`/`*.log` 목록 밖이라
+`core.autocrlf=true`가 적용됐다. **작업 트리에서는 원본 LF 파일이 남아 있어 안 보이고,
+새로 클론해야 드러난다.**
 
-- `load-test/storage-scale/evidence/20260908-221713/checksums.txt`
-- `load-test/storage-scale/evidence/20260908-235532/checksums.txt`
-- `load-test/storage-scale/evidence/20260909-001140/checksums.txt`
+**증거 자체는 처음부터 옳았다.** git blob의 해시가 manifest와 정확히 일치한다
+(`76cdfe49` / `87da0f68` / `388dd7ca`). 깨뜨린 것은 checkout 단계뿐이라,
+manifest를 다시 쓰거나 파일을 지우지 않고 **규칙으로 살렸다.**
 
-완료 조건은 Windows/Linux clean checkout 전체 manifest 통과와 새 실행의 생성 직후 자체
-검증이다. `.prev_offsets`가 scratch인지 영구 증거인지 결정한 뒤 제외 또는 LF 고정을 택한다.
+- `.gitattributes`: evidence 아래를 확장자별이 아니라 **통째로** LF 고정.
+  확장자 목록은 새 파일이 생길 때마다 조용히 뚫린다.
+- `verify_evidence.sh`: 전체 manifest 순회, 실패 시 경로·기대·실제 해시 출력,
+  CR이 있으면 줄바꿈이 원인이라고 알려준다. 통과 0 / 실패 1.
+- `evidence_finish`: 숨김 파일을 manifest에서 제외하고 **생성 직후 자체 검증**해
+  결과를 `checksum_selfcheck.txt`에 남긴다.
+- 실험 스크립트 둘: 작업 파일(`.prev_offsets`, `.current_phase`)을 evidence 밖으로.
+  규칙으로도 막았지만 **작업 파일을 증거에 섞지 않는 것**이 근본 해결이다.
+- CI에 검사 단계 추가.
+
+결과: 수정 전 Windows clean clone **3 실패 / 39** → 수정 후 **0 실패 / 39**.
+검증 기록: [`docs/verification/2026-09-09-evidence-checksum.md`](verification/2026-09-09-evidence-checksum.md).
+
+**고치면서 같은 함정을 한 번 밟았다** — 자체 검증 결과를 `metadata.txt`에 덧붙이도록
+짰는데, 그 파일은 manifest 안에 있어서 **한 줄만 더해도 해시가 어긋난다.**
+`checksum_selfcheck.txt`로 분리했다.
+
+**남은 것**: Linux CI 통과는 다음 푸시에서 확인된다(Linux는 원래 이 문제가 없어
+회귀 방지용이다). macOS 미확인. `verify_evidence.sh`는 manifest에 **적힌** 파일만 보므로
+manifest에서 빠진 증거는 알려주지 않는다.
 
 **기존 작업(2026-09-05)**:
 
