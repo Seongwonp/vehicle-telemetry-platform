@@ -97,3 +97,36 @@ def test_재처리_횟수는_망가진_값에도_0을_돌려준다():
     assert replay_count({}) == 0
     assert replay_count({"x-dlq-replay-count": "3"}) == 3
     assert replay_count({"x-dlq-replay-count": "삼"}) == 0
+
+
+# ── 감지 경로(Python)의 예외는 아직 분류되지 않는다 (P0-2a 조사, 2026-09-09) ──
+#
+# `anomaly-detector`가 계약 위반 payload에서 **실제로 내는** 예외를 fixture로 재봤더니
+# (docs/anomaly-path-contract.md 2-1절) 대부분이 `unknown`이었다. 영구인 것도, 일시인
+# 것도 다 unknown이라 자동 재처리 대상에서 빠진다.
+#
+# **고치지 않고 현재 상태를 고정한다.** ValueError·TypeError가 항상 영구인지는
+# 감지기 코드가 바뀌면 달라지고, 그 판단은 정책(같은 문서 3절)과 같이 해야 한다.
+# 여기 두는 이유는 **모르는 채로 넘어가지 않기 위해서**다 — 누가 목록에 넣으면
+# 이 테스트가 깨지고, 그때 위 문서를 보게 된다.
+@pytest.mark.parametrize("fqcn", [
+    "KeyError",            # vehicle_id/timestamp 누락 + 이상 감지가 겹칠 때
+    "TypeError",           # dtc_codes [null] -> ','.join
+    "AttributeError",      # payload가 null 리터럴 -> None.get
+    "ValueError",          # speed "fast" -> float()
+    "KafkaTimeoutError",   # 이쪽은 **일시**인데도 unknown이다
+    "NoBrokersAvailable",
+])
+def test_감지기_예외는_아직_분류_목록에_없다(fqcn):
+    """현재 상태를 고정한다. **이게 옳다는 뜻이 아니다.**
+
+    깨졌다면 누군가 목록에 넣은 것이다 — `docs/anomaly-path-contract.md` 3-2절
+    5번 결정을 확인하고, 맞으면 이 테스트를 지워라.
+    """
+    assert classify(h(fqcn)) == "unknown"
+
+
+def test_감지기가_내는_역직렬화_예외는_이미_영구다():
+    """반대쪽 — 이 둘은 목록에 있다. 전부 빠진 게 아니라는 것을 같이 남긴다."""
+    assert classify(h("JSONDecodeError")) == "permanent"
+    assert classify(h("UnicodeDecodeError")) == "permanent"

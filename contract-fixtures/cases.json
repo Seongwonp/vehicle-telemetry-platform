@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "note": "두 칸 모두 2026-09-09에 **실측**했다. storage는 TelemetryDecoder를, detector는 anomaly_detector.process()를 실제로 호출해서 잰 값이다. 기대값이 아니라 현재 동작이다 — 정책은 docs/anomaly-path-contract.md에서 정한다.",
+  "cases": [
+    {
+      "id": "normal",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "정상 — 어느 룰도 안 걸린다"
+      }
+    },
+    {
+      "id": "rpm_fraction",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2000.7, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "2000.7은 임계 이하. Python은 float이라 절삭도 없다"
+      }
+    },
+    {
+      "id": "anomaly_engine_temp",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 106.0, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "엔진 과열 1건"
+      }
+    },
+    {
+      "id": "anomaly_speed",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 201.0, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "과속 1건"
+      }
+    },
+    {
+      "id": "anomaly_dtc",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": [\"P0301\"]}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "DTC 진단 코드 감지 1건"
+      }
+    },
+    {
+      "id": "speed_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "**조용하다.** data.get('speed')가 None이라 속도 룰이 통째로 건너뛰어진다. 저장은 거부인데 감지는 아무 신호가 없다"
+      }
+    },
+    {
+      "id": "speed_null",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": null, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "위와 같다"
+      }
+    },
+    {
+      "id": "speed_out_of_range",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 300.0, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "**과속 알림이 발행된다.** 저장은 거부되므로 알림은 있는데 그 시점 데이터가 없다"
+      }
+    },
+    {
+      "id": "speed_numeric_string",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": \"87.3\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "float('87.3')로 강제 변환된다 — 저장 쪽 Jackson 강제 변환과 결과가 같다"
+      }
+    },
+    {
+      "id": "speed_not_a_number",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": \"fast\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ValueError: could not convert string to float. rules.detect 안 float()에서 난다"
+      }
+    },
+    {
+      "id": "gps_lat_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "gps는 어느 룰에도 안 쓰인다. 저장만 거부"
+      }
+    },
+    {
+      "id": "field_name_typo",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": [], \"sped\": 87.3}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "**조용하다.** 'sped'는 무시되고 속도 룰이 영원히 안 돈다"
+      }
+    },
+    {
+      "id": "dtc_null_element",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": [null]}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "TypeError: sequence item 0: expected str instance, NoneType found. ','.join에서 난다 — Java는 문자열 'null'로 저장하던 칸이다"
+      }
+    },
+    {
+      "id": "dtc_comma_inside",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": [\"P0301,P0420\"]}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "**DTC 알림이 발행된다.** 저장은 거부. Java에서 이 칸을 막은 이유(코드 개수 구분 불가)가 감지 경로에는 해당되지 않는다"
+      }
+    },
+    {
+      "id": "vehicle_id_missing",
+      "payload": "{\"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "이상이 없으면 vehicle_id를 읽지 않아 조용히 지나간다"
+      }
+    },
+    {
+      "id": "null_literal",
+      "payload": "null",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "AttributeError: 'NoneType' object has no attribute 'get'. json.loads('null')은 예외 없이 None을 돌려준다 — 저장 쪽과 같은 함정이다"
+      }
+    },
+    {
+      "id": "malformed_json",
+      "payload": "{not-valid-json",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "JSONDecodeError. 역직렬화 단계에서 격리된다"
+      }
+    },
+    {
+      "id": "vehicle_id_missing_with_anomaly",
+      "payload": "{\"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 106.0, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "KeyError: 'vehicle_id'. **같은 결함인데 이상이 걸릴 때만 터진다** — 위 vehicle_id_missing과 비교하라"
+      }
+    },
+    {
+      "id": "timestamp_missing_with_anomaly",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 106.0, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "KeyError: 'timestamp'. 위와 같은 조건부 동작"
+      }
+    },
+    {
+      "id": "numeric_string_over_threshold",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": \"201\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "float('201') > 200. 문자열이어도 임계 판정은 정상 동작한다"
+      }
+    },
+    {
+      "id": "rpm_null_with_other_anomaly",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": null, \"engine_temp\": 106.0, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "rpm 룰만 건너뛰고 엔진 과열은 잡힌다. **부분적으로 눈이 먼 상태로 계속 돈다**"
+      }
+    }
+  ],
+  "measured_at": "2026-09-09"
+}
