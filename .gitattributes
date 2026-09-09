@@ -1,10 +1,18 @@
 # Evidence checksums are generated from Git Bash. Keep their bytes stable across
 # Windows and Linux clones so sha256sum verification stays reproducible.
 load-test/**/*.sh text eol=lf
-load-test/**/evidence/**/*.txt text eol=lf
-load-test/**/evidence/**/*.csv text eol=lf
-load-test/**/evidence/**/*.json text eol=lf
-load-test/**/evidence/**/*.log text eol=lf
+
+# evidence 아래는 **확장자를 나열하지 않고 통째로** LF로 고정한다.
+#
+# 예전에는 `*.txt`/`*.csv`/`*.json`/`*.log`만 적었는데, 그 목록 밖의 파일이 하나 생기자
+# (`.prev_offsets` — 확장자도 없고 숨김 파일이다) `core.autocrlf=true`가 CRLF로 바꿔서
+# **Windows clean checkout에서 세 실행의 manifest가 깨졌다**(2026-09-09 감사에서 발견).
+# 내 작업 트리에서는 원본 LF 파일이 그대로 있어 안 드러났고, 새로 클론해야 보였다.
+#
+# 확장자 목록은 **새 파일이 생길 때마다 조용히 뚫린다.** evidence 안은 전부 스크립트가
+# 만든 텍스트이므로(2026-09-09 확인) 통째로 거는 것이 맞다.
+# 바이너리 증거를 넣게 되면 그때 그 경로만 예외로 뺀다.
+load-test/**/evidence/** text eol=lf
 
 # 운영 스크립트도 같은 이유로 LF 고정 — CRLF로 체크아웃되면 Linux에서 실행이 깨진다.
 scripts/**/*.sh text eol=lf

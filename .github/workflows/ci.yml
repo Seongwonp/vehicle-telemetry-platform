@@ -22,6 +22,13 @@ jobs:
         with:
           python-version: '3.11'
           cache: pip
+      # 보존된 증거가 **이 체크아웃에서 다시 계산되는지** 확인한다.
+      # 2026-09-09에 Windows clean checkout에서 세 실행의 manifest가 깨진 것이
+      # 아무 자동 검사에도 안 걸렸다 — 증거는 "남겼다"가 아니라 "재계산된다"여야 한다.
+      # Linux 러너라 CRLF 변환이 안 일어나므로, Windows 쪽은 개발자가 로컬에서 같은
+      # 스크립트로 확인한다(docs/verification/2026-09-09-evidence-checksum.md).
+      - name: Verify preserved evidence checksums
+        run: bash load-test/lib/verify_evidence.sh
       - name: Backend unit and Testcontainers contracts
         working-directory: backend
         run: ./gradlew test --no-daemon

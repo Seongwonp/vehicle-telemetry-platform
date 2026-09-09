@@ -104,7 +104,15 @@ PARTFILE="$EVIDENCE_DIR/partition_lag.csv"
 echo "t_sec,phase,partition,current_offset,lag,consumer_id" > "$PARTFILE"
 T0=$(date +%s)
 
-PREVOFF="$EVIDENCE_DIR/.prev_offsets"
+# 직전 표본의 offset. **evidence 디렉터리에 두지 않는다.**
+#
+# 2026-09-09 감사에서, 이 파일을 `$EVIDENCE_DIR`에 두었더니 확장자가 없어
+# `.gitattributes`의 LF 규칙 밖이 됐고 `core.autocrlf=true`가 CRLF로 바꿔서
+# **Windows clean checkout에서 manifest가 깨졌다.** 규칙으로도 막았지만
+# **작업 파일을 증거에 섞지 않는 것**이 근본 해결이다 —
+# 이 내용은 `partition_lag.csv`에서 전부 다시 계산할 수 있어 증거 가치가 없다.
+PREVOFF="${TMPDIR:-/tmp}/telemetrix_prev_offsets.$$"
+trap 'rm -f "$PREVOFF"' EXIT
 : > "$PREVOFF"
 
 sample() {  # $1 = phase

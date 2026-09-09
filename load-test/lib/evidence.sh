@@ -210,16 +210,44 @@ evidence_finish() {
   # 여기까지 왔다는 것은 스크립트가 끝까지 갔다는 뜻이다(evidence_init의 RUNNING 참고).
   echo "COMPLETE $(date -Iseconds)" > "$EVIDENCE_DIR/status.txt"
 
-  # *.log는 로컬 진단용(Git 제외)이고 checksums.txt는 자기 자신을
-  # 해시하면 안 된다. 따라서 manifest에는 커밋 가능한 증거 파일만 기록한다.
+  # manifest에는 **커밋 가능한 증거 파일만** 넣는다.
+  #   - `checksums.txt` 자기 자신을 해시할 수 없다
+  #   - `*.log`는 로컬 진단용이라 Git에서 제외된다
+  #   - **숨김 파일(`.`으로 시작)은 스크립트의 작업 상태이지 증거가 아니다**
+  #
+  # 마지막 규칙은 2026-09-09 감사에서 생겼다. `run_scaledown_under_load.sh`가
+  # 직전 표본의 offset을 `$EVIDENCE_DIR/.prev_offsets`에 두었는데, 확장자가 없어서
+  # `.gitattributes`의 LF 규칙 밖이었고 `core.autocrlf=true`가 CRLF로 바꿔
+  # **Windows clean checkout에서 세 실행의 manifest가 깨졌다.**
+  # 규칙(`.gitattributes`)으로도 막았지만, **애초에 작업 파일을 증거에 섞지 않는 게 맞다** —
+  # `.prev_offsets`의 내용은 `partition_lag.csv`에서 전부 다시 계산할 수 있어 증거 가치가 없다.
   (
     cd "$EVIDENCE_DIR" &&
       find . -maxdepth 1 -type f \
         ! -name 'checksums.txt' \
         ! -name '*.log' \
+        ! -name '.*' \
         -print0 \
         | sort -z \
         | xargs -0 -r sha256sum > checksums.txt
   ) || true
+
+  # **만들자마자 스스로 검증한다.** manifest는 "남겼다"가 아니라 "다시 계산된다"여야
+  # 의미가 있는데, 지금까지 그걸 확인한 적이 없어 세 실행이 깨진 채로 커밋됐다.
+  #
+  # 결과는 **metadata.txt가 아니라 별도 파일**에 쓴다. metadata.txt는 manifest에 들어
+  # 있어서, 거기 한 줄을 더하면 그 순간 해시가 어긋난다 — 고치려던 문제를 그대로
+  # 다시 만드는 셈이다(이 코드를 쓰다가 한 번 그렇게 했다).
+  # 그래서 `checksum_selfcheck.txt`는 **의도적으로 manifest 밖**이다.
+  #
+  # 실패해도 실행을 죽이지 않는다 — 증거 파일 자체는 남아 있고 쓸모가 있다.
+  if bash load-test/lib/verify_evidence.sh "$EVIDENCE_DIR" >/dev/null 2>&1; then
+    echo "OK $(date -Iseconds)" > "$EVIDENCE_DIR/checksum_selfcheck.txt"
+  else
+    echo "FAILED $(date -Iseconds) — 이 실행의 manifest는 재계산되지 않는다" \
+      > "$EVIDENCE_DIR/checksum_selfcheck.txt"
+    echo "[evidence] ** manifest 자체 검증 실패: $EVIDENCE_DIR" >&2
+    echo "[evidence]    bash load-test/lib/verify_evidence.sh $EVIDENCE_DIR 로 확인하라" >&2
+  fi
   echo "[evidence] 저장됨: $EVIDENCE_DIR"
 }

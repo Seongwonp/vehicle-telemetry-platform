@@ -128,7 +128,9 @@ sample_cpu() {  # $1 = t_sec, $2 = phase, $3 = 인스턴스 수
 # 받는 것과 관련된 듯하다). **계측이 측정을 망치면 안 되므로 별도 프로세스로 분리한다.**
 # 감시자가 죽거나 멈춰도 스윕은 그대로 돈다.
 WRITEFILE="$EVIDENCE_DIR/influx_write.csv"
-PHASEFILE="$EVIDENCE_DIR/.current_phase"
+# 감시자에게 현재 구간을 알리는 작업 파일. **evidence 디렉터리에 두지 않는다** —
+# 확장자 없는 파일이 manifest에 섞이면 줄바꿈 변환으로 체크섬이 깨진다(2026-09-09).
+PHASEFILE="${TMPDIR:-/tmp}/telemetrix_current_phase.$$"
 echo "t_sec,phase,instances,write_count,write_sum_sec,batch_count,batch_sum,failures" > "$WRITEFILE"
 echo "init,0" > "$PHASEFILE"
 
