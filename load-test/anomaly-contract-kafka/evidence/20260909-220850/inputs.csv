@@ -1,0 +1,4 @@
+key,value
+run_id,220850
+topics,itc-220850-telemetry / -dlq / -alerts (전용)
+group,itc-220850-group (전용)

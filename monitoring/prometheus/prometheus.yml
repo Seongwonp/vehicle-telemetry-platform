@@ -35,6 +35,20 @@ scrape_configs:
           - /etc/prometheus/targets/backend-storage.json
         refresh_interval: 30s
 
+  # 이상 감지기 — **인스턴스가 여럿이고 이름이 고정되지 않는다**(replicas: 3,
+  # container_name 없음). static_configs로는 한 대만 잡히고, 포트를 호스트에 매핑하면
+  # 스케일이 포트 충돌로 깨진다. compose의 내장 DNS는 서비스 이름을 **모든 컨테이너 IP**로
+  # 풀어주므로 dns_sd_configs로 전부 찾는다.
+  #
+  # 감지기가 안 떠 있으면 대상이 0개가 된다(DNS 해석 실패) — `up == 0`이 아니라 대상 없음이라
+  # 알림 피로를 만들지 않는다. file_sd를 쓴 backend-storage와 같은 이유의 다른 수단이다.
+  - job_name: 'anomaly-detector'
+    dns_sd_configs:
+      - names: ['anomaly-detector']
+        type: 'A'
+        port: 9101
+        refresh_interval: 30s
+
   # Prometheus 자체 메트릭
   - job_name: 'prometheus'
     static_configs:

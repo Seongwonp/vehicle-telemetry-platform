@@ -51,13 +51,14 @@
 | `storage` | `backend/src/test/java/com/telemetry/domain/SharedFixtureContractTest.java` |
 | `detector` | `anomaly-detector/tests/test_shared_fixtures.py` |
 
-**둘 다 특성화 테스트다 — 정책 테스트가 아니다.** 지금 적힌 값은 2026-09-09에 **실측한
-현재 동작**이고, 그게 옳다는 뜻이 아니다. 실제로 8칸이 두 경로에서 갈리고 그중 5칸은
-**조용히 눈이 머는** 동작이다(`docs/anomaly-path-contract.md` 1-1절).
+**정책이 확정됐다**(2026-09-09) — 공통 입력 계약을 유지한다. 그래서 `storage`와
+`detector`의 **거부 여부가 일치해야 한다**: `storage: reject`면 `detector: dlq`다.
+적용 전에는 21칸 중 8칸이 갈렸다.
 
-고정하는 이유는 **정책이 확정되기 전에 아무도 모르게 달라지는 것**을 막기 위해서다.
-동작을 바꾸면 테스트가 깨진다 — 그때 **테스트를 지우지 말고 이 파일의 기대값을 옮겨라.**
-그래야 무엇이 어떻게 바뀌었는지가 diff에 남는다.
+`detector_before` 칸은 **정책 적용 전** 동작이다. **지우지 마라** — 무엇이 어떻게
+바뀌었는지가 파일 안에 남아야 하고, 결과 문서와 devlog가 이걸 참조한다.
+
+동작을 바꾸면 테스트가 깨진다. 그때 **테스트를 지우지 말고 이 파일의 기대값을 옮겨라.**
 
 **Gradle 주의**: 이 파일은 `backend/` 밖이라 `build.gradle`에 테스트 입력으로 선언해뒀다.
 그 선언이 없으면 이 파일을 고쳐도 `:test UP-TO-DATE`로 건너뛴다 — 실제로 겪었다.

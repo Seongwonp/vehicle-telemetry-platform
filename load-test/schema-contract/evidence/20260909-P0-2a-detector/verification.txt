@@ -1,0 +1,25 @@
+# P0-2a 감지 경로 계약 — 실제 파이프라인 확인 (2026-09-09)
+
+## 조건
+dev(평문) 프로파일, 감지기 3 인스턴스, ML 비활성. Kafka에 직접 6건 주입.
+커밋: b0804915c4833590dffb626acbd64afed2ef6d54 (dirty: 작업 중)
+
+## Prometheus 사유별 집계 (세 인스턴스 합)
+  PAYLOAD_VALIDATION_FAILED    1
+  UNKNOWN_FIELD                1
+  MALFORMED_JSON               1
+  TYPE_MISMATCH                1
+
+## Prometheus 대상 발견 (replicas 3, dns_sd_configs)
+  http://172.18.0.8:9101/metrics -> up
+  http://172.18.0.7:9101/metrics -> up
+  http://172.18.0.6:9101/metrics -> up
+
+## DLQ 헤더 — 원본 추적과 사유 귀속
+x-dlq-origin-topic:vehicle-telemetry,x-dlq-origin-partition:2,x-dlq-origin-offset:8,x-dlq-failed-at:2026-09-09T12:24:32.648409+00:00,x-dlq-failure-class:ContractViolation,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: speed must not be null,x-dlq-contract-reason:PAYLOAD_VALIDATION_FAILED,x-dlq-source-path:anomaly-detector
+x-dlq-origin-topic:vehicle-telemetry,x-dlq-origin-partition:2,x-dlq-origin-offset:9,x-dlq-failed-at:2026-09-09T12:24:32.660394+00:00,x-dlq-failure-class:ContractViolation,x-dlq-failure-message:UNKNOWN_FIELD: sped,x-dlq-contract-reason:UNKNOWN_FIELD,x-dlq-source-path:anomaly-detector
+x-dlq-origin-topic:vehicle-telemetry,x-dlq-origin-partition:2,x-dlq-origin-offset:10,x-dlq-failed-at:2026-09-09T12:24:32.663520+00:00,x-dlq-failure-class:ContractViolation,x-dlq-failure-message:MALFORMED_JSON: JSONDecodeError,x-dlq-contract-reason:MALFORMED_JSON,x-dlq-source-path:anomaly-detector
+x-dlq-origin-topic:vehicle-telemetry,x-dlq-origin-partition:2,x-dlq-origin-offset:11,x-dlq-failed-at:2026-09-09T12:24:32.666038+00:00,x-dlq-failure-class:ContractViolation,x-dlq-failure-message:TYPE_MISMATCH: (최상위 null),x-dlq-contract-reason:TYPE_MISMATCH,x-dlq-source-path:anomaly-detector
+
+## 계약을 통과한 건
+  telemetry_anomaly_processed_total = 2

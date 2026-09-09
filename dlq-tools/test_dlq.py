@@ -99,34 +99,63 @@ def test_재처리_횟수는_망가진_값에도_0을_돌려준다():
     assert replay_count({"x-dlq-replay-count": "삼"}) == 0
 
 
-# ── 감지 경로(Python)의 예외는 아직 분류되지 않는다 (P0-2a 조사, 2026-09-09) ──
+# ── 감지 경로(Python) — 이름이 아니라 **출처**로 가른다 (P0-2a, 2026-09-09) ──
 #
-# `anomaly-detector`가 계약 위반 payload에서 **실제로 내는** 예외를 fixture로 재봤더니
-# (docs/anomaly-path-contract.md 2-1절) 대부분이 `unknown`이었다. 영구인 것도, 일시인
-# 것도 다 unknown이라 자동 재처리 대상에서 빠진다.
+# 조사에서 감지기가 실제로 내는 예외가 전부 `unknown`인 것을 찾았다. 그런데 **전부
+# 영구로 넣는 것이 답이 아니었다** — 정책 확정 때 그 지적을 받았다.
 #
-# **고치지 않고 현재 상태를 고정한다.** ValueError·TypeError가 항상 영구인지는
-# 감지기 코드가 바뀌면 달라지고, 그 판단은 정책(같은 문서 3절)과 같이 해야 한다.
-# 여기 두는 이유는 **모르는 채로 넘어가지 않기 위해서**다 — 누가 목록에 넣으면
-# 이 테스트가 깨지고, 그때 위 문서를 보게 된다.
-@pytest.mark.parametrize("fqcn", [
-    "KeyError",            # vehicle_id/timestamp 누락 + 이상 감지가 겹칠 때
-    "TypeError",           # dtc_codes [null] -> ','.join
-    "AttributeError",      # payload가 null 리터럴 -> None.get
-    "ValueError",          # speed "fast" -> float()
-    "KafkaTimeoutError",   # 이쪽은 **일시**인데도 unknown이다
-    "NoBrokersAvailable",
-])
-def test_감지기_예외는_아직_분류_목록에_없다(fqcn):
-    """현재 상태를 고정한다. **이게 옳다는 뜻이 아니다.**
+# 검증기가 **명시적으로 만든** 계약 오류(ContractViolation)는 payload의 성질이라 영구다.
+# 반면 계약을 통과한 뒤 나오는 TypeError/KeyError는 **우리 코드의 버그일 수 있고**,
+# 버그면 고친 뒤 재처리가 성공한다 — 영구로 박아두면 고친 다음에도 자동 재처리에서 빠진다.
+# 근거: docs/anomaly-path-contract.md 2-1절.
 
-    깨졌다면 누군가 목록에 넣은 것이다 — `docs/anomaly-path-contract.md` 3-2절
-    5번 결정을 확인하고, 맞으면 이 테스트를 지워라.
+CONTRACT_VIOLATION = "ContractViolation"
+
+
+@pytest.mark.parametrize("reason", [
+    "MALFORMED_JSON: JSONDecodeError",
+    "UNKNOWN_FIELD: sped",
+    "TYPE_MISMATCH: speed",
+    "PAYLOAD_VALIDATION_FAILED: speed must not be null",
+])
+def test_감지경로_계약위반은_영구다(reason):
+    """검증기가 만든 것이라 되돌려도 같은 자리에서 실패한다."""
+    headers = h(CONTRACT_VIOLATION, **{
+        "x-dlq-failure-message": reason,
+        "x-dlq-contract-reason": reason.split(":")[0],
+        "x-dlq-source-path": "anomaly-detector",
+    })
+    assert classify(headers) == "permanent"
+
+
+@pytest.mark.parametrize("fqcn", [
+    "TypeError",
+    "KeyError",
+    "AttributeError",
+    "ValueError",
+])
+def test_일반_예외는_영구로_단정하지_않는다(fqcn):
+    """**이게 옳다.** 계약을 통과한 뒤 나오는 것이라 구현 버그일 수 있다.
+
+    영구로 분류하면 버그를 고친 뒤에도 자동 재처리에서 빠지고, 일시로 분류하면
+    고치기 전에 무한 재시도한다. `unknown`이 정확하다 — 사람이 보고 판단한다.
+    """
+    assert classify(h(fqcn)) == "unknown"
+
+
+@pytest.mark.parametrize("fqcn", ["KafkaTimeoutError", "NoBrokersAvailable"])
+def test_kafka_타임아웃도_단정하지_않는다(fqcn):
+    """발생 위치에 따라 뜻이 다르다.
+
+    알림 발행 중 타임아웃이면 브로커가 이미 받았을 수 있어(at-least-once) 재처리가
+    중복 알림을 만든다 — 다만 `UNIQUE(event_id)`로 행은 안 는다(2026-09-05 확인).
+    DLQ 발행 중 타임아웃이면 애초에 DLQ에 레코드가 안 남는다(원본 offset 미커밋 → 재전달).
+    "재시도해도 안전하다"가 자동으로 참이 아니라서 `unknown`으로 둔다.
     """
     assert classify(h(fqcn)) == "unknown"
 
 
 def test_감지기가_내는_역직렬화_예외는_이미_영구다():
-    """반대쪽 — 이 둘은 목록에 있다. 전부 빠진 게 아니라는 것을 같이 남긴다."""
+    """계약 도입 후에는 ContractViolation으로 감싸이지만, 옛 DLQ 레코드가 남아 있다."""
     assert classify(h("JSONDecodeError")) == "permanent"
     assert classify(h("UnicodeDecodeError")) == "permanent"

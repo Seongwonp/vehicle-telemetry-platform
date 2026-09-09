@@ -46,8 +46,35 @@ public class VehicleTelemetry {
     @Pattern(regexp = "^[A-Z0-9-]{4,20}$")
     private String vehicleId;
 
+    /**
+     * ISO-8601 순간 표기. <b>오프셋(<code>Z</code> 또는 <code>±hh:mm</code>)이 필수</b>다.
+     *
+     * <h3>형식만 본다 — 신선도는 계약이 아니다</h3>
+     *
+     * 오래된 시각도 통과한다. 과거 데이터를 거부하면 <b>DLQ 재처리와 백필이 불가능해진다.</b>
+     * 신선도가 필요하면 그건 별도 정책이지 입력 계약이 아니다(2026-09-09 결정).
+     *
+     * <h3>정규식만으로는 부족하다</h3>
+     *
+     * 이 패턴은 <b>모양</b>만 본다. {@code 2026-13-45T99:00:00Z}는 정규식을 통과하지만
+     * 달력에 없는 날짜다. 실제 파싱은 {@link TelemetryDecoder}가 한 번 더 한다 —
+     * {@code @Pattern}으로는 "그런 날이 있는가"를 표현할 수 없다.
+     *
+     * <h3>왜 Java·Python 어느 한쪽 라이브러리도 기준이 될 수 없나</h3>
+     *
+     * 실측(2026-09-09)에서 셋이 갈렸다 —
+     * 소문자 {@code t}/{@code z}는 {@code Instant.parse}가 받고 Python
+     * {@code fromisoformat}이 거부하며, 오프셋 없는 값과 공백 구분자는 그 반대다.
+     * 그래서 <b>이 패턴이 계약</b>이고 양쪽이 그걸 구현한다
+     * ({@code anomaly-detector/contract.py}).
+     */
     @NotBlank
+    @Pattern(regexp = TIMESTAMP_PATTERN)
     private String timestamp;
+
+    /** {@code anomaly-detector/contract.py}의 {@code _TIMESTAMP}와 <b>같아야 한다.</b> */
+    public static final String TIMESTAMP_PATTERN =
+        "^\\d{4}-\\d{2}-\\d{2}[Tt]\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,9})?([Zz]|[+-]\\d{2}:\\d{2})$";
 
     /** PID 0D는 1바이트 부호 없음 — <b>음수를 허용하지 않는다.</b> 속력이지 속도가 아니다. */
     @NotNull

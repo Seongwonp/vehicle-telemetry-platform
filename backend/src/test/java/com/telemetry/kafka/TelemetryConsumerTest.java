@@ -151,18 +151,19 @@ class TelemetryConsumerTest {
     }
 
     @Test
-    @DisplayName("포인트 변환 실패(잘못된 타임스탬프) 1건도 배치 전체를 막지 않고 그 건만 DLQ로 간다")
+    @DisplayName("잘못된 타임스탬프 1건도 배치 전체를 막지 않고 그 건만 DLQ로 간다")
     void consumeForStorage_포인트변환실패_해당건만_DLQ이동() {
         givenDlqSendSucceeds();
         String badTimestampJson = VALID_TELEMETRY_JSON.replace("2026-05-09T10:00:00Z", "not-a-timestamp");
-        // 역직렬화는 통과하고 toPoint()의 Instant.parse()에서만 터지는 경우를 재현한다.
-        given(telemetryRepository.toPoint(any())).willAnswer(invocation -> {
-            VehicleTelemetry t = invocation.getArgument(0);
-            if (!"2026-05-09T10:00:00Z".equals(t.getTimestamp())) {
-                throw new DateTimeParseException("Text could not be parsed", t.getTimestamp(), 0);
-            }
-            return DUMMY_POINT;
-        });
+        // **여기서 걸리는 단계가 바뀌었다(2026-09-09, P0-2a).**
+        // 예전에는 역직렬화를 통과하고 `toPoint()`의 `Instant.parse()`에서 터졌다.
+        // 지금은 `timestamp` 형식이 **입력 계약**이라 decoder가 먼저 거부한다 —
+        // 감지 경로에는 `toPoint()` 단계가 없어서, 같은 payload가 경로에 따라 다르게
+        // 끝나던 것을 계약 단계로 끌어올렸다(docs/anomaly-path-contract.md 3절).
+        //
+        // **이 테스트가 지키는 것은 단계가 아니라 격리다** — 배치 안의 실패 1건이
+        // 나머지를 막지 않는가. 그 성질은 그대로다.
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
 
         telemetryConsumer.consumeForStorage(
             List.of(telemetryRecord(0L, VALID_TELEMETRY_JSON),
@@ -172,7 +173,8 @@ class TelemetryConsumerTest {
         ArgumentCaptor<List<Point>> captor = ArgumentCaptor.forClass(List.class);
         verify(telemetryRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(1);
-        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badTimestampJson, "DateTimeParseException");
+        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badTimestampJson,
+            "TelemetryContractException");
         verify(acknowledgment).acknowledge();
     }
 

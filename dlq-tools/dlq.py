@@ -58,6 +58,21 @@ TRANSIENT_MARKERS = (
     "OperationTimeout",
 )
 
+# **여기 일부러 넣지 않은 것들** — 이름만으로는 가를 수 없어서다.
+#
+# `KafkaTimeoutError` / `NoBrokersAvailable`:
+#   발생 위치에 따라 뜻이 다르다. **알림 발행 중** 타임아웃이면 브로커가 이미 받았을 수
+#   있어(at-least-once) 재처리가 **중복 알림**을 만든다 — 다만 이상 알림은
+#   `UNIQUE(event_id)` + `ON CONFLICT DO NOTHING`으로 막혀 행이 늘지 않는 것을
+#   2026-09-05에 확인했다. **DLQ 발행 중** 타임아웃이면 애초에 DLQ에 레코드가 안 남으므로
+#   여기 분류 대상이 아니다(원본 offset이 커밋되지 않아 재전달된다).
+#   그래서 "재시도해도 안전하다"가 자동으로 참이 아니고, 사람이 보고 판단해야 한다.
+#
+# `TypeError` / `KeyError` / `ValueError` / `AttributeError`:
+#   계약 검증을 통과한 뒤에 나오면 **구현 버그**다. 버그면 고친 뒤 재처리가 성공하므로
+#   영구가 아니고, 그렇다고 일시도 아니다(고치기 전에는 계속 실패한다).
+#   `unknown`으로 두는 것이 정확하다 — 자동 재처리에서 빠지고 사람이 본다.
+
 # 영구적이라고 볼 예외 — 메시지 내용 자체가 처리 불가능한 것들.
 PERMANENT_MARKERS = (
     "JsonParseException",
@@ -75,6 +90,15 @@ PERMANENT_MARKERS = (
     # (MALFORMED_JSON / UNKNOWN_FIELD / TYPE_MISMATCH / PAYLOAD_VALIDATION_FAILED).
     # 이걸 안 넣으면 새 예외가 `unknown`으로 빠진다 — 2026-09-06에 같은 실수를 했다.
     "TelemetryContractException",
+    # 감지 경로(Python)의 계약 위반. **검증기가 명시적으로 만든 예외**라 영구다 —
+    # `anomaly-detector/contract.py`의 ContractViolation이고, 사유 코드는
+    # `x-dlq-contract-reason` 헤더에 따로 실린다(2026-09-09 P0-2a).
+    #
+    # **일반 TypeError/KeyError/ValueError는 여기 넣지 않는다.** 같은 payload에서 나와도
+    # 그건 우리 코드의 버그일 수 있고, 버그면 고친 뒤 재처리가 **성공한다** — 영구로
+    # 분류해두면 고친 다음에도 자동 재처리에서 빠진다. 모르는 것은 unknown으로 두고
+    # 사람이 본다(2-1절, docs/anomaly-path-contract.md).
+    "ContractViolation",
     # 유한하지 않은 값(Infinity/NaN)을 toPoint()가 거부할 때 나온다. Spring이 우리
     # IllegalArgumentException을 InvalidDataAccessApiUsageException으로 번역한다.
     # 되돌려도 값은 그대로 Infinity라 영구다 — 2026-09-06 실측에서 이게 `unknown`으로

@@ -1,0 +1,4 @@
+key,value
+run_id,223211
+topics,itc-223211-telemetry / -dlq / -alerts (전용)
+group,itc-223211-group (전용)

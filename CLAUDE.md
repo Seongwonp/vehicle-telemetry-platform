@@ -152,23 +152,32 @@ strict한 건 **필드 집합과 값의 범위**이지 표현 타입이 아니�
 (예상은 "못 잡는다"였다). 안 쟀으면 검증 계층에 불필요한 유한값 검사를 하나 더 넣을 뻔했다.
 
 **남은 것** (둘 다 `docs/roadmap.md`에 등록했다 — 이번에 구현하지 않았다):
-- **P0-2a — 조사 완료(2026-09-09), 정책 미확정.** `docs/anomaly-path-contract.md`.
-  fixture 21칸을 양쪽 실제 코드로 쟀더니 **저장 거부 × 감지 무반응 5칸,
-  저장 거부 × 알림 발행 3칸**이다. 제일 나쁜 건 조용한 쪽 — `rules.py`의
-  `data.get(field)`가 None이면 그 룰이 통째로 건너뛰어져서, 발행 측이 `speed`를
-  빠뜨리면 **그 차량은 과속 감지가 영원히 안 되는데 밖에서 알 방법이 없다.**
-  `vehicle_id` 누락은 **이상이 걸릴 때만** KeyError로 터진다 — 같은 결함이 데이터에
-  따라 다르게 보인다.
-  **부수적으로 결함 하나**: 감지기가 실제로 내는 예외 4종이 `dlq.py`에서 전부 `unknown`이고
-  `KafkaTimeoutError`는 **일시인데도** unknown이다. 고치지 않고 `test_dlq.py`에 고정했다.
-  **두 경로가 무조건 같아야 한다는 전제는 버렸다** — 저장은 다시 읽을 데이터를 남기고
-  감지는 지금 위험을 알린다. `speed: 300`은 저장 계약 밖이지만 감지로는 과속이 맞다.
-  **드리프트는 막아뒀다** — `contract-fixtures/cases.json`을 양쪽 테스트가 읽는다
-  (`SharedFixtureContractTest` 22 / `test_shared_fixtures.py` 22). **정책 테스트가 아니라
-  특성화 테스트**이고 **감지기 동작은 하나도 안 바꿨다.**
-  만들면서 검사가 안 도는 것을 하나 잡았다 — fixture가 `backend/` 밖이라 Gradle이 입력으로
-  몰라서 `:test UP-TO-DATE`로 건너뛰었다(`build.gradle`의 `inputs.file`로 고침).
-  다음은 그 문서 3-2절의 결정(1번 필드 누락, 4번 필수 필드)을 확정하는 것이고, **구현은 그 뒤다.**
+- **P0-2a — 완료(2026-09-09).** `docs/anomaly-path-contract.md`.
+  **정책은 공통 입력 계약 유지다** — 필수 센서 누락/null, 범위 밖, 타입 오류, unknown
+  필드는 **감지 이전에 거부**한다. 부분 감지는 도입하지 않았다.
+  `speed: 300`은 과속 임계를 넘지만 **계약 밖이라 입력 오류**이고 201km/h가 차량 이상이다.
+  **"입력 오류"와 "차량 이상"을 가르는 것은 계약 경계이지 임계값이 아니다.**
+  결과: fixture 61칸에서 **갈림 0**(적용 전 8칸), Java·Python **61/61 같은 판정**.
+  실제 파이프라인에서 사유 4종이 각각 격리되고 Prometheus 지표가 오르는 것까지 확인했다
+  (`load-test/schema-contract/evidence/20260909-P0-2a-detector/`).
+  **소비 루프는 두 층으로 쟀다** — `main()`을 그대로 돌린 **단위 테스트(가짜 Kafka)**로
+  분기를 보고, **실제 Kafka 통합**(`load-test/anomaly-contract-kafka/`, **4/4 PASS**)으로
+  브로커의 committed offset·재전달을 봤다. **이 둘의 범위를 흐리면 안 된다.**
+  **발행 실패는 클라이언트 크기 제한(`max_request_size=1`)으로 주입했다** — 발행이
+  확실히 실패한 상태다. **브로커 장애·timeout 복구·in-doubt(발행 성공 여부 불확실)는
+  검증하지 않았다.**
+  DLQ 발행 실패에서 기대가 틀렸고 **실제가 더 안전했다**(아무것도 커밋 안 됨 → 배치 전체 재전달).
+  **중복 방지의 전제도 확인했다** — 같은 원본이 같은 `event_id`를 만든다(`detected_at`은
+  키에 없다). 이게 아니면 `UNIQUE(event_id)`는 아무것도 못 막는다.
+  **trailing 내용도 갈리고 있었다** — `{...} garbage`를 Java가 받고 Python이 거부했다.
+  `FAIL_ON_TRAILING_TOKENS`로 막았다.
+  **분류는 이름이 아니라 출처로 가른다** — `ContractViolation`만 영구고,
+  `TypeError`/`KeyError`는 구현 버그일 수 있어 `unknown`, Kafka 타임아웃은 발생 위치에
+  따라 다르다. 처음에 "전부 영구로 넣자"고 기울었다가 뒤집혔다.
+  **`timestamp` 형식이 계약으로 들어오면서 저장 경로 동작도 바뀌었다** —
+  잘못된 타임스탬프가 `toPoint()`가 아니라 계약 단계에서 거부된다.
+  **사유 선택 순서도 고정했다**: 예전에는 payload 필드 순서에 따라 사유가 달라졌고
+  잘린 JSON이 `UNKNOWN_FIELD`로 보고됐다.
 - **P0-2b — 거부 사유별 지표 없음.** 사유가 4종인데 카운터는 `messages.invalid` 하나다.
   `{entrance, reason}` 8 시계열까지만. **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다** —
   카디널리티도 문제지만 Prometheus 라벨은 보존 기간 내내 남아 개인정보가 샌다.

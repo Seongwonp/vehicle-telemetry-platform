@@ -31,9 +31,11 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 
 from kafka import KafkaConsumer, KafkaProducer, TopicPartition, OffsetAndMetadata
+from prometheus_client import Counter, start_http_server
 from dotenv import load_dotenv
 
 import rules
+import contract
 import notifier
 from ml_detector import MLAnomalyDetector
 
@@ -53,6 +55,7 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 INPUT_TOPIC             = "vehicle-telemetry"
 OUTPUT_TOPIC            = "vehicle-anomaly-alerts"
 DLQ_TOPIC               = "vehicle-telemetry-anomaly-dlq"
+METRICS_PORT            = int(os.getenv("METRICS_PORT", "9101"))
 ML_ENABLED              = os.getenv("ML_ENABLED", "false").lower() == "true"
 ML_MIN_SAMPLES          = int(os.getenv("ML_MIN_SAMPLES", "200"))
 # 학습 윈도우 크기(건수). 이 값이 시간으로 몇 초를 덮는지는 처리량에 따라 달라진다 —
@@ -273,6 +276,51 @@ def should_commit(handled_since_commit: int, elapsed_seconds: float, force: bool
     )
 
 
+# ── 계약 위반 사유별 집계 ──────────────────────────────────────
+#
+# **왜 사유별로 세나**: 사유가 4종인데 한 카운터로 뭉치면 "거부가 늘었다"까지만 보인다.
+# `UNKNOWN_FIELD`가 느는 것은 **발행 측 스펙이 우리보다 앞서갔다**는 신호이고
+# `PAYLOAD_VALIDATION_FAILED`가 느는 것과 대응이 정반대다.
+#
+# **라벨에 차량 ID·payload·예외 메시지를 넣지 않는다.** 카디널리티도 문제지만
+# 지표는 보존 기간 내내 남아 개인정보가 새는 경로가 된다(docs/data-retention.md).
+# 필드별로 보고 싶으면 지표가 아니라 DLQ를 봐야 한다 —
+# 절차는 docs/runbook/dlq-reprocessing.md 2-1절.
+CONTRACT_REJECTED = {reason: 0 for reason in contract.REASONS}
+# 계약 위반이 아닌 처리 실패(구현 버그일 수 있다). 위와 **분리해서** 센다.
+PROCESSING_FAILED = 0
+
+# Prometheus 지표. 라벨은 **사유 코드 4종뿐**이다(시계열 4개).
+#
+# **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다.** 차량 ID는 카디널리티가 차량 수만큼
+# 폭발하고, payload와 예외 메시지에는 좌표·식별자가 섞인다. Prometheus 라벨은 보존 기간
+# 내내 남으므로 docs/data-retention.md의 정책 밖으로 개인정보가 새는 경로가 된다.
+# 어느 필드가 문제인지는 지표가 아니라 DLQ에서 본다 —
+# 절차는 docs/runbook/dlq-reprocessing.md 2-1절.
+CONTRACT_REJECTED_TOTAL = Counter(
+    "telemetry_contract_rejected_total",
+    "감지 경로에서 입력 계약 위반으로 거부한 레코드 수",
+    ["reason"],
+)
+# 계약을 통과한 뒤의 실패. **계약 위반과 섞으면 안 된다** — 이쪽은 구현 버그일 수 있다.
+PROCESSING_FAILED_TOTAL = Counter(
+    "telemetry_anomaly_processing_failed_total",
+    "계약을 통과했으나 처리(룰 판정·알림 발행)에서 실패한 레코드 수",
+)
+PROCESSED_TOTAL = Counter(
+    "telemetry_anomaly_processed_total",
+    "계약을 통과해 룰 판정까지 끝낸 레코드 수",
+)
+
+
+def _metrics_snapshot() -> str:
+    parts = [f"{r}={CONTRACT_REJECTED[r]}" for r in contract.REASONS
+             if CONTRACT_REJECTED[r]]
+    if PROCESSING_FAILED:
+        parts.append(f"처리실패={PROCESSING_FAILED}")
+    return " ".join(parts) if parts else "없음"
+
+
 def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
     """DLQ 레코드에 붙일 실패 원인 헤더.
 
@@ -295,6 +343,13 @@ def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
         if len(text) > 512:
             text = text[:512] + "...(truncated)"
         headers.append(("x-dlq-failure-message", text.encode("utf-8")))
+        # **계약 위반은 사유 코드를 따로 싣는다.** 예외 이름만으로는 재처리 판단이 안 된다 —
+        # ContractViolation은 네 사유를 다 담으므로 이름이 같다.
+        if isinstance(cause, contract.ContractViolation):
+            headers.append(("x-dlq-contract-reason", cause.reason.encode("utf-8")))
+    # 어느 경로에서 격리됐는지. 저장 경로(Java)와 감지 경로(Python)가 서로 다른 토픽을
+    # 쓰지만, 재처리 도구가 토픽 이름에 의존하지 않도록 헤더로도 남긴다.
+    headers.append(("x-dlq-source-path", b"anomaly-detector"))
     return headers
 
 
@@ -346,12 +401,22 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
+    # 지표 엔드포인트. **인스턴스마다 뜬다**(replicas: 3) — 포트를 호스트에 매핑하지 않고
+    # Prometheus가 compose DNS로 세 인스턴스를 다 찾는다(monitoring/prometheus/prometheus.yml).
+    # 실패해도 감지는 계속한다 — 계측이 죽어서 처리가 멈추면 안 된다(2026-09-07 교훈).
+    try:
+        start_http_server(METRICS_PORT)
+        logger.info(f"  지표: :{METRICS_PORT}/metrics")
+    except Exception:
+        logger.error("지표 서버 기동 실패 — 감지는 계속한다", exc_info=True)
+
     redis_client = make_redis_client()
     ml_detectors = PartitionedMLDetectors(
         redis_client, ML_MIN_SAMPLES, ML_WINDOW_SIZE, ML_SCORE_THRESHOLD
     )
     consumer = make_consumer()
     producer = make_producer()
+    global PROCESSING_FAILED
     dlq_producer = make_dlq_producer()
 
     processed = 0
@@ -388,13 +453,38 @@ def main() -> None:
                     break
 
                 # ── 1) 역직렬화: 실패는 메시지 단위로 DLQ 격리 ──────────────
+                # 정책은 **공통 입력 계약**이다 — 정상 필드만 골라 부분 감지하지 않는다.
+                # 예전에는 여기서 `json.loads`만 했고, 그래서 저장 경로가 거부하는 payload가
+                # 감지기에는 그대로 들어왔다. `rules.py`의 `data.get(field)`가 None을 만나면
+                # **그 룰이 통째로 건너뛰어진다** — 알림도 로그도 지표도 없이 조용히.
+                # 발행 측이 speed를 빠뜨리면 그 차량은 과속 감지가 영원히 안 되는데 밖에서
+                # 알 방법이 없었다(2026-09-09 실측, 21칸 중 5칸).
+                #
+                # `contract.validate`는 저장 경로(TelemetryDecoder)와 같은 판정을 하고 같은
+                # 사유 코드를 쓴다. 어긋나지 않는지는 contract-fixtures/cases.json을 양쪽이 읽어 본다.
                 parsed: list[tuple] = []
                 for message in messages:
                     try:
-                        parsed.append((message, json.loads(message.value.decode("utf-8"))))
+                        parsed.append((message, contract.validate(message.value.decode("utf-8"))))
+                    except contract.ContractViolation as e:
+                        CONTRACT_REJECTED[e.reason] += 1
+                        CONTRACT_REJECTED_TOTAL.labels(reason=e.reason).inc()
+                        # 값은 남기지 않는다 — 사유 코드와 위치만.
+                        logger.warning(
+                            f"[계약 위반] {e.reason} — DLQ로 이동 "
+                            f"partition={message.partition} offset={message.offset} "
+                            f"detail={e.detail}")
+                        send_to_dlq(dlq_producer, message, e)
+                        dlq_count += 1
+                        safe_offsets[TopicPartition(message.topic, message.partition)] =                             OffsetAndMetadata(message.offset + 1, "")
+                        handled_since_commit += 1
                     except Exception as e:
+                        # 계약 위반이 아닌 실패 — **구현 버그일 수 있다.** 그래서 계약 위반과
+                        # 분리해서 세고, dlq.py도 자동으로 영구 처리하지 않는다.
+                        PROCESSING_FAILED += 1
+                        PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
-                            f"역직렬화 실패 — DLQ로 이동 "
+                            f"검증 중 예상 못 한 실패 — DLQ로 이동 "
                             f"partition={message.partition} offset={message.offset}: {e}",
                             exc_info=True,
                         )
@@ -432,9 +522,15 @@ def main() -> None:
                     try:
                         process(data, producer, ml_flag)
                         processed += 1
+                        PROCESSED_TOTAL.inc()
                         if processed % 1000 == 0:
-                            logger.info(f"처리 누적: {processed}건")
+                            logger.info(f"처리 누적: {processed}건 "
+                                        f"(계약 거부 사유별: {_metrics_snapshot()})")
                     except Exception as e:
+                        # 여기 오는 것은 **계약을 통과한 payload**다. 입력 문제가 아니라
+                        # 알림 발행 실패이거나 우리 코드의 버그다 — 계약 위반과 섞지 않는다.
+                        PROCESSING_FAILED += 1
+                        PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
                             f"메시지 처리 실패 — DLQ로 이동 "
                             f"partition={message.partition} offset={message.offset}: {e}",
@@ -456,7 +552,8 @@ def main() -> None:
         consumer.close()
         producer.close()
         dlq_producer.close()
-        logger.info(f"종료 완료 (총 처리: {processed}건, DLQ 격리: {dlq_count}건)")
+        logger.info(f"종료 완료 (총 처리: {processed}건, DLQ 격리: {dlq_count}건, "
+                    f"사유별: {_metrics_snapshot()})")
 
 
 if __name__ == "__main__":

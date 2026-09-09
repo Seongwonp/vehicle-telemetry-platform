@@ -48,7 +48,29 @@ jobs:
       - name: Python tests
         run: |
           python -m pip install -r anomaly-detector/requirements.txt pytest
-          PYTHONPATH=anomaly-detector pytest anomaly-detector/tests -q
+          mkdir -p build
+          PYTHONPATH=anomaly-detector pytest anomaly-detector/tests -q --junitxml=build/pytest-anomaly.xml
+          # DLQ 재처리 도구의 분류 회귀. 여기가 틀리면 새 예외가 `unknown`으로 빠져
+          # 자동 재처리 대상에서 조용히 사라진다 — 2026-09-06과 09-09에 두 번 겪었다.
+          pytest dlq-tools/test_dlq.py -q
+
+      - name: Require shared contract fixtures to actually run
+        run: |
+          python - <<'PY'
+          import sys, xml.etree.ElementTree as ET
+          root = ET.parse('build/pytest-anomaly.xml').getroot()
+          # 공유 fixture 테스트가 **돌았는지** 본다. Docker 빌드 컨텍스트에서는 skip이
+          # 정상이지만(저장소 루트가 없다), 전체 저장소 CI에서 skip이면 fixture가
+          # 사라졌거나 경로가 깨진 것이다. 검사가 안 도는 것과 통과하는 것은 다르다.
+          shared = [tc for tc in root.iter('testcase')
+                    if 'shared_fixtures' in (tc.get('classname') or '')]
+          skipped = [tc for tc in shared if tc.find('skipped') is not None]
+          if not shared:
+              sys.exit('공유 fixture 테스트가 하나도 수집되지 않았다')
+          if skipped:
+              sys.exit(f'전체 저장소 CI인데 공유 fixture 테스트가 skip됐다: {len(skipped)}건')
+          print(f'공유 fixture 테스트 {len(shared)}건 실행, skip 0')
+          PY
 
   images-and-smoke:
     runs-on: ubuntu-latest

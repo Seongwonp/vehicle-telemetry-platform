@@ -355,6 +355,99 @@ class TelemetryContractTest {
      * <p>그래서 "레코드별 try/catch가 있으니 안전하다"로 끝내지 않고
      * <b>새는 예외가 있는지 직접 던져본다.</b>
      */
+    /**
+     * <b>사유 선택 순서를 고정한다.</b>
+     *
+     * <p>예전에는 {@code readValue} 한 번으로 끝냈고, Jackson이 문서를 앞에서부터 읽다가
+     * 처음 만난 문제에서 멈추므로 <b>사유가 payload의 필드 순서에 따라 달라졌다.</b>
+     * 같은 오류 조합인데 필드 순서만 바꾸면 다른 사유가 나오고, 잘린 JSON이
+     * {@code UNKNOWN_FIELD}로 보고됐다 — 운영자가 없는 필드명을 고치러 간다.
+     *
+     * <p>순서는 {@code docs/anomaly-path-contract.md}에 적혀 있고
+     * {@code anomaly-detector/contract.py}가 같은 순서를 구현한다.
+     */
+    @Nested
+    @DisplayName("사유 선택 순서 — payload 순서에 흔들리지 않는다")
+    class 사유_순서 {
+
+        @Test
+        @DisplayName("필드 순서를 바꿔도 같은 사유가 나온다")
+        void 순서_무관() {
+            String unknownFirst = base().replace("\"speed\":87.3", "\"zzz\":1,\"speed\":\"fast\"");
+            String typeFirst = base().replace("\"speed\":87.3", "\"speed\":\"fast\",\"zzz\":1");
+
+            assertRejected(unknownFirst, TelemetryContractException.UNKNOWN_FIELD);
+            assertRejected(typeFirst, TelemetryContractException.UNKNOWN_FIELD);
+        }
+
+        @Test
+        @DisplayName("잘린 JSON은 MALFORMED_JSON이다 — 앞에 unknown 필드가 있어도")
+        void 잘린_json이_먼저() {
+            // 이 칸이 바뀐 동작이다. 예전에는 UNKNOWN_FIELD로 나왔다.
+            assertRejected("{\"zzz\":1,\"speed\":", TelemetryContractException.MALFORMED_JSON);
+        }
+
+        @Test
+        @DisplayName("unknown 필드가 범위 위반보다 먼저다")
+        void unknown이_검증보다_먼저() {
+            assertRejected(base().replace("\"speed\":87.3", "\"zzz\":1,\"speed\":300.0"),
+                TelemetryContractException.UNKNOWN_FIELD);
+        }
+
+        @Test
+        @DisplayName("타입 오류가 범위 위반보다 먼저다")
+        void 타입이_검증보다_먼저() {
+            assertRejected(base().replace("\"speed\":87.3", "\"speed\":\"fast\",\"rpm\":99999"),
+                TelemetryContractException.TYPE_MISMATCH);
+        }
+
+        @Test
+        @DisplayName("unknown 필드가 여럿이면 이름순 첫 번째부터 전부 보고한다")
+        void unknown_여럿은_정렬() {
+            assertThatThrownBy(() -> decoder.decode(
+                    base().replace("\"speed\":87.3", "\"zzz\":1,\"aaa\":2,\"speed\":87.3")))
+                .isInstanceOf(TelemetryContractException.class)
+                .hasMessageContaining("aaa,zzz");
+        }
+
+        @Test
+        @DisplayName("범위 위반이 여럿이면 정렬해서 보고한다 — 같은 입력은 같은 문자열")
+        void 검증_위반은_정렬() {
+            String payload = base()
+                .replace("\"speed\":87.3", "\"speed\":300.0")
+                .replace("\"fuel_level\":67.0", "\"fuel_level\":200.0");
+            assertThatThrownBy(() -> decoder.decode(payload))
+                .isInstanceOf(TelemetryContractException.class)
+                .satisfies(e -> {
+                    String m = e.getMessage();
+                    assertThat(m.indexOf("fuelLevel"))
+                        .as("정렬되면 fuelLevel이 speed보다 앞이다: " + m)
+                        .isLessThan(m.indexOf("speed"));
+                });
+        }
+    }
+
+    @Test
+    @DisplayName("계약 필드 집합이 클래스와 일치한다 — 필드를 늘리고 목록을 안 고치면 잡힌다")
+    void 계약_필드_집합이_클래스와_일치한다() {
+        java.util.Set<String> fromClass = java.util.Arrays
+            .stream(VehicleTelemetry.class.getDeclaredFields())
+            // static은 계약 필드가 아니다 — TIMESTAMP_PATTERN 같은 상수가 여기 섞이면
+            // 목록이 영원히 안 맞는다.
+            .filter(f -> !f.isSynthetic() && !java.lang.reflect.Modifier.isStatic(f.getModifiers()))
+            .map(f -> {
+                com.fasterxml.jackson.annotation.JsonProperty a =
+                    f.getAnnotation(com.fasterxml.jackson.annotation.JsonProperty.class);
+                return a != null ? a.value() : f.getName();
+            })
+            .collect(java.util.stream.Collectors.toSet());
+
+        assertThat(TelemetryDecoder.KNOWN_FIELDS)
+            .as("TelemetryDecoder.KNOWN_FIELDS가 VehicleTelemetry와 어긋난다. "
+                + "필드를 추가했으면 목록에도 넣어라 — 안 넣으면 정상 payload가 UNKNOWN_FIELD로 거부된다")
+            .isEqualTo(fromClass);
+    }
+
     @Nested
     @DisplayName("적대적 입력도 계약 예외로만 나오는가")
     class 예외_타입_봉인 {

@@ -29,6 +29,17 @@ public final class TestDecoders {
     }
 
     /** 운영과 같은 설정의 telemetry decoder. */
+    /**
+     * <b>측정 전용</b> — P0-2a 이전의 decode 경로({@code readValue} 한 번)를 재현한다.
+     *
+     * <p>단계적 파싱으로 바꾸면서 trailing JSON·중복 필드 정책이 의도치 않게 바뀌지
+     * 않았는지 <b>나란히 놓고</b> 비교하려고 둔다. 운영 코드는 이걸 쓰지 않는다.
+     */
+    public static ObjectMapper strictMapperLikeBefore() {
+        return bootObjectMapper().copy()
+            .enable(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+    }
+
     public static TelemetryDecoder telemetryDecoder() {
         return new TelemetryDecoder(
             BOOT_MAPPER,

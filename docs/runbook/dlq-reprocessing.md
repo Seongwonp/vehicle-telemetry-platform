@@ -11,7 +11,7 @@ DLQ에 메시지가 쌓였을 때 무엇을 확인하고 어떻게 되돌릴지.
 | --- | --- | --- |
 | `vehicle-telemetry-dlq` | 텔레메트리 저장 실패 (**입력 계약 위반**, JSON 파싱, 타임스탬프 변환, 재시도 소진) | backend `TelemetryConsumer` |
 | `vehicle-anomaly-alerts-dlq` | 이상 알림 저장 실패 | backend `TelemetryConsumer` |
-| `vehicle-telemetry-anomaly-dlq` | 이상 감지 처리 실패 | Python `anomaly_detector.py` |
+| `vehicle-telemetry-anomaly-dlq` | 이상 감지 경로의 **입력 계약 위반**·처리 실패 | Python `anomaly_detector.py` |
 | `vehicle-telemetry-mqtt-dlq` | MQTT 수신 단계의 **입력 계약 위반**·타임스탬프·토픽 불일치 | backend `MqttInvalidMessagePublisher` |
 
 `vehicle-telemetry-dlq`에는 **성질이 다른 두 경로**가 섞여 들어온다.
@@ -137,6 +137,62 @@ docker exec telemetry-kafka kafka-console-consumer   --bootstrap-server localhos
 payload가 원본이 아니라 envelope(`{"mqtt_topic":…,"reason":…,"payload":…}`)이라
 재처리가 미지원이다. 고친 뒤 원본을 다시 흘려보내려면 envelope의 `payload`를 꺼내
 직접 발행해야 한다. **여전히 자동화하지 않았다**(§5).
+
+## 2-2. 감지 경로의 계약 위반 — `ContractViolation` (2026-09-09 추가)
+
+P0-2a에서 **저장 경로와 같은 입력 계약**을 감지 경로에도 적용했다. 그래서
+`vehicle-telemetry-anomaly-dlq`에 `ContractViolation`이 들어온다.
+
+**저장 경로와 사유 코드가 같다**(§2-1의 표를 그대로 쓴다). 다른 것은 두 가지다.
+
+| | 저장 경로 | 감지 경로 |
+| --- | --- | --- |
+| 토픽 | `vehicle-telemetry-dlq` | `vehicle-telemetry-anomaly-dlq` |
+| 예외 이름 | `TelemetryContractException` | `ContractViolation` |
+| 사유 코드 위치 | `x-dlq-failure-message` 앞부분 | **`x-dlq-contract-reason` 헤더에 따로** |
+| 경로 표시 | 없음 | `x-dlq-source-path: anomaly-detector` |
+
+**같은 payload는 양쪽에서 같은 사유로 거부된다.** 한쪽에만 있으면 둘 중 하나가
+틀린 것이다 — `contract-fixtures/cases.json`을 양쪽 테스트가 읽어 막고 있다.
+
+### 사유별 집계는 지표로 본다
+
+감지 경로는 Prometheus 지표가 있다(저장 경로는 아직 없다 — roadmap P0-2b).
+
+```
+sum by (reason) (telemetry_contract_rejected_total)
+```
+
+**라벨은 사유 코드뿐이다.** 어느 차량·어느 필드인지는 지표에 없다 — DLQ를 봐야 한다.
+그렇게 만든 이유는 Prometheus 라벨이 보존 기간 내내 남아 개인정보가 새기 때문이다.
+
+헤더로 세려면:
+
+```bash
+docker exec telemetry-kafka kafka-console-consumer   --bootstrap-server localhost:29092 --topic vehicle-telemetry-anomaly-dlq   --from-beginning --timeout-ms 15000   --property print.headers=true --property print.value=false 2>/dev/null   | grep -o 'x-dlq-contract-reason:[A-Z_]*' | sort | uniq -c | sort -rn
+```
+
+### 분류에서 조심할 것 — 이름만 보고 영구로 단정하지 않는다
+
+| 예외 | 분류 | 뜻 |
+| --- | --- | --- |
+| `ContractViolation` | `permanent` | 검증기가 만든 것. **재주입만으로는 다시 실패한다** |
+| `TypeError`/`KeyError`/`ValueError`/`AttributeError` | `unknown` | 계약을 통과한 뒤 나온 것이라 **구현 버그일 수 있다** |
+| `KafkaTimeoutError`/`NoBrokersAvailable` | `unknown` | **발생 위치에 따라 다르다**(아래) |
+
+`unknown`이 보이면 표본을 열어 스택을 봐라. **구현 버그면 고친 뒤 재처리가 성공한다** —
+영구로 분류해두면 고친 다음에도 자동 재처리에서 빠진다.
+
+**Kafka 타임아웃이 특히 미묘하다.** 알림 발행 중 타임아웃이면 브로커가 **이미 받았을 수
+있어** 재처리가 중복 알림을 만든다 — 다만 `UNIQUE(event_id)` + `ON CONFLICT DO NOTHING`이
+막아 행은 늘지 않는다(2026-09-05 확인). DLQ 발행 중 타임아웃이면 애초에 DLQ에 레코드가
+안 남는다(원본 offset 미커밋 → 재전달).
+
+### 격리 실패는 조용히 넘어가지 않는다
+
+DLQ 발행이 실패하면 감지기는 예외를 밖으로 던지고 **아무 offset도 커밋하지 않는다.**
+그 배치 전체가 재전달된다 — 중복 처리는 생기지만 격리 못 한 것을 완료로 치지는 않는다.
+실측: `anomaly-detector/tests/test_consume_loop.py`.
 
 ## 3. `transient`라면 — 원인부터 복구하고 재처리
 

@@ -107,6 +107,11 @@ class BothEntrancesSameContractTest {
         "\"dtc_codes\":[]          | \"dtc_codes\":[null]             | DTC null 원소",
         "\"dtc_codes\":[]          | \"dtc_codes\":[\"P0301,P0420\"]  | DTC 쉼표 충돌",
         "\"vehicle_id\":\"KR-GA-1234\", | '                         ' | vehicle_id 누락",
+        // ── P0-2a에서 계약에 들어온 것들. **두 저장 입구에도 적용되는지** 여기서 본다.
+        "\"timestamp\":\"2026-09-09T10:00:00.000Z\" | \"timestamp\":\"2026-09-09T10:00:00\" | timestamp 오프셋 없음",
+        "\"timestamp\":\"2026-09-09T10:00:00.000Z\" | \"timestamp\":\"2026-13-45T99:00:00Z\" | timestamp 달력에 없는 날",
+        "\"timestamp\":\"2026-09-09T10:00:00.000Z\" | \"timestamp\":\"not-a-time\"          | timestamp 형식 위반",
+        "\"speed\":87.3            | \"speed\":true                   | speed boolean",
     })
     @DisplayName("계약 위반은 두 입구 모두에서 거부된다")
     void 계약위반은_양쪽에서_거부된다(String find, String replace, String label) {
@@ -143,6 +148,45 @@ class BothEntrancesSameContractTest {
                   TelemetryContractException.UNKNOWN_FIELD,
                   TelemetryContractException.TYPE_MISMATCH,
                   TelemetryContractException.MALFORMED_JSON);
+    }
+
+    /**
+     * <b>사유 선택 순서가 두 입구 모두에서 같은가</b> (P0-2a).
+     *
+     * <p>decoder를 공유하니 당연해 보이지만, 그건 설명이지 측정이 아니다 —
+     * 핸들러가 decoder를 실제로 부르는지, 그 사유를 그대로 전달하는지는 별개다.
+     * MQTT는 {@code reject(reason)}으로, Kafka는 DLQ 헤더로 사유를 남긴다.
+     */
+    @ParameterizedTest(name = "{2}")
+    @CsvSource(delimiter = '|', value = {
+        // 같은 오류 조합, 필드 순서만 다르다 — 사유가 같아야 한다.
+        "\"speed\":87.3 | \"zzz\":1,\"speed\":\"fast\" | unknown이 앞",
+        "\"speed\":87.3 | \"speed\":\"fast\",\"zzz\":1 | 타입 오류가 앞",
+    })
+    @DisplayName("사유 선택 순서가 payload 순서에 흔들리지 않는다 — 두 입구 모두")
+    void 사유_순서가_두_입구에서_같다(String find, String replace, String label) {
+        String payload = fixture(find, replace);
+
+        mqttHandler.handle(MessageBuilder.withPayload(payload)
+            .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-1234")
+            .build());
+        ArgumentCaptor<String> mqttReason = ArgumentCaptor.forClass(String.class);
+        verify(invalidPublisher).publish(any(), any(), mqttReason.capture());
+        assertThat(mqttReason.getValue())
+            .as("[%s] MQTT 입구의 사유", label)
+            .isEqualTo(TelemetryContractException.UNKNOWN_FIELD);
+
+        kafkaConsumer.consumeForStorage(
+            List.of(new ConsumerRecord<>("vehicle-telemetry", 0, 0L, "KR-GA-1234", payload)),
+            acknowledgment);
+        ArgumentCaptor<org.apache.kafka.clients.producer.ProducerRecord> dlq =
+            ArgumentCaptor.forClass(org.apache.kafka.clients.producer.ProducerRecord.class);
+        verify(kafkaTemplate).send(dlq.capture());
+        String header = new String((byte[]) dlq.getValue().headers()
+            .lastHeader("x-dlq-failure-message").value());
+        assertThat(header)
+            .as("[%s] Kafka 저장 입구의 사유", label)
+            .startsWith(TelemetryContractException.UNKNOWN_FIELD);
     }
 
     @ParameterizedTest(name = "{2}")

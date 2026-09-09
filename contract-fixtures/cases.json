@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "두 칸 모두 2026-09-09에 **실측**했다. storage는 TelemetryDecoder를, detector는 anomaly_detector.process()를 실제로 호출해서 잰 값이다. 기대값이 아니라 현재 동작이다 — 정책은 docs/anomaly-path-contract.md에서 정한다.",
+  "note": "storage/detector 두 칸 모두 **실측**이다. storage는 TelemetryDecoder(Java)와 contract.py(Python)가 53/53 같은 판정을 내는 것을 확인한 값이고, detector는 계약 적용 후 anomaly_detector의 판정이다. detector_before가 있는 칸은 **정책 적용 전** 동작이다 — 무엇이 바뀌었는지 보라.",
   "cases": [
     {
       "id": "normal",
@@ -12,6 +12,11 @@
       "detector": {
         "verdict": "no_alert",
         "note": "정상 — 어느 룰도 안 걸린다"
+      },
+      "detector_before": {
+        "verdict": "no_alert",
+        "note": "정상 — 어느 룰도 안 걸린다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -24,6 +29,11 @@
       "detector": {
         "verdict": "no_alert",
         "note": "2000.7은 임계 이하. Python은 float이라 절삭도 없다"
+      },
+      "detector_before": {
+        "verdict": "no_alert",
+        "note": "2000.7은 임계 이하. Python은 float이라 절삭도 없다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -36,6 +46,11 @@
       "detector": {
         "verdict": "alert",
         "note": "엔진 과열 1건"
+      },
+      "detector_before": {
+        "verdict": "alert",
+        "note": "엔진 과열 1건",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -48,6 +63,11 @@
       "detector": {
         "verdict": "alert",
         "note": "과속 1건"
+      },
+      "detector_before": {
+        "verdict": "alert",
+        "note": "과속 1건",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -60,6 +80,11 @@
       "detector": {
         "verdict": "alert",
         "note": "DTC 진단 코드 감지 1건"
+      },
+      "detector_before": {
+        "verdict": "alert",
+        "note": "DTC 진단 코드 감지 1건",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -70,8 +95,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "no_alert",
-        "note": "**조용하다.** data.get('speed')가 None이라 속도 룰이 통째로 건너뛰어진다. 저장은 거부인데 감지는 아무 신호가 없다"
+        "note": "**조용하다.** data.get('speed')가 None이라 속도 룰이 통째로 건너뛰어진다. 저장은 거부인데 감지는 아무 신호가 없다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -82,8 +112,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "no_alert",
-        "note": "위와 같다"
+        "note": "위와 같다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -94,8 +129,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "alert",
-        "note": "**과속 알림이 발행된다.** 저장은 거부되므로 알림은 있는데 그 시점 데이터가 없다"
+        "note": "**과속 알림이 발행된다.** 저장은 거부되므로 알림은 있는데 그 시점 데이터가 없다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -108,6 +148,11 @@
       "detector": {
         "verdict": "no_alert",
         "note": "float('87.3')로 강제 변환된다 — 저장 쪽 Jackson 강제 변환과 결과가 같다"
+      },
+      "detector_before": {
+        "verdict": "no_alert",
+        "note": "float('87.3')로 강제 변환된다 — 저장 쪽 Jackson 강제 변환과 결과가 같다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -119,7 +164,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "ValueError: could not convert string to float. rules.detect 안 float()에서 난다"
+        "note": "계약 위반 TYPE_MISMATCH"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "ValueError: could not convert string to float. rules.detect 안 float()에서 난다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -130,8 +180,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "no_alert",
-        "note": "gps는 어느 룰에도 안 쓰인다. 저장만 거부"
+        "note": "gps는 어느 룰에도 안 쓰인다. 저장만 거부",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -142,8 +197,13 @@
         "reason": "UNKNOWN_FIELD"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      },
+      "detector_before": {
         "verdict": "no_alert",
-        "note": "**조용하다.** 'sped'는 무시되고 속도 룰이 영원히 안 돈다"
+        "note": "**조용하다.** 'sped'는 무시되고 속도 룰이 영원히 안 돈다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -155,7 +215,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "TypeError: sequence item 0: expected str instance, NoneType found. ','.join에서 난다 — Java는 문자열 'null'로 저장하던 칸이다"
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "TypeError: sequence item 0: expected str instance, NoneType found. ','.join에서 난다 — Java는 문자열 'null'로 저장하던 칸이다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -166,8 +231,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "alert",
-        "note": "**DTC 알림이 발행된다.** 저장은 거부. Java에서 이 칸을 막은 이유(코드 개수 구분 불가)가 감지 경로에는 해당되지 않는다"
+        "note": "**DTC 알림이 발행된다.** 저장은 거부. Java에서 이 칸을 막은 이유(코드 개수 구분 불가)가 감지 경로에는 해당되지 않는다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -178,8 +248,13 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "no_alert",
-        "note": "이상이 없으면 vehicle_id를 읽지 않아 조용히 지나간다"
+        "note": "이상이 없으면 vehicle_id를 읽지 않아 조용히 지나간다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -191,7 +266,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "AttributeError: 'NoneType' object has no attribute 'get'. json.loads('null')은 예외 없이 None을 돌려준다 — 저장 쪽과 같은 함정이다"
+        "note": "계약 위반 TYPE_MISMATCH"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "AttributeError: 'NoneType' object has no attribute 'get'. json.loads('null')은 예외 없이 None을 돌려준다 — 저장 쪽과 같은 함정이다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -203,7 +283,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "JSONDecodeError. 역직렬화 단계에서 격리된다"
+        "note": "계약 위반 MALFORMED_JSON"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "JSONDecodeError. 역직렬화 단계에서 격리된다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -215,7 +300,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "KeyError: 'vehicle_id'. **같은 결함인데 이상이 걸릴 때만 터진다** — 위 vehicle_id_missing과 비교하라"
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "KeyError: 'vehicle_id'. **같은 결함인데 이상이 걸릴 때만 터진다** — 위 vehicle_id_missing과 비교하라",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -227,7 +317,12 @@
       },
       "detector": {
         "verdict": "dlq",
-        "note": "KeyError: 'timestamp'. 위와 같은 조건부 동작"
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
+        "verdict": "dlq",
+        "note": "KeyError: 'timestamp'. 위와 같은 조건부 동작",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -240,6 +335,11 @@
       "detector": {
         "verdict": "alert",
         "note": "float('201') > 200. 문자열이어도 임계 판정은 정상 동작한다"
+      },
+      "detector_before": {
+        "verdict": "alert",
+        "note": "float('201') > 200. 문자열이어도 임계 판정은 정상 동작한다",
+        "measured_at": "2026-09-09 (정책 적용 전)"
       }
     },
     {
@@ -250,10 +350,502 @@
         "reason": "PAYLOAD_VALIDATION_FAILED"
       },
       "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector_before": {
         "verdict": "alert",
-        "note": "rpm 룰만 건너뛰고 엔진 과열은 잡힌다. **부분적으로 눈이 먼 상태로 계속 돈다**"
+        "note": "rpm 룰만 건너뛰고 엔진 과열은 잡힌다. **부분적으로 눈이 먼 상태로 계속 돈다**",
+        "measured_at": "2026-09-09 (정책 적용 전)"
+      }
+    },
+    {
+      "id": "speed_boolean_true",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": true, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "speed_boolean_false",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": false, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "speed_nan_literal",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": NaN, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 MALFORMED_JSON"
+      }
+    },
+    {
+      "id": "speed_infinity_literal",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": Infinity, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 MALFORMED_JSON"
+      }
+    },
+    {
+      "id": "speed_1e309",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 1e309, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "speed_array",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": [1], \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "speed_object",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": {}, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "speed_empty_string",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": \"\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "top_level_array",
+      "payload": "[]",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "top_level_number",
+      "payload": "123",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "top_level_string",
+      "payload": "\"str\"",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "top_level_bool",
+      "payload": "true",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "order_unknown_before_type",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"zzz\": 1, \"speed\": \"fast\", \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      }
+    },
+    {
+      "id": "order_type_before_unknown",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": \"fast\", \"zzz\": 1, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      }
+    },
+    {
+      "id": "order_truncated_with_unknown",
+      "payload": "{\"zzz\":1,\"speed\":",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 MALFORMED_JSON"
+      }
+    },
+    {
+      "id": "order_unknown_multiple",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"zzz\": 1, \"aaa\": 2, \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      }
+    },
+    {
+      "id": "order_unknown_and_range",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"zzz\": 1, \"speed\": 300.0, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      }
+    },
+    {
+      "id": "gps_unknown_field",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.1, \"lng\": 127.6, \"alt\": 100}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "UNKNOWN_FIELD"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 UNKNOWN_FIELD"
+      }
+    },
+    {
+      "id": "gps_not_object",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": \"here\", \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "gps_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "gps는 선택 필드다"
+      }
+    },
+    {
+      "id": "dtc_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "dtc_codes는 선택 필드다"
+      }
+    },
+    {
+      "id": "dtc_not_array",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": \"P0301\"}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "timestamp_lowercase",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09t10:00:00z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "Java는 받고 Python fromisoformat은 거부"
+      }
+    },
+    {
+      "id": "timestamp_offset",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00+09:00\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": ""
+      }
+    },
+    {
+      "id": "timestamp_nanos",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.123456789Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": ""
+      }
+    },
+    {
+      "id": "timestamp_no_offset",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "timestamp_space",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09 10:00:00Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "timestamp_old",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2020-01-01T00:00:00Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "**통과해야 한다** — 신선도는 계약이 아니다(재처리/백필)"
+      }
+    },
+    {
+      "id": "timestamp_bad_calendar",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-13-45T99:00:00Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "timestamp_not_a_time",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"not-a-time\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "vehicle_id_bad_format",
+      "payload": "{\"vehicle_id\": \"kr-ga-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "vehicle_id_too_long",
+      "payload": "{\"vehicle_id\": \"AAAAAAAAAAAAAAAAAAAAA\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "계약 위반 PAYLOAD_VALIDATION_FAILED"
+      }
+    },
+    {
+      "id": "trailing_json",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []} {\"speed\":1}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "뒤에 JSON이 더 붙음 — Java는 기본으로 무시했고 Python은 거부했다. 계약을 맞췄다"
+      }
+    },
+    {
+      "id": "trailing_garbage",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []} garbage",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "잘린 메시지가 다른 메시지 뒤에 붙는 경우"
+      }
+    },
+    {
+      "id": "trailing_whitespace",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}   ",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "공백만은 양쪽 다 통과 — 이건 정상이다"
+      }
+    },
+    {
+      "id": "duplicate_field_last_wins",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"speed\": 99.9, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "중복 필드는 마지막이 이긴다(양쪽 동일). 계약 안이므로 통과"
+      }
+    },
+    {
+      "id": "duplicate_field_last_invalid",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"speed\": 300.0, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "마지막이 이기므로 범위 위반이 된다"
+      }
+    },
+    {
+      "id": "duplicate_field_first_invalid",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 300.0, \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "마지막이 이기므로 통과한다 — 앞의 위반값은 버려진다"
+      }
+    },
+    {
+      "id": "empty_payload",
+      "payload": "",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "빈 문자열"
+      }
+    },
+    {
+      "id": "whitespace_only_payload",
+      "payload": "   ",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "?",
+        "note": "공백만"
       }
     }
   ],
-  "measured_at": "2026-09-09"
+  "measured_at": "2026-09-09",
+  "reason_order": [
+    "MALFORMED_JSON",
+    "TYPE_MISMATCH(최상위)",
+    "UNKNOWN_FIELD",
+    "TYPE_MISMATCH(필드)",
+    "PAYLOAD_VALIDATION_FAILED"
+  ]
 }
