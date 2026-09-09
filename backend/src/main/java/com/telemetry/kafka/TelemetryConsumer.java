@@ -83,6 +83,13 @@ public class TelemetryConsumer {
                 // 그 한 건만 DLQ로 격리해야 정상 메시지가 재시도에 휘말리지 않는다.
                 points.add(telemetryRepository.toPoint(telemetry));
                 converted.add(telemetry);
+            } catch (com.telemetry.domain.TelemetryContractException e) {
+                // **계약 위반만** 사유별로 센다. 아래 일반 catch는 변환 실패 등이라
+                // 계약 오류가 아니고, 섞으면 "거부가 늘었다"의 뜻이 흐려진다.
+                com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_KAFKA_STORAGE, e.getReason());
+                log.warn("[Kafka→InfluxDB] 계약 위반 {} — DLQ로 이동 vehicle={} offset={} partition={}",
+                    e.getReason(), record.key(), record.offset(), record.partition());
+                sendToDlq(TELEMETRY_DLQ_TOPIC, record, e);
             } catch (Exception e) {
                 log.error("[Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
                     record.key(), record.offset(), record.partition(), e);
@@ -252,10 +259,13 @@ public class TelemetryConsumer {
                 addHeader(headers, "x-dlq-failure-message", truncate(cause.getMessage(), 512));
             }
 
+            // **시도 시점**에 올린다 — 성공/실패와 별개의 수다.
+            com.telemetry.metrics.ContractMetrics.dlqPublishAttempt(meterRegistry, dlqTopic);
             kafkaTemplate.send(dlqRecord).get(10, TimeUnit.SECONDS);
-            meterRegistry.counter("telemetry.kafka.dlq.published", "topic", dlqTopic).increment();
+            com.telemetry.metrics.ContractMetrics.dlqPublished(meterRegistry, dlqTopic);
         } catch (Exception e) {
-            meterRegistry.counter("telemetry.kafka.dlq.publish.failures", "topic", dlqTopic).increment();
+            // timeout이면 발행 여부를 **알 수 없다** — dlqPublishFailed가 그 경우를 따로 센다.
+            com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, dlqTopic, e);
             log.error("[DLQ] {} 전송 실패 — 원본 offset을 커밋하지 않음 key={}",
                 dlqTopic, record.key(), e);
             throw new IllegalStateException("DLQ 전송 실패", e);

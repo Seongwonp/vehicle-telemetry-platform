@@ -1,0 +1,32 @@
+# P0-2b 사유별 지표 — 세 입구 구분 조회 확인 (2026-09-09)
+
+## 조건
+dev(평문) 프로파일. MQTT 2건(누락·오타) + Kafka 2건(범위 밖·깨진 JSON) 주입.
+Kafka 토픽은 저장 입구와 감지기가 **둘 다** 읽으므로 두 입구에 각각 잡힌다.
+커밋: 93d827bfe4d1762256fd3963cfa14cf57a951f43 (dirty: 작업 중)
+
+## sum by (entrance, reason) (telemetry_contract_rejected_attempts_total)
+  anomaly-detector   MALFORMED_JSON               1
+  anomaly-detector   PAYLOAD_VALIDATION_FAILED    1
+  kafka-storage      MALFORMED_JSON               1
+  kafka-storage      PAYLOAD_VALIDATION_FAILED    1
+  mqtt               PAYLOAD_VALIDATION_FAILED    1
+  mqtt               UNKNOWN_FIELD                1
+
+## DLQ 단계별 — topic이 입구를 가른다
+  telemetry_kafka_dlq_publish_attempts_total
+     vehicle-telemetry-mqtt-dlq       2
+     vehicle-telemetry-anomaly-dlq    2
+     vehicle-telemetry-dlq            2
+  telemetry_kafka_dlq_published_total
+     vehicle-telemetry-mqtt-dlq       2
+     vehicle-telemetry-anomaly-dlq    2
+     vehicle-telemetry-dlq            2
+  telemetry_kafka_dlq_publish_failures_total
+     (����)
+  telemetry_kafka_dlq_publish_indeterminate_total
+     (����)
+
+## 읽는 법
+위 수는 전부 **시도/관찰 횟수**다. 고유 실패 메시지 수가 아니다 —
+재전달되면 다시 오른다. 고유 건수는 docs/rejection-metrics-design.md 3-3절 참고.

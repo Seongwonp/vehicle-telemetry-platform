@@ -595,7 +595,7 @@ BUILD SUCCESSFUL이 나왔다. `build.gradle`에 `inputs.file(...)`로 선언해
 **하지 않을 것**: 감지기를 저장 경로 뒤로 옮기는 구조 변경. 지금 병렬인 것은 의도이고
 (저장 장애가 감지를 막지 않는다), 계약 일치와는 별개 문제다.
 
-### P0-2b. 거부 사유별 관측성 — **미착수(2026-09-09 등록)**
+### P0-2b. 거부 사유별 관측성 — **완료(2026-09-09)**, 알림 임계는 미정
 
 **무엇이 없나.** 사유가 4종(`MALFORMED_JSON` / `UNKNOWN_FIELD` / `TYPE_MISMATCH` /
 `PAYLOAD_VALIDATION_FAILED`)으로 갈렸는데 지표는 못 따라갔다. MQTT는
@@ -619,7 +619,32 @@ BUILD SUCCESSFUL이 나왔다. `build.gradle`에 `inputs.file(...)`로 선언해
 **완료 조건**: 지표 + Grafana 패널 + 사유가 몰릴 때의 알림 임계, 그리고
 **라벨에 개인정보가 없다는 것을 확인한 테스트**.
 
-## P2 — P0/P1 이후 필요성이 확인되면 수행
+#### 구현 — `docs/rejection-metrics-design.md` (2026-09-09)
+
+카운터 등록 지점을 **전수 조사**한 뒤 네 단계를 구분해 구현했다. 세 입구가 같은 이름·
+같은 라벨로 올리고, **실제 Prometheus에서 `sum by (entrance, reason)`으로 구분 조회**되는
+것을 확인했다(`load-test/schema-contract/evidence/20260909-P0-2b-metrics/`).
+
+| 단계 | 지표 |
+| --- | --- |
+| 계약 거부 **판정** | `telemetry_contract_rejected_attempts_total{entrance,reason}` (신규) |
+| DLQ 발행 **시도** | `telemetry_kafka_dlq_publish_attempts_total{topic}` (신규) |
+| 발행 **성공 확인** | `telemetry_kafka_dlq_published_total{topic}` (기존 — 이름·의미 유지) |
+| 발행 **실패·timeout 관찰** | `telemetry_kafka_dlq_publish_failures_total{topic}` (기존) |
+| 그중 **발행 여부 불명** | `telemetry_kafka_dlq_publish_indeterminate_total{topic}` (신규) |
+
+**초안에서 두 가지를 틀렸고 지적으로 고쳤다.**
+(1) `invalid − published`를 "미격리 건수"로 정의했는데, **처리 단계·집계 대상·재시도
+횟수가 달라 성립하지 않는다.** 각 단계는 자기 이름으로만 읽는다.
+(2) `(origin-topic, partition, offset)`은 **Kafka 원본에만** 있다 —
+**MQTT 입구에서 거부된 메시지는 고유 건수를 셀 수 없고**, 그게 한계다.
+payload 해시(밀리초 충돌로 정상 메시지를 접는다)나 MQTT packet ID(세션 안에서만 유일)를
+고유 ID로 쓰지 않는다.
+
+**timeout은 "발행되지 않았다"가 아니다** — 브로커가 받았는지 모른다. 그래서 따로 센다.
+
+**남은 것**: 알림 임계(정상 구간 미측정), 부하 중 영향 미측정, MQTT 고유 건수 식별,
+재전달 이중 계수의 실제 리밸런싱 확인.
 
 ### 다중 백엔드 인스턴스 — **1차 완료(2026-09-06)**
 

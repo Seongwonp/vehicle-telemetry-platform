@@ -31,7 +31,7 @@ from dataclasses import asdict
 from datetime import datetime, timezone
 
 from kafka import KafkaConsumer, KafkaProducer, TopicPartition, OffsetAndMetadata
-from prometheus_client import Counter, start_http_server
+from prometheus_client import REGISTRY, Counter, start_http_server
 from dotenv import load_dotenv
 
 import rules
@@ -297,11 +297,33 @@ PROCESSING_FAILED = 0
 # 내내 남으므로 docs/data-retention.md의 정책 밖으로 개인정보가 새는 경로가 된다.
 # 어느 필드가 문제인지는 지표가 아니라 DLQ에서 본다 —
 # 절차는 docs/runbook/dlq-reprocessing.md 2-1절.
+# **Java 저장 경로와 같은 이름·같은 라벨**이어야 세 입구를 나란히 조회할 수 있다
+# (`com.telemetry.metrics.ContractMetrics`). 이름에 `attempts`가 있는 이유는
+# **거부 판정 횟수이지 고유 메시지 수가 아니기 때문**이다 — 재전달되면 다시 오른다.
 CONTRACT_REJECTED_TOTAL = Counter(
-    "telemetry_contract_rejected_total",
-    "감지 경로에서 입력 계약 위반으로 거부한 레코드 수",
-    ["reason"],
+    "telemetry_contract_rejected_attempts",
+    "입력 계약 위반으로 거부한 **판정 횟수**(재전달 포함, 고유 메시지 수가 아니다)",
+    ["entrance", "reason"],
 )
+ENTRANCE = "anomaly-detector"
+
+# DLQ 발행의 세 단계를 나눠 센다. **빼서 다른 뜻을 만들지 않는다** —
+# 단계가 다르고 집계 대상도 다르다.
+DLQ_PUBLISH_ATTEMPTS = Counter(
+    "telemetry_kafka_dlq_publish_attempts", "DLQ 발행 **시도** 횟수", ["topic"])
+DLQ_PUBLISHED = Counter(
+    "telemetry_kafka_dlq_published", "DLQ 발행 **성공을 확인한** 횟수", ["topic"])
+DLQ_PUBLISH_FAILURES = Counter(
+    "telemetry_kafka_dlq_publish_failures", "DLQ 발행 **실패·timeout을 관찰한** 횟수", ["topic"])
+# 위 실패 중 **우리가 timeout으로 알아본** 것. failures의 부분집합이다.
+# timeout이면 브로커가 받았는지 모른다 — "발행되지 않았다"로 읽으면 안 된다.
+#
+# **0이라고 모든 발행 결과가 확정됐다는 뜻이 아니다.** `_is_indeterminate`가 아는
+# 예외 이름만 판별하고, 그 밖의 실패 중에도 실제로는 브로커에 닿은 것이 있을 수 있다.
+# 주장하는 것은 "이만큼은 확실히 불명"이지 "나머지는 확실하다"가 아니다.
+DLQ_PUBLISH_INDETERMINATE = Counter(
+    "telemetry_kafka_dlq_publish_indeterminate",
+    "DLQ 발행 실패 중 **발행 여부 불명**(timeout)", ["topic"])
 # 계약을 통과한 뒤의 실패. **계약 위반과 섞으면 안 된다** — 이쪽은 구현 버그일 수 있다.
 PROCESSING_FAILED_TOTAL = Counter(
     "telemetry_anomaly_processing_failed_total",
@@ -353,15 +375,42 @@ def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
     return headers
 
 
+def _is_indeterminate(error: BaseException) -> bool:
+    """**우리가 알아볼 수 있는** timeout인가.
+
+    timeout은 요청이 브로커에 닿았는지 자체가 불확실하다. 반면 크기 초과처럼
+    클라이언트에서 확정적으로 실패한 것은 여기 해당하지 않는다.
+    Java 쪽 `ContractMetrics.isIndeterminate`와 같은 판단이어야 한다.
+
+    **False라고 "발행되지 않은 것이 확실"하다는 뜻은 아니다.** 아는 이름만 판별한다 —
+    목록을 넓히는 것은 실제로 다른 예외를 관찰한 뒤에 한다.
+    """
+    seen = set()
+    cur: BaseException | None = error
+    while cur is not None and id(cur) not in seen:
+        seen.add(id(cur))
+        if type(cur).__name__ in ("KafkaTimeoutError", "TimeoutError", "RequestTimedOutError"):
+            return True
+        cur = cur.__cause__ or cur.__context__
+    return False
+
+
 def send_to_dlq(dlq_producer: KafkaProducer, message, cause: Exception | None = None) -> None:
     """처리 실패한 원본 메시지를 DLQ로 옮긴다. key/value를 원본 바이트 그대로 보존하고,
     왜 실패했는지는 헤더로 남긴다(재처리 판단 근거)."""
     try:
+        # **시도 시점**에 올린다 — 성공/실패와 별개의 수다.
+        DLQ_PUBLISH_ATTEMPTS.labels(topic=DLQ_TOPIC).inc()
         future = dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value,
                                    headers=dlq_headers(message, cause))
         dlq_producer.flush()
         future.get(timeout=10)
-    except Exception:
+        DLQ_PUBLISHED.labels(topic=DLQ_TOPIC).inc()
+    except Exception as send_error:
+        DLQ_PUBLISH_FAILURES.labels(topic=DLQ_TOPIC).inc()
+        # timeout이면 브로커가 받았는지 **모른다**. 따로 센다.
+        if _is_indeterminate(send_error):
+            DLQ_PUBLISH_INDETERMINATE.labels(topic=DLQ_TOPIC).inc()
         # 이 예외를 메인 루프 밖으로 전파해야 현재 offset이 처리 완료로 집계되지 않는다.
         logger.error(
             f"[DLQ] {DLQ_TOPIC} 전송 실패 — 원본 offset을 커밋하지 않음 "
@@ -468,7 +517,7 @@ def main() -> None:
                         parsed.append((message, contract.validate(message.value.decode("utf-8"))))
                     except contract.ContractViolation as e:
                         CONTRACT_REJECTED[e.reason] += 1
-                        CONTRACT_REJECTED_TOTAL.labels(reason=e.reason).inc()
+                        CONTRACT_REJECTED_TOTAL.labels(entrance=ENTRANCE, reason=e.reason).inc()
                         # 값은 남기지 않는다 — 사유 코드와 위치만.
                         logger.warning(
                             f"[계약 위반] {e.reason} — DLQ로 이동 "

@@ -1,19 +1,30 @@
 {
   "uid": "telemetry-pipeline-funnel",
   "title": "Telemetry Pipeline — 단계별 대조",
-  "tags": ["telemetry", "reliability"],
+  "tags": [
+    "telemetry",
+    "reliability"
+  ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 1,
+  "version": 4,
   "refresh": "10s",
-  "time": { "from": "now-30m", "to": "now" },
+  "time": {
+    "from": "now-30m",
+    "to": "now"
+  },
   "description": "발행 → 수집 → Kafka → 저장을 한 화면에서 대조한다. 각 지표를 따로 보면 정상처럼 보이는 무음 유실을 단계 간 괴리로 드러내는 것이 목적이다. 12시간 soak에서 InfluxDB 쓰기가 26초 만에 멈췄는데 Kafka lag은 끝까지 0이라 아무 알림도 안 떴던 사고가 이 대시보드가 없어서 안 보인 것이다.",
   "panels": [
     {
       "id": 1,
       "type": "text",
       "title": "읽는 법",
-      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 4,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
       "options": {
         "mode": "markdown",
         "content": "**아래 그래프의 선들이 겹쳐 있으면 정상이다.** 어느 지점에서 갈라지는지가 곧 유실 위치다.\n\n`브로커 수신` → `백엔드 MQTT 수신` 갈라짐 = 브로커 큐 오버플로 / 백엔드가 못 따라감 · `백엔드 수신` → `Kafka 발행` 갈라짐 = 프로듀서 실패(spool 확인) · `Kafka 소비` → `InfluxDB 저장` 갈라짐 = 저장 실패(DLQ 확인)"
@@ -23,11 +34,20 @@
       "id": 2,
       "type": "timeseries",
       "title": "단계별 처리율 (msg/s) — 선이 갈라지는 곳이 유실 지점",
-      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 4 },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "reqps",
-          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 0 }
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 0
+          }
         },
         "overrides": []
       },
@@ -59,7 +79,12 @@
       "type": "stat",
       "title": "저장 / 수신 비율 (최근 5분)",
       "description": "1.0에서 멀어지면 어딘가에서 새고 있다. 0에 가까우면 저장이 멈춘 것이다 — 12시간 soak 버그의 신호가 바로 이것이었다.",
-      "gridPos": { "h": 6, "w": 6, "x": 0, "y": 14 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 14
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "percentunit",
@@ -67,9 +92,18 @@
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "red", "value": null },
-              { "color": "orange", "value": 0.9 },
-              { "color": "green", "value": 0.99 }
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.9
+              },
+              {
+                "color": "green",
+                "value": 0.99
+              }
             ]
           }
         }
@@ -86,67 +120,129 @@
       "type": "stat",
       "title": "브로커 버린 메시지 (누적)",
       "description": "0이 아니면 브로커 큐가 넘쳤다 — 백엔드가 유입을 못 따라간 것이다.",
-      "gridPos": { "h": 6, "w": 6, "x": 6, "y": 14 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 14
+      },
       "fieldConfig": {
         "defaults": {
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           }
         }
       },
-      "targets": [{ "refId": "A", "expr": "telemetry_mqtt_broker_messages_dropped" }]
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "telemetry_mqtt_broker_messages_dropped"
+        }
+      ]
     },
     {
       "id": 5,
       "type": "stat",
       "title": "spool 대기 (건)",
       "description": "Kafka 장애 시 로컬 보관량. 줄지 않으면 드레인이 유입을 못 따라간다는 뜻이다.",
-      "gridPos": { "h": 6, "w": 6, "x": 12, "y": 14 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 14
+      },
       "fieldConfig": {
         "defaults": {
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "orange", "value": 1 },
-              { "color": "red", "value": 10000 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              },
+              {
+                "color": "red",
+                "value": 10000
+              }
             ]
           }
         }
       },
-      "targets": [{ "refId": "A", "expr": "sum(telemetry_spool_pending)" }]
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(telemetry_spool_pending)"
+        }
+      ]
     },
     {
       "id": 6,
       "type": "stat",
       "title": "DLQ 격리 (5분 증가분)",
       "description": "0이 아니면 재시도 예산(180초)을 넘긴 장애가 있었다는 뜻이다. docs/runbook/dlq-reprocessing.md 참고.",
-      "gridPos": { "h": 6, "w": 6, "x": 18, "y": 14 },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 14
+      },
       "fieldConfig": {
         "defaults": {
           "thresholds": {
             "mode": "absolute",
             "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
             ]
           }
         }
       },
-      "targets": [{ "refId": "A", "expr": "sum(increase(telemetry_kafka_dlq_published_total[5m]))" }]
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum(increase(telemetry_kafka_dlq_published_total[5m]))"
+        }
+      ]
     },
     {
       "id": 7,
       "type": "timeseries",
       "title": "복구 경로 — DLQ / spool / 쓰기 실패",
       "description": "장애 중에는 이 셋 중 하나가 올라가야 정상이다. 셋 다 0인데 위 단계별 처리율이 갈라졌다면, 어디로 샜는지 모른다는 뜻이라 계측이 부족한 것이다.",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
       "fieldConfig": {
-        "defaults": { "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 } }
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 10
+          }
+        }
       },
       "targets": [
         {
@@ -171,10 +267,186 @@
       "type": "timeseries",
       "title": "Kafka consumer lag",
       "description": "lag이 0이라는 건 '잘 처리되고 있다'가 아니라 'offset이 전진했다'일 뿐이다. 반드시 위 저장 성공률과 함께 봐야 한다.",
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 28 },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 28
+      },
       "targets": [
-        { "refId": "A", "legendFormat": "{{client_id}}", "expr": "kafka_consumer_records_lag_max" }
+        {
+          "refId": "A",
+          "legendFormat": "{{client_id}}",
+          "expr": "kafka_consumer_records_lag_max"
+        }
       ]
+    },
+    {
+      "id": 20,
+      "type": "text",
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 36
+      },
+      "title": "거부·격리 지표 읽는 법 — 시도 횟수이지 고유 메시지 수가 아니다",
+      "options": {
+        "mode": "markdown",
+        "content": "아래 패널의 수는 전부 **시도·관찰 횟수**다. **고유 실패 메시지 수가 아니다.**\n\n이 파이프라인은 at-least-once라 같은 메시지가 여러 번 판정될 수 있다 — 배치 재시도, DLQ 발행 실패 후 재시작, 리밸런싱, 강제 종료, MQTT QoS 1 재전달. 그래서 `sum(rejected_attempts)`를 \"계약 위반 메시지 N건\"으로 읽으면 틀린다.\n\n**네 단계는 서로 다른 수다. 빼서 다른 뜻을 만들지 마라** — 처리 단계도, 집계 대상도, 재시도 횟수도 다르고, 프로세스가 재시작하면 각자 0부터 다시 센다.\n\n| 단계 | 지표 |\n| --- | --- |\n| 계약 거부 **판정** | `telemetry_contract_rejected_attempts_total{entrance,reason}` |\n| DLQ 발행 **시도** | `telemetry_kafka_dlq_publish_attempts_total{topic}` |\n| 발행 **성공 확인** | `telemetry_kafka_dlq_published_total{topic}` |\n| 발행 **실패·timeout 관찰** | `telemetry_kafka_dlq_publish_failures_total{topic}` |\n| 그중 **발행 여부 불명** | `telemetry_kafka_dlq_publish_indeterminate_total{topic}` |\n\n**`indeterminate`가 0이 아니면 \"실패했다\"가 아니라 \"모른다\"다** — timeout이라 브로커가 받았는지 알 수 없다.\n\n**고유 실패 메시지 수를 세려면 지표가 아니라 DLQ를 본다.** Kafka 원본은 DLQ 헤더의 `(x-dlq-origin-topic, partition, offset)` 조합이 고유 키다. **MQTT 입구에서 거부된 메시지에는 그 식별자가 없다** — 절차와 한계는 `docs/rejection-metrics-design.md`.\n\n### 계약 거부와 DLQ 처리는 **일치해야 하는 두 수가 아니다**\n\n`rejected_attempts`는 **계약 위반만** 센다. DLQ 지표는 **DLQ로 가는 모든 것**을 센다 —\n계약 위반 외에도 포인트 변환 실패, 재시도 예산 소진(recoverer 경로), 알림 발행 실패가\n같은 DLQ로 간다. **집계 대상이 다르므로 두 수가 같아야 할 이유가 없다.**\n차이를 유실이나 미격리 건수로 읽지 마라.\n\n또 MQTT에서는 `telemetry_mqtt_messages_invalid_total`(모든 거부)과\n`rejected_attempts`(계약 사유만)가 **의도적으로 다르다** — `TOPIC_VEHICLE_MISMATCH`는\n계약 사유가 아니다.\n\n### 패널이 비어 있으면\n\n**\"No data\"는 정상이다** — 그 기간에 해당 사건이 없었다는 뜻이다.\n쿼리가 실패하면 Grafana가 패널 상단에 **빨간 오류 배지**를 띄운다. 둘을 헷갈리지 마라.\n지표 자체가 아직 한 번도 안 올랐으면 Prometheus에 시계열이 없어서 `No data`가 된다."
+      }
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "계약 거부 판정 — 입구·사유별 (시도 횟수)",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 41
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 8
+          },
+          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (entrance, reason) (rate(telemetry_contract_rejected_attempts_total[5m]))",
+          "legendFormat": "{{entrance}} / {{reason}}",
+          "refId": "A"
+        }
+      ],
+      "description": "입구 3종 × 사유 4종. 재전달되면 다시 오른다 — 고유 메시지 수가 아니다.\n\n**DLQ 패널의 수와 일치하지 않는다** — 여기는 계약 위반만 세고, DLQ에는 변환 실패·재시도 소진·알림 발행 실패도 함께 들어간다. 차이를 유실로 읽지 마라.\n\n비어 있으면 `No data`(정상)이고, 쿼리 오류는 패널 상단에 빨간 배지로 뜬다."
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "DLQ 격리 단계 — 시도 / 성공 / 실패 / 불명",
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 41
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 8
+          },
+          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum(rate(telemetry_kafka_dlq_publish_attempts_total[5m]))",
+          "legendFormat": "발행 시도",
+          "refId": "A"
+        },
+        {
+          "expr": "sum(rate(telemetry_kafka_dlq_published_total[5m]))",
+          "legendFormat": "성공 확인",
+          "refId": "B"
+        },
+        {
+          "expr": "sum(rate(telemetry_kafka_dlq_publish_failures_total[5m]))",
+          "legendFormat": "실패·timeout 관찰",
+          "refId": "C"
+        },
+        {
+          "expr": "sum(rate(telemetry_kafka_dlq_publish_indeterminate_total[5m]))",
+          "legendFormat": "발행 여부 불명",
+          "refId": "D"
+        }
+      ],
+      "description": "네 수를 나란히 놓는다. **빼서 '미격리 건수'를 만들지 마라** — 단계가 다르다.\n\n네 수는 **각각 다른 단계**다. 빼거나 나누지 마라 — 처리 단계·집계 대상·재시도 횟수가 다르고 재시작 시점도 다르다.\n\n**`발행 여부 불명`은 우리가 timeout으로 알아본 것만 센다.** 0이라고 나머지 발행 결과가 확정됐다는 뜻이 아니다.\n\n이 패널은 **계약 위반 외의 DLQ 트래픽도 포함**한다(변환 실패, 재시도 소진, 알림 발행 실패)."
+    },
+    {
+      "id": 23,
+      "type": "timeseries",
+      "title": "입구별 DLQ 격리 (topic이 입구를 가른다)",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 8
+          },
+          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "lastNotNull",
+            "sum"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (topic) (rate(telemetry_kafka_dlq_publish_attempts_total[5m]))",
+          "legendFormat": "{{topic}} 시도",
+          "refId": "A"
+        },
+        {
+          "expr": "sum by (topic) (rate(telemetry_kafka_dlq_published_total[5m]))",
+          "legendFormat": "{{topic}} 성공",
+          "refId": "B"
+        }
+      ],
+      "description": "mqtt-dlq=MQTT 입구, vehicle-telemetry-dlq=Kafka 저장 입구, anomaly-dlq=감지 경로.\n\n`topic`이 입구를 가른다. 왼쪽 패널(계약 거부)과 **합계가 맞지 않는 것이 정상**이다."
     }
   ]
 }

@@ -7,6 +7,7 @@ import com.telemetry.kafka.TelemetryProducer;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.validation.Validation;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -126,5 +127,46 @@ class MqttMessageHandlerTest {
 
     private double counter(String name) {
         return meterRegistry.get(name).counter().count();
+    }
+
+    // ── P0-2b: MQTT 입구의 사유별 카운터 ────────────────────────────
+    private double count(String name, String... tags) {
+        var c = meterRegistry.find(name).tags(tags).counter();
+        return c == null ? 0.0 : c.count();
+    }
+
+    @Test
+    @DisplayName("계약 위반은 사유별로 세고, 기존 invalid 카운터도 그대로 오른다")
+    void 계약위반_사유별_카운터() {
+        handler.handle(org.springframework.messaging.support.MessageBuilder
+            .withPayload("{\"vehicle_id\":\"KR-GA-1234\",\"timestamp\":\"2026-09-09T10:00:00Z\"}")
+            .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-1234")
+            .build());
+
+        assertThat(count(com.telemetry.metrics.ContractMetrics.REJECTED_ATTEMPTS,
+                "entrance", com.telemetry.metrics.ContractMetrics.ENTRANCE_MQTT,
+                "reason", com.telemetry.domain.TelemetryContractException.PAYLOAD_VALIDATION_FAILED))
+            .as("사유별 카운터").isEqualTo(1.0);
+        assertThat(meterRegistry.counter("telemetry.mqtt.messages.invalid").count())
+            .as("기존 지표도 그대로 오른다 — 이름·의미를 바꾸지 않았다").isEqualTo(1.0);
+    }
+
+    @Test
+    @DisplayName("MQTT 고유 거부 사유는 계약 사유 카운터에 섞이지 않는다")
+    void 토픽불일치는_계약사유가_아니다() {
+        // payload는 계약을 지키는데 토픽의 차량 ID가 다르다 — MQTT 고유 검사다.
+        String valid = "{\"vehicle_id\":\"KR-GA-1234\",\"timestamp\":\"2026-09-09T10:00:00.000Z\","
+            + "\"speed\":80.0,\"rpm\":2000,\"engine_temp\":90.0,\"throttle_position\":30.0,"
+            + "\"fuel_level\":50.0,\"battery_voltage\":13.5}";
+        handler.handle(org.springframework.messaging.support.MessageBuilder
+            .withPayload(valid)
+            .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-9999")
+            .build());
+
+        assertThat(meterRegistry.counter("telemetry.mqtt.messages.invalid").count())
+            .as("거부는 됐다").isEqualTo(1.0);
+        assertThat(meterRegistry.find(com.telemetry.metrics.ContractMetrics.REJECTED_ATTEMPTS).counter())
+            .as("TOPIC_VEHICLE_MISMATCH는 계약 사유가 아니다 — 섞으면 세 입구를 나란히 못 놓는다")
+            .isNull();
     }
 }

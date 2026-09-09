@@ -155,13 +155,18 @@ P0-2a에서 **저장 경로와 같은 입력 계약**을 감지 경로에도 적
 **같은 payload는 양쪽에서 같은 사유로 거부된다.** 한쪽에만 있으면 둘 중 하나가
 틀린 것이다 — `contract-fixtures/cases.json`을 양쪽 테스트가 읽어 막고 있다.
 
-### 사유별 집계는 지표로 본다
-
-감지 경로는 Prometheus 지표가 있다(저장 경로는 아직 없다 — roadmap P0-2b).
+### 사유별 집계는 지표로 본다 — **세 입구 모두**
 
 ```
-sum by (reason) (telemetry_contract_rejected_total)
+sum by (entrance, reason) (telemetry_contract_rejected_attempts_total)
 ```
+
+`entrance`는 `mqtt` / `kafka-storage` / `anomaly-detector`. DLQ 단계는 `topic`이 입구를 가른다.
+
+**이 수는 판정 횟수이지 고유 메시지 수가 아니다.** 재전달되면 다시 오른다 —
+Kafka 원본의 고유 건수는 DLQ 헤더 `(origin-topic, partition, offset)` 조합으로 세고,
+**MQTT 거부는 그 식별자가 없어 고유 건수를 셀 수 없다.**
+자세한 것은 `docs/rejection-metrics-design.md` 3절.
 
 **라벨은 사유 코드뿐이다.** 어느 차량·어느 필드인지는 지표에 없다 — DLQ를 봐야 한다.
 그렇게 만든 이유는 Prometheus 라벨이 보존 기간 내내 남아 개인정보가 새기 때문이다.

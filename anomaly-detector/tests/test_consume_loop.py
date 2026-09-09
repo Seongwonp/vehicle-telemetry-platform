@@ -389,3 +389,102 @@ def test_event_id는_원본_필드만으로_결정된다():
     key = "|".join(str(batch_payload.get(f, "")) for f in
                    ("vehicle_id", "timestamp", "anomaly_type", "field", "detector"))
     assert hashlib.sha256(key.encode("utf-8")).hexdigest() == expected
+
+
+# ── 6) 카운터가 **어느 단계에서** 오르는가 (P0-2b) ───────────────
+#
+# 값의 크기가 아니라 증가 위치가 계약이다. 네 단계를 구분해서 세고,
+# **빼서 다른 뜻을 만들지 않는다** — 단계도, 집계 대상도, 재시도 횟수도 다르다.
+def _counter(name, **labels):
+    v = ad.REGISTRY.get_sample_value(name + "_total", labels)
+    return v or 0.0
+
+
+def test_지표_정상격리(loop):
+    """계약 위반 1건이 정상 격리되면 — 판정·시도·성공이 각 1, 실패 0."""
+    before = {
+        "rejected": _counter("telemetry_contract_rejected_attempts",
+                             entrance=ad.ENTRANCE, reason="PAYLOAD_VALIDATION_FAILED"),
+        "attempts": _counter("telemetry_kafka_dlq_publish_attempts", topic=ad.DLQ_TOPIC),
+        "published": _counter("telemetry_kafka_dlq_published", topic=ad.DLQ_TOPIC),
+        "failures": _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC),
+    }
+    batch = {ad.TopicPartition(TOPIC, PARTITION): [
+        Msg(0, payload()), Msg(1, payload(speed=...)),
+    ]}
+    _, _, _, raised = loop([batch])
+    assert raised is None
+
+    assert _counter("telemetry_contract_rejected_attempts",
+                    entrance=ad.ENTRANCE, reason="PAYLOAD_VALIDATION_FAILED") \
+        - before["rejected"] == 1.0, "계약 거부 판정 횟수"
+    assert _counter("telemetry_kafka_dlq_publish_attempts", topic=ad.DLQ_TOPIC) \
+        - before["attempts"] == 1.0, "DLQ 발행 시도 횟수"
+    assert _counter("telemetry_kafka_dlq_published", topic=ad.DLQ_TOPIC) \
+        - before["published"] == 1.0, "발행 성공을 확인한 횟수"
+    assert _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC) \
+        - before["failures"] == 0.0, "실패 관찰 횟수"
+
+
+def test_지표_발행실패시_성공카운터는_안_오른다(loop):
+    before_pub = _counter("telemetry_kafka_dlq_published", topic=ad.DLQ_TOPIC)
+    before_fail = _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC)
+    before_att = _counter("telemetry_kafka_dlq_publish_attempts", topic=ad.DLQ_TOPIC)
+    before_ind = _counter("telemetry_kafka_dlq_publish_indeterminate", topic=ad.DLQ_TOPIC)
+
+    batch = {ad.TopicPartition(TOPIC, PARTITION): [Msg(0, payload(speed=...))]}
+    _, _, _, raised = loop([batch], dlq_producer=FakeProducer("dlq", fail_on=1))
+    assert raised is not None
+
+    assert _counter("telemetry_kafka_dlq_publish_attempts", topic=ad.DLQ_TOPIC) - before_att == 1.0
+    assert _counter("telemetry_kafka_dlq_published", topic=ad.DLQ_TOPIC) - before_pub == 0.0, \
+        "발행에 실패했는데 성공 카운터가 올랐다"
+    assert _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC) - before_fail == 1.0
+    assert _counter("telemetry_kafka_dlq_publish_indeterminate", topic=ad.DLQ_TOPIC) \
+        - before_ind == 0.0, "확정적 실패는 '발행 여부 불명'이 아니다"
+
+
+def test_지표_timeout은_발행여부_불명으로도_센다(loop):
+    """timeout은 브로커가 받았는지 **모른다** — '확실히 발행되지 않았다'가 아니다."""
+    from kafka.errors import KafkaTimeoutError
+
+    before_fail = _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC)
+    before_ind = _counter("telemetry_kafka_dlq_publish_indeterminate", topic=ad.DLQ_TOPIC)
+
+    batch = {ad.TopicPartition(TOPIC, PARTITION): [Msg(0, payload(speed=...))]}
+    dlq = FakeProducer("dlq", fail_on=1, fail_with=KafkaTimeoutError("브로커 응답 없음"))
+    loop([batch], dlq_producer=dlq)
+
+    assert _counter("telemetry_kafka_dlq_publish_failures", topic=ad.DLQ_TOPIC) - before_fail == 1.0
+    assert _counter("telemetry_kafka_dlq_publish_indeterminate", topic=ad.DLQ_TOPIC) \
+        - before_ind == 1.0, "timeout은 발행 여부 불명으로도 세야 한다"
+
+
+def test_지표_재전달시_다시_오른다(loop):
+    """**고유 메시지 수가 아니라 판정 횟수**다. 같은 원본이라도 재전달되면 다시 오른다."""
+    before = _counter("telemetry_contract_rejected_attempts",
+                      entrance=ad.ENTRANCE, reason="PAYLOAD_VALIDATION_FAILED")
+    same = Msg(42, payload(speed=...))
+    loop([{ad.TopicPartition(TOPIC, PARTITION): [same]}])
+    loop([{ad.TopicPartition(TOPIC, PARTITION): [Msg(42, payload(speed=...))]}])
+
+    assert _counter("telemetry_contract_rejected_attempts",
+                    entrance=ad.ENTRANCE, reason="PAYLOAD_VALIDATION_FAILED") - before == 2.0
+
+
+def test_지표_정상입력과_알림실패는_거부로_안_센다(loop):
+    """계약 오류가 아닌 실패를 거부 카운터에 섞으면 '거부가 늘었다'의 뜻이 흐려진다."""
+    before = sum(_counter("telemetry_contract_rejected_attempts",
+                          entrance=ad.ENTRANCE, reason=r)
+                 for r in ad.contract.REASONS)
+
+    # 정상 입력 + 알림 발행 실패(계약은 통과했다)
+    batch = {ad.TopicPartition(TOPIC, PARTITION): [
+        Msg(0, payload()), Msg(1, payload(engine_temp=106.0)),
+    ]}
+    loop([batch], alert_producer=FakeProducer("alerts", fail_on=1))
+
+    after = sum(_counter("telemetry_contract_rejected_attempts",
+                         entrance=ad.ENTRANCE, reason=r)
+                for r in ad.contract.REASONS)
+    assert after == before, "계약 위반이 아닌데 거부 카운터가 올랐다"

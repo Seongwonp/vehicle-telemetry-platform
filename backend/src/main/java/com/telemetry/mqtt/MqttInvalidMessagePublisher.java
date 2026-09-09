@@ -29,13 +29,17 @@ public class MqttInvalidMessagePublisher {
                 "reason", reason,
                 "payload", payload
             ));
+            // **시도 시점**에 올린다. 직렬화 실패는 시도 전이라 여기 안 온다 —
+            // 그것도 실패로는 세지만 "발행 시도"는 아니다.
+            com.telemetry.metrics.ContractMetrics.dlqPublishAttempt(meterRegistry, TOPIC);
             kafkaTemplate.send(TOPIC, mqttTopic, envelope).get(10, TimeUnit.SECONDS);
-            counter("telemetry.kafka.dlq.published", "topic", TOPIC).increment();
+            com.telemetry.metrics.ContractMetrics.dlqPublished(meterRegistry, TOPIC);
         } catch (JsonProcessingException e) {
-            counter("telemetry.kafka.dlq.publish.failures", "topic", TOPIC).increment();
+            com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, TOPIC, e);
             throw new IllegalStateException("MQTT DLQ 메시지 직렬화 실패", e);
         } catch (Exception e) {
-            counter("telemetry.kafka.dlq.publish.failures", "topic", TOPIC).increment();
+            // timeout이면 브로커가 받았는지 **모른다**. dlqPublishFailed가 그걸 따로 센다.
+            com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, TOPIC, e);
             throw new IllegalStateException("MQTT DLQ 전송 실패", e);
         }
     }

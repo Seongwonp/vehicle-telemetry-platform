@@ -1,0 +1,57 @@
+# P0-2b — Grafana 패널 실제 확인 (2026-09-09)
+
+JSON 문법 검사만으로는 패널이 뜬다는 보장이 없다. 데이터소스 연결·PromQL 실행·
+세 입구 표시를 **Grafana를 통해** 확인한다.
+
+## 여기서 결함을 하나 잡았다
+
+JSON 검사는 통과했지만 내 패널이 `"uid": "prometheus"`를 지정하고 있었다.
+실제 데이터소스 uid는 PBFA97CFB590B2093이고, **기존 패널들은 datasource를 생략해
+기본값을 쓴다.** 그대로 뒀으면 패널이 데이터소스 오류로 떴을 것이다.
+기존 방식에 맞춰 datasource 지정을 제거했다.
+
+## 프로비저닝 상태
+  dashboard: bfxqswlavbq4gf | Vehicle Telemetry
+  dashboard: backend-metrics | Backend Server Metrics
+  dashboard: telemetry-pipeline-funnel | Telemetry Pipeline — 단계별 대조
+  dashboard: vehicle-telemetry | Vehicle Telemetry Dashboard
+  datasource: uid=P951FEA4DE68E13C5 type=influxdb default=False url=http://influxdb:8086
+  datasource: uid=PBFA97CFB590B2093 type=prometheus default=True url=http://prometheus:9090
+  �г� ��: 12 | version: 2
+   �ű� �г� 20 text | datasource: None (None = �⺻��)
+   �ű� �г� 21 timeseries | datasource: None (None = �⺻��)
+   �ű� �г� 22 timeseries | datasource: None (None = �⺻��)
+   �ű� �г� 23 timeseries | datasource: None (None = �⺻��)
+
+## 패널 쿼리를 Grafana 데이터소스 프록시로 실행
+
+### 패널 21 — 계약 거부 (입구·사유별)
+  status: success | �ð迭 6 (�� �Ա� �� ����)
+    anomaly-detector   MALFORMED_JSON               0.00738
+    anomaly-detector   PAYLOAD_VALIDATION_FAILED    0.00738
+    kafka-storage      MALFORMED_JSON               0.00744
+    kafka-storage      PAYLOAD_VALIDATION_FAILED    0.00744
+    mqtt               PAYLOAD_VALIDATION_FAILED    0.00744
+    mqtt               UNKNOWN_FIELD                0.00744
+
+### 패널 22 — DLQ 4단계
+    ���� �õ�                  status=success -> 0.04456
+    ���� Ȯ��                  status=success -> 0.04459
+    ���� timeout ����          status=success -> No data
+    ���� ���� �Ҹ�               status=success -> No data
+
+  **실패/불명이 No data인데 status=success다.** 쿼리 오류가 아니라 그 기간에 실패가
+  없었다는 뜻이다. 패널에는 noValue 문구로 그 구분이 뜬다.
+
+### 패널 23 — 입구별 DLQ (topic)
+  status: success | �ð迭 3
+    vehicle-telemetry-mqtt-dlq       0.01493
+    vehicle-telemetry-dlq            0.01493
+    vehicle-telemetry-anomaly-dlq    0.01481
+
+## 두 지표는 일치해야 하는 관계가 아니다
+
+패널 21(계약 거부)과 패널 22/23(DLQ)은 **집계 대상이 다르다** — DLQ에는 계약 위반 외에
+포인트 변환 실패, 재시도 예산 소진(recoverer 경로), 알림 발행 실패도 들어간다.
+위 실행에서도 시도(0.04354)와 성공(0.04358)이 미세하게 다른데, 그건 rate 창의 차이이지
+유실이 아니다. **차이를 빼서 뜻을 만들지 마라** — 패널 설명에 적어뒀다.

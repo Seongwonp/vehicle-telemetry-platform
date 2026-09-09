@@ -38,4 +38,19 @@ public class TelemetryContractException extends RuntimeException {
     public String getReason() {
         return reason;
     }
+
+    /** 계약 사유 코드 4종. 지표 라벨에 **이 값들만** 들어간다(P0-2b). */
+    public static final java.util.Set<String> REASONS = java.util.Set.of(
+        MALFORMED_JSON, UNKNOWN_FIELD, TYPE_MISMATCH, PAYLOAD_VALIDATION_FAILED);
+
+    /**
+     * 계약 사유인가.
+     *
+     * <p>MQTT 입구에는 계약과 무관한 거부 사유가 하나 더 있다({@code TOPIC_VEHICLE_MISMATCH} —
+     * 토픽의 차량 ID와 payload의 차량 ID가 다른 경우). 그건 MQTT 고유 검사라
+     * 사유별 지표에 섞으면 세 입구를 나란히 놓을 수 없다.
+     */
+    public static boolean isContractReason(String reason) {
+        return REASONS.contains(reason);
+    }
 }

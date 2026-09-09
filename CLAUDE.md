@@ -178,9 +178,20 @@ strict한 건 **필드 집합과 값의 범위**이지 표현 타입이 아니�
   잘못된 타임스탬프가 `toPoint()`가 아니라 계약 단계에서 거부된다.
   **사유 선택 순서도 고정했다**: 예전에는 payload 필드 순서에 따라 사유가 달라졌고
   잘린 JSON이 `UNKNOWN_FIELD`로 보고됐다.
-- **P0-2b — 거부 사유별 지표 없음.** 사유가 4종인데 카운터는 `messages.invalid` 하나다.
-  `{entrance, reason}` 8 시계열까지만. **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다** —
-  카디널리티도 문제지만 Prometheus 라벨은 보존 기간 내내 남아 개인정보가 샌다.
+- **P0-2b — 완료(2026-09-09).** `docs/rejection-metrics-design.md`.
+  세 입구(MQTT·Kafka 저장·감지기)가 같은 이름·같은 라벨로 사유별 거부를 올리고,
+  **실제 Prometheus에서 `sum by (entrance, reason)`으로 구분 조회**되는 것을 확인했다.
+  **네 단계를 구분한다** — 거부 **판정** / DLQ 발행 **시도** / **성공 확인** /
+  **실패·timeout 관찰**(+그중 **발행 여부 불명**). **빼서 다른 뜻을 만들지 않는다.**
+  초안에서 `invalid − published`를 "미격리 건수"로 정의했다가 지적으로 고쳤다 —
+  처리 단계·집계 대상·재시도 횟수가 다르고 재시작 시점도 다르다.
+  **timeout은 "발행되지 않았다"가 아니다** — 브로커가 받았는지 모른다.
+  **고유 건수는 입구마다 식별 범위가 다르다** — Kafka 원본은 DLQ 헤더의
+  `(origin-topic, partition, offset)`이 고유 키지만, **MQTT 거부에는 그 식별자가 없어
+  고유 건수를 셀 수 없다.** payload 해시(밀리초 충돌로 정상 메시지를 접는다)나
+  MQTT packet ID(세션 안에서만 유일)를 고유 ID로 쓰지 않는다.
+  기존 알림이 보는 `dlq.published`/`publish.failures`는 **이름·의미 그대로** 두고 추가만 했다.
+  남은 것: 알림 임계(정상 구간 미측정), 부하 중 영향, MQTT 고유 건수 식별.
 - **DLQ Runbook은 갱신했다** — §2-1에 `TelemetryContractException` 4종 사유 코드,
   영구 분류, 사유별 집계 명령(실제로 돌려서 확인), 고치고 되돌리는 절차를 넣었다.
   분류 회귀는 `dlq-tools/test_dlq.py`가 막는다.

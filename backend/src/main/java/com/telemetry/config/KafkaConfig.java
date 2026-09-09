@@ -82,8 +82,14 @@ public class KafkaConfig {
         return new DefaultErrorHandler((record, exception) -> {
             // alerts.yml의 DLQ 알림이 보는 메트릭 — 컨슈머 내부 sendToDlq()와 같은 이름으로
             // 올려야 이 경로로 나간 것도 같이 잡힌다.
-            meterRegistry.counter("telemetry.kafka.dlq.published",
-                "topic", resolveDlqTopic(record.topic())).increment();
+            // 재시도 소진 경로. **여기는 Spring의 recoverer가 이미 발행을 끝낸 뒤**라
+            // 시도/성공을 나눌 수 없다 — recoverer 안에서 일어난 일이기 때문이다.
+            // `setFailIfSendResultIsError(true)`라 여기 도달한 것은 발행이 확인된 경우다.
+            // 그래서 시도와 성공을 **같이** 올린다(둘이 항상 같은 수라는 뜻이고,
+            // 컨슈머 내부 sendToDlq() 경로에서는 갈릴 수 있다).
+            String dlqTopic = resolveDlqTopic(record.topic());
+            meterRegistry.counter("telemetry.kafka.dlq.publish.attempts", "topic", dlqTopic).increment();
+            meterRegistry.counter("telemetry.kafka.dlq.published", "topic", dlqTopic).increment();
             // 재시도 소진은 **로그에 아무 흔적을 남기지 않고 있었다.** 저장소는 실패를
             // 카운터로만 세고 예외를 다시 던지고(TelemetryRepository), Spring Kafka의
             // 재시도·복구 로그는 DEBUG인데 logging.level.org.springframework.kafka가 WARN이다.

@@ -1,5 +1,7 @@
 package com.telemetry.kafka;
 
+import com.telemetry.domain.TelemetryContractException;
+import com.telemetry.metrics.ContractMetrics;
 import com.telemetry.support.TestDecoders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.write.Point;
@@ -72,13 +74,20 @@ class TelemetryConsumerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private TelemetryConsumer telemetryConsumer;
+    /** 카운터가 **어디서** 오르는지 보려면 레지스트리를 붙잡고 있어야 한다(P0-2b). */
+    private SimpleMeterRegistry registry;
 
     @BeforeEach
     void setUp() {
+        registry = new SimpleMeterRegistry();
         telemetryConsumer = new TelemetryConsumer(
             telemetryRepository, anomalyService, objectMapper, TestDecoders.telemetryDecoder(),
-            kafkaTemplate, messagingTemplate,
-            new SimpleMeterRegistry());
+            kafkaTemplate, messagingTemplate, registry);
+    }
+
+    private double count(String name, String... tags) {
+        var c = registry.find(name).tags(tags).counter();
+        return c == null ? 0.0 : c.count();
     }
 
     @Test
@@ -209,6 +218,99 @@ class TelemetryConsumerTest {
         saved.setVehicleId("SIM-001");
         saved.setAnomalyType("엔진 과열");
         return saved;
+    }
+
+    // ── P0-2b: 카운터가 **어느 단계에서** 오르는가 ──────────────────
+    //
+    // 값의 크기가 아니라 **증가 위치**가 계약이다. 단계를 섞으면 대시보드에서 두 수를
+    // 나란히 놓을 수 없고, 빼서 다른 뜻을 만드는 오독이 생긴다.
+
+    @Test
+    @DisplayName("계약 위반 1건이 정상 격리되면 — 판정·시도·성공이 각 1, 실패 0")
+    void 지표_정상격리() {
+        givenDlqSendSucceeds();
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
+        String outOfRange = VALID_TELEMETRY_JSON.replace("\"speed\":80.0", "\"speed\":300.0");
+
+        telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, VALID_TELEMETRY_JSON), telemetryRecord(1L, outOfRange)),
+            acknowledgment);
+
+        assertThat(count(ContractMetrics.REJECTED_ATTEMPTS,
+                "entrance", ContractMetrics.ENTRANCE_KAFKA_STORAGE,
+                "reason", TelemetryContractException.PAYLOAD_VALIDATION_FAILED))
+            .as("계약 거부 판정 횟수").isEqualTo(1.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_ATTEMPTS, "topic", "vehicle-telemetry-dlq"))
+            .as("DLQ 발행 시도 횟수").isEqualTo(1.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISHED, "topic", "vehicle-telemetry-dlq"))
+            .as("발행 성공을 확인한 횟수").isEqualTo(1.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_FAILURES, "topic", "vehicle-telemetry-dlq"))
+            .as("실패 관찰 횟수").isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("DLQ 발행이 실패하면 성공 카운터는 오르지 않는다 — 시도와 실패만 오른다")
+    void 지표_발행실패() {
+        given(kafkaTemplate.send(any(ProducerRecord.class)))
+            .willReturn(CompletableFuture.failedFuture(new IllegalStateException("브로커 거부")));
+        // toPoint는 스텁하지 않는다 — 계약 위반은 그 앞에서 걸려 호출되지 않는다.
+        String outOfRange = VALID_TELEMETRY_JSON.replace("\"speed\":80.0", "\"speed\":300.0");
+
+        assertThatThrownBy(() -> telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, outOfRange)), acknowledgment))
+            .isInstanceOf(IllegalStateException.class);
+
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_ATTEMPTS, "topic", "vehicle-telemetry-dlq"))
+            .isEqualTo(1.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISHED, "topic", "vehicle-telemetry-dlq"))
+            .as("발행에 실패했는데 성공 카운터가 올랐다").isEqualTo(0.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_FAILURES, "topic", "vehicle-telemetry-dlq"))
+            .isEqualTo(1.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_INDETERMINATE, "topic", "vehicle-telemetry-dlq"))
+            .as("확정적 실패는 '발행 여부 불명'이 아니다").isEqualTo(0.0);
+    }
+
+    @Test
+    @DisplayName("같은 Kafka 원본을 재전달하면 판정·시도 카운터가 **다시** 오른다")
+    void 지표_재전달시_다시_오른다() {
+        givenDlqSendSucceeds();
+        // toPoint는 스텁하지 않는다 — 계약 위반은 그 앞에서 걸린다.
+        String outOfRange = VALID_TELEMETRY_JSON.replace("\"speed\":80.0", "\"speed\":300.0");
+
+        // 같은 partition/offset의 같은 레코드를 두 번 — at-least-once에서 실제로 일어난다.
+        telemetryConsumer.consumeForStorage(List.of(telemetryRecord(7L, outOfRange)), acknowledgment);
+        telemetryConsumer.consumeForStorage(List.of(telemetryRecord(7L, outOfRange)), acknowledgment);
+
+        assertThat(count(ContractMetrics.REJECTED_ATTEMPTS,
+                "entrance", ContractMetrics.ENTRANCE_KAFKA_STORAGE,
+                "reason", TelemetryContractException.PAYLOAD_VALIDATION_FAILED))
+            .as("**고유 메시지 수가 아니라 판정 횟수**다 — 같은 원본이라도 다시 오른다")
+            .isEqualTo(2.0);
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_ATTEMPTS, "topic", "vehicle-telemetry-dlq"))
+            .isEqualTo(2.0);
+    }
+
+    @Test
+    @DisplayName("정상 입력과 계약 오류가 아닌 저장 장애는 거부 카운터에 잡히지 않는다")
+    void 지표_오분류_없음() {
+        // (1) 정상 입력만
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
+        telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, VALID_TELEMETRY_JSON)), acknowledgment);
+        assertThat(registry.find(ContractMetrics.REJECTED_ATTEMPTS).counter())
+            .as("정상 입력이 거부로 잡혔다").isNull();
+
+        // (2) 저장 장애 — 계약은 통과했고 InfluxDB가 실패한다.
+        doThrow(new RuntimeException("InfluxDB 장애")).when(telemetryRepository).saveAll(any());
+        assertThatThrownBy(() -> telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(1L, VALID_TELEMETRY_JSON)), acknowledgment))
+            .isInstanceOf(RuntimeException.class);
+
+        assertThat(registry.find(ContractMetrics.REJECTED_ATTEMPTS).counter())
+            .as("저장 장애는 **입력 계약 문제가 아니다** — 거부 카운터에 섞이면 "
+                + "'거부가 늘었다'의 뜻이 흐려진다").isNull();
+        assertThat(count(ContractMetrics.DLQ_PUBLISH_ATTEMPTS, "topic", "vehicle-telemetry-dlq"))
+            .as("저장 장애는 배치 재시도로 가지 DLQ 발행을 시도하지 않는다").isEqualTo(0.0);
     }
 
     @Test

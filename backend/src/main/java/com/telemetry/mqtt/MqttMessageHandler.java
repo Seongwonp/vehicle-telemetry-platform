@@ -29,6 +29,7 @@ public class MqttMessageHandler {
 
     private final TelemetryProducer telemetryProducer;
     private final TelemetryDecoder telemetryDecoder;
+    private final MeterRegistry meterRegistry;
     private final Counter receivedCounter;
     private final Counter invalidCounter;
     private final MqttInvalidMessagePublisher invalidMessagePublisher;
@@ -41,6 +42,7 @@ public class MqttMessageHandler {
     ) {
         this.telemetryProducer = telemetryProducer;
         this.telemetryDecoder = telemetryDecoder;
+        this.meterRegistry = meterRegistry;
         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
         this.invalidMessagePublisher = invalidMessagePublisher;
@@ -87,7 +89,13 @@ public class MqttMessageHandler {
     }
 
     private void reject(String topic, String payload, String reason) {
+        // 기존 지표 — MQTT 입구의 **모든** 거부를 센다. 이름·의미를 바꾸지 않는다.
         invalidCounter.increment();
+        // 사유별 지표는 **계약 사유일 때만** 올린다. `TOPIC_VEHICLE_MISMATCH`는 MQTT 고유
+        // 검사라 계약 사유가 아니다 — 섞으면 세 입구를 나란히 놓을 수 없다.
+        if (TelemetryContractException.isContractReason(reason)) {
+            com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_MQTT, reason);
+        }
         log.warn("[MQTT] 메시지 거부 — topic={} reason={} payloadLength={} payloadSha256={}",
             topic, reason, payload.length(), sha256(payload));
         invalidMessagePublisher.publish(topic, payload, reason);
