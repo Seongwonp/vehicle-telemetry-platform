@@ -1,0 +1,4 @@
+key,value
+prefix,SCHEMA145736
+entrances,MQTT + Kafka 직접
+profile,dev(평문)

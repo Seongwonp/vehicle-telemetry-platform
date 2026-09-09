@@ -1,0 +1,9 @@
+vehicle_id             exception                        reason
+SCHEMA145736-K04       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: speed must not be null
+SCHEMA145736-K05       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: speed must not be null
+SCHEMA145736-K06       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: gps.lat must not be null
+SCHEMA145736-K07       TelemetryContractException       UNKNOWN_FIELD: sped
+SCHEMA145736-K08       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: speed must be less than or equal to 255
+SCHEMA145736-K09       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: dtcCodes[0].<list element> must not be null
+SCHEMA145736-K10       TelemetryContractException       TYPE_MISMATCH: (최상위 null)
+SCHEMA145736-MIX       TelemetryContractException       PAYLOAD_VALIDATION_FAILED: speed must not be null

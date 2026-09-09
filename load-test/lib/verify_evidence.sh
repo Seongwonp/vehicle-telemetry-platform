@@ -22,6 +22,10 @@ set -uo pipefail
 cd "$(dirname "$0")/../.."
 
 TARGET="${1:-}"
+# git이 없거나 저장소가 아니면 작업 트리 검사만 한다. **검사를 못 한 것과 통과는 다르므로**
+# 아래 요약에 그 사실을 찍는다.
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then GIT_OK=1; else GIT_OK=0; fi
+EMPTY_SHA=$(printf '' | sha256sum | cut -d' ' -f1)
 FAIL=0
 CHECKED=0
 MISSING=0
@@ -54,6 +58,27 @@ verify_one() {  # $1 = evidence 디렉터리
         printf '    → 이 파일에 CR(\\r)이 있다. .gitattributes의 LF 규칙 밖일 가능성이 높다.\n'
       fi
       bad=1
+      continue
+    fi
+
+    # **여기부터가 clean checkout 검사다.** 디스크가 맞아도 커밋된 blob이 다르면
+    # 남이 clone 했을 때 manifest가 깨진다 — P0-1이 정확히 그 방식으로 깨졌고,
+    # 그때는 clean clone을 따로 떠서 잡았다. 이 스크립트는 그 부류를 못 잡고 있었다.
+    if [ "$GIT_OK" = 1 ]; then
+      blob=$(git show ":$rel" 2>/dev/null | sha256sum | cut -d' ' -f1)
+      [ -z "$blob" ] && blob=$(git show "HEAD:$rel" 2>/dev/null | sha256sum | cut -d' ' -f1)
+      # 빈 입력의 sha256 = 추적되지 않는 파일. 아직 커밋 대상이 아니므로 넘어간다.
+      if [ -n "$blob" ] && [ "$blob" != "$EMPTY_SHA" ] && [ "$blob" != "$expected" ]; then
+        printf '  [clean checkout 불일치] %s
+    manifest: %s
+    git blob: %s
+'           "$rel" "$expected" "$blob"
+        printf '    → 디스크는 맞는데 **커밋된 내용이 다르다.** clone 하면 깨진다.
+'
+        printf '    → .gitattributes의 eol 규칙과 이 파일의 줄바꿈을 맞춰라.
+'
+        bad=1
+      fi
     fi
   done < "$manifest"
 
@@ -74,6 +99,11 @@ else
 fi
 
 echo "검사한 manifest : $CHECKED"
+if [ "$GIT_OK" = 1 ]; then
+  echo "clean checkout  : 대조함 (git blob)"
+else
+  echo "clean checkout  : **미검사** — git 저장소가 아니다. 작업 트리만 봤다"
+fi
 echo "실패한 manifest : $FAIL"
 echo "없는 파일       : $MISSING"
 

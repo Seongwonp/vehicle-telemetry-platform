@@ -1,0 +1,15 @@
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M04 reason=PAYLOAD_VALIDATION_FAILED payloadLength=234 payloadSha256=42a16100203d1a1c500438ea2fcafe0792b1ec0a56c34a83d221cc945e40d440
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M05 reason=PAYLOAD_VALIDATION_FAILED payloadLength=249 payloadSha256=9bdb42cc82c1a28ffce8ff48a3adcd115caddd5664cdf03aa93c0e33f89f6616
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M06 reason=PAYLOAD_VALIDATION_FAILED payloadLength=236 payloadSha256=293b003fa1ccd534f89f5c3ef9757406f34c402a7745ebf63e4b28911e929751
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M07 reason=UNKNOWN_FIELD payloadLength=263 payloadSha256=dcf232927a8e3a725233fafdfd6911064646f51bfc94162ea7a63c38a141b142
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M08 reason=PAYLOAD_VALIDATION_FAILED payloadLength=250 payloadSha256=fad9a9717e55406cd561a0bf4a516a471bcad6fe86356276cce76d227dbce122
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M09 reason=PAYLOAD_VALIDATION_FAILED payloadLength=253 payloadSha256=edae5f81f7fd5731e559d60abddc9e50fb3d846dbdbb24919de64e4c86816e7f
+06:03:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA145736-M10 reason=TYPE_MISMATCH payloadLength=4 payloadSha256=74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null
+com.telemetry.domain.TelemetryContractException: UNKNOWN_FIELD: sped
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must be less than or equal to 255
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: dtcCodes[0].<list element> must not be null
+com.telemetry.domain.TelemetryContractException: TYPE_MISMATCH: (최상위 null)
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: gps.lat must not be null

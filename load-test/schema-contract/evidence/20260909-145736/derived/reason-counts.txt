@@ -1,0 +1,8 @@
+# kafka-dlq (사유 코드별)
+      6 PAYLOAD_VALIDATION_FAILED
+      1 TYPE_MISMATCH
+      1 UNKNOWN_FIELD
+# mqtt-dlq (사유 코드별)
+      5 PAYLOAD_VALIDATION_FAILED
+      1 TYPE_MISMATCH
+      1 UNKNOWN_FIELD

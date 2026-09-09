@@ -1,5 +1,6 @@
 package com.telemetry.contract;
 
+import com.telemetry.support.TestDecoders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.write.Point;
 import com.telemetry.config.KafkaConfig;
@@ -104,6 +105,7 @@ class KafkaStorageFailureContractTest {
             telemetryRepository,
             mock(AnomalyService.class),
             new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             kafkaTemplate,
             mock(SimpMessagingTemplate.class),
             new SimpleMeterRegistry()
@@ -147,6 +149,7 @@ class KafkaStorageFailureContractTest {
             telemetryRepository,
             mock(AnomalyService.class),
             new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             kafkaTemplate,
             mock(SimpMessagingTemplate.class),
             new SimpleMeterRegistry()
@@ -181,6 +184,7 @@ class KafkaStorageFailureContractTest {
             recoveredRepository,
             mock(AnomalyService.class),
             new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             kafkaTemplate,
             mock(SimpMessagingTemplate.class),
             new SimpleMeterRegistry()
@@ -210,6 +214,7 @@ class KafkaStorageFailureContractTest {
             telemetryRepository,
             mock(AnomalyService.class),
             new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             kafkaTemplate,
             mock(SimpMessagingTemplate.class),
             new SimpleMeterRegistry()

@@ -109,7 +109,7 @@ class TelemetryRepositoryTest {
         telemetry.setVehicleId("SIM-001");
         telemetry.setTimestamp("2026-05-09T10:00:00Z");
         telemetry.setSpeed(80.0);
-        telemetry.setRpm(2_000);
+        telemetry.setRpm(2_000.0);
         telemetry.setEngineTemp(90.0);
         telemetry.setThrottlePosition(30.0);
         telemetry.setFuelLevel(50.0);

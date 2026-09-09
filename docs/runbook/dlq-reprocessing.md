@@ -9,10 +9,10 @@ DLQ에 메시지가 쌓였을 때 무엇을 확인하고 어떻게 되돌릴지.
 
 | 토픽 | 무엇이 들어오나 | 발행 주체 |
 | --- | --- | --- |
-| `vehicle-telemetry-dlq` | 텔레메트리 저장 실패 (JSON 파싱, 타임스탬프 변환, 재시도 소진) | backend `TelemetryConsumer` |
+| `vehicle-telemetry-dlq` | 텔레메트리 저장 실패 (**입력 계약 위반**, JSON 파싱, 타임스탬프 변환, 재시도 소진) | backend `TelemetryConsumer` |
 | `vehicle-anomaly-alerts-dlq` | 이상 알림 저장 실패 | backend `TelemetryConsumer` |
 | `vehicle-telemetry-anomaly-dlq` | 이상 감지 처리 실패 | Python `anomaly_detector.py` |
-| `vehicle-telemetry-mqtt-dlq` | MQTT 수신 단계에서 형식이 틀린 메시지 | backend `MqttInvalidMessagePublisher` |
+| `vehicle-telemetry-mqtt-dlq` | MQTT 수신 단계의 **입력 계약 위반**·타임스탬프·토픽 불일치 | backend `MqttInvalidMessagePublisher` |
 
 `vehicle-telemetry-dlq`에는 **성질이 다른 두 경로**가 섞여 들어온다.
 
@@ -61,6 +61,82 @@ docker run --rm --network vehicle-telemetry-platform_telemetry-net \
 
 **코드를 고쳐서 이제 처리 가능해졌다면** 그때 비로소 `--include-permanent`로 되돌린다.
 이 플래그를 쓸 때는 왜 안전해졌는지가 설명돼야 한다.
+
+## 2-1. `TelemetryContractException` — 입력 계약 위반 (2026-09-09 추가)
+
+**지금 `vehicle-telemetry-dlq`에서 가장 흔히 볼 타입이다.** 2026-09-09 P0-2에서 두 입구
+(MQTT·Kafka 직접)가 공통 decoder(`TelemetryDecoder`)를 쓰게 하면서 생겼다. 그 전까지
+Kafka 직접 주입에는 검증이 아예 없어서, **지금 DLQ로 오는 것 중 상당수는 예전에는 조용히
+저장되던 것**이다. DLQ가 늘었다고 해서 새 장애가 난 것이 아닐 수 있다 — 안 보이던 것이
+보이기 시작한 것이다.
+
+**분류는 항상 `permanent`다.** payload가 그대로인 한 몇 번을 되돌려도 같은 자리에서 실패한다.
+`dlq-tools/dlq.py`의 `PERMANENT_MARKERS`에 들어 있고, 회귀는 `dlq-tools/test_dlq.py`가 막는다.
+
+### 사유 코드 — `x-dlq-failure-message`의 **맨 앞**에 있다
+
+형식은 `<사유 코드>: <상세>`다. 상세에는 **값이 들어가지 않는다** — 거부 사유는 로그와
+DLQ 헤더에 남고 그 보존 기간 동안 좌표·식별자가 같이 남기 때문이다
+(`docs/data-retention.md`).
+
+| 사유 코드 | 언제 | 상세에 담기는 것 | 무엇을 고치나 |
+| --- | --- | --- | --- |
+| `MALFORMED_JSON` | JSON 자체가 안 읽힌다 | 파서 메시지 | 발행 측 직렬화·인코딩·잘린 전송 |
+| `UNKNOWN_FIELD` | 계약에 없는 필드가 있다 | 그 필드명 | 오타(`sped`)거나 **발행 측이 우리보다 새 스펙**이다 |
+| `TYPE_MISMATCH` | 타입이 안 맞는다 | 필드 경로 | 발행 측 타입. 최상위가 `null`이면 `(최상위 null)` |
+| `PAYLOAD_VALIDATION_FAILED` | 형식은 맞고 **값이 계약 밖**이다 | `필드 사유` 목록 | 누락·범위 초과·DTC 형식 |
+
+**`UNKNOWN_FIELD`는 발행 측 잘못이 아닐 수 있는 유일한 칸이다.** 동글이나 시뮬레이터에
+필드가 추가됐는데 우리 스키마가 안 따라간 경우, 고칠 곳은 발행 측이 아니라
+`VehicleTelemetry`와 `docs/telemetry-schema-decision-table.md`다.
+
+### 사유 코드별로 세어보기
+
+`inspect`는 타입까지만 가른다. 어느 사유가 몇 건인지는 헤더를 직접 센다.
+
+```bash
+docker exec telemetry-kafka kafka-console-consumer   --bootstrap-server localhost:29092 --topic vehicle-telemetry-dlq   --from-beginning --timeout-ms 15000   --property print.headers=true --property print.value=false 2>/dev/null   | grep -o 'x-dlq-failure-message:[A-Z_]*' | sort | uniq -c | sort -rn
+```
+
+MQTT 쪽은 헤더가 아니라 **envelope JSON**이라 읽는 법이 다르다. 그리고 **사유 코드만 있고
+상세가 없다** — 어느 필드가 문제인지는 `payload`를 직접 봐야 한다(2026-09-09 E2E에서 확인).
+
+```bash
+docker exec telemetry-kafka kafka-console-consumer   --bootstrap-server localhost:29092 --topic vehicle-telemetry-mqtt-dlq   --from-beginning --timeout-ms 15000 2>/dev/null   | python -c 'import sys,json,collections; c=collections.Counter(json.loads(l)["reason"] for l in sys.stdin if l.strip()); print(c)'
+```
+
+### 고치고 되돌리는 절차
+
+**재주입만으로는 다시 실패한다.** 계약 위반은 payload의 성질이지 환경의 상태가 아니다.
+`--include-permanent`를 먼저 쓰면 같은 레코드가 DLQ로 되돌아오고 `x-dlq-replay-count`만 는다.
+
+1. **무엇이 왜 거부됐는지 확정한다.** 위 사유 코드 집계 + `inspect --show-samples`.
+   사유가 한 가지로 몰리지 않으면 원인이 여럿이다 — 한 번에 고치려 하지 마라.
+2. **고칠 쪽을 정한다.** 발행 측(시뮬레이터·동글·부하 도구)인가, 우리 계약인가.
+   계약을 넓히는 쪽이면 `docs/telemetry-schema-decision-table.md`에 근거를 먼저 적는다 —
+   그 문서가 숫자의 단일 기준이고, 코드만 고치면 다음 사람이 근거 없이 되돌린다.
+3. **고쳤는지 코드로 확인한다.** 표본 payload를 `TelemetryContractTest`에 fixture로
+   넣고 통과하는지 본다. **DLQ를 되돌려서 확인하지 마라** — 실패하면 두 번 실패한다.
+   ```bash
+   cd backend && ./gradlew test --tests '*TelemetryContractTest' --tests '*BothEntrancesSameContractTest'
+   ```
+4. **배포한다.** 옛 이미지가 뜨면 검증이 통째로 무효다.
+   ```bash
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend
+   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d backend
+   ```
+5. **그 다음에** 되돌린다. dry-run으로 건수를 먼저 본다.
+   ```bash
+   docker run --rm --network vehicle-telemetry-platform_telemetry-net      -v "$PWD/dlq-tools:/w" -w /w vehicle-telemetry-platform-anomaly-detector      python dlq.py --topic vehicle-telemetry-dlq replay --include-permanent
+   # 건수가 맞으면 --execute 추가
+   ```
+6. **DLQ가 다시 느는지 본다.** 늘면 3번이 틀린 것이다. 즉시 멈춰라.
+
+### `vehicle-telemetry-mqtt-dlq`는 이 절차로 되돌릴 수 없다
+
+payload가 원본이 아니라 envelope(`{"mqtt_topic":…,"reason":…,"payload":…}`)이라
+재처리가 미지원이다. 고친 뒤 원본을 다시 흘려보내려면 envelope의 `payload`를 꺼내
+직접 발행해야 한다. **여전히 자동화하지 않았다**(§5).
 
 ## 3. `transient`라면 — 원인부터 복구하고 재처리
 

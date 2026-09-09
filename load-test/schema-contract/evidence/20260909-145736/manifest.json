@@ -1,0 +1,128 @@
+[
+  {
+    "entrance": "mqtt",
+    "case": "normal",
+    "vehicle_id": "SCHEMA145736-M01",
+    "expect": "stored"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "rpm_fraction",
+    "vehicle_id": "SCHEMA145736-M02",
+    "expect": "stored"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "anomaly_in_contract",
+    "vehicle_id": "SCHEMA145736-M03",
+    "expect": "stored"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "missing_number",
+    "vehicle_id": "SCHEMA145736-M04",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "null_number",
+    "vehicle_id": "SCHEMA145736-M05",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "missing_gps_lat",
+    "vehicle_id": "SCHEMA145736-M06",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "unknown_field",
+    "vehicle_id": "SCHEMA145736-M07",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "out_of_range",
+    "vehicle_id": "SCHEMA145736-M08",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "dtc_null_element",
+    "vehicle_id": "SCHEMA145736-M09",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "mqtt",
+    "case": "null_literal",
+    "vehicle_id": "SCHEMA145736-M10",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "normal",
+    "vehicle_id": "SCHEMA145736-K01",
+    "expect": "stored"
+  },
+  {
+    "entrance": "kafka",
+    "case": "rpm_fraction",
+    "vehicle_id": "SCHEMA145736-K02",
+    "expect": "stored"
+  },
+  {
+    "entrance": "kafka",
+    "case": "anomaly_in_contract",
+    "vehicle_id": "SCHEMA145736-K03",
+    "expect": "stored"
+  },
+  {
+    "entrance": "kafka",
+    "case": "missing_number",
+    "vehicle_id": "SCHEMA145736-K04",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "null_number",
+    "vehicle_id": "SCHEMA145736-K05",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "missing_gps_lat",
+    "vehicle_id": "SCHEMA145736-K06",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "unknown_field",
+    "vehicle_id": "SCHEMA145736-K07",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "out_of_range",
+    "vehicle_id": "SCHEMA145736-K08",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "dtc_null_element",
+    "vehicle_id": "SCHEMA145736-K09",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "null_literal",
+    "vehicle_id": "SCHEMA145736-K10",
+    "expect": "rejected"
+  },
+  {
+    "entrance": "kafka",
+    "case": "mixed_batch",
+    "vehicle_id": "SCHEMA145736-MIX",
+    "expect": "2_of_3_stored"
+  }
+]

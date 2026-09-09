@@ -3,6 +3,7 @@ package com.telemetry.kafka;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.write.Point;
+import com.telemetry.domain.TelemetryDecoder;
 import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.dto.response.AnomalyResponse;
 import com.telemetry.dto.response.TelemetryResponse;
@@ -40,6 +41,7 @@ public class TelemetryConsumer {
     private final TelemetryRepository telemetryRepository;
     private final AnomalyService anomalyService;
     private final ObjectMapper objectMapper;
+    private final TelemetryDecoder telemetryDecoder;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final SimpMessagingTemplate messagingTemplate;
     private final MeterRegistry meterRegistry;
@@ -70,7 +72,12 @@ public class TelemetryConsumer {
 
         for (ConsumerRecord<String, String> record : records) {
             try {
-                VehicleTelemetry telemetry = objectMapper.readValue(record.value(), VehicleTelemetry.class);
+                // **MQTT 입구와 같은 decoder를 쓴다.** 예전에는 여기서 readValue만 해서
+                // Bean Validation을 통째로 우회했다 — 부하 도구와 다른 producer가 그 경로다.
+                // 검증 실패도 역직렬화 실패와 **같은 레코드별 catch**로 처리한다.
+                // 배치 전체를 먼저 검증하는 구조로 바꾸면 안 된다 — 그러면 아직 저장하지
+                // 않은 앞쪽 정상 레코드까지 처리 완료로 간주될 수 있다.
+                VehicleTelemetry telemetry = telemetryDecoder.decode(record.value());
                 // 포인트 변환(타임스탬프 파싱 포함)까지 레코드별로 처리한다 — 여기서 실패하는 건
                 // 메시지 자체가 영구적으로 처리 불가능한 경우라, 배치 전체를 실패시키지 않고
                 // 그 한 건만 DLQ로 격리해야 정상 메시지가 재시도에 휘말리지 않는다.
@@ -195,7 +202,7 @@ public class TelemetryConsumer {
             .vehicleId(t.getVehicleId())
             .timestamp(t.getTimestamp())
             .speed(t.getSpeed())
-            .rpm((double) t.getRpm())
+            .rpm(t.getRpm())
             .engineTemp(t.getEngineTemp())
             .throttlePosition(t.getThrottlePosition())
             .fuelLevel(t.getFuelLevel())

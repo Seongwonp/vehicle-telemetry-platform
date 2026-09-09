@@ -25,7 +25,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 | 순서 | 작업 | 이유 | 완료 조건 |
 | ---: | --- | --- | --- |
 | 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | **Windows clean clone 39/39, Linux CI 39/39 통과** — 둘 다 확인됨 |
-| 2 | strict telemetry schema — **1단계(결정표·fixture) 완료** | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
+| 2 | ~~strict telemetry schema~~ **완료(2026-09-09)** — E2E까지 | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | **MQTT·Kafka 저장 입구의 공통 계약 + dev 프로파일 E2E 1회(21/21)**. 단위 173 + Python 14. mTLS·부하·감지 경로는 **완료 아님** — P0-2a·P0-2b |
 | 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
 | 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
 | 5 | Flutter 실기기 E2E | CI는 format/analyze/widget test만 검증한다 | 실제 기기에서 로그인·재연결·stale·중복·로그아웃 통과 |
@@ -520,6 +520,52 @@ payload의 `dtc_codes` 배열로 들어온다), 참조하는 대시보드·알�
 2회차에서 배운 것: **불변식(유실 0, 리밸런싱 0)과 시점(첫 DLQ 220/222초)은 재현되고,
 in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니라 **어느 값이 성질이고
 어느 값이 그날의 사정인지**를 가르는 데 쓴다.
+
+### P0-2a. 이상 감지 경로는 입력 계약을 안 거친다 — **미착수(2026-09-09 등록)**
+
+**무엇이 열려 있나.** `anomaly-detector`(Python)는 `vehicle-telemetry`를 **자기 Consumer
+Group으로 직접** 읽고 자체 파싱한다. 저장 경로에 넣은 `TelemetryDecoder`를 안 탄다.
+그래서 Kafka에 직접 넣은 계약 위반 메시지는 **저장은 거부되는데 감지기에는 그대로 도달**한다.
+2026-09-09 E2E에서 저장 0행인 시나리오들이 감지기 쪽에서 어떻게 처리됐는지는 **안 봤다.**
+
+**왜 지금 안 고치나.** 무엇이 깨지는지 아직 모른다. `rules.py`가 누락 필드에 어떻게
+반응하는지(예외인지, `KeyError`로 DLQ인지, 기본값으로 조용히 통과인지)를 **재기 전에는**
+고칠 대상이 정해지지 않는다. 먼저 측정한다.
+
+**접근 — Java 계약을 Python으로 베끼지 않는다.** 두 벌을 손으로 맞추면 갈라지고,
+갈라진 것은 측정에서 안 드러난다(YAML 앵커를 도입한 이유와 같다). 대신
+**언어 중립 fixture 파일 하나**(payload + 기대 판정)를 두고 Java 테스트와 Python 테스트가
+**같은 파일을 읽어** 판정이 일치하는지 본다. 어느 쪽이 달라지면 그 테스트가 깨진다.
+
+**완료 조건**: (1) 계약 위반 payload가 감지기에서 어떻게 처리되는지 실측표,
+(2) 공유 fixture로 두 구현의 판정이 일치한다는 테스트, (3) 불일치를 남길 거라면 그 근거.
+
+**하지 않을 것**: 감지기를 저장 경로 뒤로 옮기는 구조 변경. 지금 병렬인 것은 의도이고
+(저장 장애가 감지를 막지 않는다), 계약 일치와는 별개 문제다.
+
+### P0-2b. 거부 사유별 관측성 — **미착수(2026-09-09 등록)**
+
+**무엇이 없나.** 사유가 4종(`MALFORMED_JSON` / `UNKNOWN_FIELD` / `TYPE_MISMATCH` /
+`PAYLOAD_VALIDATION_FAILED`)으로 갈렸는데 지표는 못 따라갔다. MQTT는
+`telemetry.mqtt.messages.invalid` 하나로 뭉뚱그리고, Kafka 쪽은 DLQ 카운터에 묻힌다.
+**"거부가 늘었다"는 보이는데 "무엇이 왜"는 DLQ를 직접 열어야 안다** —
+2026-09-09 Runbook §2-1에 그 수동 절차를 적어둔 것이 지금 상태다.
+
+이게 중요한 이유: `UNKNOWN_FIELD`가 갑자기 느는 것은 **발행 측 스펙이 우리보다 앞서갔다**는
+신호이고, `PAYLOAD_VALIDATION_FAILED`가 느는 것과 대응이 정반대다. 한 카운터로는 못 가른다.
+
+**접근**: `telemetry.contract.rejected{entrance, reason}` — 태그는 **입구(2종) ×
+사유 코드(4종) = 8 시계열**로 제한한다.
+
+**라벨에 넣지 않는다 — 차량 ID, 원본 payload, 예외 메시지, 필드 경로.**
+차량 ID는 카디널리티가 차량 수만큼 폭발하고(그래서 InfluxDB에서만 태그로 쓴다),
+**payload와 예외 메시지에는 좌표·식별자가 섞인다.** Prometheus 라벨은 보존 기간 내내
+남으므로 `docs/data-retention.md`의 보존 정책 밖으로 개인정보가 새는 경로가 된다.
+`TelemetryDecoder.describe()`가 값을 빼고 필드명만 남기는 것과 같은 이유다.
+**필드별로 보고 싶으면 지표가 아니라 DLQ를 봐야 한다** — 그게 Runbook §2-1이다.
+
+**완료 조건**: 지표 + Grafana 패널 + 사유가 몰릴 때의 알림 임계, 그리고
+**라벨에 개인정보가 없다는 것을 확인한 테스트**.
 
 ## P2 — P0/P1 이후 필요성이 확인되면 수행
 

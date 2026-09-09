@@ -1,5 +1,6 @@
 package com.telemetry.mqtt;
 
+import com.telemetry.support.TestDecoders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.kafka.TelemetryProducer;
@@ -31,18 +32,32 @@ class MqttMessageHandlerTest {
         meterRegistry = new SimpleMeterRegistry();
         handler = new MqttMessageHandler(
             telemetryProducer,
-            new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             meterRegistry,
-            Validation.buildDefaultValidatorFactory().getValidator(),
             invalidMessagePublisher
         );
     }
 
+    /**
+     * 계약을 충족하는 payload. 차량 ID만 바꿔 쓴다.
+     *
+     * <p>예전 fixture는 {@code vehicle_id}·{@code timestamp}만 담고 나머지를 비워뒀다.
+     * primitive가 0으로 채워지고 검증도 통과하던 시절에나 성립하던 stub이고,
+     * <b>그 동작이 P0-2에서 제거 대상이었다.</b> 실제 producer(시뮬레이터·부하 도구·
+     * e2e 추적)는 전부 온전한 payload를 보낸다 — 확인하고 바꿨다.
+     */
+    private static String payloadFor(String vehicleId) {
+        return """
+            {"vehicle_id":"%s","timestamp":"2026-08-04T00:00:00Z",
+             "speed":10.0,"rpm":900,"engine_temp":85.0,"throttle_position":12.0,
+             "fuel_level":55.0,"battery_voltage":13.8,
+             "gps":{"lat":37.5,"lng":127.0},"dtc_codes":[]}
+            """.formatted(vehicleId);
+    }
+
     @Test
     void validPayloadIsForwardedAndCounted() {
-        handler.handle(MessageBuilder.withPayload("""
-                {"vehicle_id":"KR-GA-1234","timestamp":"2026-08-04T00:00:00Z","speed":10.0}
-                """)
+        handler.handle(MessageBuilder.withPayload(payloadFor("KR-GA-1234"))
             .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-1234")
             .build());
 
@@ -71,8 +86,7 @@ class MqttMessageHandlerTest {
         doThrow(new IllegalStateException("spool failed"))
             .when(telemetryProducer).send(any(VehicleTelemetry.class));
 
-        var message = MessageBuilder.withPayload(
-                "{\"vehicle_id\":\"KR-GA-1234\",\"timestamp\":\"2026-08-04T00:00:00Z\"}")
+        var message = MessageBuilder.withPayload(payloadFor("KR-GA-1234"))
             .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-1234")
             .build();
 
@@ -84,7 +98,7 @@ class MqttMessageHandlerTest {
 
     @Test
     void topicVehicleMismatchIsSentToDedicatedDlq() {
-        String payload = "{\"vehicle_id\":\"KR-GA-9999\",\"timestamp\":\"2026-08-04T00:00:00Z\"}";
+        String payload = payloadFor("KR-GA-9999");
 
         handler.handle(MessageBuilder.withPayload(payload)
             .setHeader("mqtt_receivedTopic", "vehicle/telemetry/KR-GA-1234")

@@ -1,5 +1,6 @@
 package com.telemetry.contract;
 
+import com.telemetry.support.TestDecoders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.influxdb.TelemetryRepository;
 import com.telemetry.kafka.TelemetryConsumer;
@@ -54,6 +55,7 @@ class KafkaDlqContractTest {
         KafkaTemplate<String, String> kafkaTemplate = new KafkaTemplate<>(producerFactory);
         TelemetryConsumer listener = new TelemetryConsumer(
             mock(TelemetryRepository.class), mock(AnomalyService.class), new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
             kafkaTemplate, mock(SimpMessagingTemplate.class), new SimpleMeterRegistry());
         Acknowledgment acknowledgment = mock(Acknowledgment.class);
 

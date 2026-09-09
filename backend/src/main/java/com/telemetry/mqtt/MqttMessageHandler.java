@@ -1,13 +1,11 @@
 package com.telemetry.mqtt;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.telemetry.domain.TelemetryContractException;
+import com.telemetry.domain.TelemetryDecoder;
 import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.kafka.TelemetryProducer;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
@@ -19,7 +17,6 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,24 +28,21 @@ public class MqttMessageHandler {
         "^vehicle/telemetry/([A-Z0-9-]{4,20})$");
 
     private final TelemetryProducer telemetryProducer;
-    private final ObjectMapper objectMapper;
+    private final TelemetryDecoder telemetryDecoder;
     private final Counter receivedCounter;
     private final Counter invalidCounter;
-    private final Validator validator;
     private final MqttInvalidMessagePublisher invalidMessagePublisher;
 
     public MqttMessageHandler(
         TelemetryProducer telemetryProducer,
-        ObjectMapper objectMapper,
+        TelemetryDecoder telemetryDecoder,
         MeterRegistry meterRegistry,
-        Validator validator,
         MqttInvalidMessagePublisher invalidMessagePublisher
     ) {
         this.telemetryProducer = telemetryProducer;
-        this.objectMapper = objectMapper;
+        this.telemetryDecoder = telemetryDecoder;
         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
-        this.validator = validator;
         this.invalidMessagePublisher = invalidMessagePublisher;
     }
 
@@ -60,20 +54,18 @@ public class MqttMessageHandler {
         String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
         receivedCounter.increment();
 
+        // **두 입구가 같은 decoder를 쓴다.** 예전에는 여기서만 역직렬화 + Bean Validation을
+        // 했고 Kafka 직접 주입은 검증이 없었다 — 같은 payload가 입구에 따라 통과하기도
+        // 거부되기도 했다(2026-09-09 감사).
         VehicleTelemetry telemetry;
         try {
-            telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
-        } catch (JsonProcessingException e) {
-            reject(topic, payload, "MALFORMED_JSON");
+            telemetry = telemetryDecoder.decode(payload);
+        } catch (TelemetryContractException e) {
+            reject(topic, payload, e.getReason());
             return;
         }
 
-        Set<ConstraintViolation<VehicleTelemetry>> violations = validator.validate(telemetry);
         Matcher topicMatcher = topic == null ? null : TELEMETRY_TOPIC.matcher(topic);
-        if (!violations.isEmpty()) {
-            reject(topic, payload, "PAYLOAD_VALIDATION_FAILED");
-            return;
-        }
         if (!validTimestamp(telemetry.getTimestamp())) {
             reject(topic, payload, "INVALID_TIMESTAMP");
             return;

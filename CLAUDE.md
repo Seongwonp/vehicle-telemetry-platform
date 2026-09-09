@@ -73,7 +73,7 @@ git blob 해시가 manifest와 일치하므로 **증거는 처음부터 옳았�
 
 **남은 것**: macOS 미확인. (Windows clean clone과 Linux CI 모두 39/39 통과 확인됨.)
 
-### 2. P0 — strict telemetry schema — **1단계(결정표·fixture) 완료(2026-09-09)**
+### 2. ~~P0 — strict telemetry schema~~ — **완료(2026-09-09), E2E까지. 남은 갈래는 백로그**
 
 감사가 "구현 전에 decision table과 실패 fixture부터"라고 한 그 단계를 끝냈다.
 **표는 코드를 읽고 쓴 것이 아니라 fixture 15건으로 잰 것이다** —
@@ -95,13 +95,76 @@ git blob 해시가 manifest와 일치하므로 **증거는 처음부터 옳았�
 **어제 내가 `rpm: 2000.7`과 `dtc [null]`을 "눈에 띄니 안 고친다"로 닫은 근거가 여기서
 무너진다** — 바로 옆 칸들은 눈에 안 띈다. `0.0`은 이상해 보이지 않는다.
 
-**남은 것(2단계, 구현)**: 순서가 중요하다.
-1. 공통 decoder/validator를 **먼저** 만들어 두 입구가 같은 코드를 쓰게 한다
-2. **그 다음** primitive → wrapper + `@NotNull`.
-   **뒤집으면 안 된다** — Kafka 경로가 검증을 안 거치는 상태에서 wrapper로 바꾸면
-   `toPoint()`에서 NPE가 난다. 지금은 primitive라 0으로 뭉개져 "안전하게 틀린" 상태다
-3. 범위 제약과 DTC 원소 `@Pattern`
-4. `FAIL_ON_UNKNOWN_PROPERTIES` 켜기 — 회귀 위험이 제일 커서 마지막
+**2단계(구현) 완료.** 순서를 지켰다 — 공통 decoder → `Double + @NotNull` → 범위·DTC → unknown 필드.
+뒤집으면 Kafka 경로가 검증을 안 거치는 상태에서 wrapper가 되어 `toPoint()`에서 NPE가 난다.
+
+| 무엇 | 어디 |
+| --- | --- |
+| 공통 decoder | `domain/TelemetryDecoder.java` — 두 입구가 같이 쓴다 |
+| 거부 사유 | `TelemetryContractException` 4종. 두 입구가 같은 코드를 쓴다 |
+| 계약 | `VehicleTelemetry` 애너테이션(숫자는 결정표가 기준) |
+| DLQ 분류 | `dlq-tools/dlq.py`에 새 예외를 `permanent`로 추가 |
+
+**전역 Boot 매퍼는 안 바꿨다.** decoder가 앱 매퍼를 `copy()`해서 telemetry에 필요한
+`FAIL_ON_UNKNOWN_PROPERTIES`만 켠다. 테스트도 `TestDecoders`로 **운영과 같은 decoder**를 쓴다.
+
+**검증**: `ValidationBehaviorProbeTest`(8) — 이 버전들의 실제 동작을 재서 설계 근거로 삼았다.
+`TelemetryContractTest`(34) — 변경 전과 같은 fixture + 적대적 입력 + 강제 변환.
+`BothEntrancesSameContractTest`(12) — **실제 핸들러 두 개**로 동일 판정 확인.
+`dlq-tools/test_dlq.py`(14) — 분류 회귀(Python).
+전체 **173건 통과, skip 0**.
+
+**완료 범위는 "MQTT·Kafka 저장 입구의 공통 계약 구현 + dev 프로파일 E2E 1회"다.**
+mTLS·부하·이상 감지 경로는 **완료에 넣지 않는다.**
+
+**파이프라인 E2E — 21/21 PASS**(`evidence/20260909-145736`, 무부하).
+시나리오 10종 × 입구 2 + 혼합 배치. `rpm 2000.7` 양쪽 보존, 106°C 양쪽 저장 +
+이상 알림 1건씩, 거부 14건이 각 DLQ로 정확히 귀속(kafka 8 = 거부 7 + 혼합 1, mqtt 7).
+**"거부됐다"로 끝내지 않고 DLQ 레코드의 키와 사유를 맞춰봤다** —
+`collect_dlq_attribution.sh`가 `derived/`에 **별도 매니페스트**로 남긴다(원본과 섞지 않는다).
+`load-test/schema-contract/RESULT_20260909_contract_e2e.md`.
+
+**offset 보호가 안 깨졌다는 근거를 테스트 이름으로 연결해뒀다**(RESULT 문서의 표) —
+DLQ 발행 실패는 `dlq전송실패_offset미커밋`, 저장 실패는 `consumeForStorage_저장실패_재시도유도`,
+실제 브로커 쪽은 `KafkaDlqContractTest`·`KafkaStorageFailureContractTest` 4종.
+
+**여기서 2회차 실행이 통째로 무효였고 그게 이 작업에서 제일 값이 나온 지점이다.**
+차량 ID를 `-KAFKA-01`로 만들었더니 21자가 되어 계약(20자)을 넘겼다. 19칸 중 15칸이
+PASS로 보였는데 **그중 6칸은 시나리오가 아니라 ID 길이 때문에 거부된 거짓 PASS**였다.
+FAIL 3칸이 없었으면 성공으로 읽었을 것이다. 원인을 확정한 건 판정표가 아니라 DLQ 헤더다.
+같은 날 아침에 적은 **"결과는 집계가 아니라 증거 파일에서 읽는다"**를 오후에 또 겪었다 —
+이번엔 집계가 아니라 **내가 만든 판정 스크립트**였다. **판정이 PASS를 돌려주는 것과
+그 PASS가 옳은 것은 다르다.**
+
+**최종 점검에서 구멍을 하나 더 찾았다.** "레코드별 try/catch니 안전하다"로 끝내지 않고
+적대적 입력을 직접 던졌더니 **`null` 네 글자**가 걸렸다. `readValue`가 예외 없이 null을
+돌려주고, 그걸 `validate()`에 넘기면 Hibernate Validator가 `IllegalArgumentException`을
+던진다 — **계약 예외가 아니다.** MQTT 입구는 그걸 안 잡아 **거부가 아니라 전파**됐고,
+Kafka 쪽은 잡히지만 `dlq.py`가 `unknown`으로 분류했다. decoder에 null 가드를 넣어 막았다.
+**입구가 둘인데 고친 자리는 한 곳** — 공통 decoder를 만든 값이 여기서 나왔다.
+
+**"strict schema"라는 표현은 쓰지 않는다.** `{"speed": "87.3"}`은 **통과하고** 87.3으로
+저장된다. Jackson 강제 변환을 **끄지 않기로 한 결정**이다(값이 바뀌지도 잃지도 않으므로).
+strict한 건 **필드 집합과 값의 범위**이지 표현 타입이 아니다. 결정표 3절에 표로 적었고
+그 표의 각 칸을 테스트로 만들었다.
+
+**설계 중 예상이 한 번 틀렸다**: `@DecimalMin/@DecimalMax`가 NaN을 **거부한다**
+(예상은 "못 잡는다"였다). 안 쟀으면 검증 계층에 불필요한 유한값 검사를 하나 더 넣을 뻔했다.
+
+**남은 것** (둘 다 `docs/roadmap.md`에 등록했다 — 이번에 구현하지 않았다):
+- **P0-2a — 이상 감지 경로는 이 계약을 안 거친다.** `anomaly-detector`는 같은 토픽을 별도
+  Consumer Group으로 읽고 자체 파싱한다. **저장 입구를 막았다고 감지 경로까지 보호된다고
+  말하면 안 된다.** 접근은 Java 계약을 Python으로 베끼는 게 아니라 **언어 중립 fixture
+  하나를 양쪽이 읽어** 판정 일치를 검사하는 쪽이다(베끼면 갈라지고 갈라진 건 안 드러난다).
+- **P0-2b — 거부 사유별 지표 없음.** 사유가 4종인데 카운터는 `messages.invalid` 하나다.
+  `{entrance, reason}` 8 시계열까지만. **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다** —
+  카디널리티도 문제지만 Prometheus 라벨은 보존 기간 내내 남아 개인정보가 샌다.
+- **DLQ Runbook은 갱신했다** — §2-1에 `TelemetryContractException` 4종 사유 코드,
+  영구 분류, 사유별 집계 명령(실제로 돌려서 확인), 고치고 되돌리는 절차를 넣었다.
+  분류 회귀는 `dlq-tools/test_dlq.py`가 막는다.
+- 기존 저장 데이터의 `speed=0`·`lat=0`은 진짜와 누락을 구분할 수 없다. 소급 정리 안 함.
+- 의존성 업그레이드는 이번 범위에 넣지 않았다. 버전이 바뀌면 참고자료 문서의 1.3~1.6을
+  다시 확인해야 한다.
 
 **범위를 확정했다(2026-09-09, 지적 반영).** 처음에 `속도 -50~500`, `온도 -60~300` 같은 값을
 "역산했다"고 썼는데 **역산이 아니라 감지 임계값 위에 여유를 얹어 고른 것**이었다.
@@ -211,7 +274,8 @@ volume을 삭제하는 `docker compose down -v`는 사용자 요청 또는 실�
 | `README.md` | 문제 → 설계 결정 → 검증 결과 → 한계의 포트폴리오 요약 |
 | `docs/current-state-audit-2026-09-09.md` | 현재 평가, 위험, 주장-증거, 8주 계획 |
 | `docs/roadmap.md` | 완료/진행/미검증 작업의 기준 상태 |
-| `docs/telemetry-schema-decision-table.md` | 입력 계약의 현재 동작(실측)과 정할 정책 |
+| `docs/telemetry-schema-decision-table.md` | **입력 계약의 단일 기준** — 변경 전 측정, 정한 범위, 변경 후 검증 |
+| `docs/references/telemetry-engineering-reference.md` | 참고 자료 → 채택한 정책 → 코드·검증 연결. 자료의 성격 구분 |
 | `docs/architecture-decisions.md` | 선택하거나 선택하지 않은 이유와 trade-off |
 | `load-test/**/RESULT_*.md` | 한 실험의 조건, 결과, 적용 범위와 한계 |
 | `load-test/**/evidence/` | 재계산 가능한 원본 |

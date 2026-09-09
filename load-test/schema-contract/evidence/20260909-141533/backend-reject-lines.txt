@@ -1,0 +1,16 @@
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-04 reason=PAYLOAD_VALIDATION_FAILED payloadLength=238 payloadSha256=ce54c5df4df2714d9baaa89b0c3776125b1ef3c2a322042df6a9109ad9f6e149
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-05 reason=PAYLOAD_VALIDATION_FAILED payloadLength=253 payloadSha256=9c06d29b72a6ca6adb19d51e15c46a1ab9db1b8a04dd5e374b04fc07d94794da
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-06 reason=PAYLOAD_VALIDATION_FAILED payloadLength=240 payloadSha256=cc79d9fd70d2b29ac497f6907f7ba13b060a0970ac63c5342f41adb3d5f8f80b
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-07 reason=UNKNOWN_FIELD payloadLength=267 payloadSha256=2c4b3e2558806dd49d81162f5322932c22e8987be11a10b6f945013ba8638abf
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-08 reason=PAYLOAD_VALIDATION_FAILED payloadLength=254 payloadSha256=c7fd41ded701589a4730d32d20d7777b51d5315d7af81e17ad737c7bf7c093bc
+05:22:23 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/SCHEMA141533-MQTT-09 reason=PAYLOAD_VALIDATION_FAILED payloadLength=257 payloadSha256=edce593c380df4742a37c4417814db7c66498d27693f79fb63948f501b85f958
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: dtcCodes[0].<list element> must not be null; vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null; vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must not be null; vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: gps.lat must not be null; vehicleId must match "^[A-Z0-9-]{4,20}$"
+com.telemetry.domain.TelemetryContractException: UNKNOWN_FIELD: sped
+com.telemetry.domain.TelemetryContractException: PAYLOAD_VALIDATION_FAILED: speed must be less than or equal to 255; vehicleId must match "^[A-Z0-9-]{4,20}$"

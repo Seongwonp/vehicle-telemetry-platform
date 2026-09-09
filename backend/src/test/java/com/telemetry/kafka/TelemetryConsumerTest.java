@@ -1,5 +1,6 @@
 package com.telemetry.kafka;
 
+import com.telemetry.support.TestDecoders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.influxdb.client.write.Point;
 import com.telemetry.domain.VehicleTelemetry;
@@ -75,7 +76,8 @@ class TelemetryConsumerTest {
     @BeforeEach
     void setUp() {
         telemetryConsumer = new TelemetryConsumer(
-            telemetryRepository, anomalyService, objectMapper, kafkaTemplate, messagingTemplate,
+            telemetryRepository, anomalyService, objectMapper, TestDecoders.telemetryDecoder(),
+            kafkaTemplate, messagingTemplate,
             new SimpleMeterRegistry());
     }
 
@@ -114,7 +116,37 @@ class TelemetryConsumerTest {
         ArgumentCaptor<List<Point>> captor = ArgumentCaptor.forClass(List.class);
         verify(telemetryRepository).saveAll(captor.capture());
         assertThat(captor.getValue()).hasSize(2);
-        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badJson, "JsonParseException");
+        // **DLQ 예외 타입이 바뀌었다.** 공통 decoder가 역직렬화 실패를 계약 위반으로
+        // 감싸므로 헤더에 TelemetryContractException이 실린다(사유 코드는 메시지 앞부분).
+        // dlq-tools의 PERMANENT_MARKERS에 이 타입을 추가했다 — 안 넣으면 `unknown`이 된다.
+        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", badJson, "TelemetryContractException");
+        verify(acknowledgment).acknowledge();
+    }
+
+    @Test
+    @DisplayName("배치 안의 계약 위반(범위 초과) 1건만 DLQ로 가고 나머지는 정상 저장된다")
+    void consumeForStorage_혼합배치_계약위반건만_DLQ이동() {
+        givenDlqSendSucceeds();
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
+        // 형식은 멀쩡한 JSON이고 **검증에서만** 걸린다. 깨진 JSON과 경로가 다르다 —
+        // 깨진 JSON은 readValue가 던지고, 이건 validator가 던진다.
+        // P0-2 전에는 이 레코드가 **거부가 아니라 저장**됐다(Kafka 입구에 검증이 없었다).
+        // 그래서 이 케이스가 "배치 격리가 새 실패 경로에도 성립하는가"를 묻는 유일한 곳이다.
+        String outOfRange = VALID_TELEMETRY_JSON.replace("\"speed\":80.0", "\"speed\":300.0");
+
+        telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, VALID_TELEMETRY_JSON),
+                    telemetryRecord(1L, outOfRange),
+                    telemetryRecord(2L, VALID_TELEMETRY_JSON)),
+            acknowledgment);
+
+        ArgumentCaptor<List<Point>> captor = ArgumentCaptor.forClass(List.class);
+        verify(telemetryRepository).saveAll(captor.capture());
+        assertThat(captor.getValue())
+            .as("계약 위반 1건을 뺀 2건이 같은 배치로 저장돼야 한다")
+            .hasSize(2);
+        assertDlqRecord("vehicle-telemetry-dlq", "SIM-001", outOfRange, "TelemetryContractException");
+        // 위반 1건이 있어도 offset은 커밋된다 — 재시도해도 같은 결과라 영구 실패다.
         verify(acknowledgment).acknowledge();
     }
 

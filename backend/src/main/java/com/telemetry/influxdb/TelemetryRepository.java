@@ -96,7 +96,7 @@ public class TelemetryRepository {
             // (Jackson ACCEPT_FLOAT_AS_INT 기본 활성). DLQ·에러·카운터 전부 0이다.
             // 손실이 1 rpm 미만이고 이상 감지는 원본 JSON을 보므로 고치지 않기로 했다.
             // **주의**: 저장 데이터로 룰을 다시 돌리면 6000.9가 6000이라 안 걸린다.
-            .addField("rpm", (double) telemetry.getRpm())
+            .addField("rpm", finite("rpm", telemetry.getRpm()))
             .addField("engine_temp", finite("engine_temp", telemetry.getEngineTemp()))
             .addField("throttle_position", finite("throttle_position", telemetry.getThrottlePosition()))
             .addField("fuel_level", finite("fuel_level", telemetry.getFuelLevel()))

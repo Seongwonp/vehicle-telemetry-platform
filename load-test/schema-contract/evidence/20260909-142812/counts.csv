@@ -1,0 +1,11 @@
+key,value
+dlq_kafka_before,0
+dlq_mqtt_before,0
+rpm_preserved_M,2000.7
+rpm_preserved_K,2000.7
+anomaly_alerts_M,1
+anomaly_alerts_K,1
+dlq_kafka_delta,7
+dlq_mqtt_delta,6
+e2e_pass,19
+e2e_fail,0

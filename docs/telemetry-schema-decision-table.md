@@ -10,6 +10,9 @@
 **표의 "현재" 열은 코드를 읽고 쓴 것이 아니라 fixture로 잰 것이다.** 이 프로젝트에서
 코드를 읽고 쓴 표가 여러 번 빗나갔다.
 
+근거 자료와 채택 이유는 [`docs/references/telemetry-engineering-reference.md`](references/telemetry-engineering-reference.md)에
+분리했다. **범위 숫자와 정책의 단일 기준은 이 문서다** — 참고자료 문서에는 숫자를 다시 적지 않는다.
+
 ## 0. 재면서 한 번 틀렸다 — 테스트가 앱과 다른 매퍼를 쓰고 있었다
 
 처음에 fixture를 `new ObjectMapper()`로 짰다. 그건 `FAIL_ON_UNKNOWN_PROPERTIES`가
@@ -19,7 +22,7 @@
 
 지금은 `JacksonAutoConfiguration`에서 실제 빈을 꺼내 쓴다.
 
-## 1. 지금 두 입구가 다르다 — 이게 문제의 뿌리다
+## 1. 두 입구가 달랐다 — 이게 문제의 뿌리였다 (변경 전)
 
 | 입구 | 역직렬화 | Bean Validation | timestamp 검사 | topic/payload ID 대조 |
 | --- | :---: | :---: | :---: | :---: |
@@ -29,7 +32,11 @@
 Kafka에 직접 넣으면 **Bean Validation을 통째로 우회한다.** 부하 실험 도구가 실제로 그렇게
 넣고 있고(`produce_backlog.py`), 다른 producer가 붙어도 마찬가지다.
 
-## 2. 현재 동작 (측정)
+## 2. 변경 전 동작 (2026-09-09 측정, 커밋 `80c5230`)
+
+**이 절은 변경 전 증거로 보존한다.** 아래 3~5절이 변경 후 계약이다.
+실행 가능한 형태는 커밋 `80c5230`의 `TelemetryPayloadBoundaryTest`에 있고,
+같은 fixture가 지금은 `TelemetryContractTest`에서 뒤집힌 기대값으로 돌아간다.
 
 `통과` = 저장까지 간다. `거부` = 그 입구에서 막힌다.
 
@@ -120,6 +127,34 @@ OBD-II RPM은 0.25 단위라 `2000.25`가 **유효한 값**이다.
 **DTO의 `int` 하나 때문에 0.25 단위가 잘리고 있었고, 그 값을 다시 double로 넓혀 저장한다.**
 `Double`로 바꾸는 것은 확장이 아니라 **없어도 될 축소를 제거하는 것**이다.
 
+#### 숫자 문자열(`"87.3"`)은 **허용한다** — 이건 결정이지 누락이 아니다
+
+`{"speed": "87.3"}`처럼 **JSON 문자열에 담긴 숫자는 통과하고 87.3로 저장된다.**
+Jackson의 스칼라 강제 변환이 기본으로 켜져 있고, 우리는 그걸 **끄지 않기로 했다.**
+
+**그래서 이 계약을 "JSON 숫자 타입만 허용하는 strict schema"라고 부르면 틀린 말이다.**
+strict한 것은 **필드 집합**(`FAIL_ON_UNKNOWN_PROPERTIES`)과 **값의 범위**이지 표현 타입이 아니다.
+
+| 입력 | 결과 | 왜 |
+| --- | --- | --- |
+| `"speed": 87.3` | 통과 | 기준 |
+| `"speed": "87.3"` | **통과**, 87.3 | 강제 변환. **의도적으로 허용** |
+| `"speed": "300"` | **거부** `PAYLOAD_VALIDATION_FAILED` | 변환은 되고 **범위에서 걸린다** |
+| `"speed": ""` | **거부** `PAYLOAD_VALIDATION_FAILED` | 빈 문자열은 null이 되고 `@NotNull`이 잡는다 |
+| `"speed": "fast"` | **거부** `TYPE_MISMATCH` | 변환 불가 |
+| `"speed": true` / `[1]` / `{}` | **거부** `TYPE_MISMATCH` | boolean·배열·객체는 강제 변환 대상이 아니다 |
+
+**허용하는 이유**: 임베디드 발행 측이 숫자를 문자열로 싣는 것은 흔하고, 그 자체로는
+**정보가 손실되지 않는다**. 이 계약이 막으려는 것은 "조용히 값이 바뀌거나 사라지는 것"인데
+`"87.3" → 87.3`은 둘 다 아니다. 반면 범위·누락·오타는 전부 값이 바뀌거나 사라진다.
+
+**대가**: 발행 측이 타입을 잘못 싣고 있어도 이 계약은 알려주지 않는다. 그게 문제가 되면
+그때 `MapperFeature.ALLOW_COERCION_OF_SCALARS`를 끄고 계약을 좁힌다 — 그러면
+**지금 정상 동작 중인 발행 측이 깨질 수 있으므로** 먼저 실측이 필요하다.
+
+실측 근거는 `ValidationBehaviorProbeTest`(강제 변환 동작)와
+`TelemetryContractTest`(위 표의 각 칸)에 있다.
+
 #### `battery_voltage`의 측정 출처를 정한다
 
 **제어 모듈 전압(PID 42)** 으로 정의한다. 동글이 자체 측정하는 전압(python-OBD의
@@ -167,6 +202,98 @@ OBD-II RPM은 0.25 단위라 `2000.25`가 **유효한 값**이다.
 두 입구의 **거부 사유 문자열을 같게** 한다. 감사의 완료 조건("같은 payload를 같은 이유로
 거부")이 이 뜻이다.
 
+## 3-A. 변경 후 — 구현과 검증 (2026-09-09)
+
+**검증 상태**: `회귀 검증` — 계약을 자동 테스트로 고정했고 CI에서 반복 실행된다.
+단, 아래 "덮지 못한 것" 참고.
+
+### 구현
+
+| 무엇 | 어디 |
+| --- | --- |
+| 공통 decoder(두 입구가 같이 쓴다) | `backend/src/main/java/com/telemetry/domain/TelemetryDecoder.java` |
+| 거부 사유 코드 | `TelemetryContractException` — `MALFORMED_JSON` / `UNKNOWN_FIELD` / `TYPE_MISMATCH` / `PAYLOAD_VALIDATION_FAILED` |
+| 계약(타입·범위) | `VehicleTelemetry` 애너테이션 |
+| MQTT 입구 | `MqttMessageHandler` — 자체 역직렬화·검증을 decoder 호출로 교체 |
+| Kafka 저장 입구 | `TelemetryConsumer.consumeForStorage` — `readValue`를 decoder 호출로 교체 |
+| DLQ 분류 | `dlq-tools/dlq.py`에 `TelemetryContractException`을 `permanent`로 추가 |
+
+**전역 Boot 매퍼는 바꾸지 않았다.** decoder가 앱 매퍼를 `copy()`해서
+`FAIL_ON_UNKNOWN_PROPERTIES`만 켠다. REST·JWT 등 다른 경로는 영향이 없다.
+
+### 검증
+
+| 대상 | 어디 | 결과 |
+| --- | --- | --- |
+| 이 버전들의 실제 동작(설계 근거) | `ValidationBehaviorProbeTest` | 8건 |
+| 계약 fixture(변경 전과 같은 입력, 뒤집힌 기대값) + 적대적 입력 + 강제 변환 | `TelemetryContractTest` | 34건 |
+| **두 입구 동일 판정**(실제 핸들러 2개) | `BothEntrancesSameContractTest` | 12건 |
+| **배치 안의 계약 위반 격리** | `TelemetryConsumerTest` | 1건 추가 |
+| DLQ 분류 회귀(Python) | `dlq-tools/test_dlq.py` | 14건 |
+| 기존 저장 실패·재전달·DLQ 계약 회귀 | 기존 Testcontainers 계약 5종 | 통과 |
+| **파이프라인 끝까지(E2E)** | `load-test/schema-contract/run_e2e.sh` | **21/21 PASS** |
+| 전체 | `./gradlew test` | **173건, 실패 0, skip 0**(42개 클래스) |
+
+#### E2E — 두 입구로 실제 발행해서 InfluxDB·DLQ까지 봤다
+
+`evidence/20260909-145736`. dev(평문) 프로파일 **무부하**, 시나리오 10종 × 입구 2 + 혼합 배치 1.
+
+**완료 범위는 여기까지다** — MQTT·Kafka **저장 입구**의 공통 계약과 dev 프로파일 1회 E2E.
+mTLS·부하·이상 감지 경로는 완료에 포함하지 않는다.
+
+- 저장 기대 3종(정상 / `rpm:2000.7` / 온도 106°C)은 **양쪽 다 저장**됐고,
+  `rpm`은 **2000.7로 보존**(양쪽), 온도 106°C는 **이상 알림 1건씩** 생성됐다.
+- 거부 기대 **7종**(payload가 `null` 네 글자인 칸 포함)은 **양쪽 다 저장 0행**이고
+  DLQ 증가가 정확히 맞는다 (kafka-dlq 8 = 거부 7 + 혼합 배치 1, mqtt-dlq 7).
+- **`null` 리터럴이 두 입구 모두 `TYPE_MISMATCH`로 거부**된다 — 최종 점검에서 찾은
+  구멍의 수정을 실제 파이프라인에서 확인한 칸이다.
+- 혼합 배치(정상 2 + 위반 1)는 **2행 저장 + 1건 DLQ**. 배치 격리가 실제 파이프라인에서도 성립한다.
+- **"거부됐다"로 끝내지 않고 DLQ 레코드를 열어 사유를 귀속시켰다.**
+  Kafka DLQ 8건 전부 `TelemetryContractException`이고 키(차량 ID)가 시나리오와 1:1로 맞는다.
+  수집은 `collect_dlq_attribution.sh`가 하고, 결과는 `evidence/…/derived/`에
+  **별도 매니페스트**로 둔다 — 실행 시점에 봉인된 원본과 섞지 않는다(`PROVENANCE.md`).
+
+**이 확인이 필요했던 이유**: 2회차 실행은 19칸 중 15칸이 PASS로 보였는데 **전부 무효**였다.
+차량 ID를 `-KAFKA-01`로 만들어 21자가 됐고(계약 상한 20자), Kafka 쪽이 **시나리오가 아니라
+ID 길이 때문에** 거부되고 있었다. 통과한 칸까지 못 믿는 상태였다. 지금은 주입기와 판정
+스크립트 양쪽에 길이 가드가 있다.
+
+**입구별 차이 하나**: Kafka DLQ 헤더에는 사유 코드 + 상세(`speed must not be null`)가
+실리는데, MQTT DLQ envelope에는 **사유 코드만** 있다. 둘 다 귀속은 되지만 MQTT 쪽은
+어느 필드가 문제인지 payload를 봐야 안다. Runbook에 적었다.
+
+### 바뀐 계약 — 알고 있어야 할 것
+
+- **DLQ 헤더의 예외 타입이 바뀐다.** 역직렬화 실패가 `JsonParseException`이 아니라
+  `TelemetryContractException`으로 실린다(사유 코드는 메시지 앞부분).
+  `dlq-tools`에 `permanent`로 추가했다 — **안 넣으면 `unknown`으로 빠진다**
+  (2026-09-06에 같은 실수를 한 적이 있다).
+- **최소 payload가 더는 통과하지 않는다.** 숫자 6개가 전부 필수다.
+  실제 producer(시뮬레이터·`produce_backlog.py`·`trace.py`·`inject_poison.py`)는
+  전부 온전한 payload를 보내는 것을 **확인하고** 바꿨다. 깨진 것은 최소 stub 테스트뿐이다.
+
+### 최종 점검에서 메운 것과, 그래도 덮지 못한 것
+
+- **이상 감지 경로는 이 계약을 거치지 않는다.** `anomaly-detector`(Python)는 같은 토픽을
+  **별도 Consumer Group**으로 읽고 자체 파싱한다. Kafka에 직접 넣은 계약 위반 메시지는
+  저장 경로에서는 거부되지만 **이상 감지기에는 그대로 도달한다.**
+  **저장 입구를 막았다고 이상 감지 경로까지 보호된다고 말하면 안 된다.**
+- **JSON `null` 리터럴이 계약 예외 밖으로 새고 있었다 — 최종 점검에서 찾아 막았다.**
+  payload가 `null` 네 글자면 `readValue`가 예외 없이 null을 돌려주고, 그걸 그대로
+  `validate()`에 넘겨 Hibernate Validator가 `IllegalArgumentException`(HV000116)을 던졌다.
+  **`MqttMessageHandler`는 `TelemetryContractException`만 잡으므로 거부가 아니라 핸들러
+  밖으로 전파**됐고, Kafka 쪽은 잡히긴 해도 `dlq.py`가 낯선 타입이라 `unknown`으로 분류했다.
+  decoder에 null 가드를 넣어 `TYPE_MISMATCH`로 막았다.
+  **"레코드별 try/catch가 있으니 안전하다"로 끝냈으면 못 찾았다** — 적대적 입력을
+  직접 던져보는 테스트(`예외_타입_봉인`)가 찾았다.
+- **거부 사유별 지표가 없다.** 사유가 4종으로 늘었는데 카운터는 `telemetry.mqtt.messages.invalid`
+  하나뿐이고 Kafka 쪽은 DLQ 카운터에 묻힌다. 지금은 DLQ를 직접 여는 수동 절차뿐이다
+  (`docs/runbook/dlq-reprocessing.md` 2-1절).
+- **기존에 저장된 데이터는 그대로다.** `speed=0`·`lat=0` 중 진짜와 누락을 구분할 방법이 없다.
+
+위 1번과 3번은 `docs/roadmap.md`에 **P0-2a**(감지 경로 계약 불일치)와
+**P0-2b**(사유별 관측성)로 등록했다. **이번에 구현하지 않았다.**
+
 ## 4. 아직 안 정한 것
 
 - **기존 저장 데이터를 어떻게 볼 것인가.** 지금까지 저장된 `speed=0`, `lat=0` 중 진짜와
@@ -183,8 +310,14 @@ OBD-II RPM은 0.25 단위라 `2000.25`가 **유효한 값**이다.
 
 - 표의 6·7·8번 "저장되는 값"은 **미측정**이다. 역직렬화·검증까지만 쟀고, 그 뒤 저장 단계에서
   어떻게 되는지는 안 봤다(태그가 null인 Point, `Instant.parse(null)`).
-- 두 입구의 차이는 **코드로 확인**했고 Kafka 우회는 실험(`inject_poison.py`)으로도 봤지만,
-  MQTT 입구로 같은 fixture를 **실제 발행**해서 대조하지는 않았다.
+- ~~MQTT 입구로 같은 fixture를 실제 발행해서 대조하지 않았다~~ — **2026-09-09 E2E로 닫았다**
+  (3-A절). 다만 **1회 실행**이라 `docs/evidence-policy.md` 기준으로 "그 조건에서 관찰됨"이다.
+  안정성 주장은 못 한다.
+- **E2E는 dev(평문) 프로파일에서만 돌렸다.** mTLS 프로파일에서는 안 봤다.
+- **혼합 배치 3건이 정말 같은 poll 배치에 담겼는지는 밖에서 확인할 수 없다.**
+  같은 키로 연속 발행해 같은 파티션에 넣었을 뿐이다. 배치 격리 자체의 직접 증거는
+  단위 테스트(`consumeForStorage_혼합배치_계약위반건만_DLQ이동`)이고, E2E는 그것과
+  모순되지 않는다는 확인이다.
 - **범위는 확정됐지만 "제안"이 아니라 "이 프로젝트의 입력 계약"이라는 점을 분명히 한다** —
   OBD-II PID 표현 범위를 그대로 계약으로 채택한 것이고, 물리적 한계를 증명한 것이 아니다.
   더 넓은 범위가 필요해지면 근거를 남기고 계약을 바꾼다.

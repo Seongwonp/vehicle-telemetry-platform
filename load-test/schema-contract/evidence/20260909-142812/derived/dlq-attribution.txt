@@ -1,0 +1,18 @@
+# DLQ 귀속 — 거부가 '의도한 사유'로 일어났는지 확인 (prefix=SCHEMA142812)
+
+## vehicle-telemetry-dlq (Kafka 직접 입구) — 헤더
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: gps.lat must not be null
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:UNKNOWN_FIELD: sped
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: speed must not be null
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: dtcCodes[0].<list element> must not be null
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: speed must not be null
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: speed must be less than or equal to 255
+x-dlq-failure-class:com.telemetry.domain.TelemetryContractException,x-dlq-failure-message:PAYLOAD_VALIDATION_FAILED: speed must not be null
+
+## vehicle-telemetry-mqtt-dlq (MQTT 입구) — envelope
+SCHEMA142812-M04       PAYLOAD_VALIDATION_FAILED
+SCHEMA142812-M05       PAYLOAD_VALIDATION_FAILED
+SCHEMA142812-M06       PAYLOAD_VALIDATION_FAILED
+SCHEMA142812-M07       UNKNOWN_FIELD
+SCHEMA142812-M08       PAYLOAD_VALIDATION_FAILED
+SCHEMA142812-M09       PAYLOAD_VALIDATION_FAILED

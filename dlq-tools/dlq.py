@@ -69,6 +69,12 @@ PERMANENT_MARKERS = (
     "UnicodeDecodeError",
     "NumberFormatException",
     "NullPointerException",
+    # 입력 계약 위반. 2026-09-09 P0-2에서 두 입구(MQTT·Kafka)가 공통 decoder를 쓰게
+    # 하면서 생겼다. 누락 필드·범위 밖·모르는 필드·타입 오류가 전부 이 타입으로 온다.
+    # **되돌려도 payload가 그대로라 영구다.** 사유 코드는 메시지 앞부분에 있다
+    # (MALFORMED_JSON / UNKNOWN_FIELD / TYPE_MISMATCH / PAYLOAD_VALIDATION_FAILED).
+    # 이걸 안 넣으면 새 예외가 `unknown`으로 빠진다 — 2026-09-06에 같은 실수를 했다.
+    "TelemetryContractException",
     # 유한하지 않은 값(Infinity/NaN)을 toPoint()가 거부할 때 나온다. Spring이 우리
     # IllegalArgumentException을 InvalidDataAccessApiUsageException으로 번역한다.
     # 되돌려도 값은 그대로 Infinity라 영구다 — 2026-09-06 실측에서 이게 `unknown`으로

@@ -1,0 +1,11 @@
+key,value
+dlq_kafka_before,0
+dlq_mqtt_before,0
+rpm_preserved_MQTT,2000.7
+rpm_preserved_KAFKA,없음
+anomaly_alerts_MQTT,1
+anomaly_alerts_KAFKA,1
+dlq_kafka_delta,10
+dlq_mqtt_delta,6
+e2e_pass,16
+e2e_fail,3

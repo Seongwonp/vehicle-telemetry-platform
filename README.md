@@ -175,7 +175,15 @@ vehicle-telemetry-platform/
    옳았고(git blob = manifest) checkout만 망가뜨려서, evidence를 고치지 않고
    `.gitattributes` 규칙과 전수 검사 스크립트·CI 단계로 닫았다 →
    [검증 기록](docs/verification/2026-09-09-evidence-checksum.md)
-2. 누락/null/type mismatch를 포함한 strict telemetry schema와 공통 ingress 검증
+2. ~~누락/null/type mismatch를 포함한 strict telemetry schema와 공통 ingress 검증~~ —
+   **완료(2026-09-09)**. 두 입구(MQTT·Kafka)가 공통 decoder를 쓰고, 누락 필드가 0으로
+   저장되던 것과 DTC null·쉼표 충돌을 막았다. 검증 범위는 OBD-II PID 표현 범위를 채택했다 →
+   [입력 계약](docs/telemetry-schema-decision-table.md) · [근거 자료](docs/references/telemetry-engineering-reference.md).
+   **적용 범위**: MQTT·Kafka **저장 입구**의 공통 계약. 단위 173건 + E2E는 dev(평문)
+   프로파일 무부하에서 **1회 21/21**
+   ([결과](load-test/schema-contract/RESULT_20260909_contract_e2e.md)) — 1회라 안정성 주장은 아니다.
+   **숫자 문자열(`"87.3"`)은 의도적으로 허용한다** — strict한 것은 필드 집합과 값의 범위이지
+   표현 타입이 아니다. **이상 감지 경로는 별도 Consumer Group이라 이 계약을 거치지 않는다**
 3. Redis 장애 시 endpoint별 가용성/보안 정책 결정 및 장애 실험
 4. 하나의 `event_id`로 MQTT→Kafka→저장→알림을 잇는 상관관계
 5. Flutter 실제 기기 E2E
