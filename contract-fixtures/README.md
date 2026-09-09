@@ -61,3 +61,9 @@
 
 **Gradle 주의**: 이 파일은 `backend/` 밖이라 `build.gradle`에 테스트 입력으로 선언해뒀다.
 그 선언이 없으면 이 파일을 고쳐도 `:test UP-TO-DATE`로 건너뛴다 — 실제로 겪었다.
+
+**`inputs.file`이 아니라 `inputs.files`여야 한다.** `backend/Dockerfile`은 컨텍스트가
+`./backend`라 저장소 루트가 아예 없다. `inputs.file`은 `optional(true)`를 줘도
+**파일이 없으면 태스크 설정 단계에서 실패**해서 CI 이미지 빌드를 깨뜨렸다.
+그리고 그 환경에서는 `SharedFixtureContractTest`가 **skip**된다 —
+fixture가 지워진 경우(루트는 있는데 파일이 없음)와는 갈라서 처리한다.

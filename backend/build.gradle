@@ -86,8 +86,12 @@ tasks.named('test') {
     // **이 선언이 없으면 fixture를 고쳐도 Gradle이 `:test UP-TO-DATE`로 건너뛴다** —
     // 실제로 겪었다. 기대값을 틀리게 바꿔놓고 돌렸는데 BUILD SUCCESSFUL이 나왔다.
     // 검사가 안 도는 것과 통과하는 것은 다르다.
-    inputs.file(rootProject.file('../contract-fixtures/cases.json'))
+    //
+    // **`inputs.file`이 아니라 `inputs.files`인 이유**: `backend/Dockerfile`은
+    // 컨텍스트가 `./backend`라 저장소 루트가 아예 없다. `inputs.file`은 `optional(true)`를
+    // 줘도 **파일이 없으면 태스크 설정 단계에서 실패**한다 — 실제로 그래서 CI의
+    // 이미지 빌드가 깨졌다(2026-09-09). FileCollection은 없는 경로를 그냥 비워둔다.
+    inputs.files(rootProject.file('../contract-fixtures/cases.json'))
         .withPropertyName('sharedContractFixtures')
         .withPathSensitivity(PathSensitivity.RELATIVE)
-        .optional(true)
 }

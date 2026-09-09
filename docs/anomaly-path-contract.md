@@ -229,8 +229,16 @@ Python 쪽에는 **갈림의 개수 자체를 고정하는 테스트**도 넣었
 
 **만들면서 검사가 안 도는 것을 하나 잡았다.** fixture가 `backend/` 밖이라 Gradle이
 입력으로 몰랐고, 기대값을 틀리게 바꿔놓고 돌렸는데 `:test UP-TO-DATE`로
-**BUILD SUCCESSFUL**이 나왔다. `build.gradle`에 `inputs.file(...)`로 선언해 고쳤다.
-양쪽 다 일부러 틀리게 만들어 실제로 깨지는 것을 확인했다 — Java 1건, Python 2건.
+**BUILD SUCCESSFUL**이 나왔다. `build.gradle`에 선언해 고쳤고, 양쪽 다 일부러 틀리게
+만들어 실제로 깨지는 것을 확인했다 — Java 1건, Python 2건.
+
+**그 수정이 CI를 깨뜨렸다.** `backend/Dockerfile`은 컨텍스트가 `./backend`라 저장소
+루트가 없는데, `inputs.file`은 `optional(true)`를 줘도 **파일이 없으면 태스크 설정
+단계에서 실패**한다. 게다가 fixture가 없으면 `@ParameterizedTest`의 인자가 0건이 되어
+이 JUnit 버전은 그것도 오류로 본다. 셋 다 고쳤다 —
+`inputs.files`(FileCollection은 없는 경로를 비워둔다), sentinel 한 건으로 0건 방지,
+그리고 **"루트가 없어서 못 읽음"과 "지워져서 못 읽음"을 갈라서** 앞은 skip, 뒤는 실패.
+`docker compose build backend`로 실제 재현하고 고친 뒤 다시 통과하는 것까지 확인했다.
 
 ## 5. 이 조사의 한계
 

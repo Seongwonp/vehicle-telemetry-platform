@@ -58,9 +58,15 @@ class SharedFixtureContractTest {
         }
     }
 
+    /** fixture를 못 읽는 환경에서 목록이 비면 JUnit이 오류를 낸다. 그때 이 한 건만 돌고 skip된다. */
+    private static final Case NO_FIXTURE = new Case("(fixture 없음)", null, null, null);
+
     static List<Case> cases() throws Exception {
+        // **빈 목록을 돌려주면 안 된다.** 이 JUnit 버전은 인자가 0건인 @ParameterizedTest를
+        // 설정 오류로 본다(PreconditionViolationException) — backend/Dockerfile처럼 저장소
+        // 루트가 없는 빌드 컨텍스트에서 실제로 이미지 빌드를 깨뜨렸다(2026-09-09).
         if (!Files.exists(FIXTURES)) {
-            return List.of();
+            return List.of(NO_FIXTURE);
         }
         JsonNode root = new ObjectMapper().readTree(Files.readString(FIXTURES));
         List<Case> out = new ArrayList<>();
@@ -75,14 +81,30 @@ class SharedFixtureContractTest {
         return out;
     }
 
+    /**
+     * 저장소 루트가 곁에 있는가. {@code backend/Dockerfile}은 컨텍스트가 {@code ./backend}라
+     * 루트가 아예 없는 상태로 {@code gradle test}를 돌린다 — 거기서는 fixture를 못 읽는 게
+     * <b>정상</b>이다. 그 한 경우만 건너뛰고, 나머지에서는 없으면 실패시킨다.
+     */
+    private static boolean repoRootPresent() {
+        return Files.isDirectory(Path.of("..", "docs"))
+            && Files.isDirectory(Path.of("..", "load-test"));
+    }
+
     @Test
     @DisplayName("fixture 파일이 실제로 읽힌다 — 조용히 0건이 되면 안 된다")
     void fixture가_비어있지_않다() throws Exception {
+        // 파라미터 테스트는 목록이 비면 **통과처럼 보인다.** 그걸 막는 게 이 테스트다.
+        // 다만 "없어서 못 읽는 것"과 "지워져서 못 읽는 것"을 갈라야 한다.
+        Assumptions.assumeTrue(repoRootPresent(),
+            "저장소 루트가 없는 빌드 컨텍스트다(backend/Dockerfile) — 여기서는 공유 fixture를 못 읽는 게 정상이다. "
+                + "이 검사는 CI의 tests 잡과 로컬 실행이 담당한다.");
+
         assertThat(Files.exists(FIXTURES))
-            .as("공유 fixture가 없다: %s (작업 디렉터리 = %s)",
+            .as("저장소 루트는 있는데 공유 fixture가 없다: %s (작업 디렉터리 = %s). "
+                + "옮겼거나 지운 것이다 — contract-fixtures/README.md 참고",
                 FIXTURES, Path.of("").toAbsolutePath())
             .isTrue();
-        // 파라미터 테스트는 목록이 비면 **통과처럼 보인다.** 그걸 막는 게 이 테스트다.
         assertThat(cases()).hasSizeGreaterThanOrEqualTo(20);
     }
 
@@ -90,7 +112,8 @@ class SharedFixtureContractTest {
     @MethodSource("cases")
     @DisplayName("저장 경로 판정이 fixture와 같다")
     void 저장_판정(Case c) {
-        Assumptions.assumeTrue(c != null);
+        Assumptions.assumeFalse(c == NO_FIXTURE,
+            "공유 fixture를 읽을 수 없는 빌드 컨텍스트다 — fixture가 지워진 경우는 위 테스트가 잡는다");
 
         String verdict;
         String reason = null;
