@@ -24,7 +24,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 | 순서 | 작업 | 이유 | 완료 조건 |
 | ---: | --- | --- | --- |
-| 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | Windows clean clone 39/39 통과. Linux CI는 다음 푸시에서 확인 |
+| 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | **Windows clean clone 39/39, Linux CI 39/39 통과** — 둘 다 확인됨 |
 | 2 | strict telemetry schema | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
 | 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
 | 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
@@ -67,9 +67,9 @@ manifest를 다시 쓰거나 파일을 지우지 않고 **규칙으로 살렸다
 짰는데, 그 파일은 manifest 안에 있어서 **한 줄만 더해도 해시가 어긋난다.**
 `checksum_selfcheck.txt`로 분리했다.
 
-**남은 것**: Linux CI 통과는 다음 푸시에서 확인된다(Linux는 원래 이 문제가 없어
-회귀 방지용이다). macOS 미확인. `verify_evidence.sh`는 manifest에 **적힌** 파일만 보므로
+**남은 것**: macOS 미확인. `verify_evidence.sh`는 manifest에 **적힌** 파일만 보므로
 manifest에서 빠진 증거는 알려주지 않는다.
+(Linux CI 통과는 `4142262` 푸시에서 확인됐다 — 39개 검사 / 0 실패.)
 
 **기존 작업(2026-09-05)**:
 

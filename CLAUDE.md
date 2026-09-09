@@ -71,7 +71,7 @@ git blob 해시가 manifest와 일치하므로 **증거는 처음부터 옳았�
 수정 전 3 실패 / 39 → 수정 후 **0 실패 / 39**(Windows clean clone, `autocrlf=true`).
 `docs/verification/2026-09-09-evidence-checksum.md`.
 
-**남은 것**: Linux CI 통과는 다음 푸시에서 확인. macOS 미확인.
+**남은 것**: macOS 미확인. (Windows clean clone과 Linux CI 모두 39/39 통과 확인됨.)
 
 ### 2. P0 — strict telemetry schema
 

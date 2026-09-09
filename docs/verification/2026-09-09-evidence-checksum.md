@@ -95,14 +95,15 @@ rm + git checkout 후:  cc8927afbbec5f20...   ← 불일치
 | 도구 자체 — 정상 manifest | 종료 코드 **0** |
 | 도구 자체 — 파일 한 줄 변조 | 종료 코드 **1**, 기대·실제 해시 출력 |
 | `evidence_finish` 합성 실행 | 숨김 파일이 manifest에서 제외됨, `checksum_selfcheck.txt = OK` |
+| **Linux CI**(`4142262`) | **0 실패 / 39** |
 
 Linux(CI)는 `core.autocrlf`가 기본 false라 원래 이 문제가 없다. 그래서 CI 단계는
 **회귀 방지**용이다 — 앞으로 다른 이유로 증거가 어긋나면 그때 잡힌다.
 
 ## 이 문서의 한계
 
-- **Linux CI에서의 통과는 다음 푸시에서 확인된다.** 이 문서 작성 시점에는 로컬 Windows
-  clean clone 결과만 있다.
+- ~~Linux CI에서의 통과는 다음 푸시에서 확인된다~~ — **확인됐다.** `4142262` 푸시의 CI
+  `Verify preserved evidence checksums` 단계가 39개 검사 / 0 실패로 통과했다.
 - `verify_evidence.sh`는 manifest에 **적힌** 파일만 검사한다. manifest에서 빠진 증거 파일이
   있어도 알려주지 않는다(예: `*.log`는 의도적으로 제외된다).
 - 과거 실행의 `.prev_offsets`는 그대로 둔다. 증거 가치는 없지만 manifest에 들어 있어
