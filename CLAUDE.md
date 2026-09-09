@@ -73,25 +73,39 @@ git blob 해시가 manifest와 일치하므로 **증거는 처음부터 옳았�
 
 **남은 것**: macOS 미확인. (Windows clean clone과 Linux CI 모두 39/39 통과 확인됨.)
 
-### 2. P0 — strict telemetry schema
+### 2. P0 — strict telemetry schema — **1단계(결정표·fixture) 완료(2026-09-09)**
 
-현재 열린 경계:
+감사가 "구현 전에 decision table과 실패 fixture부터"라고 한 그 단계를 끝냈다.
+**표는 코드를 읽고 쓴 것이 아니라 fixture 15건으로 잰 것이다** —
+`backend/src/test/java/com/telemetry/domain/TelemetryPayloadBoundaryTest.java`.
+결정표: [`docs/telemetry-schema-decision-table.md`](docs/telemetry-schema-decision-table.md).
 
-- DTO의 숫자 필드가 primitive라 누락되면 0이 될 수 있다.
-- `rpm: 2000.7`은 2000으로 잘려 저장된다.
-- `dtc_codes: [null]`은 `"null"`로 저장된다.
-- 쉼표가 포함된 DTC 한 개와 DTC 두 개는 저장 후 구분되지 않는다.
-- MQTT ingress는 Bean Validation을 하지만 Kafka 직접 주입은 이 검증을 우회한다.
+측정하면서 **테스트가 앱과 다른 매퍼를 쓰고 있는 것**을 잡았다. `new ObjectMapper()`는
+`FAIL_ON_UNKNOWN_PROPERTIES`가 켜져 있고 Boot 자동 구성 매퍼는 꺼져 있다.
+안 잡았으면 **운영과 다른 것을 잰 표**를 정책 근거로 쓸 뻔했다.
 
-구현 전에 missing/null/wrong type/range를 포함한 decision table과 실패 fixture부터 만든다.
-그 뒤 nullable wrapper + `@NotNull`, DTC 원소 형식 검증, 공통 decoder/validator를 검토한다.
+측정된 것 중 제일 나쁜 칸:
 
-완료 조건:
+| 이상 입력 | MQTT | Kafka 직접 | 저장되는 값 |
+| --- | :---: | :---: | --- |
+| `speed` 필드 없음 / `null` | **통과** | **통과** | **0.0** ("시속 0으로 주행 중") |
+| `gps.lat` 없음 | **통과** | **통과** | **lat=0** (인도네시아 앞바다의 실재 좌표) |
+| 필드명 오타(`sped`) | **통과** | **통과** | **speed=0.0**, 오타 필드는 조용히 버려짐 |
 
-- MQTT와 Kafka 직접 입력이 같은 payload를 같은 이유로 거부
-- invalid 메시지의 DLQ 귀속이 명확함
-- 정상 payload 회귀 없음
-- 단위 테스트 + Testcontainers 계약 + MQTT→Kafka→DB E2E
+**어제 내가 `rpm: 2000.7`과 `dtc [null]`을 "눈에 띄니 안 고친다"로 닫은 근거가 여기서
+무너진다** — 바로 옆 칸들은 눈에 안 띈다. `0.0`은 이상해 보이지 않는다.
+
+**남은 것(2단계, 구현)**: 순서가 중요하다.
+1. 공통 decoder/validator를 **먼저** 만들어 두 입구가 같은 코드를 쓰게 한다
+2. **그 다음** primitive → wrapper + `@NotNull`.
+   **뒤집으면 안 된다** — Kafka 경로가 검증을 안 거치는 상태에서 wrapper로 바꾸면
+   `toPoint()`에서 NPE가 난다. 지금은 primitive라 0으로 뭉개져 "안전하게 틀린" 상태다
+3. 범위 제약과 DTC 원소 `@Pattern`
+4. `FAIL_ON_UNKNOWN_PROPERTIES` 켜기 — 회귀 위험이 제일 커서 마지막
+
+**정하지 않은 것**: 제안한 범위 값(속도 -50~500 등)은 물리적 상식과 이상 감지 임계값에서
+역산한 **제안**이지 확정이 아니다. 검증 범위는 이상 감지 임계값보다 반드시 넓어야 한다 —
+좁으면 이상 데이터가 저장되지 않아 감지가 무의미해진다.
 
 ### 3. P1 — Redis 장애 정책
 
@@ -184,6 +198,7 @@ volume을 삭제하는 `docker compose down -v`는 사용자 요청 또는 실�
 | `README.md` | 문제 → 설계 결정 → 검증 결과 → 한계의 포트폴리오 요약 |
 | `docs/current-state-audit-2026-09-09.md` | 현재 평가, 위험, 주장-증거, 8주 계획 |
 | `docs/roadmap.md` | 완료/진행/미검증 작업의 기준 상태 |
+| `docs/telemetry-schema-decision-table.md` | 입력 계약의 현재 동작(실측)과 정할 정책 |
 | `docs/architecture-decisions.md` | 선택하거나 선택하지 않은 이유와 trade-off |
 | `load-test/**/RESULT_*.md` | 한 실험의 조건, 결과, 적용 범위와 한계 |
 | `load-test/**/evidence/` | 재계산 가능한 원본 |

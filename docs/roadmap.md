@@ -25,7 +25,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 | 순서 | 작업 | 이유 | 완료 조건 |
 | ---: | --- | --- | --- |
 | 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | **Windows clean clone 39/39, Linux CI 39/39 통과** — 둘 다 확인됨 |
-| 2 | strict telemetry schema | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
+| 2 | strict telemetry schema — **1단계(결정표·fixture) 완료** | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
 | 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
 | 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
 | 5 | Flutter 실기기 E2E | CI는 format/analyze/widget test만 검증한다 | 실제 기기에서 로그인·재연결·stale·중복·로그아웃 통과 |
