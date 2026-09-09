@@ -16,9 +16,43 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 4. 처리량 하나만 보지 않고 성공률, lag, p95/p99 지연, 복구 시간과 정합성을 함께 본다.
 5. 결과가 예상과 다르면 실패를 지우지 않고 측정 도구의 한계까지 기록한다.
 
+## 2026-09-09 재감사 이후 실행 순서
+
+현재 상태의 종합 평가는 [`current-state-audit-2026-09-09.md`](current-state-audit-2026-09-09.md)에
+정리했다. 이 문서 아래쪽에는 완료 이력이 길게 남아 있으므로, **새 작업의 우선순위는 이 절을
+먼저 따른다.**
+
+| 순서 | 작업 | 이유 | 완료 조건 |
+| ---: | --- | --- | --- |
+| 1 | evidence checksum 이식성 복구 | Windows checkout에서 확장자 없는 `.prev_offsets`의 hash가 manifest와 다르다 | Windows/Linux clean checkout에서 전체 manifest 통과 |
+| 2 | strict telemetry schema | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | MQTT와 Kafka 직접 입력이 같은 계약으로 거부하고 DLQ/테스트로 증명 |
+| 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
+| 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
+| 5 | Flutter 실기기 E2E | CI는 format/analyze/widget test만 검증한다 | 실제 기기에서 로그인·재연결·stale·중복·로그아웃 통과 |
+| 6 | 핵심 A/B 반복과 성능 측정 재설계 | OFF/timeout 실험이 각 1회이고 호스트 발열이 처리량 비교를 오염했다 | 조건별 3회, 휴지·순서 섞기·온도/클럭 기록 |
+
+1~2번은 P0, 3~6번은 P1이다. multi-broker, schema version, 롤백 자동화는 이 작업들이
+끝난 뒤 필요성이 확인될 때만 P2로 수행한다. Kubernetes는 목표로 두지 않는다.
+
 ## P0 — 신뢰성 주장을 다시 검증할 수 있게 만들기
 
-### P0-1. 실험 원본 증거 보존 — **도구 완료, 과거 실행 재수집은 남음(2026-09-05)**
+### P0-1. 실험 원본 증거 보존 — **재개방: checksum 이식성 수정 필요(2026-09-09)**
+
+2026-09-09 Windows checkout에서 storage-scale evidence 세 실행의 `.prev_offsets` hash가
+manifest와 다름을 확인했다. 확장자 없는 파일이 `.gitattributes`의 LF 고정 규칙 밖에 있고
+`core.autocrlf=true`가 적용되는 것이 원인으로 추정된다. 원본 수집 도구가 있어도 clean
+checkout에서 검증하지 못하면 증거 체인이 완성된 것이 아니므로 P0를 다시 연다.
+
+대상 manifest:
+
+- `load-test/storage-scale/evidence/20260908-221713/checksums.txt`
+- `load-test/storage-scale/evidence/20260908-235532/checksums.txt`
+- `load-test/storage-scale/evidence/20260909-001140/checksums.txt`
+
+완료 조건은 Windows/Linux clean checkout 전체 manifest 통과와 새 실행의 생성 직후 자체
+검증이다. `.prev_offsets`가 scratch인지 영구 증거인지 결정한 뒤 제외 또는 LF 고정을 택한다.
+
+**기존 작업(2026-09-05)**:
 
 `load-test/lib/evidence.sh`를 만들어 네 시나리오 스크립트에 붙였다. 실행마다
 `evidence/<run-id>/`에 metadata(시각·git SHA·**작업 트리 dirty 여부**·명령·성공 기준·판정),
@@ -384,8 +418,10 @@ P0와 P1을 모두 닫은 뒤, **닫으면서 새로 생긴 미결정과 미측�
 떨어지는 것**을 발견해 `dlq.py`의 `PERMANENT_MARKERS`에 추가했다(되돌려도 값은 그대로
 Infinity라 영구다). 결과는 `load-test/poison-message/RESULT_20260906_poison.md`의 "후속" 절.
 
-**남은 것**: NaN·-Infinity는 단위 테스트로만 확인했고 파이프라인 전 구간으로는
-`1e309`만 흘렸다.
+**후속 완료(2026-09-08)**: NaN과 음의 Infinity도 파이프라인 전 구간에 주입했다.
+`-1e309`는 `finite()`에서 DLQ로 갔고, `NaN`은 그보다 앞선 Jackson 역직렬화 단계에서
+거부됐다. 대조군은 각 유형 100/100 저장됐다. 결과는
+`load-test/poison-message/RESULT_20260908_nan_neginf.md`.
 
 ### P1.5-2. 리밸런싱이 왜 안 도는지 구분 — **완료(2026-09-06)**
 
@@ -409,8 +445,11 @@ P1-3에서 재시도가 `max.poll.interval.ms`(300초)를 두 배 넘게 초과�
 
 결과: `load-test/long-outage/RESULT_20260906_influxdb_repeat.md`.
 
-**남은 것**: 정적 멤버십을 끈 대조군은 안 돌렸다(빈 값을 주면 Kafka가 설정을 거부해
-코드 변경이 필요하다). 2회이고 3회는 아니다.
+**후속 완료(2026-09-09)**: 빈 값이면 `group.instance.id` 속성을 제거하는 설정을 추가하고
+정적 멤버십 OFF 대조군을 실행했다. ON은 부하 중 스케일다운 3회에서 46/52/54초,
+OFF는 1회에서 9초였다. 다만 OFF 반복 3회와 리밸런싱 폭풍의 갇힘 상태 재현은 남아 있다.
+결과는 `load-test/storage-scale/RESULT_20260909_static_membership_control.md`와
+`RESULT_20260909_static_membership_stress.md`.
 
 ### P1.5-3. 장애 중 엔드투엔드 추적 — **완료(2026-09-06)**
 
@@ -454,6 +493,10 @@ payload의 `dtc_codes` 배열로 들어온다), 참조하는 대시보드·알�
 | E2E 추적(정상) | 1회 |
 | E2E 추적(장애 중) | 1회 |
 | 독성 메시지 | 유형당 1회(`infinity`만 수정 후 1회 추가) |
+| 부하 중 저장 인스턴스 scale-down, 정적 멤버십 ON | **3회** — 유실 0, 재할당 46/52/54초 |
+| 정적 멤버십 OFF 대조군 | **1회** — 반복 2회가 더 필요 |
+| session timeout 45초/10초 A/B | 각 **1회** — 반복과 정지 길이 경계가 남음 |
+| 정적 멤버십 ON/OFF 330초 정지 | 각 **1회** — OFF에서 재가입 12건, 폭풍은 미재현 |
 
 2회차에서 배운 것: **불변식(유실 0, 리밸런싱 0)과 시점(첫 DLQ 220/222초)은 재현되고,
 in-doubt 건수(47/23)는 흔들린다.** 반복은 "값이 같은지"가 아니라 **어느 값이 성질이고
