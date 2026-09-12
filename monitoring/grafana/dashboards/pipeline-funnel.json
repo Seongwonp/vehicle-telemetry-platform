@@ -7,7 +7,7 @@
   ],
   "timezone": "browser",
   "schemaVersion": 39,
-  "version": 4,
+  "version": 5,
   "refresh": "10s",
   "time": {
     "from": "now-30m",
@@ -293,7 +293,7 @@
       "title": "거부·격리 지표 읽는 법 — 시도 횟수이지 고유 메시지 수가 아니다",
       "options": {
         "mode": "markdown",
-        "content": "아래 패널의 수는 전부 **시도·관찰 횟수**다. **고유 실패 메시지 수가 아니다.**\n\n이 파이프라인은 at-least-once라 같은 메시지가 여러 번 판정될 수 있다 — 배치 재시도, DLQ 발행 실패 후 재시작, 리밸런싱, 강제 종료, MQTT QoS 1 재전달. 그래서 `sum(rejected_attempts)`를 \"계약 위반 메시지 N건\"으로 읽으면 틀린다.\n\n**네 단계는 서로 다른 수다. 빼서 다른 뜻을 만들지 마라** — 처리 단계도, 집계 대상도, 재시도 횟수도 다르고, 프로세스가 재시작하면 각자 0부터 다시 센다.\n\n| 단계 | 지표 |\n| --- | --- |\n| 계약 거부 **판정** | `telemetry_contract_rejected_attempts_total{entrance,reason}` |\n| DLQ 발행 **시도** | `telemetry_kafka_dlq_publish_attempts_total{topic}` |\n| 발행 **성공 확인** | `telemetry_kafka_dlq_published_total{topic}` |\n| 발행 **실패·timeout 관찰** | `telemetry_kafka_dlq_publish_failures_total{topic}` |\n| 그중 **발행 여부 불명** | `telemetry_kafka_dlq_publish_indeterminate_total{topic}` |\n\n**`indeterminate`가 0이 아니면 \"실패했다\"가 아니라 \"모른다\"다** — timeout이라 브로커가 받았는지 알 수 없다.\n\n**고유 실패 메시지 수를 세려면 지표가 아니라 DLQ를 본다.** Kafka 원본은 DLQ 헤더의 `(x-dlq-origin-topic, partition, offset)` 조합이 고유 키다. **MQTT 입구에서 거부된 메시지에는 그 식별자가 없다** — 절차와 한계는 `docs/rejection-metrics-design.md`.\n\n### 계약 거부와 DLQ 처리는 **일치해야 하는 두 수가 아니다**\n\n`rejected_attempts`는 **계약 위반만** 센다. DLQ 지표는 **DLQ로 가는 모든 것**을 센다 —\n계약 위반 외에도 포인트 변환 실패, 재시도 예산 소진(recoverer 경로), 알림 발행 실패가\n같은 DLQ로 간다. **집계 대상이 다르므로 두 수가 같아야 할 이유가 없다.**\n차이를 유실이나 미격리 건수로 읽지 마라.\n\n또 MQTT에서는 `telemetry_mqtt_messages_invalid_total`(모든 거부)과\n`rejected_attempts`(계약 사유만)가 **의도적으로 다르다** — `TOPIC_VEHICLE_MISMATCH`는\n계약 사유가 아니다.\n\n### 패널이 비어 있으면\n\n**\"No data\"는 정상이다** — 그 기간에 해당 사건이 없었다는 뜻이다.\n쿼리가 실패하면 Grafana가 패널 상단에 **빨간 오류 배지**를 띄운다. 둘을 헷갈리지 마라.\n지표 자체가 아직 한 번도 안 올랐으면 Prometheus에 시계열이 없어서 `No data`가 된다."
+        "content": "아래 패널의 수는 전부 **시도·관찰 횟수**다. **고유 실패 메시지 수가 아니다.**\n\n이 파이프라인은 at-least-once라 같은 메시지가 여러 번 판정될 수 있다 — 배치 재시도, DLQ 발행 실패 후 재시작, 리밸런싱, 강제 종료, MQTT QoS 1 재전달. 그래서 `sum(rejected_attempts)`를 \"계약 위반 메시지 N건\"으로 읽으면 틀린다.\n\n**네 단계는 서로 다른 수다. 빼서 다른 뜻을 만들지 마라** — 처리 단계도, 집계 대상도, 재시도 횟수도 다르고, 프로세스가 재시작하면 각자 0부터 다시 센다.\n\n| 단계 | 지표 |\n| --- | --- |\n| 계약 거부 **판정** | `telemetry_contract_rejected_attempts_total{entrance,reason}` |\n| DLQ 발행 **시도** | `telemetry_kafka_dlq_publish_attempts_total{topic}` |\n| 발행 **성공 확인** | `telemetry_kafka_dlq_published_total{topic}` |\n| 발행 **실패·timeout 관찰** | `telemetry_kafka_dlq_publish_failures_total{topic}` |\n| 그중 **발행 여부 불명** | `telemetry_kafka_dlq_publish_indeterminate_total{topic}` |\n\n**`indeterminate`가 0이 아니면 \"실패했다\"가 아니라 \"모른다\"다** — timeout이라 브로커가 받았는지 알 수 없다.\n\n**고유 실패 메시지 수를 세려면 지표가 아니라 DLQ를 본다.** Kafka 원본은 DLQ 헤더의 `(x-dlq-origin-topic, partition, offset)` 조합이 고유 키다. **MQTT 입구에서 거부된 메시지에는 그 식별자가 없다** — 절차와 한계는 `docs/rejection-metrics-design.md`.\n\n### 계약 거부와 DLQ 처리는 **일치해야 하는 두 수가 아니다**\n\n`rejected_attempts`는 **계약 위반만** 센다. DLQ 지표는 **DLQ로 가는 모든 것**을 센다 —\n계약 위반 외에도 포인트 변환 실패, 재시도 예산 소진(recoverer 경로), 알림 발행 실패가\n같은 DLQ로 간다. **집계 대상이 다르므로 두 수가 같아야 할 이유가 없다.**\n차이를 유실이나 미격리 건수로 읽지 마라.\n\n또 MQTT에서는 `telemetry_mqtt_messages_invalid_total`(모든 거부)과\n`rejected_attempts`(계약 사유만)가 **의도적으로 다르다** — `TOPIC_VEHICLE_MISMATCH`는\n계약 사유가 아니다.\n\n### 패널이 비어 있으면 — `No data`는 \"미발생\"의 증거가 아니다\n\n`No data`가 뜻하는 것은 **해당 조회 조건에서 시계열이나 표본이 없다**는 것뿐이다.\n그 원인은 여러 가지다.\n\n- 실제로 그 사건이 없었다\n- **수집이 끊겼다** (대상이 `up == 0`, 스크레이프 실패)\n- **시계열이 아직 안 만들어졌다** (그 라벨 조합으로 한 번도 안 올랐다)\n- **조회 구간이 안 맞는다** (`rate()` 창보다 표본이 적거나, 시간 범위 밖)\n- 인스턴스가 재기동돼 카운터가 초기화됐다\n\n**미발생인지 확인하려면 수집 상태를 같이 봐야 한다** — `up{job=...}`,\nPrometheus의 Targets 화면, 그리고 해당 지표가 한 번이라도 존재했는지.\n\n쿼리가 **실패**하면 Grafana가 패널 상단에 빨간 오류 배지를 띄운다. 그것과 `No data`는 다르지만,\n**`No data`가 곧 \"사건이 없었다\"는 뜻은 아니다.**"
       }
     },
     {
@@ -314,7 +314,7 @@
             "lineWidth": 2,
             "fillOpacity": 8
           },
-          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+          "noValue": "해당 조회 조건에서 시계열/표본 없음 — 미발생 여부는 수집 상태와 함께 확인"
         },
         "overrides": []
       },
@@ -338,7 +338,7 @@
           "refId": "A"
         }
       ],
-      "description": "입구 3종 × 사유 4종. 재전달되면 다시 오른다 — 고유 메시지 수가 아니다.\n\n**DLQ 패널의 수와 일치하지 않는다** — 여기는 계약 위반만 세고, DLQ에는 변환 실패·재시도 소진·알림 발행 실패도 함께 들어간다. 차이를 유실로 읽지 마라.\n\n비어 있으면 `No data`(정상)이고, 쿼리 오류는 패널 상단에 빨간 배지로 뜬다."
+      "description": "입구 3종 × 사유 4종. 재전달되면 다시 오른다 — 고유 메시지 수가 아니다.\n\n**DLQ 패널의 수와 일치하지 않는다** — 여기는 계약 위반만 세고, DLQ에는 변환 실패·재시도 소진·알림 발행 실패도 함께 들어간다. 차이를 유실로 읽지 마라.\n\n비어 있으면 `No data`인데, 그건 **해당 조회 조건에서 표본이 없다**는 뜻이지 미발생의 증거가 아니다 — 수집 상태(`up`)를 같이 봐라."
     },
     {
       "id": 22,
@@ -358,7 +358,7 @@
             "lineWidth": 2,
             "fillOpacity": 8
           },
-          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+          "noValue": "해당 조회 조건에서 시계열/표본 없음 — 미발생 여부는 수집 상태와 함께 확인"
         },
         "overrides": []
       },
@@ -417,7 +417,7 @@
             "lineWidth": 2,
             "fillOpacity": 8
           },
-          "noValue": "데이터 없음 (거부가 없었다는 뜻이고, 쿼리 오류가 아니다)"
+          "noValue": "해당 조회 조건에서 시계열/표본 없음 — 미발생 여부는 수집 상태와 함께 확인"
         },
         "overrides": []
       },
