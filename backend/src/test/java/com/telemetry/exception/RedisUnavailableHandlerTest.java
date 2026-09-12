@@ -23,8 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 500은 "우리 코드가 깨졌다"로 읽히는데 실제로는 <b>의존 서비스가 없는 상태</b>다.
  *
  * <p><b>이 테스트가 고정하지 않는 것</b>: 무엇을 허용하고 무엇을 막을지.
- * 지금도 거부(fail-closed)이고 여기서는 그 거부의 <b>표현</b>만 본다.
- * rate limit을 fail-open으로 바꿀지는 아직 정하지 않은 별개 결정이다.
+ * 여기서는 <b>거부의 표현</b>만 본다. 어느 경로가 거부되고 어느 경로가 통과하는지는
+ * {@code RateLimitFailOpenTest}와 {@code LoginProtectionFailClosedTest}가 고정한다.
  */
 @DisplayName("Redis 사용 불가 응답")
 class RedisUnavailableHandlerTest {

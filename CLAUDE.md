@@ -40,9 +40,9 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 - 정적 멤버십 OFF 대조군 1회에서는 재할당 9초, 정지 파티션 0개를 관찰했다.
 - 같은 조건의 저장 처리량이 크게 흔들려 `약 57K msg/s ceiling` 주장은 철회했다.
 - GitHub Actions는 Java/Testcontainers/Python/Compose smoke와 Flutter format/analyze/test를 수행한다.
-- Redis를 내리면 `/api/**`가 **2초 안에 503 `REDIS_UNAVAILABLE`**로 거부되고
-  `telemetry_redis_unavailable_total{route}`가 오른다(적용 전에는 60초 뒤 500이었다).
-  각 1회, dev 프로파일, 무부하 — `load-test/redis-outage/evidence/20260912-115730/`.
+- Redis를 내리면 경로별로 **갈린다** — 조회는 통과(fail-open, 약 2초), 진단·로그인은
+  503 `REDIS_UNAVAILABLE`, liveness는 8ms에 200. 적용 전에는 전부 60초 뒤 500이었다.
+  각 1회, dev 프로파일, 무부하 — `load-test/redis-outage/evidence/20260912-123533/`.
 
 ### 아직 말하면 안 되는 것
 
@@ -219,30 +219,36 @@ throttle/fuel `0~100`. 원칙도 "물리적으로 불가능한 값 거부"에서
 다만 **속도 여유가 25km/h뿐**이라, 주입 상한을 255 위로 올리면 그 메시지는 거부되어
 이상 감지에 도달하지 못한다.
 
-### 3. P1 — Redis 장애 정책 — **진행 중(2026-09-12). 표현은 고쳤고 정책은 미확정**
+### 3. ~~P1 — Redis 장애 정책~~ — **정책 확정·구현 완료(2026-09-12). 남은 건 측정이다**
 
-조사와 실측을 끝냈다: [`docs/redis-failure-policy.md`](docs/redis-failure-policy.md).
+[`docs/redis-failure-policy.md`](docs/redis-failure-policy.md) /
+[Runbook](docs/runbook/redis-outage.md).
+
 감사 문서가 "500이 된다"까지 적은 것과 실제가 달랐다 — **500이 아니라 60초 뒤 500**이었고
-(`application.yml`에 Redis timeout이 없어 Lettuce 기본값 60초), **로그인도 죽는다**
+(`application.yml`에 timeout이 없어 Lettuce 기본값 60초), **로그인도 죽었다**
 (인터셉터에서 제외돼 있지만 `AuthController`가 Redis 컴포넌트를 직접 부른다).
 
-**결정이 필요 없는 두 가지만 적용했다**(§7):
+**정책은 한 방향으로 묶지 않았다. 그게 이 작업의 핵심이다.**
 
-| 무엇 | 결과 |
-| --- | --- |
-| timeout 2초 명시(`application.yml`) | 60초 매달림 → **2.0초** |
-| Redis 전용 503(`GlobalExceptionHandler`) | 정체불명 500 → **503 `REDIS_UNAVAILABLE`** |
-| `telemetry.redis.unavailable{route}` | 막힌 경로가 보인다. 라벨은 **경로 템플릿** |
+| 경로 | 정책 | Redis 중지 중 |
+| --- | --- | --- |
+| 일반 조회 | **fail-open** | **200** (약 2초) + `telemetry.ratelimit.failopen{route}` |
+| 진단 | **fail-closed** | 503 `REDIS_UNAVAILABLE` (약 4초) |
+| 로그인 보호·refresh | **fail-closed** | 503 `REDIS_UNAVAILABLE` (약 2초) |
+| `/actuator/health/liveness` | 외부 의존 제외 | **200** (8ms) — 재시작 대상 아님 |
+| `/actuator/health/readiness` | Redis 포함 | 503 — 라우팅에서 제외 |
 
-**바뀐 것은 거부의 표현과 대기 시간뿐이고 누가 통과하는지는 그대로다** —
-Redis가 죽으면 여전히 모든 `/api/**`가 거부된다(fail-closed).
+**조회 fail-open과 로그인 fail-closed가 반대 방향인 것이 요점이다** — 하나로 묶으면
+조회를 살리려다 **Redis를 죽이는 것이 곧 brute force 방어를 끄는 방법**이 된다.
 
-**사용자 결정이 남은 것**: ② 일반 조회 rate limit을 fail-open으로 열까
-③ 진단 rate limit은 어느 쪽인가 ④ 로그인 보호를 fail-closed로 확정할까
-⑥ health에서 Redis를 분리 표시할까. ②와 ④가 **반대 방향인 것이 요점**이라
-"Redis 장애 시 fail-open" 하나로 묶으면 brute force 방어를 끄게 된다.
+**읽을 때 틀리기 쉬운 것**(결정표 §8-6):
+- `failopen`은 **"통과한 요청 수"가 아니다** — "일반 rate limit이 적용되지 않은 요청 수"다.
+  진단 요청은 인터셉터를 둘 타서 **두 지표에 동시에 오른다.** 정상이다.
+- **fail-open은 "빠르다"를 사지 않았다** — 통과하지만 Redis timeout까지 2초를 쓴다.
+- **복구 시간이 관측마다 달랐다**(8초/30초). **원인 미확인.**
 
-**남은 측정**: 30/90초 지속 장애, 스레드 고갈 임계, 부하 중 장애, WebSocket 실측, Runbook.
+**남은 측정**: 30/90초 지속 장애, **부하 중 장애와 스레드 고갈 임계**(fail-open 도입으로
+더 중요해졌다), fail-open 중 실제 남용 피해, 회로 차단기 필요 여부, WebSocket 실측.
 
 ### 4. P1 — 이벤트 상관관계
 

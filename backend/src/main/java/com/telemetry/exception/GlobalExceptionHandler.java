@@ -1,5 +1,6 @@
 package com.telemetry.exception;
 
+import com.telemetry.metrics.RedisMetrics;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,7 +20,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.HandlerMapping;
+
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /** Redis가 안 될 때 오르는 카운터. 라벨은 **경로 템플릿**이라 카디널리티가 유한하다. */
-    public static final String REDIS_UNAVAILABLE_METRIC = "telemetry.redis.unavailable";
+    public static final String REDIS_UNAVAILABLE_METRIC = RedisMetrics.UNAVAILABLE;
 
     private final MeterRegistry meterRegistry;
 
@@ -68,12 +69,14 @@ public class GlobalExceptionHandler {
      * 실제로는 <b>우리 코드의 버그가 아니라 의존 서비스가 없는 상태</b>이고, 그건
      * 클라이언트와 운영자가 다르게 대응해야 하는 일이다 — 503은 재시도 가능함을 뜻한다.
      *
-     * <h3>이 변경이 바꾸지 않는 것</h3>
+     * <h3>여기 오는 것과 안 오는 것</h3>
      *
-     * <b>무엇을 허용하고 무엇을 막을지는 그대로다.</b> 지금도 Redis가 없으면 요청이
-     * 거부되고(fail-closed), 이 핸들러는 <b>그 거부를 정확한 코드로 표현할 뿐</b>이다.
-     * rate limit을 fail-open으로 바꿀지는 아직 정하지 않은 별개 결정이다
-     * ({@code docs/redis-failure-policy.md} 3-2절).
+     * 이 핸들러는 <b>거부하기로 정한 경로</b>의 표현만 담당한다 — 로그인 보호,
+     * 진단 제한, refresh 토큰이다(전부 fail-closed).
+     * <b>일반 조회는 여기 오지 않는다</b> — {@code RateLimitInterceptor}가
+     * fail-open으로 통과시키고 {@code telemetry.ratelimit.failopen}을 올린다.
+     * 두 지표가 <b>같이 오르지 않는 것이 정상</b>이다
+     * ({@code docs/redis-failure-policy.md} §3-2).
      *
      * <h3>조용히 지나가지 않게 한다</h3>
      *
@@ -85,27 +88,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleRedisUnavailable(
         RuntimeException e, HttpServletRequest request
     ) {
-        String route = routeTemplate(request);
-        meterRegistry.counter(REDIS_UNAVAILABLE_METRIC, "route", route).increment();
+        String route = RedisMetrics.routeTemplate(request);
+        RedisMetrics.unavailable(meterRegistry, route);
         // 예외 메시지에 접속 정보가 섞일 수 있어 클래스 이름만 남긴다.
         log.warn("[Redis] 사용 불가 — 요청 거부 route={} cause={}",
             route, e.getClass().getSimpleName());
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(new ErrorResponse("REDIS_UNAVAILABLE",
                 "요청 제한·인증 저장소에 일시적으로 접근할 수 없습니다. 잠시 후 다시 시도해 주세요"));
-    }
-
-    /**
-     * 경로 <b>템플릿</b>을 돌려준다({@code /api/vehicles/{vehicleId}/anomalies}).
-     *
-     * <p>실제 URI를 쓰면 차량 ID가 라벨에 들어가 카디널리티가 차량 수만큼 폭발하고,
-     * Prometheus 라벨은 보존 기간 내내 남아 개인정보가 샌다
-     * ({@code docs/data-retention.md}). P0-2b에서 정한 원칙과 같다.
-     */
-    private static String routeTemplate(HttpServletRequest request) {
-        Object pattern = request == null ? null
-            : request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
-        return pattern == null ? "(unknown)" : pattern.toString();
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

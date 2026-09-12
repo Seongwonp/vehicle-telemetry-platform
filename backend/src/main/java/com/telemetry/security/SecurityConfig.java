@@ -93,7 +93,10 @@ public class SecurityConfig {
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                 // /actuator/prometheus는 Prometheus 스크레이핑용 — 별도 인증 없이 접근해야 정상 수집됨.
                 // 운영 배포 시엔 애플리케이션 레벨 인증 대신 보안그룹/리버스프록시로 내부망만 접근 허용해야 한다.
-                .requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
+                // /actuator/health/** 는 liveness·readiness 그룹까지 포함한다.
+                // show-details: never라서 세 경로 모두 status 한 줄만 나간다 —
+                // 오케스트레이터가 probe할 수 있어야 하므로 인증을 요구하지 않는다.
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/prometheus").permitAll()
                 .anyRequest().authenticated()
             )
 

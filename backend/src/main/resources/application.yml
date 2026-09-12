@@ -214,7 +214,27 @@ management:
     health:
       # /actuator/health는 익명 접근을 허용하므로(SecurityConfig) DB/Redis 연결 상태 등
       # 상세 정보를 노출하지 않는다. 상세 헬스체크는 인증된 채널(로그, 내부 대시보드)로 확인한다.
+      # 그룹도 같은 설정을 따르므로 아래 경로들도 status 한 줄만 돌려준다.
       show-details: never
+      # liveness와 readiness를 가른다 (2026-09-12 결정, docs/redis-failure-policy.md §3-2 ⑥).
+      #
+      # 전에는 Redis 하나가 DOWN이면 /actuator/health가 503이었고, 오케스트레이터는
+      # 그걸 "이 인스턴스가 고장났다"로 읽어 **재시작한다**. 그런데 재시작해도
+      # Redis는 안 살아난다 — 멀쩡한 인스턴스만 계속 죽이는 셈이다.
+      #
+      #   /actuator/health/liveness  → 프로세스가 살아 있나. **재시작 판단용**. 외부 의존 없음
+      #   /actuator/health/readiness → 트래픽을 온전히 받을 수 있나. **라우팅 제외 판단용**
+      #   /actuator/health           → 종합. 사람이 보는 용도
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState,db,redis
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
   metrics:
     tags:
       application: ${spring.application.name}

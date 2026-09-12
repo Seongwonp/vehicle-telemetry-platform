@@ -184,10 +184,10 @@ vehicle-telemetry-platform/
    ([결과](load-test/schema-contract/RESULT_20260909_contract_e2e.md)) — 1회라 안정성 주장은 아니다.
    **숫자 문자열(`"87.3"`)은 의도적으로 허용한다** — strict한 것은 필드 집합과 값의 범위이지
    표현 타입이 아니다. **이상 감지 경로는 별도 Consumer Group이라 이 계약을 거치지 않는다**
-3. Redis 장애 시 endpoint별 가용성/보안 정책 결정 및 장애 실험 —
-   **조사·실측과 표현 교정은 끝났고**(60초/500 → 2초/503 + 경로별 지표),
-   **fail-open/closed 결정과 지속 장애 실험이 남았다**
-   ([결정표](docs/redis-failure-policy.md), [Runbook](docs/runbook/redis-outage.md))
+3. ~~Redis 장애 시 endpoint별 가용성/보안 정책 결정~~ — **완료.**
+   조회 fail-open / 진단·로그인 fail-closed / health liveness·readiness 분리
+   ([결정표](docs/redis-failure-policy.md), [Runbook](docs/runbook/redis-outage.md)).
+   **지속 장애·부하 중 실험은 남았다**
 4. 하나의 `event_id`로 MQTT→Kafka→저장→알림을 잇는 상관관계
 5. Flutter 실제 기기 E2E
 
@@ -262,12 +262,12 @@ ML 고도화, 다중 사용자, multi-broker, 배포 롤백은 위 P0/P1을 닫�
 | 단계 | 동작 |
 |------|------|
 | 장애 발생 | Redis 연결 불가 (`docker stop`, dev 프로파일, 무부하, 각 1회 측정) |
-| Rate Limiting | `redisTemplate.opsForValue().increment()` 예외 → `preHandle()`에서 터진다. **`/api/**` 전체에 걸려 있다** |
-| 영향 범위 | Rate Limiting·BruteForce가 비활성화되는 게 아니라 **`/api/**` 전체가 거부**된다. **로그인도 안 된다** — 인터셉터에서는 제외돼 있지만 `AuthController`가 `LoginRateLimiter`·`BruteForceDetector`를 직접 부른다. MQTT→Kafka→InfluxDB 수집 경로는 Redis를 안 써서 계속 흐른다 |
-| 적용한 것 (2026-09-12) | **60초 뒤 500 → 2초 안에 503 `REDIS_UNAVAILABLE`.** 60초는 우리가 고른 값이 아니라 Lettuce 기본 timeout이었다. 막힌 경로는 `telemetry_redis_unavailable_total{route}`로 보인다(라벨은 **경로 템플릿**이라 차량 ID가 안 남는다) |
-| 복구 | `docker start` 후 **8초**, 자동 재연결. 재기동 불필요 |
-| 아직 안 정한 것 | **누가 통과하는지는 하나도 안 바꿨다.** 조회 rate limit을 fail-open으로 열지, 로그인 보호를 fail-closed로 확정할지는 미결정 — [결정표](docs/redis-failure-policy.md) §3-2. ②와 ④는 **반대 방향**이라 한 정책으로 묶으면 brute force 방어를 끄게 된다 |
-| 아직 안 잰 것 | 지속 장애(30/90초), 부하 중 장애, 스레드 고갈 임계, WebSocket 실측 |
+| 처음에 발견한 것 | 감사 문서는 "API가 500"까지 적었는데 실제는 **60초 뒤 500**이었다 — `application.yml`에 timeout이 없어 Lettuce 기본값 60초가 걸렸다. "기능이 안 된다"와 "서버가 느려진다"는 다른 문제다. 그리고 **로그인도 죽었다** — 인터셉터에서는 제외돼 있지만 `AuthController`가 `LoginRateLimiter`·`BruteForceDetector`를 직접 부른다 |
+| 정책 — **한 방향으로 묶지 않았다** | **조회는 fail-open**(제한만 못 걸고 데이터는 정확하다), **진단·로그인 보호·refresh는 fail-closed**. 하나로 묶으면 조회를 살리려다 **Redis를 죽이는 것이 곧 brute force 방어를 끄는 방법**이 된다 |
+| 측정 결과 | 조회 **200**(약 2초) / 진단·로그인 **503 `REDIS_UNAVAILABLE`** / `health/liveness` **200 8ms**(재시작 대상 아님) / `health/readiness` 503. 수집 경로(MQTT→Kafka→InfluxDB)는 Redis를 안 써서 계속 흐른다 |
+| 조용히 열지 않는다 | `telemetry_ratelimit_failopen_total{route}`가 **제한이 적용되지 않은 요청**을 센다. 라벨은 **경로 템플릿**이라 차량 ID가 안 남는다 |
+| 복구 | 자동 재연결, 재기동 불필요. 로그인 200까지 **8초와 30초** 두 관측 — **왜 다른지 안 쟀다** |
+| 아직 안 잰 것 | 지속 장애(30/90초), **부하 중 장애와 스레드 고갈 임계**(fail-open이 통과시키되 2초를 쓰므로 더 중요해졌다), fail-open 중 실제 남용 피해, WebSocket 실측 |
 
 ---
 

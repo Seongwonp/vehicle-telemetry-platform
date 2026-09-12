@@ -11,6 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -29,7 +32,20 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+/**
+ * <p><b>왜 지표 자동 구성을 따로 넣는가</b>: 이 슬라이스는 {@code WebMvcConfig}가 등록한
+ * 인터셉터를 함께 띄우는데, {@code RateLimitInterceptor}는 fail-open 여부를 세려고
+ * {@code MeterRegistry}를 <b>필수로</b> 받는다. 슬라이스에는 Micrometer 자동 구성이 없어
+ * 컨텍스트가 안 뜬다.
+ *
+ * <p>여기서 인터셉터 쪽을 {@code ObjectProvider}로 무르게 만들지 <b>않았다</b> —
+ * {@code GlobalExceptionHandler}와 판단이 갈린다. 예외 처리는 지표가 없어도 살아야 하지만,
+ * <b>fail-open 카운터가 없는 fail-open은 만들면 안 되는 물건</b>이다(조용히 제한이 사라진다).
+ * 그래서 운영 코드는 빈이 없으면 <b>기동 단계에서 실패하게</b> 두고, 테스트가 운영과 같은
+ * 자동 구성을 올린다. {@code docs/redis-failure-policy.md} §7.
+ */
 @WebMvcTest(VehicleController.class)
+@ImportAutoConfiguration({MetricsAutoConfiguration.class, SimpleMetricsExportAutoConfiguration.class})
 @DisplayName("VehicleController 통합 테스트")
 class VehicleControllerTest {
 
