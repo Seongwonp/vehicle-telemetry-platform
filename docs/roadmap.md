@@ -26,7 +26,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 | ---: | --- | --- | --- |
 | 1 | ~~evidence checksum 이식성 복구~~ **완료(2026-09-09)** | clean clone에서 39개 중 3개가 CRLF로 깨져 있었다 | **Windows clean clone 39/39, Linux CI 39/39 통과** — 둘 다 확인됨 |
 | 2 | ~~strict telemetry schema~~ **완료(2026-09-09)** — E2E까지 | 누락 숫자 필드, 소수 rpm, DTC null/comma가 조용히 변환될 수 있다 | **MQTT·Kafka 저장 입구의 공통 계약 + dev 프로파일 E2E 1회(21/21)**. 단위 173 + Python 14. mTLS·부하·감지 경로는 **완료 아님** — P0-2a·P0-2b |
-| 3 | Redis 장애 정책 | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 |
+| 3 | Redis 장애 정책 **진행 중(2026-09-12)** | 현재 Redis 장애가 rate limit 경로의 API 500과 refresh 중단을 만든다 | endpoint별 fail-open/fail-closed 결정과 30/90초 장애 결과 — **둘 다 남았다.** 조사·측정과 **표현 교정(60초/500 → 2초/503 + 경로별 지표)은 끝**: [`redis-failure-policy.md`](redis-failure-policy.md) §7 |
 | 4 | 이벤트 상관관계 | HTTP traceId만으로 MQTT→Kafka→저장→알림 한 건을 잇기 어렵다 | 하나의 `event_id`로 로그·Kafka·DB·WebSocket을 조회 |
 | 5 | Flutter 실기기 E2E | CI는 format/analyze/widget test만 검증한다 | 실제 기기에서 로그인·재연결·stale·중복·로그아웃 통과 |
 | 6 | 핵심 A/B 반복과 성능 측정 재설계 | OFF/timeout 실험이 각 1회이고 호스트 발열이 처리량 비교를 오염했다 | 조건별 3회, 휴지·순서 섞기·온도/클럭 기록 |

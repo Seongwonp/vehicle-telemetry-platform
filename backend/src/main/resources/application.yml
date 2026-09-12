@@ -27,6 +27,15 @@ spring:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
       password: ${REDIS_PASSWORD}
+      # **명시하지 않으면 Lettuce 기본값 60초다.** 그 값 때문에 Redis 장애가
+      # "기능 실패"가 아니라 "요청당 60초 매달림"이 됐다 — 2026-09-12 실측에서
+      # 인증 API·로그인·refresh가 전부 60초 뒤 500이었다.
+      # 정상 구간 응답은 p50 0.175ms(redis-benchmark INCR, 같은 호스트의 컨테이너).
+      # 2초는 그 약 1만 배 여유다 — 타이트하게 잡는 것이 목적이 아니라
+      # **매달림에 상한을 두는 것**이 목적이다.
+      # 근거와 측정: docs/redis-failure-policy.md
+      timeout: ${REDIS_TIMEOUT:2s}
+      connect-timeout: ${REDIS_CONNECT_TIMEOUT:2s}
 
   # ── Kafka ────────────────────────────────────────────────────
   kafka:

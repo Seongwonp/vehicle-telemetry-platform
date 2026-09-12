@@ -1,0 +1,89 @@
+# Redis 장애 정책 적용 후 재측정 (2026-09-12)
+
+## 조건
+
+dev(평문) 프로파일. backend 1, Redis를 `docker stop`으로 중지.
+기준 커밋: 21f267ca2d6edbf8c24620a969bcc8f7a08810b3 (+ 아래 미커밋 변경 3건)
+변경: application.yml에 timeout/connect-timeout 2s 명시,
+      GlobalExceptionHandler에 Redis 전용 503 핸들러 + telemetry.redis.unavailable 지표
+
+### 낡은 이미지를 재지 않았다는 근거
+
+이 측정 직전에 `docker compose build backend`가 **조용히 실패한 상태로 측정한 사고**가
+있었다(출력을 `>/dev/null 2>&1`로 가렸다). 그래서 이미지 ID를 같이 남긴다.
+
+image  : sha256:4faef3a9aeafa397b9f2b652515c61b2b2226b540d2bd08946b2754c82f4075f
+running: sha256:4faef3a9aeafa397b9f2b652515c61b2b2226b540d2bd08946b2754c82f4075f
+
+두 값이 같아야 이 표가 **이 코드**를 잰 것이다.
+
+## 측정 — 각 1회
+
+### 적용 전(20260912-111412)과 나란히
+
+| 요청 | 정상 | **적용 전** 중지 | **적용 후** 중지 |
+| --- | --- | --- | --- |
+| GET /actuator/health | 200 (33ms) | 503 / 60초 | **503 / 2.10초** |
+| GET /api/vehicles (인증) | 200 (153ms) | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| GET .../anomalies | 200 (356ms) | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| GET .../diagnosis | 404 (107ms) | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| POST /api/auth/refresh | 401 (14ms) | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| POST /api/auth/login | 200 | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| POST /api/auth/login (오답) | 401 | 500 / 60초 | **503 REDIS_UNAVAILABLE / 2.01초** |
+| GET /api/vehicles (미인증) | 403 | 403 / 5ms | **403 / 12ms** |
+
+### 지표 (중지 중 수집)
+
+telemetry_redis_unavailable_total{route="/api/vehicles"} 1.0
+telemetry_redis_unavailable_total{route="/api/vehicles/{vehicleId}/anomalies"} 1.0
+telemetry_redis_unavailable_total{route="/api/vehicles/{vehicleId}/diagnosis"} 1.0
+telemetry_redis_unavailable_total{route="/api/auth/refresh"} 1.0
+telemetry_redis_unavailable_total{route="/api/auth/login"} 2.0
+
+**라벨이 경로 템플릿이다** — `{vehicleId}`가 그대로 남아 있고 실제 차량 ID는 없다.
+시계열 수가 차량 수에 비례하지 않고, Prometheus 보존 기간 동안 차량 ID가 남지 않는다.
+
+### 복구
+
+`docker start telemetry-redis` 후 **8초** 만에 로그인 200. 적용 전과 같다.
+timeout을 2초로 줄인 것이 재연결을 늦추지 않았다.
+
+## 읽는 법 — 무엇이 바뀌고 무엇이 안 바뀌었나
+
+**바뀐 것은 두 가지뿐이다.**
+
+1. **매달림에 상한이 생겼다.** 60초 → 2.0초. 60초는 우리가 고른 값이 아니라 Lettuce
+   기본 command timeout이었다.
+2. **실패의 표현이 정확해졌다.** 정체불명의 500 → 503 + `REDIS_UNAVAILABLE`.
+   500은 "우리 코드가 깨졌다"로 읽히는데 실제로는 의존 서비스가 없는 상태다.
+
+**바뀌지 않은 것: 무엇을 허용하고 무엇을 막는가.**
+Redis가 죽으면 여전히 모든 `/api/**`가 거부된다(fail-closed). 조회 rate limit을
+fail-open으로 바꿀지는 **아직 정하지 않은 별개 결정**이다
+(`docs/redis-failure-policy.md` 3-2절 2·3번). 이 측정은 그 결정에 대해 아무것도 말하지 않는다.
+
+## 이 측정의 한계
+
+- **각 1회.** `docs/evidence-policy.md` 기준 "그 조건에서 관찰됨"이다.
+- **2.0초가 상한이라는 것은 이 표본들에서만 확인했다.** 모든 Redis 호출 경로를
+  전수로 재지 않았다.
+- **스레드 고갈은 여전히 미측정.** 다만 매달림이 60초에서 2초로 줄었으므로 같은
+  유입에서 점유 스레드 수는 줄어든다 — **이것도 계산이고 측정이 아니다.**
+- **부하 없는 상태**에서 쟀다.
+- **장애 지속 시간별로 안 봤다**(30/90초 실험 미실행).
+- **WebSocket은 이번에도 실측하지 않았다.**
+
+## 부록 — 정상 구간 Redis 응답 시간 (timeout 값의 근거)
+
+`redis-normal-latency.csv` — 컨테이너 안에서 `redis-benchmark -n 10000`, 같은 호스트.
+
+| 명령 | p50 | p95 | p99 | max |
+| --- | --- | --- | --- | --- |
+| SET | 0.167ms | 0.311ms | 0.407ms | 0.687ms |
+| GET | 0.167ms | 0.247ms | 0.407ms | 0.583ms |
+| INCR | 0.175ms | 0.255ms | 0.319ms | 0.519ms |
+
+**2초는 이 max의 약 3,000배다.** 즉 timeout 축소가 정상 요청을 자르는 값이 아니다.
+다만 **이것은 벤치마크 도구의 왕복이지 애플리케이션의 실제 호출이 아니고**,
+**부하 없는 상태**이며 **같은 호스트의 컨테이너 간 통신**이다. 네트워크가 끼거나
+Redis가 바쁜 환경에서는 다시 재야 한다.

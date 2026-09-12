@@ -1,0 +1,49 @@
+# Redis 장애 시 엔드포인트별 실제 동작 (2026-09-12)
+
+## 조건
+dev(평문) 프로파일. backend 1, Redis를 `docker stop`으로 중지.
+커밋: 21f267ca2d6edbf8c24620a969bcc8f7a08810b3
+Redis 설정: application.yml에 host/port/password만 있고 **timeout 미설정**
+  → Lettuce 기본 command timeout 60초. Tomcat 스레드도 기본값(max 200).
+
+## 측정 — 각 1회
+
+| 요청 | Redis 정상 | Redis 중지 | 지연 |
+| --- | --- | --- | --- |
+| GET /actuator/health | 200 | **503** | 60초 |
+| GET /api/vehicles (인증) | 200 | **500** | 60초 |
+| GET .../anomalies | 200 | **500** | 60초 |
+| GET .../diagnosis | 404(데이터 없음) | **500** | 60초 |
+| POST /api/auth/login | 200 | **500** | 60초 |
+| POST /api/auth/login (오답) | 401 | **500** | 60초 |
+| POST /api/auth/refresh | 200 | **500** | 60초 |
+| POST /api/auth/logout | - | **500** | 60초 |
+| GET /api/vehicles (미인증) | 403 | 403 | 5ms |
+
+## 읽는 법
+
+- **500만이 아니라 60초 매달린 뒤 500이다.** 감사 문서는 '500이 된다'까지만 적혀 있었다.
+- **로그인도 죽는다.** rate limit 인터셉터에서는 로그인이 제외돼 있지만,
+  AuthController가 LoginRateLimiter·BruteForceDetector를 직접 부른다.
+- **미인증 403만 빠르다.** Spring Security가 인터셉터 앞에서 거절해 Redis에 안 닿는다.
+- 60초는 코드에 적힌 값이 아니라 **Lettuce 기본값**이다. application.yml에 timeout이 없다.
+
+## 스레드 고갈 — **재지 않았다**
+
+40개 동시 요청을 매달아 둔 상태에서도 미인증 요청은 403을 5~6ms에 돌려줬다.
+그 시점 JVM 스레드 152개.
+**Tomcat 기본 max-threads가 200이므로 계산상 200 동시에서 고갈되지만 측정하지 않았다.**
+40에서는 막히지 않는다는 것만 확인했다.
+
+## 복구
+
+`docker start telemetry-redis` 후 **8초** 만에 로그인 200. 자동 복구되고 재기동이 필요 없다.
+Lettuce ConnectionWatchdog이 재연결한다(백엔드 로그에 재연결 시도가 찍힌다).
+
+## 이 측정의 한계
+
+- **각 1회**다. `docs/evidence-policy.md` 기준 '그 조건에서 관찰됨'이다.
+- **스레드 고갈 임계는 미측정**(위).
+- 30초/90초 같은 **장애 지속 시간별 실험은 안 했다** — 중지 후 즉시 재고 바로 복구했다.
+- 부하가 없는 상태다. 실제 트래픽 중 장애는 안 봤다.
+- mTLS 프로파일에서는 안 봤다.

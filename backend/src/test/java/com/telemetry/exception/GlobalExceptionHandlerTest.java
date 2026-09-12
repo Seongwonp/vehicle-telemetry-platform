@@ -14,7 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("GlobalExceptionHandler 단위 테스트")
 class GlobalExceptionHandlerTest {
 
-    private final GlobalExceptionHandler handler = new GlobalExceptionHandler();
+    // 생성자에 MeterRegistry가 들어왔다(P0-3, Redis 사용 불가 지표).
+    // 여기서는 기존 핸들러들의 상태 코드만 보므로 빈 레지스트리면 충분하다.
+    private final GlobalExceptionHandler handler = new GlobalExceptionHandler(
+        new io.micrometer.core.instrument.simple.SimpleMeterRegistry());
 
     @Test
     @DisplayName("IllegalArgumentException → 400")

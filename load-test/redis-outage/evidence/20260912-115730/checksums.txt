@@ -1,0 +1,2 @@
+9392bf763e401eb496e3fa0196bca24f70b7bd781528e3811af49c53dca4db6f *./measurement.txt
+be073b9df5aa45da51391b309beed47c071649b113dcc01b17d74387604c4020 *./redis-normal-latency.csv

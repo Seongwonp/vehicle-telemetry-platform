@@ -1,8 +1,8 @@
 # Telemetrix 데스크탑 작업 인수인계
 
-> 마지막 정리: 2026-09-09
+> 마지막 정리: 2026-09-12
 >
-> 기준 커밋: `21cf4441bbd4114f12acb32b1a0fc9963738d868` (CI success)
+> 기준 커밋: `2e12b43d1f960067d442469c8ff786a5ba492119` (origin/main, CI success)
 
 ## 이 프로젝트에서 가장 중요한 것
 
@@ -40,6 +40,9 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 - 정적 멤버십 OFF 대조군 1회에서는 재할당 9초, 정지 파티션 0개를 관찰했다.
 - 같은 조건의 저장 처리량이 크게 흔들려 `약 57K msg/s ceiling` 주장은 철회했다.
 - GitHub Actions는 Java/Testcontainers/Python/Compose smoke와 Flutter format/analyze/test를 수행한다.
+- Redis를 내리면 `/api/**`가 **2초 안에 503 `REDIS_UNAVAILABLE`**로 거부되고
+  `telemetry_redis_unavailable_total{route}`가 오른다(적용 전에는 60초 뒤 500이었다).
+  각 1회, dev 프로파일, 무부하 — `load-test/redis-outage/evidence/20260912-115730/`.
 
 ### 아직 말하면 안 되는 것
 
@@ -216,11 +219,30 @@ throttle/fuel `0~100`. 원칙도 "물리적으로 불가능한 값 거부"에서
 다만 **속도 여유가 25km/h뿐**이라, 주입 상한을 255 위로 올리면 그 메시지는 거부되어
 이상 감지에 도달하지 못한다.
 
-### 3. P1 — Redis 장애 정책
+### 3. P1 — Redis 장애 정책 — **진행 중(2026-09-12). 표현은 고쳤고 정책은 미확정**
 
-현재 Redis가 중단되면 rate limit/brute-force interceptor 예외로 API가 500이 되고 refresh도
-중단된다. endpoint별 fail-open/fail-closed 정책을 먼저 정한다. 인증/refresh와 일반 조회를
-한 정책으로 묶지 않는다.
+조사와 실측을 끝냈다: [`docs/redis-failure-policy.md`](docs/redis-failure-policy.md).
+감사 문서가 "500이 된다"까지 적은 것과 실제가 달랐다 — **500이 아니라 60초 뒤 500**이었고
+(`application.yml`에 Redis timeout이 없어 Lettuce 기본값 60초), **로그인도 죽는다**
+(인터셉터에서 제외돼 있지만 `AuthController`가 Redis 컴포넌트를 직접 부른다).
+
+**결정이 필요 없는 두 가지만 적용했다**(§7):
+
+| 무엇 | 결과 |
+| --- | --- |
+| timeout 2초 명시(`application.yml`) | 60초 매달림 → **2.0초** |
+| Redis 전용 503(`GlobalExceptionHandler`) | 정체불명 500 → **503 `REDIS_UNAVAILABLE`** |
+| `telemetry.redis.unavailable{route}` | 막힌 경로가 보인다. 라벨은 **경로 템플릿** |
+
+**바뀐 것은 거부의 표현과 대기 시간뿐이고 누가 통과하는지는 그대로다** —
+Redis가 죽으면 여전히 모든 `/api/**`가 거부된다(fail-closed).
+
+**사용자 결정이 남은 것**: ② 일반 조회 rate limit을 fail-open으로 열까
+③ 진단 rate limit은 어느 쪽인가 ④ 로그인 보호를 fail-closed로 확정할까
+⑥ health에서 Redis를 분리 표시할까. ②와 ④가 **반대 방향인 것이 요점**이라
+"Redis 장애 시 fail-open" 하나로 묶으면 brute force 방어를 끄게 된다.
+
+**남은 측정**: 30/90초 지속 장애, 스레드 고갈 임계, 부하 중 장애, WebSocket 실측, Runbook.
 
 ### 4. P1 — 이벤트 상관관계
 
