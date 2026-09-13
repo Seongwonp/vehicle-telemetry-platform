@@ -305,11 +305,63 @@ def s4_alert_publish_failure():
     return bool(ok)
 
 
+def s5_replay_count_carried():
+    """**재처리 횟수 헤더가 감지기 DLQ 왕복에서 살아남는가** (2026-09-13, roadmap 4-b).
+
+    같은 원본을 **감지기 DLQ → `dlq.py replay` → 감지기 → 감지기 DLQ**로 되풀이하고,
+    단계마다 `x-dlq-replay-count`를 읽는다. 실패는 s4와 같은 알림 발행 실패(`max_request_size=1`)로
+    주입한다 — 같은 원본이 **매번 같은 이유로** 다시 실패해야 카운터 승계만 따로 볼 수 있다.
+
+    계약(Runbook `dlq-reprocessing.md`): 컨슈머가 DLQ로 보낼 때 이 헤더를 이어받아야
+    `--max-replays`가 동작한다. `--max-replays 2`로 돌리면
+      1회차 DLQ 없음(0) → 원본 토픽 1 → 2회차 DLQ 1 → 원본 토픽 2 → 3회차 DLQ 2 → **재처리 차단**
+    이어야 한다. 헤더를 잃으면 DLQ가 매번 0이라 **차단되지 않는다.**
+    """
+    import subprocess
+    max_replays = 2
+    replay_group = f"itc-{RUN}-{SLOT}-replay"
+    inject([base(engine_temp=106.0)])
+
+    trail, dlq_counts, blocked = [], [], False
+    for cycle in range(1, 4):
+        err = run_detector(break_alerts=True, seconds=15)
+        dlq = read_topic(DLQ, limit=50, want_headers=True)
+        dlq_count = dlq[-1]["headers"].get("x-dlq-replay-count", "(없음)") if dlq else "(DLQ 비어 있음)"
+        dlq_counts.append(dlq_count)
+        proc = subprocess.run(
+            [sys.executable, "/dlq/dlq.py", "--bootstrap", BOOTSTRAP, "--topic", DLQ,
+             "--timeout-ms", "6000", "--max-replays", str(max_replays),
+             "replay", "--target", IN, "--execute", "--include-unknown", "--group", replay_group],
+            capture_output=True, text=True)
+        replayed = "1건 성공" in proc.stdout
+        limited = "재처리 횟수 초과" in proc.stdout
+        src = read_topic(IN, limit=50, want_headers=True)
+        in_count = src[-1]["headers"].get("x-dlq-replay-count", "(없음)") if src else "-"
+        trail.append((cycle, len(dlq), dlq_count, replayed, limited, in_count if replayed else "-", err))
+        print(f"  {cycle}회차: 감지기 예외={err or '없음'} | DLQ 누적 {len(dlq)}건, 최신 DLQ replay-count={dlq_count}"
+              f" | replay 발행={'예' if replayed else '아니오'}, 횟수초과 차단={'예' if limited else '아니오'}"
+              f" | 원본 토픽 최신 replay-count={in_count if replayed else '-'}")
+        if limited:
+            blocked = True
+            break
+
+    print("  dlq.py 마지막 출력:")
+    for line in proc.stdout.strip().splitlines()[-6:]:
+        print(f"    {line}")
+    if len(dlq_counts) >= 2 and dlq_counts[1] == "(없음)":
+        print("  → 헤더 소실 위치: dlq.py가 원본 토픽에 replay-count를 붙여 보냈는데"
+              " 감지기가 DLQ로 보낼 때 그 헤더가 없다 — 감지기 DLQ 발행 단계에서 사라진다")
+    ok = blocked and dlq_counts == ["(없음)", "1", "2"]
+    print(f"  기대 DLQ 순서 ['(없음)', '1', '2'] + 3회차 차단 / 실제 {dlq_counts} + 차단={'예' if blocked else '아니오'}")
+    return ok
+
+
 SCENARIOS = {
     "s1": ("정상/위반/정상 — committed offset", s1_normal_violation_normal),
     "s2": ("DLQ 발행 실패(클라이언트 크기 제한) — offset 미진행", s2_dlq_publish_failure),
     "s3": ("복구 후 재시작 — 재전달·격리", s3_restart_after_recovery),
     "s4": ("알림 발행 실패 → DLQ 격리 → offset 진행 → 명시적 재처리", s4_alert_publish_failure),
+    "s5": ("재처리 횟수 헤더 승계 — 감지기 DLQ ↔ dlq.py replay 왕복", s5_replay_count_carried),
 }
 
 if __name__ == "__main__":

@@ -62,11 +62,13 @@ class FakeProducer:
 
 
 class FakeMessage:
-    def __init__(self, key=b"TEST-001", value=b'{"broken": true', partition=0, offset=42):
+    def __init__(self, key=b"TEST-001", value=b'{"broken": true', partition=0, offset=42, headers=None):
         self.key = key
         self.value = value
         self.partition = partition
         self.offset = offset
+        # kafka-python ConsumerRecord.headers와 같은 모양: [(str, bytes), ...]
+        self.headers = headers
 
 
 class FakeRedis:
@@ -140,6 +142,29 @@ class TestSendToDlq:
         assert "깨진 payload" in headers["x-dlq-failure-message"].decode("utf-8")
         assert headers["x-dlq-origin-topic"]
         assert headers["x-dlq-failed-at"]
+
+    def test_재처리_횟수_헤더를_이어받는다(self):
+        # dlq.py replay가 원본 토픽으로 되돌릴 때 x-dlq-replay-count를 올려 보낸다. 되돌린 레코드가
+        # 다시 실패해 DLQ로 갈 때 이 헤더를 **버리면 카운트가 0으로 돌아가** --max-replays가 동작하지 않는다.
+        # Java TelemetryConsumer.sendToDlq는 이미 이어받는다(같은 계약, docs/runbook/dlq-reprocessing.md).
+        # 2026-09-13 실제 Kafka 재현에서 감지기 경로만 이 헤더를 잃었다(load-test/dlq-replay-count).
+        producer = FakeProducer()
+        msg = FakeMessage(headers=[("x-dlq-replay-count", b"2"), ("x-dlq-origin-topic", b"old-topic")])
+
+        send_to_dlq(producer, msg, RuntimeError("알림 발행 실패"))
+
+        pairs = producer.headers[0]
+        counts = [v for k, v in pairs if k == "x-dlq-replay-count"]
+        assert counts == [b"2"], "재처리 횟수는 그대로 이어받고 중복으로 붙이지 않는다"
+        # 원본 레코드의 다른 x-dlq-* 헤더는 복사하지 않는다 — 이번 실패의 위치를 새로 적어야 한다.
+        assert dict(pairs)["x-dlq-origin-topic"] != b"old-topic"
+
+    def test_재처리_이력이_없으면_횟수_헤더도_없다(self):
+        producer = FakeProducer()
+
+        send_to_dlq(producer, FakeMessage(headers=[("unrelated", b"x")]))
+
+        assert "x-dlq-replay-count" not in {k for k, _ in producer.headers[0]}
 
     def test_원인이_없으면_원인_헤더는_생략된다(self):
         producer = FakeProducer()

@@ -249,8 +249,11 @@ python dlq.py --topic vehicle-telemetry-dlq inspect
   `--group`에 새 이름을 줘서 처음부터 읽어야 한다. `inspect`는 커서를 쓰지 않으므로
   언제든 전체를 볼 수 있다.
 - **`x-dlq-replay-count`는 컨슈머가 이어받아야 동작한다.** 되돌린 메시지가 다시 실패해
-  DLQ로 갈 때 이 헤더를 승계하지 않으면 카운터가 매번 0으로 리셋된다(Java·Python 양쪽에
-  구현돼 있고 회귀 테스트로 고정했다).
+  DLQ로 갈 때 이 헤더를 승계하지 않으면 카운터가 매번 0으로 리셋된다.
+  **정정(2026-09-13)**: 이 문장은 원래 "Java·Python 양쪽에 구현돼 있다"고 적었지만 **감지기(Python)는 이어받지 않았다** —
+  감지기 DLQ에서는 `--max-replays`가 아무것도 막지 못했다(실제 Kafka 재현, `load-test/dlq-replay-count/RESULT_20260913_replay_count.md`).
+  같은 날 고쳐 지금은 Java 저장 경로(`TelemetryConsumer.sendToDlq`)와 감지기(`anomaly_detector.dlq_headers`) 모두 이어받는다.
+  회귀 테스트: Java 기존 테스트, Python `test_재처리_횟수_헤더를_이어받는다`. **수정 전에 감지기 DLQ에 쌓인 레코드는 카운트가 없다.**
 - **재처리는 중복을 만든다 — 하지만 InfluxDB에서는 흡수된다.** 포인트 identity가
   (measurement, `vehicle_id`, ms 타임스탬프)라 같은 메시지를 다시 써도 덮어써진다.
   실측으로 확인했다(`load-test/storage-integrity/RESULT_20260904_kill_redelivery.md`:

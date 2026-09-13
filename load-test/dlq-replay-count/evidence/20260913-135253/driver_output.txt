@@ -1,0 +1,84 @@
+04:53:03 [WARNING] kafka.producer.kafka: <KafkaProducer client_id=kafka-python-producer-1 transactional_id=None>: Idempotence will be disabled because user-provided config conflicts with idempotent defaults: retries=0
+04:53:03 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:53:03 [INFO] anomaly-detector[b55d648558bd]:   Vehicle Anomaly Detector 시작
+04:53:03 [INFO] anomaly-detector[b55d648558bd]:   Kafka: kafka:29092
+04:53:03 [INFO] anomaly-detector[b55d648558bd]:   ML 이상 감지: 비활성화
+04:53:03 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:53:03 [INFO] anomaly-detector[b55d648558bd]:   지표: :9101/metrics
+/w/driver.py:157: DeprecationWarning: key_serializer does not implement kafka.serializer.Serializer
+  ad.make_producer = lambda: alert_producer(TINY_REQUEST if break_alerts else None)
+/w/driver.py:157: DeprecationWarning: value_serializer does not implement kafka.serializer.Serializer
+  ad.make_producer = lambda: alert_producer(TINY_REQUEST if break_alerts else None)
+04:53:06 [ERROR] anomaly-detector[b55d648558bd]: 메시지 처리 실패 — DLQ로 이동 partition=0 offset=0: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+Traceback (most recent call last):
+  File "/app/anomaly_detector.py", line 583, in main
+    process(data, producer, ml_flag)
+  File "/app/anomaly_detector.py", line 248, in process
+    futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 948, in send
+    self._ensure_valid_record_size(message_size)
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 1016, in _ensure_valid_record_size
+    raise Errors.MessageSizeTooLargeError(
+kafka.errors.MessageSizeTooLargeError: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+04:53:18 [INFO] anomaly-detector[b55d648558bd]: 종료 신호 수신 — 종료 중...
+04:53:19 [INFO] anomaly-detector[b55d648558bd]: 종료 완료 (총 처리: 0건, DLQ 격리: 1건, 사유별: 처리실패=1)
+04:53:19 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+04:53:34 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+04:53:40 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:53:40 [INFO] anomaly-detector[b55d648558bd]:   Vehicle Anomaly Detector 시작
+04:53:40 [INFO] anomaly-detector[b55d648558bd]:   Kafka: kafka:29092
+04:53:40 [INFO] anomaly-detector[b55d648558bd]:   ML 이상 감지: 비활성화
+04:53:40 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:53:40 [INFO] anomaly-detector[b55d648558bd]:   지표: :9101/metrics
+04:53:43 [ERROR] anomaly-detector[b55d648558bd]: 메시지 처리 실패 — DLQ로 이동 partition=0 offset=1: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+Traceback (most recent call last):
+  File "/app/anomaly_detector.py", line 583, in main
+    process(data, producer, ml_flag)
+  File "/app/anomaly_detector.py", line 248, in process
+    futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 948, in send
+    self._ensure_valid_record_size(message_size)
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 1016, in _ensure_valid_record_size
+    raise Errors.MessageSizeTooLargeError(
+kafka.errors.MessageSizeTooLargeError: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+04:53:55 [INFO] anomaly-detector[b55d648558bd]: 종료 신호 수신 — 종료 중...
+04:53:55 [INFO] anomaly-detector[b55d648558bd]: 종료 완료 (총 처리: 0건, DLQ 격리: 1건, 사유별: 처리실패=2)
+04:53:55 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+04:54:11 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+04:54:17 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:54:17 [INFO] anomaly-detector[b55d648558bd]:   Vehicle Anomaly Detector 시작
+04:54:17 [INFO] anomaly-detector[b55d648558bd]:   Kafka: kafka:29092
+04:54:17 [INFO] anomaly-detector[b55d648558bd]:   ML 이상 감지: 비활성화
+04:54:17 [INFO] anomaly-detector[b55d648558bd]: ============================================================
+04:54:17 [INFO] anomaly-detector[b55d648558bd]:   지표: :9101/metrics
+04:54:20 [ERROR] anomaly-detector[b55d648558bd]: 메시지 처리 실패 — DLQ로 이동 partition=0 offset=2: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+Traceback (most recent call last):
+  File "/app/anomaly_detector.py", line 583, in main
+    process(data, producer, ml_flag)
+  File "/app/anomaly_detector.py", line 248, in process
+    futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 948, in send
+    self._ensure_valid_record_size(message_size)
+  File "/usr/local/lib/python3.11/site-packages/kafka/producer/kafka.py", line 1016, in _ensure_valid_record_size
+    raise Errors.MessageSizeTooLargeError(
+kafka.errors.MessageSizeTooLargeError: [Error 10] MessageSizeTooLargeError: The message is 434 bytes when serialized which is larger than the maximum request size you have configured with the max_request_size configuration
+04:54:32 [INFO] anomaly-detector[b55d648558bd]: 종료 신호 수신 — 종료 중...
+04:54:32 [INFO] anomaly-detector[b55d648558bd]: 종료 완료 (총 처리: 0건, DLQ 격리: 1건, 사유별: 처리실패=3)
+04:54:32 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+04:54:48 [WARNING] kafka.coordinator.consumer: group_id is None: disabling auto-commit.
+[s5] 재처리 횟수 헤더 승계 — 감지기 DLQ ↔ dlq.py replay 왕복
+  1회차: 감지기 예외=없음 | DLQ 누적 1건, 최신 DLQ replay-count=(없음) | replay 발행=예, 횟수초과 차단=아니오 | 원본 토픽 최신 replay-count=1
+  2회차: 감지기 예외=없음 | DLQ 누적 2건, 최신 DLQ replay-count=1 | replay 발행=예, 횟수초과 차단=아니오 | 원본 토픽 최신 replay-count=2
+  3회차: 감지기 예외=없음 | DLQ 누적 3건, 최신 DLQ replay-count=2 | replay 발행=아니오, 횟수초과 차단=예 | 원본 토픽 최신 replay-count=-
+  dlq.py 마지막 출력:
+    itc-rc135253-s5-dlq → itc-rc135253-s5-telemetry
+      읽음     : 1건
+      재처리 대상: 0건
+      건너뜀   : 1건 — 재처리 횟수 초과
+    
+    보낼 것이 없다.
+  기대 DLQ 순서 ['(없음)', '1', '2'] + 3회차 차단 / 실제 ['(없음)', '1', '2'] + 차단=예
+[s5] 판정: PASS

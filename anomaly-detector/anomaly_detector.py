@@ -357,6 +357,17 @@ def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
         ("x-dlq-origin-offset", str(message.offset).encode("utf-8")),
         ("x-dlq-failed-at", datetime.now(timezone.utc).isoformat().encode("utf-8")),
     ]
+    # **재처리 이력은 이어받는다.** `dlq.py replay`가 원본 토픽으로 되돌릴 때 이 헤더를 올려 보내는데,
+    # 여기서 새 헤더만 만들면 다시 실패할 때마다 0으로 돌아가 `--max-replays`가 멈추지 못한다.
+    # Java `TelemetryConsumer.sendToDlq`는 이미 이어받는다 — 같은 계약이다.
+    # 2026-09-13 실제 Kafka 재현에서 이 경로만 헤더를 잃었다(load-test/dlq-replay-count).
+    # 다른 x-dlq-* 헤더는 복사하지 않는다 — 이번 실패의 위치·원인을 새로 적어야 한다.
+    carried = None
+    for key, value in (getattr(message, "headers", None) or []):
+        if key == "x-dlq-replay-count":
+            carried = value          # 마지막 값을 쓴다(Java lastHeader와 같다)
+    if carried is not None:
+        headers.append(("x-dlq-replay-count", carried))
     if cause is not None:
         headers.append(("x-dlq-failure-class", type(cause).__name__.encode("utf-8")))
         # 예외 메시지에 원본 payload 조각이 섞여 들어올 수 있어 길이를 자른다 —
