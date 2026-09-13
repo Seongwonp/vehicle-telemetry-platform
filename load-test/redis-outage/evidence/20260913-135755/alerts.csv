@@ -1,0 +1,15 @@
+phase,t_ms,failopen_alert,failopen_am_active,unavail_alert,unavail_am_active
+baseline,1789275478510,inactive,0,inactive,0
+outage,1789275483466,inactive,0,inactive,0
+outage,1789275489254,inactive,0,inactive,0
+outage,1789275495108,inactive,0,inactive,0
+outage,1789275500907,inactive,0,inactive,0
+outage,1789275506719,inactive,0,inactive,0
+outage,1789275512513,inactive,0,inactive,0
+after_recovery,1789275520821,inactive,0,inactive,0
+after_recovery,1789275536734,pending,0,pending,0
+after_recovery,1789275552290,pending,0,pending,0
+after_recovery,1789275567768,pending,0,pending,0
+after_recovery,1789275583276,firing,1,firing,1
+after_recovery,1789275598751,inactive,0,inactive,0
+after_recovery,1789275614616,inactive,0,inactive,0

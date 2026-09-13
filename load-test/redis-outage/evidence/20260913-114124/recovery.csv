@@ -1,0 +1,7 @@
+path,criterion,t_ms,after_start_cmd_ms,after_start_done_ms,http,code
+query,200 + X-RateLimit-Remaining 재등장(제한 재적용),1789267345061,10682,7996,200,-
+diag,503 아님(404 기대),1789267345120,10741,8055,404,NOT_FOUND
+refresh,401(없는 토큰을 저장소가 정상 거부),1789267345091,10712,8026,401,UNAUTHORIZED
+health,종합 health 200,1789267345221,10842,8156,200,-
+login,200,1789267345078,10699,8013,200,-
+redis_ping,PONG,1789267344971,10592,7906,-,-

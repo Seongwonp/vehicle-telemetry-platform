@@ -1,0 +1,20 @@
+# 실험 전용 Alertmanager 설정 — **운영 설정이 아니다.**
+#
+# 목적: Prometheus firing과 Alertmanager의 **알림 발송(dispatch)** 시각을 가르기 위해
+# 로컬 수신기(`alert_sink.py`, 같은 Docker 네트워크 안)로만 webhook을 보낸다.
+# **외부로 나가는 전송은 없다.**
+#
+# 타이밍 값은 `monitoring/alertmanager/alertmanager.yml`과 **같게** 둔다 —
+# 운영 설정의 전달 지연을 재는 것이 목적이라 여기서 바꾸면 측정이 무의미해진다.
+route:
+  receiver: local-sink
+  group_by: [alertname]
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+receivers:
+  - name: local-sink
+    webhook_configs:
+      - url: http://alert-sink:8080/
+        send_resolved: true

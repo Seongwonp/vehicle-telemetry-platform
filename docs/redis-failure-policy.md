@@ -1,6 +1,7 @@
 # Redis 장애 정책 — 조사와 결정표
 
-> 상태: **여섯 항목 전부 결정·적용됨 (2026-09-12).** 남은 것은 결정이 아니라 측정이다.
+> 상태: **여섯 항목 전부 결정·적용됨 (2026-09-12).** 2026-09-13에 운영 일관성을 점검해
+> **readiness에서 redis를 뺐다**(§9-1). 부하 중 동작은 여전히 미검증이다.
 >
 > 측정 3회분(`load-test/redis-outage/evidence/`):
 > `20260912-111412` 적용 전 / `20260912-115730` 표현 교정 후(§7) /
@@ -19,7 +20,7 @@
 | 3. 진단 rate limit | **fail-closed** | 적용(§8-2) |
 | 4. 로그인 보호 | **fail-closed 확정** | 유지 + 회귀 테스트(§8-3) |
 | 5. refresh 토큰 실패 표현 | **명시적 503** | 적용(§7-2) |
-| 6. health 지표 | **liveness/readiness 분리** | 적용(§8-4) |
+| 6. health 지표 | **liveness/readiness 분리**, readiness에서 redis 제외 | 적용(§8-4 → §9-1에서 수정) |
 
 **2번과 4번이 반대 방향인 것이 이 표의 요점이다.** 하나로 묶으면 조회를 살리려다
 brute force 방어를 끄게 되고, 반대로 묶으면 Redis 하나로 모든 조회가 멈춘다.
@@ -182,7 +183,8 @@ Tomcat 기본 `max-threads`가 200이므로 **계산상 200 동시에서 고갈*
 ## 5. 정책 확정 후 할 일
 
 1. ~~엔드포인트 그룹별 fail 정책 구현 + 그 상태를 나타내는 지표~~ — **완료**(§8)
-2. **30초/90초 장애 실험** — 지속 시간에 따라 다른지 — **미실행**
+2. **30초/90초 장애 실험** — **무부하 각 3회(2026-09-13)**, §9-3·§9-4·§10-2 /
+   `load-test/redis-outage/RESULT_20260913_recovery_repeat.md`. 부하 중은 미실행
 3. 스레드 고갈 임계 측정(§2-6) — **미측정**. fail-open 도입으로 **더 중요해졌다** —
    통과시키되 2초씩 매달리므로 부하 중 점유가 어떻게 되는지 모른다(§8-6 ②)
 4. ~~정상 구간 Redis 응답 시간 측정 후 timeout 확정~~ — **완료**(§7-1)
@@ -195,7 +197,7 @@ Tomcat 기본 `max-threads`가 200이므로 **계산상 200 동시에서 고갈*
 
 - **각 측정 1회.** `docs/evidence-policy.md` 기준 "그 조건에서 관찰됨"이다.
 - **스레드 고갈은 미측정**(§2-6). 40 동시에서 안 막힌다는 것만 안다.
-- **장애 지속 시간별로 안 봤다.** 중지 직후 재고 바로 복구했다 — 30/90초 실험은 미실행.
+- 장애 지속 시간별 관측은 2026-09-13에 **30초·90초 각 1회**만 했다(§9-4). 반복은 안 했다.
 - **부하가 없는 상태**다. 실제 트래픽 중 장애는 다를 수 있다.
 - **mTLS 프로파일에서 안 봤다.**
 - **WebSocket이 장애 중 실제로 흐르는지 실측하지 않았다.** 코드로는 Redis 의존이 없다(§2-4).
@@ -323,7 +325,7 @@ fail-open이면 **Redis를 죽이는 것이 곧 brute force 방어를 끄는 방
 | 경로 | 무엇을 답하나 | Redis 중지 중 |
 | --- | --- | --- |
 | `/actuator/health/liveness` | 프로세스가 살아 있나 — **재시작 판단** | **200, 8ms** |
-| `/actuator/health/readiness` | 트래픽을 온전히 받을 수 있나 — **라우팅 제외 판단** | 503 |
+| `/actuator/health/readiness` | 트래픽을 온전히 받을 수 있나 — **라우팅 제외 판단** | 503 → **§9-1에서 redis 제외로 변경** |
 | `/actuator/health` | 종합. 사람이 보는 용도 | 503 |
 
 전에는 Redis 하나가 DOWN이면 `/actuator/health`가 503이었고, 오케스트레이터는 그걸
@@ -372,3 +374,120 @@ fail-open이면 **Redis를 죽이는 것이 곧 brute force 방어를 끄는 방
 자동 구성(`MetricsAutoConfiguration`)을 올리게 했다.
 
 **같은 증상이라고 같은 처방이 아니다** — 무엇이 없어도 되는지가 다르다.
+
+## 9. 운영 일관성 점검 (2026-09-13)
+
+> §8은 "정책이 코드에서 갈린다"까지였다. 여기서는 **정책끼리, 그리고 운영 경로와 모순되지 않는지**를 본다.
+> 구분: **[코드]** 코드·설정 변경 / **[테스트]** 회귀 테스트 / **[실측]** 실제 스택 관측 / **[미검증]**
+
+### 9-1. readiness와 fail-open — **모순이 있었고 고쳤다**
+
+**[조사] readiness를 보는 소비자가 이 저장소에 없다.**
+
+| 경로 | readiness 사용 |
+| --- | --- |
+| Compose backend `healthcheck` | **없음** (backend에 healthcheck 자체가 없다) |
+| `depends_on: backend: condition: service_healthy` | **없음** |
+| 리버스 프록시·ingress·k8s·terraform | **파일 없음** |
+| 앱 진입 경로 | `../vehicle-telemetry-app`의 `API_BASE_URL=http://<host>:8080` — **백엔드 직접 호출** |
+| `/actuator/health`(종합) 사용처 | CI smoke(`ci.yml:108`), 부하 스크립트 기동 대기 — **readiness 아님** |
+
+그래서 **지금은 직접 API 호출 결과 = 실제 사용자 진입 경로 결과**이고, §8의 "조회 200"은
+사용자에게도 그대로 성립한다. 다만 그건 설계가 맞아서가 아니라 **readiness를 아무도 안 봐서**였다.
+
+**모순**: §8에서 readiness에 `redis`를 넣었다. 프록시·오케스트레이터가 readiness를 보게 되는 순간
+Redis 장애 = 전 인스턴스 503 = **전부 트래픽에서 제외** → fail-open으로 살린 조회가 도달하지 못한다.
+Redis는 전 인스턴스가 공유하므로 readiness가 가려야 할 "이 인스턴스만 안 된다"에 해당하지도 않는다.
+
+- **[코드]** `application.yml` readiness `include: readinessState,db` — **redis 제거.**
+  liveness(`livenessState`만)는 유지. Redis 상태는 **종합 `/actuator/health`에서 계속 보인다.**
+- **[테스트]** `HealthGroupPolicyTest` — readiness에 redis 없음 / liveness는 외부 의존 없음 /
+  redis indicator가 꺼지지 않음. **소비자가 없어 실측으로는 모순이 안 드러나므로 설정을 테스트로 묶었다.**
+- **[미검증·열린 질문]** `db`도 공유 의존이다. Redis와 달리 대체 경로(fail-open 같은 결정)가 없어
+  Postgres가 없으면 조회가 실제로 실패하므로 남겼지만, "전 인스턴스 제외" 문제는 같다.
+  **프록시를 도입할 때 결정할 것**으로 남긴다.
+
+### 9-2. fail-closed와 인증 오류의 구분, fail-open 중 인증·인가 유지
+
+로그인 순서는 `tryAcquire`(Redis) → `isBlocked`(Redis) → `authenticate` → 실패 시 `recordFailure`(Redis)다.
+
+| 상황 | 응답 | 근거 |
+| --- | --- | --- |
+| Redis 정상 + 틀린 비밀번호 | **401 `UNAUTHORIZED`** | [테스트] `LoginFailureDistinctionTest.틀린_비밀번호는_401` / [실측] §9-4 |
+| Redis 없음 + 맞든 틀리든 | **503 `REDIS_UNAVAILABLE`**, **자격증명 검사 안 함** | [테스트] `redis_장애는_503_이고_인증은_시도도_안_한다`, `맞는_비밀번호도_같은_503` / [실측] §9-4 |
+| 인증 실패 직후 Redis가 죽음(`recordFailure` 실패) | **503** (401 아님) | [테스트] `기록_실패는_503으로_나간다` |
+
+마지막 행은 **의도한 동작으로 고정했다.** 401을 주려면 실패 기록을 포기해야 하고, 그러면 Redis를 죽이는 것이
+brute force 카운터를 끄는 방법이 된다. 성공 경로(`recordSuccess`)도 같은 이유로 503이라 **정답 여부가 새지 않는다.**
+
+**fail-open은 rate limit만 생략한다** — [테스트] `FailOpenKeepsSecurityTest`(MockMvc로 보안 필터 포함):
+미인증은 Redis 없이도 401 / 인증된 조회는 200이되 `X-RateLimit-Remaining` 없음 /
+**거부된 요청은 rate limit 코드(Redis)에 닿지도 않음**(보안 필터가 인터셉터보다 앞).
+
+**[발견 — 이번 범위 밖]** `POST /api/vehicles`에 **역할 제한이 없다**(`anyRequest().authenticated()`뿐,
+`@PreAuthorize` 없음). 기존 `VehicleControllerTest`가 `@WithMockUser(roles="ADMIN")`을 써서 ADMIN 전용처럼
+보였을 뿐이다. 그래서 "권한 부족"을 응답 코드로 재는 인가 테스트는 만들 수 없었고, 대신 **순서**를 쟀다.
+보안 정책 변경은 이번 범위가 아니므로 **기록만 한다.**
+
+### 9-3. 알림 식과 firing·해제 — **[실측] 30초·90초 중단 각 1회에서 확인**
+
+**식 점검**: 카운터 기반 알림은 전부 `increase(...[5m]) > 0`이다. **누적값을 `> 0`으로 비교하는 식은 없다**
+(`alerts.yml` 전수 확인, `telemetry_spool_pending`은 gauge라 값 비교가 맞다).
+§8까지는 `health: ok`와 평시 `inactive`만 봤고 **장애 알림 동작은 검증하지 않았었다.**
+
+**관측**(중지 완료 기준, 로컬 Alertmanager — 외부 전송 없음):
+90초 — `RedisUnavailableRejections` firing +120s → 해제 +436s / `RateLimitFailingOpen` firing +138s → 해제 +436s
+(Redis 기동 완료 +93s). 30초 — firing +119s·+101s → 해제 +360s (기동 완료 +33s). 상세와 읽는 법은
+[`RESULT_20260913_sustained_outage.md`](../load-test/redis-outage/RESULT_20260913_sustained_outage.md).
+
+이 실행이 드러낸 운영상 성질 둘 — **정책 변경은 하지 않았다:**
+- **30초·90초 중단 모두 알림이 복구 뒤에 도착했다**(`for: 1m` + 15초 주기). 알림은 "지금 장애"보다 "방금 장애"에 가깝다.
+- **회복 시간이 중단 길이에 따라 크게 달랐다**(앱 경로 약 4초 / 약 25초). 원인은 재지 않았다 — RESULT의 "두 실행을 나란히".
+- **새 카운터 시계열의 첫 증가는 `increase()`에 안 잡힌다.** fail-open 알림이 약 20초 늦었다.
+  짧은 장애에서 요청이 한 번뿐이면 알림이 안 뜰 수 있다 — **재지는 않았다.**
+
+### 9-4. 실측 요약 — 30초·90초 각 1회
+
+경로별 상태·지연·회복 시간은 RESULT 문서에 있다. 여기서는 §9-1·§9-2와 겹치는 것만:
+readiness는 중단 중 **200**(redis 제외 반영), 틀린 비밀번호는 정상 시 **401**·장애 중 **503**,
+미인증 조회는 장애 중에도 **403**, 429는 **0건**(탐침이 제한 카운터를 오염시키지 않았다).
+
+## 10. 알림 지연·회복 지연·재처리 헤더 (2026-09-13 오후)
+
+> 구분: **[코드]** / **[테스트]** / **[실측]** / **[미검증]**. 상세는 각 RESULT 문서다 — 여기는 결론과 결정 사항만.
+
+### 10-1. 알림이 복구 뒤에야 울리던 이유와 변경
+
+- 기존 규칙(`increase(경로별[5m]) > 0`, `for: 1m`)은 사실상 **"최근 5분 내 발생 이력"**이었다. 경로별 카운터가 첫 실패에서야
+  시계열이 생겨 첫 증가를 못 봤고(15~30s 손실), 해제는 마지막 실패 후 약 5분이었다. **[실측]** TSDB 원본으로 단계별 분해.
+- **[코드]** 경로 합계 카운터 `telemetry.redis.unavailable.all`·`telemetry.ratelimit.failopen.all`을 **기동 시 0으로 등록**,
+  규칙을 `sum(increase(..._all_total[1m])) > 0` + `for: 1m`(유지)로. **[테스트]** `RedisAlertingMetricsTest`(규칙이 합계를 보는지까지).
+- **[실측, 각 1회]** 90초: 실패 중 firing(+70.6s), 해제 약 1분. 30초: 복구 뒤 firing 평가 1회 → **발송 0건**. 실패 1건: firing 없음.
+- **대가(수용, §10-4)**: 짧은 장애는 발송되지 않는다. resolved 발송은 여전히 `group_interval: 5m`에 묶인다.
+- 근거: [`RESULT_20260913_alert_timing.md`](../load-test/redis-outage/RESULT_20260913_alert_timing.md)
+
+### 10-2. 회복 지연 반복 측정
+
+- **[실측]** 30초·90초 각 3회(무부하, 같은 이미지). 앱 경로 회복: 30초 +4·+24·+6초, 90초 +25·+34·+34초. Redis 자체는 매번 약 1.5초에 응답.
+- **6회에서 앱 경로 회복이 Lettuce `Reconnected` 로그와 겹쳤고, 재연결 대기가 지연의 주요 후보다** — 원인 확정은 아니다.
+  **[코드]** 재연결 간격 상한 30초는 `lettuce-core 6.3.2.RELEASE`의 기본 `Delay.exponential()`(상한 `Duration.ofSeconds(30)`)이고 앱이 바꾸지 않는다.
+  기동 직후 시도가 DNS 실패로 끝난 실행이 있었지만 **개별 시도의 실패 사유**일 뿐 전체 지연의 설명으로 일반화하지 않는다.
+- **[미검증]** 90초가 30초 상한의 배수라 생긴 위상 효과 — 75·105초 측정은 **이번에 추가하지 않았다.** timeout·회로 차단기는 바꾸지 않았다.
+- 근거: [`RESULT_20260913_recovery_repeat.md`](../load-test/redis-outage/RESULT_20260913_recovery_repeat.md)
+
+### 10-3. 감지기 DLQ 재처리 횟수 헤더
+
+- **[실측]** 실제 Kafka 전용 토픽 재현: 감지기가 `x-dlq-replay-count`를 버려 `--max-replays`가 동작하지 않았다(FAIL) →
+  **[코드]** 이어받게 수정 → PASS. **[테스트]** Python 회귀 2건. Runbook의 "양쪽 구현" 문장을 정정했다.
+- 근거: [`RESULT_20260913_replay_count.md`](../load-test/dlq-replay-count/RESULT_20260913_replay_count.md)
+
+### 10-4. 결정 (2026-09-13)
+
+1. **짧은 장애(실패 1건·30초 수준)가 발송되지 않는 것을 이번 범위에서 수용한다.** 별도 장애 이력 알림은 추가하지 않는다.
+   그런 장애는 카운터(경로별·합계)·대시보드·로그·Prometheus `ALERTS` 이력으로 조회한다.
+2. **두 알림은 "요청 처리에서 관찰한 Redis 영향" 알림이다.** Redis 자체의 가용성 감시나 장애 지속 시간 측정으로 표현하지 않는다.
+   요청이 없을 때의 장애 탐지는 **백로그**다(`docs/roadmap.md` 3c).
+3. **Alertmanager `group_wait`·`group_interval`은 바꾸지 않는다.** 그래서 남는 한계: 90초 세 실행에서 firing 수신은 모두
+   Redis가 응답한 **뒤**였고, 앱 경로 회복보다 뒤였던 실행도 1회 있었다(기존 규칙) —
+   [`RESULT` §6-4](../load-test/redis-outage/RESULT_20260913_alert_timing.md).
+4. 규칙 파일은 검증한 그대로다(sha `426da98e…`). 이 결정은 정의와 문서만 바꿨다.

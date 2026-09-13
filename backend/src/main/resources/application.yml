@@ -224,12 +224,26 @@ management:
       #
       #   /actuator/health/liveness  → 프로세스가 살아 있나. **재시작 판단용**. 외부 의존 없음
       #   /actuator/health/readiness → 트래픽을 온전히 받을 수 있나. **라우팅 제외 판단용**
-      #   /actuator/health           → 종합. 사람이 보는 용도
+      #   /actuator/health           → 종합. **운영자가 보는 곳이고 Redis는 여기서 보인다**
+      #
+      # **readiness에 redis를 넣지 않는다.** 처음엔 넣었는데 그러면 정책이 스스로를
+      # 무너뜨린다 — 일반 조회는 Redis 없이도 fail-open으로 처리하기로 해놓고,
+      # readiness가 503이면 프록시가 **모든** 인스턴스를 빼버려 그 요청이 아예 도달하지
+      # 못한다. 살리려고 만든 경로를 라우팅이 닫는 셈이다.
+      #
+      # 더 근본적으로 **공유 의존은 readiness 판단 근거가 못 된다.** readiness는
+      # "다른 인스턴스는 되는데 얘는 안 된다"를 가리는 신호인데, Redis는 전 인스턴스가
+      # 같은 것을 본다. 전부 빼면 부분 저하가 전면 중단이 된다.
+      #
+      # db도 같은 성질이지만 **남겨뒀다** — Redis와 달리 대체 경로가 없어서
+      # Postgres가 없으면 조회가 실제로 못 나간다(fail-open 같은 결정이 없다).
+      # 공유 의존이라는 점은 같으므로 이것도 열린 질문으로 적어뒀다
+      # (docs/redis-failure-policy.md §9-1).
       group:
         liveness:
           include: livenessState
         readiness:
-          include: readinessState,db,redis
+          include: readinessState,db
   health:
     livenessstate:
       enabled: true

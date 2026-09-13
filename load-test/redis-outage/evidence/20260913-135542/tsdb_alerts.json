@@ -1,0 +1,1 @@
+{"status":"success","data":{"resultType":"matrix","result":[{"metric":{"__name__":"ALERTS","alertname":"RedisUnavailableRejections","alertstate":"pending","severity":"warning"},"values":[[1789275372.957,"1"],[1789275387.957,"1"],[1789275402.957,"1"]]}]}}

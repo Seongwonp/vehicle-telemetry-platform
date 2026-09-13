@@ -1,0 +1,4 @@
+{"received_ms": 1789275762898, "status": "firing", "alerts": [{"name": "RedisUnavailableRejections", "status": "firing", "startsAt": "2026-09-13T05:01:57.957Z", "endsAt": "0001-01-01T00:00:00Z"}]}
+{"received_ms": 1789275762899, "status": "firing", "alerts": [{"name": "RateLimitFailingOpen", "status": "firing", "startsAt": "2026-09-13T05:01:57.957Z", "endsAt": "0001-01-01T00:00:00Z"}]}
+{"received_ms": 1789276062874, "status": "resolved", "alerts": [{"name": "RedisUnavailableRejections", "status": "resolved", "startsAt": "2026-09-13T05:01:57.957Z", "endsAt": "2026-09-13T05:03:57.957Z"}]}
+{"received_ms": 1789276062874, "status": "resolved", "alerts": [{"name": "RateLimitFailingOpen", "status": "resolved", "startsAt": "2026-09-13T05:01:57.957Z", "endsAt": "2026-09-13T05:03:57.957Z"}]}

@@ -1,0 +1,8 @@
+phase,t_ms,failopen_alert,failopen_am_active,unavail_alert,unavail_am_active
+baseline,1789275345684,inactive,0,inactive,0
+after_recovery,1789275376506,inactive,0,inactive,0
+after_recovery,1789275392424,inactive,0,pending,0
+after_recovery,1789275407992,inactive,0,pending,0
+after_recovery,1789275423558,inactive,0,pending,0
+after_recovery,1789275439117,inactive,0,inactive,0
+after_recovery,1789275455015,inactive,0,inactive,0

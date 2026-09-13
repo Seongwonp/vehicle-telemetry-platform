@@ -1,0 +1,24 @@
+2026-09-13T04:58:01.793979454Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/172.18.0.3:6379
+2026-09-13T04:58:01.794054793Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/172.18.0.3:6379
+2026-09-13T04:58:01.795440681Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: Connection refused: redis/172.18.0.3:6379
+2026-09-13T04:58:01.795451264Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: Connection refused: redis/172.18.0.3:6379
+2026-09-13T04:58:08.394996689Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:08.395023225Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:10.398065552Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:10.398087344Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:15.494683887Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:15.494705218Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:17.498149868Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:17.498179388Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:22.694280356Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:22.694309923Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:24.697946948Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:24.697984145Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:28.894158597Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:28.894177588Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:30.897340972Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:30.897371760Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: connection timed out after 2000 ms: redis/172.18.0.3:6379
+2026-09-13T04:58:39.091342069Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:39.091365462Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:58:39.093927979Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379
+2026-09-13T04:58:39.093945916Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379

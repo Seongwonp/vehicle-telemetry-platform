@@ -1,0 +1,26 @@
+run_id           : 20260913-132128
+scenario         : redis-outage
+started_at       : 2026-09-13T13:21:28+09:00
+command          : bash load-test/redis-outage/run_outage.sh 30
+git_branch       : main
+git_commit       : 99f2b764b58ba786dbd3a06eb672d1feabf5cc96
+git_dirty        : yes (32개 변경)
+docker           : Docker version 29.7.2, build a7dcaa6
+docker_compose   : 5.4.0
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.4.10-87d57229.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+tool_version     : v2
+mode             : 30
+outage_seconds   : 30
+diag_vehicle_id  : DG30-132129
+backend_image    : sha256:1dade0e5fb38b9b8a992534ee2cf35c33775bfa131a2646ea4762e739c7be8e5
+backend_running  : sha256:1dade0e5fb38b9b8a992534ee2cf35c33775bfa131a2646ea4762e739c7be8e5
+backend_started  : 2026-09-13T04:00:35.227286976Z
+readiness_include: readinessState,db
+alert_rules_sha  : 24bbfe24fc8081f1
+alertmanager     : telemetry-alertmanager-exp 
+local_sink       : yes (외부 전송 없음)
+finished_at      : 2026-09-13T13:29:04+09:00
+success_criteria : 경로별 상태·지연, Redis 응답·재연결·경로 회복 구간, 알림 평가·발송 시각을 1회 관측
+verdict          : 관찰(1회)
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2

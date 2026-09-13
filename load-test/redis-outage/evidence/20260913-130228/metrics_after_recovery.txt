@@ -1,0 +1,6 @@
+telemetry_redis_unavailable_total{application="vehicle-telemetry-backend",route="/api/auth/refresh",} 10.0
+telemetry_redis_unavailable_total{application="vehicle-telemetry-backend",route="/api/auth/login",} 17.0
+telemetry_redis_unavailable_total{application="vehicle-telemetry-backend",route="/api/vehicles/{vehicleId}/diagnosis",} 10.0
+telemetry_ratelimit_failopen_total{application="vehicle-telemetry-backend",route="/api/auth/refresh",} 10.0
+telemetry_ratelimit_failopen_total{application="vehicle-telemetry-backend",route="/api/vehicles",} 16.0
+telemetry_ratelimit_failopen_total{application="vehicle-telemetry-backend",route="/api/vehicles/{vehicleId}/diagnosis",} 10.0

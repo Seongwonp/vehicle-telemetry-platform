@@ -1,0 +1,38 @@
+# 요약 — Redis 중단 모드=blip 1회 (도구 v2)
+# 원본: probes.csv · redis_ping.csv · backend_reconnect.txt · tsdb_*.json · alert_notifications.txt
+
+## 시각
+stop_cmd_ms      : 1789275349156
+stop_done_ms     : 1789275350983
+start_cmd_ms     : 1789275353199
+start_done_ms    : 1789275354688
+
+## 429 발생 건수 (0이어야 제한 카운터가 결과를 오염시키지 않은 것)
+0
+
+## 장애 중 경로별 응답 (중지 완료 ~ 기동 명령 사이에 **끝난** 요청)
+login,1, 503/REDIS_UNAVAILABLE ,2.008,2.008
+
+## 회복 — 기동 명령 기준 초
+redis_ping (마지막 실패 응답 종료 / 첫 PONG 응답 종료): - / +1.6
+docker start 완료: +1.5
+path,last_failure_end_s,first_success_end_s
+query,-,+21.7
+diag,-,+21.9
+login,-0.2,+22.1
+refresh,-,+22.3
+health,-,+22.5
+
+## 재연결 로그 (기동 명령 이후)
+2026-09-13T04:55:49.711058372Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/172.18.0.3:6379
+2026-09-13T04:55:49.711080925Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/172.18.0.3:6379
+2026-09-13T04:55:49.716699563Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: Connection refused: redis/172.18.0.3:6379
+2026-09-13T04:55:49.716720251Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: Connection refused: redis/172.18.0.3:6379
+2026-09-13T04:55:54.509932330Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379
+2026-09-13T04:55:54.509956975Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379
+
+## 알림 평가 원본 (ALERTS 시계열: 첫·마지막 샘플, 중지 완료 기준 초)
+RedisUnavailableRejections pending 첫 +22s 마지막 +52s
+
+## 로컬 수신기가 받은 알림 (중지 완료 기준 초)
+(수신기 없음 또는 수신 0건)

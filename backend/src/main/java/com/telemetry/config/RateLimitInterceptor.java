@@ -3,6 +3,7 @@ package com.telemetry.config;
 import com.telemetry.metrics.RedisMetrics;
 import com.telemetry.security.ClientIpResolver;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,12 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Value("${rate-limit.requests-per-minute}")
     private int requestsPerMinute;
+
+    /** 알림용 합계 카운터를 기동 시 0으로 둔다 — {@link RedisMetrics#RATE_LIMIT_FAIL_OPEN_ALL}. */
+    @PostConstruct
+    void preRegisterMetrics() {
+        RedisMetrics.preRegister(meterRegistry);
+    }
 
     @Override
     public boolean preHandle(

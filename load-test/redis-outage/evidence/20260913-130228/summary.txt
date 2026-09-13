@@ -1,0 +1,58 @@
+# 요약 — Redis 중단 모드=30 1회 (도구 v2)
+# 원본: probes.csv · redis_ping.csv · backend_reconnect.txt · tsdb_*.json · alert_notifications.txt
+
+## 시각
+stop_cmd_ms      : 1789272154953
+stop_done_ms     : 1789272156996
+start_cmd_ms     : 1789272187135
+start_done_ms    : 1789272188512
+
+## 429 발생 건수 (0이어야 제한 카운터가 결과를 오염시키지 않은 것)
+0
+
+## 장애 중 경로별 응답 (중지 완료 ~ 기동 명령 사이에 **끝난** 요청)
+diag,5, 503/REDIS_UNAVAILABLE ,4.008,4.012
+health,9, 503/- ,2.020,2.078
+liveness,6, 200/- ,0.006,0.010
+login,9, 503/REDIS_UNAVAILABLE ,2.007,2.012
+login_wrongpw,1, 503/REDIS_UNAVAILABLE ,2.007,2.007
+query,9, 200/- ,2.008,2.016
+query_noauth,1, 403/- ,0.007,0.007
+readiness,6, 200/- ,0.006,0.009
+refresh,5, 503/REDIS_UNAVAILABLE ,4.008,4.009
+
+## 회복 — 기동 명령 기준 초
+redis_ping_first_PONG,+0.1
+path,last_failure_end_s,first_success_end_s
+query,-,미회복
+diag,-,미회복
+login,-,미회복
+refresh,-,미회복
+health,-,미회복
+
+## 재연결 로그 (기동 명령 이후)
+2026-09-13T04:03:02.627911193Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:02.628066455Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:06.584685464Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: redis: Name or service not known
+2026-09-13T04:03:06.584783965Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: redis
+2026-09-13T04:03:14.827045292Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:14.827069621Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:14.827980105Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: redis
+2026-09-13T04:03:14.828035072Z WARN i.l.c.p.ConnectionWatchdog - Cannot reconnect to [redis/<unresolved>:6379]: redis
+2026-09-13T04:03:31.227581143Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:31.227607552Z INFO i.l.c.p.ConnectionWatchdog - Reconnecting, last destination was redis/<unresolved>:6379
+2026-09-13T04:03:31.230484804Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379
+2026-09-13T04:03:31.230503616Z INFO i.l.c.p.ReconnectionHandler - Reconnected to redis/<unresolved>:6379
+
+## 알림 평가 원본 (ALERTS 시계열: 첫·마지막 샘플, 중지 완료 기준 초)
+RedisUnavailableRejections pending 첫 +36s 마지막 +81s
+RateLimitFailingOpen pending 첫 +36s 마지막 +81s
+RedisUnavailableRejections firing 첫 +96s 마지막 +336s
+RateLimitFailingOpen firing 첫 +96s 마지막 +336s
+
+## 로컬 수신기가 받은 알림 (중지 완료 기준 초)
+TelemetryBackendDown resolved +66s
+RedisUnavailableRejections firing +141s
+RateLimitFailingOpen firing +141s
+RateLimitFailingOpen resolved +441s
+RedisUnavailableRejections resolved +441s

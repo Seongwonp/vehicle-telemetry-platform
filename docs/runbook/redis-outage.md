@@ -14,8 +14,12 @@ curl -s -o /dev/null -w '%{http_code} %{time_total}\n' http://localhost:8080/act
 
 | 보이는 것 | 뜻 |
 | --- | --- |
-| liveness **200**인데 readiness **503** | 프로세스는 멀쩡하고 **의존 저장소가 없다.** 이 문서 |
+| liveness **200**, readiness **200**, 종합 `/actuator/health` **503** | 프로세스도 라우팅도 멀쩡하고 **공유 저장소(Redis 등)가 없다.** 이 문서 |
 | liveness도 **503** | Redis 문제가 아니다. 프로세스 자체를 본다 |
+
+**readiness는 Redis 장애에 503이 되지 않는다(2026-09-13 변경).** 일반 조회를 fail-open으로
+살려두는데 readiness가 503이면 프록시가 전 인스턴스를 빼서 그 조회가 도달하지 못한다.
+Redis 상태는 **종합 health·지표·알림**에서 본다(`docs/redis-failure-policy.md` §9-1).
 | 응답 자체가 없음 | 네트워크·컨테이너를 먼저 본다 |
 
 확정하려면 `/api/**`에서 **503 `REDIS_UNAVAILABLE`**이 나오는지 본다:
@@ -32,10 +36,13 @@ curl -s http://localhost:8080/api/vehicles/KR-GA-1234/diagnosis -H "Authorizatio
 | --- | --- | --- |
 | **일반 조회**(`/api/vehicles`, `.../anomalies`) | **된다** (200, 약 2초) | fail-open — 제한만 못 걸고 데이터는 정확하다 |
 | **진단**(`.../diagnosis`) | **안 된다** (503, 약 4초) | fail-closed — 비용이 드는 호출이다 |
-| **로그인 / refresh / logout** | **안 된다** (503, 약 2초) | fail-closed — 보안 통제와 토큰 저장소다 |
+| **로그인 / logout** | **안 된다** (503, 약 2초) | fail-closed — 보안 통제와 토큰 저장소다 |
+| **refresh** | **안 된다** (503, 약 4초) | 일반 rate limit(fail-open 2초)을 지난 뒤 토큰 저장소에서 다시 막힌다 |
 | **MQTT → Kafka → InfluxDB 수집** | **계속 흐른다** | Redis를 안 쓴다 |
 | **WebSocket 실시간 스트림** | 코드상 Redis 비의존 — **실측 안 함** | 핸드셰이크가 `/api/**` 밖이다 |
 | `/actuator/health/liveness` | **200** (8ms) | 재시작 대상이 아니다 |
+| `/actuator/health/readiness` | **200** | 공유 저장소 장애로 전 인스턴스를 빼지 않는다(§9-1) |
+| `/actuator/health` (종합) | **503** | Redis 상태는 여기서 본다 |
 
 **운영자가 보게 될 그림**: 데이터는 계속 쌓이고 조회 화면도 뜨는데(느리다),
 **로그인이 안 되고 진단만 실패한다.** 이건 고장이 아니라 설계된 동작이다.
@@ -66,11 +73,17 @@ docker start telemetry-redis
 ```
 
 **재기동이 필요 없다.** Lettuce `ConnectionWatchdog`이 자동 재연결한다.
-측정에서 로그인 200까지 **8초**(오전)와 **30초**(오후)가 나왔다 —
-**왜 다른지 확인하지 않았으므로 "N초면 된다"고 기대하지 말고 아래로 확인한다.**
+관측값은 실행마다 달랐다 — 로그인 200까지 8초·30초(2026-09-12), 기동 명령 기준 앱 경로 회복이
+30초 중단 뒤 **+4·+24·+6초**, 90초 중단 뒤 **+25·+34·+34초**(2026-09-13, 각 3회, 무부하). 6회 모두 회복이 backend 로그
+`Reconnected to redis`와 겹쳤고 **재연결 대기가 주요 후보**다(Lettuce 기본 재연결 간격 상한 30초). **Redis가 PONG을 돌려준 뒤에도
+앱이 30초 넘게 503을 낸 실행이 있었다.** "N초면 된다"고 기대하지 말고 아래로 확인한다.
 
 ```bash
-curl -s http://localhost:8080/actuator/health/readiness     # {"status":"UP"}
+docker logs --since 10m telemetry-backend 2>&1 | grep -E "Reconnected to redis|Cannot reconnect"
+```
+
+```bash
+curl -s http://localhost:8080/actuator/health     # {"status":"UP"} — readiness는 장애 중에도 UP이라 복구 판정에 못 쓴다
 ```
 
 제한이 실제로 재개됐는지는 헤더로 본다:
@@ -88,6 +101,30 @@ curl -s -D - -o /dev/null http://localhost:8080/api/vehicles -H "Authorization: 
 rate(telemetry_ratelimit_failopen_total[1m])
 rate(telemetry_redis_unavailable_total[1m])
 ```
+
+### 3-1. 알림이 뜻하는 것과 오는 시각 (2026-09-13 규칙 변경 후)
+
+두 알림은 **요청 처리에서 관찰한 Redis 영향**이 이어지는 동안 울린다 — `sum(increase(telemetry_*_all_total[1m])) > 0` + `for: 1m`.
+**Redis 자체의 가용성 감시도, 장애 지속 시간 측정도 아니다.** 합계 카운터(`_all_total`)는 기동 시 0으로 등록돼 첫 실패부터 보인다.
+근거: `load-test/redis-outage/RESULT_20260913_alert_timing.md` §6·§7-4.
+
+| 각 1회 관측 (중지 완료 기준) | 90초 중단 | 30초 중단 | 실패 1건 |
+| --- | --- | --- | --- |
+| firing(Prometheus) | +70.6s — **실패 중** | +85.0s — 복구 뒤, 평가 1회 | 없음 |
+| Redis 응답(PONG) | +91.9s | +31.7s | — |
+| 앱 경로 첫 성공 | +124.4s | +36.1s | — |
+| 해제 | 마지막 증가 뒤 약 53s | 약 53s | 약 53s |
+| **수신기가 받은 firing** | +115.5s | **없음** | 없음 |
+| **수신기가 받은 resolved** | +415.5s | 없음 | 없음 |
+
+- **짧은 장애는 알림이 오지 않는다 — 수용한 한계다**(2026-09-13 결정). firing이 Alertmanager 첫 발송 대기(`group_wait: 30s`)보다
+  먼저 끝나면 발송되지 않는다. 장애가 있었는지는 알림이 아니라 카운터·대시보드·로그·Prometheus `ALERTS` 이력으로 확인한다.
+- **firing이 왔을 때 Redis는 이미 살아 있을 수 있고, 앱도 회복했을 수 있다.** 90초 세 실행에서 수신은 모두 Redis 응답 뒤였고,
+  앱 경로 회복보다 뒤였던 실행이 1회 있었다. 알림을 받으면 §1·§3 명령으로 **지금** 상태를 본다.
+  Alertmanager 대기 시간은 바꾸지 않기로 했다.
+- **resolved 알림은 해제보다 최대 5분 늦게 온다**(`group_interval: 5m`). 복구 판단은 알림이 아니라 §3의 확인 명령으로 한다.
+- **요청이 없으면 울리지 않는다.** Redis가 죽어 있어도 Redis를 쓰는 요청이 없으면 카운터가 0에 머문다.
+- "어디서" 막혔는지는 경로별 카운터(`telemetry_*_total{route}`)로 본다. 알림은 합계만 본다.
 
 ## 4. 하면 안 되는 것
 

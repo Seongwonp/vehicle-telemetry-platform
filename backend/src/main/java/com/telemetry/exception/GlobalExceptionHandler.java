@@ -53,11 +53,14 @@ public class GlobalExceptionHandler {
             found = new SimpleMeterRegistry();
         }
         this.meterRegistry = found;
+        // 알림용 합계 카운터를 기동 시 0으로 둔다 — 첫 실패가 increase()에 보이게(RedisMetrics.UNAVAILABLE_ALL).
+        RedisMetrics.preRegister(this.meterRegistry);
     }
 
     /** 테스트와 직접 조립용. */
     public GlobalExceptionHandler(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
+        RedisMetrics.preRegister(this.meterRegistry);
     }
 
     /**

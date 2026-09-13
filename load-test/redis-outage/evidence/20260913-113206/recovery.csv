@@ -1,0 +1,7 @@
+path,criterion,t_ms,after_start_cmd_ms,after_start_done_ms,http,code
+redis_ping,PONG,1789266856529,9031,6106,-,-
+refresh,401(없는 토큰을 저장소가 정상 거부),1789266869193,21695,18770,401,UNAUTHORIZED
+diag,503 아님(404 기대),1789266869302,21804,18879,404,NOT_FOUND
+query,200 + X-RateLimit-Remaining 재등장(제한 재적용),1789266872949,25451,22526,200,-
+health,종합 health 200,1789266873127,25629,22704,200,-
+login,200,1789266873014,25516,22591,200,-

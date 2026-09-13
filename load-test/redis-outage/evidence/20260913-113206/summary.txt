@@ -1,0 +1,54 @@
+# 요약 — Redis 90초 중단 1회
+# 원본: probes.csv · recovery.csv · alerts.csv · timeline.txt (이 파일은 집계일 뿐이다)
+
+## 경로별 응답 (phase,path,건수,http/code 집합,최소초,최대초)
+baseline,diag,1, 404/NOT_FOUND ,0.360,0.360
+baseline,health,1, 200/- ,0.024,0.024
+baseline,liveness,1, 200/- ,0.014,0.014
+baseline,login,2, 200/- ,0.179,0.902
+baseline,login_wrongpw,1, 401/UNAUTHORIZED ,0.165,0.165
+baseline,query,1, 200/- ,0.541,0.541
+baseline,query_noauth,1, 403/- ,0.034,0.034
+baseline,readiness,1, 200/- ,0.013,0.013
+baseline,refresh,1, 401/UNAUTHORIZED ,0.021,0.021
+outage,diag,4, 503/REDIS_UNAVAILABLE ,4.011,4.047
+outage,health,4, 503/- ,2.023,2.115
+outage,liveness,4, 200/- ,0.018,0.024
+outage,login,4, 503/REDIS_UNAVAILABLE ,2.009,2.027
+outage,login_wrongpw,1, 503/REDIS_UNAVAILABLE ,2.020,2.020
+outage,query,4, 200/- ,2.016,2.021
+outage,query_noauth,4, 403/- ,0.009,0.027
+outage,readiness,4, 200/- ,0.012,0.024
+outage,refresh,4, 503/REDIS_UNAVAILABLE ,4.020,4.028
+post,liveness,1, 200/- ,0.013,0.013
+post,readiness,1, 200/- ,0.021,0.021
+post,refresh_pre_outage_token,1, 200/- ,0.015,0.015
+recovery,diag,3, 503/REDIS_UNAVAILABLE  404/NOT_FOUND ,3.293,4.022
+recovery,health,5, 503/-  200/- ,0.021,2.115
+recovery,login,5, 503/REDIS_UNAVAILABLE  200/- ,0.158,2.021
+recovery,query,5, 200/- ,0.041,2.032
+recovery,refresh,3, 503/REDIS_UNAVAILABLE  401/UNAUTHORIZED ,3.389,4.029
+
+## 429 발생 건수 (0이어야 제한 카운터가 결과를 오염시키지 않은 것)
+0
+
+## 회복 (기동 명령 기준 ms / 기동 완료 기준 ms)
+path,criterion,t_ms,after_start_cmd_ms,after_start_done_ms,http,code
+redis_ping,PONG,1789266856529,9031,6106,-,-
+refresh,401(없는 토큰을 저장소가 정상 거부),1789266869193,21695,18770,401,UNAUTHORIZED
+diag,503 아님(404 기대),1789266869302,21804,18879,404,NOT_FOUND
+query,200 + X-RateLimit-Remaining 재등장(제한 재적용),1789266872949,25451,22526,200,-
+health,종합 health 200,1789266873127,25629,22704,200,-
+login,200,1789266873014,25516,22591,200,-
+
+## 알림 상태 변화 (중지 완료 기준 초)
+RedisUnavailableRejections pending   +54s
+RateLimitFailingOpen pending   +76s
+RedisUnavailableRejections firing    +120s
+RedisUnavailableRejections AM수신    +120s
+RateLimitFailingOpen firing    +138s
+RateLimitFailingOpen AM수신    +138s
+RateLimitFailingOpen inactive  +436s (해제)
+RateLimitFailingOpen AM해제    +436s
+RedisUnavailableRejections inactive  +436s (해제)
+RedisUnavailableRejections AM해제    +436s
