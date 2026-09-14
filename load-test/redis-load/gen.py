@@ -75,7 +75,9 @@ def main():
 
     lock = threading.Lock()
     f = open(a.out, "w", newline="")
-    w = csv.writer(f)
+    # csv 모듈 기본 줄끝은 CRLF다. 증거는 LF로 커밋되므로 LF로 쓴다 — 아니면 manifest가 clone에서 깨진다
+    # (2026-09-14 L1 증거가 그렇게 깨졌다).
+    w = csv.writer(f, lineterminator="\n")
     w.writerow(["gen", "seq", "path", "intended_ms", "sent_ms", "end_ms",
                 "http", "code", "ratelimit_hdr", "outcome"])
 

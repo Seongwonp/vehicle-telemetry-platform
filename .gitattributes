@@ -14,5 +14,12 @@ load-test/**/*.sh text eol=lf
 # 바이너리 증거를 넣게 되면 그때 그 경로만 예외로 뺀다.
 load-test/**/evidence/** text eol=lf
 
+# 예외: 2026-09-14 redis-load 두 실행은 **CRLF로 쓴 파일로 manifest를 계산했다**(Python csv 기본 줄끝,
+# Windows Python 출력). 위 규칙으로 LF로 바꿔 커밋하자 git blob이 manifest와 어긋나 CI 증거 검사가 깨졌다.
+# 증거를 고치지 않고 **이 두 폴더만 바이트를 그대로 보존**한다. 도구(gen.py·sampler.py)는 LF로 쓰게 고쳤으므로
+# 새 실행에는 이 예외가 필요 없다.
+load-test/redis-load/evidence/20260914-132129/** -text
+load-test/redis-load/evidence/20260914-stallprobe/** -text
+
 # 운영 스크립트도 같은 이유로 LF 고정 — CRLF로 체크아웃되면 Linux에서 실행이 깨진다.
 scripts/**/*.sh text eol=lf

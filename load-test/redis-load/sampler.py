@@ -33,7 +33,7 @@ def main():
     a = ap.parse_args()
 
     with open(a.out, "w", newline="") as f:
-        w = csv.writer(f)
+        w = csv.writer(f, lineterminator="\n")  # 증거는 LF — gen.py 주석 참고
         w.writerow(["ts_ms", "scrape_ms", "series", "value"])
         while time.time() < a.until:
             t0 = time.time()
