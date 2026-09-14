@@ -1,0 +1,53 @@
+# Redis 장애 × 낮은 부하 — 구간별 요약
+# 단계 1.0: /api 생성기 4개 × 0.8 req/s, liveness 1.0 req/s
+# 구간(요청은 '예정 시각'으로 분류): baseline -92~-7s / outage +0~+60s / reconnect +60~+120s / recovery_tail +150~+208s (중지 완료 기준)
+
+## 요청
+phase,path,n,rate/s(예정),예상밖,timeout,conn_err,http분포,lat_p50_ms,lat_p95_ms,lat_p99_ms,lat_max_ms,lag_p95_ms,lag_max_ms
+baseline,query,136,1.60(1.60),0,0,0,200+hdr:136,7,11,14,15,6972,10732
+baseline,refresh,136,1.60(1.60),0,0,0,401/UNAUTHORIZED+hdr:136,5,10,12,13,8221,10721
+baseline,liveness,85,1.00(1.00),0,0,0,200:85,4,6,8,8,6722,10721
+outage,query,96,1.60(1.60),14,0,0,200:82 200+hdr:14,2005,2896,12751,12751,4497,9496
+outage,refresh,96,1.60(1.60),14,0,0,401/UNAUTHORIZED+hdr:14 503/REDIS_UNAVAILABLE:82,4005,5039,5041,5041,5746,10746
+outage,liveness,60,1.00(1.00),0,0,0,200:60,3,4,4,4,0,1035
+reconnect,query,96,1.60(1.60),0,0,0,200:62 200+hdr:34,2005,2008,2114,2114,738,10736
+reconnect,refresh,96,1.60(1.60),0,0,0,401/UNAUTHORIZED:4 401/UNAUTHORIZED+hdr:34 503/REDIS_UNAVAILABLE:58,4004,4113,14739,14739,1,9487
+reconnect,liveness,60,1.00(1.00),0,0,0,200:60,3,4,4,4,0,109
+recovery_tail,query,92,1.59(1.60),0,0,0,200+hdr:92,4,6,7,7,229,2729
+recovery_tail,refresh,94,1.62(1.60),0,0,0,401/UNAUTHORIZED+hdr:94,3,5,5,5,9,1479
+recovery_tail,liveness,58,1.00(1.00),0,0,0,200:58,3,4,4,4,729,2729
+
+## 서버 지표 (actuator, 약 2초 간격)
+phase,표본,busy_mean,busy_max,current_max,max_threads,active_req_mean,active_req_max,live_threads_max,waiting_max,timed_waiting_max,cpu_mean%,cpu_max%,heap_max_MB,scrape_max_ms,scrape_errors
+baseline,37,1.0,1,10,200,1.0,1,58,20,23,0.5,1.7,102,17,0
+outage,29,9.4,25,26,200,9.4,25,104,27,54,0.4,0.9,101,18,0
+reconnect,35,6.5,18,26,200,6.5,18,105,27,54,0.4,1.3,101,23,0
+recovery_tail,29,1.1,2,26,200,1.0,2,105,27,54,0.3,0.8,125,14,0
+주: active_req에는 지표를 긁는 요청 자신(1건)이 포함된다.
+
+## 컨테이너 자원 (docker stats, 생성기는 컨테이너별 표본을 모은 값)
+phase,container,표본,cpu_mean%,cpu_max%,mem_max_MiB
+baseline,generators,104,0.1,0.2,14
+baseline,redisload-live,26,0.1,0.2,14
+baseline,redisload-sampler,26,0.1,0.2,15
+baseline,telemetry-backend,26,7.0,32.3,665
+baseline,telemetry-redis,26,0.3,2.5,7
+outage,generators,72,0.1,0.5,15
+outage,redisload-live,18,0.1,0.1,14
+outage,redisload-sampler,18,0.1,0.3,15
+outage,telemetry-backend,18,6.5,19.2,731
+outage,telemetry-redis,18,0.0,0.0,nan
+reconnect,generators,72,0.1,0.4,14
+reconnect,redisload-live,18,0.1,0.2,14
+reconnect,redisload-sampler,18,0.1,0.2,15
+reconnect,telemetry-backend,18,4.2,17.8,742
+reconnect,telemetry-redis,18,0.8,2.9,9
+recovery_tail,generators,72,0.1,0.2,14
+recovery_tail,redisload-live,18,0.1,0.1,14
+recovery_tail,redisload-sampler,18,0.1,0.2,22
+recovery_tail,telemetry-backend,18,4.8,17.8,771
+recovery_tail,telemetry-redis,18,0.4,2.8,5
+
+## 판정 (PLAN_20260914.md §6)
+실행 유효성: 무효 — 생성기 지연 초과 baseline/query p95=6972 max=10732; 생성기 지연 초과 baseline/refresh p95=8221 max=10721; 생성기 지연 초과 baseline/liveness p95=6722 max=10721; 생성기 지연 초과 outage/query p95=4497 max=9496; 생성기 지연 초과 outage/refresh p95=5746 max=10746; 생성기 지연 초과 outage/liveness p95=0 max=1035; 생성기 지연 초과 reconnect/query p95=738 max=10736; 생성기 지연 초과 reconnect/refresh p95=1 max=9487; 생성기 지연 초과 recovery_tail/query p95=229 max=2729; 생성기 지연 초과 recovery_tail/refresh p95=9 max=1479; 생성기 지연 초과 recovery_tail/liveness p95=729 max=2729
+다음 단계로 올리지 않는 조건: 해당 — [6] 실행 무효: 생성기 지연 초과 baseline/query p95=6972 max=10732; 생성기 지연 초과 baseline/refresh p95=8221 max=10721; 생성기 지연 초과 baseline/liveness p95=6722 max=10721; 생성기 지연 초과 outage/query p95=4497 max=9496; 생성기 지연 초과 outage/refresh p95=5746 max=10746; 생성기 지연 초과 outage/liveness p95=0 max=1035; 생성기 지연 초과 reconnect/query p95=738 max=10736; 생성기 지연 초과 reconnect/refresh p95=1 max=9487; 생성기 지연 초과 recovery_tail/query p95=229 max=2729; 생성기 지연 초과 recovery_tail/refresh p95=9 max=1479; 생성기 지연 초과 recovery_tail/liveness p95=729 max=2729

@@ -1,0 +1,5 @@
+key,value
+level,L1
+generators,4
+rate_per_generator,0.8
+liveness_rate,1

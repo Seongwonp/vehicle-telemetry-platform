@@ -1,0 +1,11 @@
+# 실험 전용 override (load-test/redis-load/PLAN_20260914.md §2).
+#
+# Tomcat 스레드 지표(tomcat_threads_busy_threads 등)를 actuator로 내보내는 설정만 켠다.
+# 요청 처리 경로·timeout·rate limit·보안 설정은 건드리지 않는다.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml \
+#     -f load-test/redis-load/compose.observe.yml up -d --no-deps backend
+services:
+  backend:
+    environment:
+      SERVER_TOMCAT_MBEANREGISTRY_ENABLED: "true"

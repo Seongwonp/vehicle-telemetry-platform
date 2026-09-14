@@ -1,0 +1,22 @@
+gen_1.csv n=256 first_sent=+1.3s lag>1s=11 at_s=[60, 62, 61, 65, 63, 66]...[126, 270, 268]
+gen_2.csv n=256 first_sent=+1.4s lag>1s=27 at_s=[62, 61, 60, 63, 65, 67]...[190, 268, 270]
+gen_3.csv n=256 first_sent=+0.7s lag>1s=18 at_s=[68, 66, 64, 59, 61, 63]...[126, 269, 268]
+gen_4.csv n=256 first_sent=+0.2s lag>1s=18 at_s=[61, 59, 60, 66, 63, 64]...[131, 269, 268]
+live.csv n=320 first_sent=+0.4s lag>1s=13 at_s=[60, 59, 63, 64, 62, 66]...[125, 268, 269]
+20s bucket (from run start): n, lag_max_ms, lag>1s count
+     0s n=84 max=461 over1s=0
+    20s n=84 max=109 over1s=0
+    40s n=84 max=10721 over1s=5
+    60s n=84 max=9721 over1s=37
+    80s n=84 max=10732 over1s=4
+   100s n=84 max=5732 over1s=4
+   120s n=84 max=10746 over1s=19
+   140s n=84 max=890 over1s=0
+   160s n=84 max=1 over1s=0
+   180s n=84 max=10736 over1s=8
+   200s n=84 max=1 over1s=0
+   220s n=84 max=68 over1s=0
+   240s n=84 max=1 over1s=0
+   260s n=84 max=2729 over1s=10
+   280s n=84 max=22 over1s=0
+   300s n=84 max=1 over1s=0

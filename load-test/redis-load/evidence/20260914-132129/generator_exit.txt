@@ -1,0 +1,6 @@
+redisload-live exit=0
+redisload-gen-4 exit=0
+redisload-gen-3 exit=0
+redisload-gen-2 exit=0
+redisload-gen-1 exit=0
+redisload-sampler exit=0

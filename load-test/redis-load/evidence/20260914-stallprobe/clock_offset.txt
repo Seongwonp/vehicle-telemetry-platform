@@ -1,0 +1,5 @@
+# 호스트(Git Bash date) 대 컨테이너(python time.time) 시계 차이, 2026-09-14 13:28경 3회
+# offset_vs_mid = 컨테이너 값 - 호스트 전후 평균 (ms). run_ms는 docker run 왕복 시간.
+host_before=1789360105520 container=1789360107960 host_after=1789360109656 offset_vs_mid=372 run_ms=4136
+host_before=1789360109687 container=1789360111887 host_after=1789360113617 offset_vs_mid=235 run_ms=3930
+host_before=1789360113645 container=1789360115980 host_after=1789360117805 offset_vs_mid=255 run_ms=4160
