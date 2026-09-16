@@ -29,6 +29,17 @@ Telemetrix에서 “검증했다”는 표현은 코드가 그럴듯하거나 �
 5. **무결성** — 위 파일을 포함한 manifest가 clean checkout에서 재계산된다
 
 RESULT 문서의 서술("이미지는 반복 전에 빌드했다", "문서만 편집했다")은 **이 조건을 대신하지 못한다.**
+
+**2026-09-16부터 1~4는 `load-test/lib/evidence.sh`가 실행마다 자동으로 남긴다** — `evidence_init`/`evidence_finish`를 쓰는 모든 실험에 적용된다.
+
+| 조건 | 남는 파일 |
+| --- | --- |
+| 1. 소스 상태 | `provenance_source.txt` — commit, dirty 파일 목록과 각 sha256 |
+| 2·3. 이미지 식별·실행 일치 | `containers_start.csv`·`containers_end.csv` — 컨테이너별 image ID, 태그의 현재 image ID와 같은지(`runs_current_tag_image`). `metadata.txt`의 `exec_images`에 시작·종료 사이 변화 |
+| 4. 이미지 밖 실행 입력 | `provenance_source.txt`의 Compose·실행 스크립트 checksum, `container_mounts_*.txt` |
+| 5. 무결성 | 위 파일이 전부 manifest(`checksums.txt`)에 들어간다 |
+
+회차 간 실행 이미지가 같은지는 `load-test/lib/summarize.sh`가 **지문으로 비교해 보여준다** — 판정은 여전히 RESULT 문서가 한다.
 2026-09-16 결정이며, 그 시점에 이 예외를 충족한 반복 실행은 없다.
 
 `검증 완료`는 모든 환경에서 안전하다는 뜻이 아니다. 문장에는 항상 부하, 장애 시간,

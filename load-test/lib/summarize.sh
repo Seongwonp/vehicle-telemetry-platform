@@ -52,6 +52,26 @@ for d in "${RUNS[@]}"; do
   grep -qE '^git_dirty *: *yes' "$d/metadata.txt" 2>/dev/null && DIRTY=$((DIRTY + 1))
 done
 
+# 회차의 실행 이미지 조합 지문 — evidence.sh가 남긴 containers_start.csv의 (이름, image ID)를 정렬해 해시한다.
+# 회차 간 지문이 같아야 "같은 실행 산출물로 반복했다"를 증거로 말할 수 있다(evidence-policy.md 예외 조건 3).
+image_fp() {
+  local f="$1/containers_start.csv"
+  if [ -f "$f" ] && [ "$(awk 'NR>1 && !/^#/' "$f" | wc -l)" -gt 0 ]; then
+    awk -F, 'NR>1 && !/^#/{print $1","$3}' "$f" | sort | sha256sum | cut -c1-12
+  else
+    echo "-"
+  fi
+}
+FPS=()
+for d in "${RUNS[@]}"; do FPS+=("$(image_fp "$d")"); done
+if printf '%s\n' "${FPS[@]}" | grep -qx -- '-'; then
+  SAME_IMAGES="판단 불가 — 실행 이미지 기록이 없는 회차가 있다"
+elif [ "$(printf '%s\n' "${FPS[@]}" | sort -u | wc -l)" -eq 1 ]; then
+  SAME_IMAGES="예 (지문 ${FPS[0]})"
+else
+  SAME_IMAGES="아니오 — 회차마다 실행 이미지 조합이 다르다"
+fi
+
 {
   echo "# $SCENARIO 반복 실행 요약"
   echo
@@ -62,6 +82,7 @@ done
   echo "| 중단된 실행 | ${#ABORTED[@]} |"
   echo "| 실패 횟수 | $FAILED |"
   echo "| 작업 트리 dirty 실행 | $DIRTY / ${#RUNS[@]} |"
+  echo "| 회차 간 실행 이미지 조합 동일 | $SAME_IMAGES |"
   echo "| **검증 상태** | 자동 판정하지 않는다 — RESULT 문서가 성공 기준으로 판정한다$([ "${#RUNS[@]}" -lt 3 ] && echo ' (3회 미만: 반복 기준 미달)') |"
   echo
   echo "> 평균을 내지 않는다. 회차별 값을 그대로 두고 최소·최대만 덧붙인다 —"
@@ -112,15 +133,15 @@ done
   echo
   echo "## 회차별 판정"
   echo
-  echo "| 회차 | run-id | git commit (dirty) | 판정 |"
-  echo "| ---: | --- | --- | --- |"
+  echo "| 회차 | run-id | git commit (dirty) | 실행 이미지 지문 | 판정 |"
+  echo "| ---: | --- | --- | --- | --- |"
   n=1
   for d in "${RUNS[@]}"; do
     id="$(basename "$d")"
     sha="$(awk -F': *' '/^git_commit/{print substr($2,1,7)}' "$d/metadata.txt")"
     dirty="$(awk -F': *' '/^git_dirty/{print $2}' "$d/metadata.txt")"
     verdict="$(awk -F': *' '/^verdict/{print $2}' "$d/metadata.txt")"
-    printf "| %d | \`%s\` | %s (%s) | %s |\n" "$n" "$id" "${sha:-?}" "${dirty:-?}" "${verdict:-미기재}"
+    printf "| %d | \`%s\` | %s (%s) | %s | %s |\n" "$n" "$id" "${sha:-?}" "${dirty:-?}" "$(image_fp "$d")" "${verdict:-미기재}"
     n=$((n+1))
   done
 

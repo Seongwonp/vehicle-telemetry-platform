@@ -59,6 +59,87 @@ wait_until() {
   done
 }
 
+# ── 실행 산출물 고정 증거 ────────────────────────────────────────────────
+#
+# docs/evidence-policy.md "예외" 조건 1~4를 **실행마다 자동으로** 남긴다.
+# 2026-09-16까지는 커밋 SHA와 dirty **개수**만 남겨서, 반복 실험 12회가 전부
+# "어떤 코드·어떤 이미지로 돌았는지"를 증거로 확인할 수 없었다(문서 서술만 있었다).
+#
+#   provenance_source.txt       1. dirty 파일 목록과 sha256   4. Compose·실행 스크립트 checksum
+#   containers_{start,end}.csv  2. 서비스별 image ID   3. 실행 컨테이너 image ID와 태그 image ID 일치
+#   container_mounts_*.txt      4. bind mount 목록
+#
+# **판정은 하지 않는다 — 기록만 한다.** 환경변수는 비밀값이 섞이므로 담지 않는다.
+
+# $1 = 실행 명령 원문
+_evidence_capture_source() {
+  local cmdline="$1" skipped=0 entry st path sum f
+  {
+    echo "# 소스 상태 — 실행 시작 시점"
+    echo "commit $(git rev-parse HEAD 2>/dev/null || echo '(unknown)')"
+    echo
+    echo "## dirty 파일 — 상태<TAB>sha256<TAB>경로 (삭제된 파일은 sha256 '-')"
+    while IFS= read -r -d '' entry; do
+      st="${entry:0:2}"; path="${entry:3}"
+      # 이름 변경·복사는 -z 형식에서 원래 경로가 한 항목 더 온다
+      case "$st" in R*|C*) IFS= read -r -d '' _ ;; esac
+      # 증거 디렉터리는 실행 입력이 아니다(지금 만드는 이 실행 자신도 여기 있다)
+      case "$path" in load-test/*/evidence/*) skipped=$((skipped + 1)); continue ;; esac
+      if [ -f "$path" ]; then sum="$(sha256sum "$path" | cut -d' ' -f1)"; else sum="-"; fi
+      printf '%s\t%s\t%s\n' "$st" "$sum" "$path"
+    done < <(git status --porcelain=v1 -z --untracked-files=all 2>/dev/null)
+    echo "(evidence 디렉터리 안의 변경 ${skipped}건은 실행 입력이 아니라 목록에서 뺐다)"
+    echo
+    echo "## 이미지 밖 실행 입력 checksum"
+    for f in docker-compose*.yml load-test/lib/evidence.sh $cmdline; do
+      case "$f" in *.yml|*.sh) [ -f "$f" ] && sha256sum "$f" ;; esac
+    done | sort -u -k2
+  } > "$EVIDENCE_DIR/provenance_source.txt"
+}
+
+# $1 = start | end
+_evidence_capture_containers() {
+  local phase="$1" out mounts name project cimg ref timg same
+  out="$EVIDENCE_DIR/containers_${phase}.csv"
+  mounts="$EVIDENCE_DIR/container_mounts_${phase}.txt"
+  if ! docker info >/dev/null 2>&1; then
+    echo "# docker가 응답하지 않아 실행 컨테이너를 기록하지 못했다" > "$out"
+    return 0
+  fi
+  # runs_current_tag_image=no 이면 **태그가 가리키는 이미지와 다른(낡은) 이미지로 돌고 있다**는 뜻이다.
+  echo "name,image_ref,container_image_id,tag_image_id,runs_current_tag_image" > "$out"
+  : > "$mounts"
+  while IFS=$'\t' read -r name project; do
+    case "$name" in
+      redisload-*) ;;
+      *) [ "$project" = "vehicle-telemetry-platform" ] || continue ;;
+    esac
+    cimg="$(docker inspect -f '{{.Image}}' "$name" 2>/dev/null)"
+    ref="$(docker inspect -f '{{.Config.Image}}' "$name" 2>/dev/null)"
+    timg="$(docker image inspect -f '{{.Id}}' "$ref" 2>/dev/null || echo -)"
+    if [ -n "$cimg" ] && [ "$cimg" = "$timg" ]; then same=yes; else same=no; fi
+    echo "$name,$ref,${cimg:--},$timg,$same" >> "$out"
+    docker inspect -f '{{range .Mounts}}{{.Type}} {{.Source}} -> {{.Destination}} rw={{.RW}}{{println}}{{end}}' "$name" 2>/dev/null \
+      | sed '/^$/d' | sed "s|^|$name: |" >> "$mounts"
+  done < <(docker ps --format '{{.Names}}{{"\t"}}{{.Label "com.docker.compose.project"}}' 2>/dev/null | sort)
+  _evidence_drop_if_empty "container_mounts_${phase}.txt"
+}
+
+# 시작·종료 사이에 실행 이미지가 바뀌었는지 한 줄로
+_evidence_compare_containers() {
+  local s="$EVIDENCE_DIR/containers_start.csv" e="$EVIDENCE_DIR/containers_end.csv" ns ne changed
+  { [ -f "$s" ] && [ -f "$e" ]; } || { echo "기록 없음"; return; }
+  ns="$(awk 'NR>1 && !/^#/' "$s" | wc -l | tr -d ' ')"
+  ne="$(awk 'NR>1 && !/^#/' "$e" | wc -l | tr -d ' ')"
+  [ "$ns" -gt 0 ] || { echo "시작 시 기록된 컨테이너 없음"; return; }
+  changed="$(awk -F, 'NR==FNR{if(FNR>1)a[$1]=$3; next} FNR>1 && ($1 in a) && a[$1]!=$3{print $1}' "$s" "$e" | tr '\n' ' ')"
+  if [ -n "$changed" ]; then
+    echo "시작·종료 사이 이미지가 바뀐 컨테이너: $changed"
+  else
+    echo "시작·종료에 공통인 컨테이너의 이미지 동일 (시작 ${ns}개 / 종료 ${ne}개)"
+  fi
+}
+
 # $1 = 시나리오 디렉터리(load-test 아래 이름), $2 = 실행 명령 원문
 evidence_init() {
   local scenario="$1" cmdline="${2:-}"
@@ -99,6 +180,9 @@ evidence_init() {
   # inputs가 다 있어서 **정상 실행과 구분이 안 됐다.** 나중에 집계하면 조용히 섞인다.
   # 이 파일이 RUNNING으로 남아 있으면 그 실행은 끝까지 못 간 것이다.
   echo "RUNNING $EVIDENCE_STARTED_AT" > "$EVIDENCE_DIR/status.txt"
+
+  _evidence_capture_source "$cmdline"
+  _evidence_capture_containers start
 }
 
 # 이 실행이 끝까지 갔는지. 집계 도구가 중단된 실행을 걸러낼 때 쓴다.
@@ -200,8 +284,10 @@ evidence_capture_file() {
 # $1 = 성공 기준 문장, $2 = 판정(예: PASS/FAIL/관찰)
 evidence_finish() {
   _evidence_ready || return 0
+  _evidence_capture_containers end
   {
     echo "finished_at      : $(date -Iseconds)"
+    echo "exec_images      : $(_evidence_compare_containers)"
     echo "success_criteria : ${1:-(미기재)}"
     echo "verdict          : ${2:-(미기재)}"
     echo "verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2"
