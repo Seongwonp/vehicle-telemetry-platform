@@ -2,7 +2,7 @@
 
 | 항목 | 값 |
 | --- | --- |
-| **검증 상태** | **검증 완료(반복 기준)** — 3회 실행, 실패 0 |
+| **검증 상태** | **반복 관찰 3/3**(실패 0) — **`검증 완료`로 올리지 않는다**: 세 회차 모두 작업 트리 dirty(3·5·9개 변경)라 커밋만으로 실행 코드를 특정할 수 없고, 실행 산출물 고정(image digest·실행 컨테이너 image ID)도 evidence에 없다 — `docs/evidence-policy.md` 예외 조건 미충족(아래 "주의") |
 | 적용 범위 | 단일 Docker Compose, 200대 / 0.2초, 평문(dev) 프로파일, 장애 90초 |
 | 코드 상태 | `a04ad88` + 작업 트리 변경(아래 "주의" 참고) |
 | 실행 명령 | `bash load-test/lib/repeat.sh fault-injection 3 bash load-test/fault-injection/run_scenario.sh mosquitto 90` |
@@ -51,7 +51,8 @@ in-flight였던 PUBACK이 파티션 수(또는 그에 준하는 고정 구조)�
 
 세 회차의 `metadata.txt`에 `git_dirty: yes (3 / 5 / 9개 변경)`이 남아 있다.
 반복이 도는 동안 다른 파일(문서, `storage-integrity/run_scenario.sh`)을 편집했기
-때문이다. **백엔드 이미지는 반복 시작 전에 빌드된 것이라 회차 간 실행 코드는 같다.**
+때문이다. 작성 당시에는 **백엔드 이미지를 반복 시작 전에 빌드했으므로 회차 간 실행 코드가 같다**고 적었지만,
+**증거로는 확인되지 않는다** — evidence metadata에 image digest·실행 컨테이너 image ID가 없고 편집한 파일 목록도 없다(2026-09-16 대조).
 
 그래도 SHA만 보고 "같은 코드"라고 단정할 수 없는 상태이므로 여기 적어둔다.
 다음부터는 반복 중에 저장소를 건드리지 않는 편이 낫다.

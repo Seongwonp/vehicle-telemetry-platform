@@ -2,9 +2,9 @@
 
 | 항목 | 값 |
 | --- | --- |
-| **검증 상태** | **검증 완료(반복 기준)** — 3회 실행, 실패 0. 단 재전달 수는 **측정 불가**(아래) |
+| **검증 상태** | **반복 관찰 3/3**(실패 0). 단 재전달 수는 **측정 불가**(아래). **`검증 완료`로 올리지 않는다**: 세 회차 모두 작업 트리 dirty(14·17·17개 변경)라 커밋만으로 실행 코드를 특정할 수 없고, 실행 산출물 고정(image digest·실행 컨테이너 image ID)도 evidence에 없다 — `docs/evidence-policy.md` 예외 조건 미충족 |
 | 적용 범위 | 단일 Docker Compose, 200대 / 0.2초, 커밋 offset 20,000 도달 시 `docker kill` |
-| 코드 상태 | `a04ad88` + 작업 트리 변경(문서·스크립트 편집) |
+| 코드 상태 | `a04ad88` + 작업 트리 dirty — **변경 내용은 evidence에 없다**(작성 당시 "문서·스크립트 편집"으로 기록, 확인 불가) |
 | 실행 명령 | `bash load-test/lib/repeat.sh storage-integrity 3 bash load-test/storage-integrity/run_scenario.sh` |
 | 환경 | [`docs/verification/2026-09-05-environment.md`](../../docs/verification/2026-09-05-environment.md) |
 | 원본 증거 | `evidence/20260905-224642`, `-225132`, `-225553` |

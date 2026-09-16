@@ -2,9 +2,9 @@
 
 | 항목 | 값 |
 | --- | --- |
-| **검증 상태** | **검증 완료(반복 기준)** — 3회 실행, 실패 0 |
+| **검증 상태** | **반복 관찰 3/3**(실패 0) — **`검증 완료`로 올리지 않는다**: 세 회차 모두 작업 트리 dirty(11·12·12개 변경)라 커밋만으로 실행 코드를 특정할 수 없고, 실행 산출물 고정(image digest·실행 컨테이너 image ID)도 evidence에 없다 — `docs/evidence-policy.md` 예외 조건 미충족(아래) |
 | 적용 범위 | 단일 Docker Compose, 100대 / 0.2초 / 이상률 0.3, `anomaly-detector` 3 → 1 → 3 |
-| 코드 상태 | `a04ad88` + 작업 트리 변경(문서 편집) |
+| 코드 상태 | `a04ad88` + 작업 트리 dirty — **변경 내용은 evidence에 없다**(작성 당시 "문서 편집"으로 기록, 확인 불가) |
 | 실행 명령 | `bash load-test/lib/repeat.sh rebalance-redelivery 3 bash load-test/rebalance-redelivery/run_scenario.sh` |
 | 환경 | [`docs/verification/2026-09-05-environment.md`](../../docs/verification/2026-09-05-environment.md) |
 | 원본 증거 | `evidence/20260905-222636`, `-223259`, `-223921` |
@@ -59,5 +59,5 @@
   `container_name`과 포트 바인딩이 고정돼 스케일이 안 된다.
 - 이 실험은 **정상 스케일 조정**이다. OOM kill이나 네트워크 단절로 인한 리밸런싱은
   재전달 구간이 다를 수 있다.
-- 작업 트리 dirty 상태로 실행됐다(문서 편집). 백엔드·detector 이미지는 반복 시작 전
-  빌드된 것이라 회차 간 실행 코드는 같다.
+- 작업 트리 dirty 상태로 실행됐다. 작성 당시 "문서 편집이고 백엔드·detector 이미지는 반복 시작 전
+  빌드된 것이라 회차 간 실행 코드는 같다"고 적었지만 **증거로는 확인되지 않는다** — evidence에 변경 파일 목록·image digest가 없다(2026-09-16 대조).
