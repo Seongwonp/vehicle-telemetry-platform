@@ -43,6 +43,15 @@ done
 # 지표 키의 합집합 (회차마다 키가 다를 수 있다)
 KEYS="$(for d in "${RUNS[@]}"; do awk -F, 'NR>1{print $1}' "$d/counts.csv"; done | sort -u)"
 
+# **검증 상태를 여기서 자동 판정하지 않는다.** 2026-09-16까지 "3회 이상이면 검증 완료"를 찍었는데,
+# 성공 기준 충족 여부를 보지 않았고 반복 실험 4종 12회가 전부 dirty 작업 트리였다 —
+# docs/evidence-policy.md의 `검증 완료` 정의와 어긋난다. 판정은 성공 기준을 아는 RESULT 문서가 한다.
+# 대신 판정에 필요한 사실(dirty 실행 수)을 남긴다.
+DIRTY=0
+for d in "${RUNS[@]}"; do
+  grep -qE '^git_dirty *: *yes' "$d/metadata.txt" 2>/dev/null && DIRTY=$((DIRTY + 1))
+done
+
 {
   echo "# $SCENARIO 반복 실행 요약"
   echo
@@ -52,7 +61,8 @@ KEYS="$(for d in "${RUNS[@]}"; do awk -F, 'NR>1{print $1}' "$d/counts.csv"; done
   echo "| 반복 횟수 | ${#RUNS[@]} (완주만) |"
   echo "| 중단된 실행 | ${#ABORTED[@]} |"
   echo "| 실패 횟수 | $FAILED |"
-  echo "| **검증 상태** | $([ "${#RUNS[@]}" -ge 3 ] && echo '**검증 완료(반복 기준)** — 3회 이상' || echo '**부분 검증** — 3회 미만') |"
+  echo "| 작업 트리 dirty 실행 | $DIRTY / ${#RUNS[@]} |"
+  echo "| **검증 상태** | 자동 판정하지 않는다 — RESULT 문서가 성공 기준으로 판정한다$([ "${#RUNS[@]}" -lt 3 ] && echo ' (3회 미만: 반복 기준 미달)') |"
   echo
   echo "> 평균을 내지 않는다. 회차별 값을 그대로 두고 최소·최대만 덧붙인다 —"
   echo "> 평균은 \"3회 중 1회가 크게 튀었다\"를 지워버린다."
