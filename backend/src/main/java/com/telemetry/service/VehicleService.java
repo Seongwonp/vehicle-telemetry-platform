@@ -9,8 +9,11 @@ import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.VehicleRepository;
+import com.telemetry.security.VehicleAccessService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,9 +29,16 @@ public class VehicleService {
     private final VehicleRepository vehicleRepository;
     private final AnomalyAlertRepository anomalyAlertRepository;
     private final TelemetryQueryService telemetryQueryService;
+    private final VehicleAccessService vehicleAccessService;
 
     @Transactional
-    public VehicleResponse register(VehicleRegisterRequest request) {
+    public VehicleResponse register(VehicleRegisterRequest request, Authentication authentication) {
+        // 남의 이름으로 등록하면 그 차량 ID의 텔레메트리를 그 사람이 가져가고, 반대로 내가 남의
+        // 차량 ID를 선점할 수도 있다. 다른 사람 소유로 등록하는 것은 관리자만 할 수 있다.
+        if (!vehicleAccessService.isAdmin(authentication)
+            && (authentication == null || !request.getOwner().equals(authentication.getName()))) {
+            throw new AccessDeniedException("다른 사용자 소유로는 차량을 등록할 수 없습니다");
+        }
         if (vehicleRepository.existsByVehicleId(request.getVehicleId())) {
             throw new ResourceConflictException("이미 등록된 차량 ID입니다: " + request.getVehicleId());
         }
@@ -39,10 +49,14 @@ public class VehicleService {
         return new VehicleResponse(saved);
     }
 
-    public List<VehicleResponse> findAll() {
+    public List<VehicleResponse> findAllVisibleTo(Authentication authentication) {
+        // 단건 조회를 막아도 목록이 전부 보이면 차량 ID가 그대로 새어 나간다 — 목록도 같은 기준으로 자른다.
         // Spring Data repository 호출의 read-only 트랜잭션은 이 줄에서 종료된다.
         // 이후 InfluxDB 외부 호출이 PostgreSQL 트랜잭션/커넥션을 붙잡지 않는다.
-        List<Vehicle> vehicles = vehicleRepository.findAllByActiveTrue();
+        List<Vehicle> vehicles = vehicleAccessService.isAdmin(authentication)
+            ? vehicleRepository.findAllByActiveTrue()
+            : vehicleRepository.findAllByOwnerAndActiveTrue(
+                authentication == null ? "" : authentication.getName());
         List<String> vehicleIds = vehicles.stream().map(Vehicle::getVehicleId).toList();
 
         Map<String, TelemetryResponse> latestByVehicle;

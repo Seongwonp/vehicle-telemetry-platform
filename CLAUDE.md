@@ -43,6 +43,9 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 - Redis를 내리면 경로별로 **갈린다** — 조회는 통과(fail-open, 약 2초), 진단·로그인은
   503 `REDIS_UNAVAILABLE`, liveness는 8ms에 200. 적용 전에는 전부 60초 뒤 500이었다.
   각 1회, dev 프로파일, 무부하 — `load-test/redis-outage/evidence/20260912-123533/`.
+- 차량 하위 REST(`/api/vehicles/{id}/**`)는 **소유자 또는 관리자만** 통과한다 — 2026-09-16까지
+  이 검사는 WebSocket에만 있었고 REST는 인증만 하면 남의 차량을 읽을 수 있었다(ADR-025).
+  테스트 수준 검증이다 — 사용자가 InMemory 한 명이라 **다중 사용자 E2E는 미검증**이다.
 
 ### 아직 말하면 안 되는 것
 

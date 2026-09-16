@@ -9,6 +9,7 @@ import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.VehicleRepository;
+import com.telemetry.security.VehicleAccessService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,6 +18,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.quality.Strictness;
 import org.mockito.junit.jupiter.MockitoSettings;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,8 +49,23 @@ class VehicleServiceTest {
     @Mock
     private TelemetryQueryService telemetryQueryService;
 
+    @Mock
+    private VehicleAccessService vehicleAccessService;
+
     @InjectMocks
     private VehicleService vehicleService;
+
+    private static final Authentication ADMIN =
+        new UsernamePasswordAuthenticationToken("admin", null,
+            List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
+    private static final Authentication OWNER =
+        new UsernamePasswordAuthenticationToken("hong", null, List.of());
+
+    @org.junit.jupiter.api.BeforeEach
+    void 관리자로_본다() {
+        // 기존 테스트들은 관리자 맥락이다 — 소유자 제한은 아래 전용 테스트가 따로 본다.
+        given(vehicleAccessService.isAdmin(ADMIN)).willReturn(true);
+    }
 
     @Test
     @DisplayName("차량 등록 성공")
@@ -56,7 +77,7 @@ class VehicleServiceTest {
             .willAnswer(inv -> inv.getArgument(0));
 
         // when
-        VehicleResponse result = vehicleService.register(request);
+        VehicleResponse result = vehicleService.register(request, ADMIN);
 
         // then
         assertThat(result.getVehicleId()).isEqualTo("KR-GA-1234");
@@ -74,7 +95,7 @@ class VehicleServiceTest {
         given(vehicleRepository.existsByVehicleId("KR-GA-1234")).willReturn(true);
 
         // when & then
-        assertThatThrownBy(() -> vehicleService.register(request))
+        assertThatThrownBy(() -> vehicleService.register(request, ADMIN))
             .isInstanceOf(ResourceConflictException.class)
             .hasMessageContaining("이미 등록된 차량 ID");
     }
@@ -91,7 +112,7 @@ class VehicleServiceTest {
                 .vehicleId("KR-GA-1234").timestamp("2026-08-05T00:00:00Z").speed(80.0).build()));
 
         // when
-        List<VehicleResponse> result = vehicleService.findAll();
+        List<VehicleResponse> result = vehicleService.findAllVisibleTo(ADMIN);
 
         // then
         assertThat(result).hasSize(2);
@@ -111,7 +132,7 @@ class VehicleServiceTest {
         given(telemetryQueryService.getLatestByVehicleIds(List.of("KR-GA-1234")))
             .willThrow(new RuntimeException("InfluxDB down"));
 
-        List<VehicleResponse> result = vehicleService.findAll();
+        List<VehicleResponse> result = vehicleService.findAllVisibleTo(ADMIN);
 
         assertThat(result).singleElement()
             .extracting(VehicleResponse::getSummaryStatus)

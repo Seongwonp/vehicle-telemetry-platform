@@ -2,6 +2,7 @@ package com.telemetry.config;
 
 import com.telemetry.controller.VehicleController;
 import com.telemetry.security.ClientIpResolver;
+import com.telemetry.security.VehicleAccessService;
 import com.telemetry.service.VehicleService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -61,6 +62,9 @@ class FailOpenKeepsSecurityTest {
     private ValueOperations<String, String> valueOperations;
     @MockBean
     private ClientIpResolver clientIpResolver;
+    // WebMvcConfig의 VehicleAccessInterceptor가 이 슬라이스에도 뜬다.
+    @MockBean
+    private VehicleAccessService vehicleAccessService;
 
     @BeforeEach
     void redisIsDown() {
@@ -80,7 +84,7 @@ class FailOpenKeepsSecurityTest {
     @Test
     @DisplayName("인증된 요청은 rate limit 없이 정상 처리된다 — 이게 fail-open이 산 것이다")
     void 인증된_요청은_통과() throws Exception {
-        given(vehicleService.findAll()).willReturn(List.of());
+        given(vehicleService.findAllVisibleTo(any())).willReturn(List.of());
 
         mockMvc.perform(get("/api/vehicles").with(
                 org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors

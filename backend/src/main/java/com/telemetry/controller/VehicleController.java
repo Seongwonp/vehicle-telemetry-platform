@@ -10,6 +10,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,14 +26,15 @@ public class VehicleController {
 
     @PostMapping
     @Operation(summary = "차량 등록", description = "새 차량을 시스템에 등록합니다")
-    public ResponseEntity<VehicleResponse> register(@Valid @RequestBody VehicleRegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.register(request));
+    public ResponseEntity<VehicleResponse> register(
+        @Valid @RequestBody VehicleRegisterRequest request, Authentication authentication) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.register(request, authentication));
     }
 
     @GetMapping
-    @Operation(summary = "차량 목록 조회", description = "등록된 활성 차량 전체 목록")
-    public ResponseEntity<List<VehicleResponse>> findAll() {
-        return ResponseEntity.ok(vehicleService.findAll());
+    @Operation(summary = "차량 목록 조회", description = "접근 권한이 있는 활성 차량 목록(관리자는 전체)")
+    public ResponseEntity<List<VehicleResponse>> findAll(Authentication authentication) {
+        return ResponseEntity.ok(vehicleService.findAllVisibleTo(authentication));
     }
 
     @GetMapping("/{vehicleId}")

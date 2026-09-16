@@ -7,6 +7,7 @@ import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.service.VehicleService;
 import com.telemetry.security.ClientIpResolver;
+import com.telemetry.security.VehicleAccessService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -69,11 +70,16 @@ class VehicleControllerTest {
     @MockBean
     private ClientIpResolver clientIpResolver;
 
+    // WebMvcConfig가 등록한 VehicleAccessInterceptor도 이 슬라이스에서 함께 돈다.
+    @MockBean
+    private VehicleAccessService vehicleAccessService;
+
     @BeforeEach
     void setUpRateLimit() {
         given(redisTemplate.opsForValue()).willReturn(valueOperations);
         given(valueOperations.increment(anyString())).willReturn(1L);
         given(clientIpResolver.resolve(any())).willReturn("127.0.0.1");
+        given(vehicleAccessService.canAccess(any(), anyString())).willReturn(true);
     }
 
     @Test
@@ -86,7 +92,7 @@ class VehicleControllerTest {
         request.setOwner("홍길동");
 
         VehicleResponse response = new VehicleResponse(new Vehicle("KR-GA-1234", "현대 아반떼", "홍길동"));
-        given(vehicleService.register(any())).willReturn(response);
+        given(vehicleService.register(any(), any())).willReturn(response);
 
         mockMvc.perform(post("/api/vehicles")
                 .with(csrf())
@@ -117,7 +123,7 @@ class VehicleControllerTest {
     @WithMockUser(roles = "ADMIN")
     @DisplayName("차량 목록 조회 → 200 OK")
     void findAll_200() throws Exception {
-        given(vehicleService.findAll()).willReturn(List.of(
+        given(vehicleService.findAllVisibleTo(any())).willReturn(List.of(
             new VehicleResponse(new Vehicle("KR-GA-1234", "아반떼", "홍길동")),
             new VehicleResponse(new Vehicle("KR-GA-5678", "소나타", "김철수"))
         ));
