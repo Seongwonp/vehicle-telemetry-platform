@@ -237,7 +237,7 @@ ML 고도화, 다중 사용자, multi-broker, 배포 롤백은 위 P0/P1을 닫�
 | Spring Boot | `automaticReconnect=true` + **`maxReconnectDelay=5s`** 로 자동 재연결 |
 | 시뮬레이터 | paho가 자동 재연결. QoS 1 메시지는 `publish()`가 `NO_CONN`을 반환해도 송신 큐에 남아 **재연결 시 재전송된다** |
 | 재연결 중 데이터 | `cleanSession=false`라 브로커가 백엔드 세션 앞으로 큐잉해준다(`max_queued_messages` **100,000**). 10,000이던 것을 300초 장애에서 4.7% 유실이 나 올렸다 |
-| 실측 유실 | **0건.** 브로커가 PUBACK한 178,451건이 전부 backend·InfluxDB까지 도달 |
+| 실측 유실 | **0건 — 3회 모두 `브로커 PUBACK 건수 == InfluxDB 행 수`.** 총량은 회차마다 달랐다(190,538 / 178,359 / 182,575, 편차 6%) — 불변식이 3/3이지 총량이 반복되는 것은 아니다 |
 
 > **여기서 실제 버그를 찾았다.** `setMaxReconnectDelay`를 지정하지 않으면 Paho 기본값이
 > **128초**다. 브로커가 살아난 뒤에도 백엔드가 한참 붙지 않고, 그동안 브로커가 큐를
