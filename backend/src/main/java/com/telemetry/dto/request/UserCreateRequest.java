@@ -19,7 +19,7 @@ public class UserCreateRequest {
 
     @NotBlank
     @Size(min = 8, max = 72, message = "비밀번호는 8~72자")
-    @Schema(description = "비밀번호", example = "correct-horse-battery")
+    @Schema(description = "비밀번호", example = "dummy-test-pw-not-real")
     private String password;
 
     @NotNull

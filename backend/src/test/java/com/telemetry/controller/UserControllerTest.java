@@ -69,7 +69,7 @@ class UserControllerTest {
     private String body() throws Exception {
         UserCreateRequest request = new UserCreateRequest();
         request.setUsername("hong");
-        request.setPassword("correct-horse-battery");
+        request.setPassword("dummy-test-pw-not-real");
         request.setRole(Role.USER);
         return objectMapper.writeValueAsString(request);
     }
