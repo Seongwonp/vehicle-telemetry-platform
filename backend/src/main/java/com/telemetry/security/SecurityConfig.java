@@ -8,14 +8,13 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
@@ -28,13 +27,13 @@ import java.util.List;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-
-    @Value("${admin.username}")
-    private String adminUsername;
+    // DB 기반(DbUserDetailsService). 2026-09-27까지는 InMemory admin 한 명이었다(ADR-006 → ADR-027).
+    private final UserDetailsService userDetailsService;
 
     @Value("${admin.password}")
     private String adminPassword;
@@ -97,12 +96,14 @@ public class SecurityConfig {
                 // show-details: never라서 세 경로 모두 status 한 줄만 나간다 —
                 // 오케스트레이터가 probe할 수 있어야 하므로 인증을 요구하지 않는다.
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/prometheus").permitAll()
+                // 사용자 관리는 관리자만. 컨트롤러의 @PreAuthorize와 이중이다 — 한쪽이 빠져도 열리지 않게.
+                .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
 
             // ── JWT 필터 ────────────────────────────────────────────
             .addFilterBefore(
-                new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService()),
+                new JwtAuthenticationFilter(jwtTokenProvider, userDetailsService),
                 UsernamePasswordAuthenticationFilter.class
             );
 
@@ -123,17 +124,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        // Phase 4: 운영 배포 전 DB 기반 사용자 관리로 교체 필요
-        var admin = User.builder()
-            .username(adminUsername)
-            .password(passwordEncoder().encode(adminPassword))
-            .roles("ADMIN")
-            .build();
-        return new InMemoryUserDetailsManager(admin);
     }
 
     @Bean

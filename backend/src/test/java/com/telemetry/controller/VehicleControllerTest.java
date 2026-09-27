@@ -3,6 +3,10 @@ package com.telemetry.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.telemetry.dto.request.VehicleRegisterRequest;
 import com.telemetry.dto.response.VehicleResponse;
+import com.telemetry.entity.Role;
+import com.telemetry.entity.User;
+import com.telemetry.entity.Role;
+import com.telemetry.entity.User;
 import com.telemetry.entity.Vehicle;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.service.VehicleService;
@@ -50,6 +54,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DisplayName("VehicleController 통합 테스트")
 class VehicleControllerTest {
 
+    private static final User HONG = new User("hong", "x", Role.USER);
+    private static final User KIM = new User("kim", "x", Role.USER);
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -89,9 +96,9 @@ class VehicleControllerTest {
         VehicleRegisterRequest request = new VehicleRegisterRequest();
         request.setVehicleId("KR-GA-1234");
         request.setName("현대 아반떼");
-        request.setOwner("홍길동");
+        request.setOwner("hong");
 
-        VehicleResponse response = new VehicleResponse(new Vehicle("KR-GA-1234", "현대 아반떼", "홍길동"));
+        VehicleResponse response = new VehicleResponse(new Vehicle("KR-GA-1234", "현대 아반떼", HONG));
         given(vehicleService.register(any(), any())).willReturn(response);
 
         mockMvc.perform(post("/api/vehicles")
@@ -110,7 +117,7 @@ class VehicleControllerTest {
         VehicleRegisterRequest request = new VehicleRegisterRequest();
         request.setVehicleId("");   // 유효성 검사 실패
         request.setName("아반떼");
-        request.setOwner("홍길동");
+        request.setOwner("hong");
 
         mockMvc.perform(post("/api/vehicles")
                 .with(csrf())
@@ -124,8 +131,8 @@ class VehicleControllerTest {
     @DisplayName("차량 목록 조회 → 200 OK")
     void findAll_200() throws Exception {
         given(vehicleService.findAllVisibleTo(any())).willReturn(List.of(
-            new VehicleResponse(new Vehicle("KR-GA-1234", "아반떼", "홍길동")),
-            new VehicleResponse(new Vehicle("KR-GA-5678", "소나타", "김철수"))
+            new VehicleResponse(new Vehicle("KR-GA-1234", "아반떼", HONG)),
+            new VehicleResponse(new Vehicle("KR-GA-5678", "소나타", KIM))
         ));
 
         mockMvc.perform(get("/api/vehicles"))

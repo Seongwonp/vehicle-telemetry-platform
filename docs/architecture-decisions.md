@@ -1190,3 +1190,37 @@ README·roadmap·order-integrity 결과는 "정상 경로 역전 0"의 근거로
   하지 않은 것으로 남긴다.
 - 파티션 내 순서만이다. spool 드레인 구간의 역전(0.38%)은 이 설정과 무관하고 앱에서 막는다.
 
+## ADR-027: 사용자와 차량 소유권을 PostgreSQL로 — InMemory admin 한 명으로는 소유권 검사가 죽은 경로였다
+
+### 배경
+
+ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하다"며 `InMemoryUserDetailsManager`의 admin 한 명을
+택했다. 그 뒤 ADR-025가 차량 소유권 검사를 REST·WebSocket에 걸었지만 **사용자가 한 명이라 검사가 실제로 갈리는
+경우가 없었다** — 다중 사용자 E2E는 미검증으로 남아 있었다. `vehicles.owner`는 자유 문자열이라 오타 소유자도
+조용히 들어갔고, 관계형 설계라고 부를 만한 것이 테이블 2개·SQL 34줄뿐이었다.
+
+### 결정
+
+1. **`users` 테이블**(V4): `username` UNIQUE, BCrypt `password_hash`, `role` CHECK(ADMIN|USER), `active`.
+   `DbUserDetailsService`가 `InMemoryUserDetailsManager`를 대체한다. 비활성·해시 없음은 **없는 계정과 같은 예외**다.
+2. **`vehicles.owner` → `owner_id` FK**. 존재하지 않는 사람 소유를 스키마가 막는다. 등록 요청의 `owner`는 선택이며
+   비우면 요청자 본인이다. 다른 사람 소유로 지정은 관리자만(ADR-025의 규칙 유지).
+3. **관리자는 env가 기준**: V4가 placeholder로 행을 만들고 `AdminBootstrap`이 기동 시 `ADMIN_PASSWORD` 해시를 채운다.
+   해시가 env와 다르면 env 쪽으로 덮어쓴다 — `.env` 수정 후 재기동이라는 기존 운영 절차를 유지하기 위해서다.
+4. **자가 가입 없음.** `POST /api/users`는 관리자만(`@PreAuthorize` + URL 규칙 이중). 가입이 열리면 남의 차량 ID를
+   먼저 등록해 텔레메트리를 가져가는 길이 생긴다.
+5. **백필은 데이터를 바꾸지 않는다**: 옛 owner 문자열마다 비활성 사용자를 만들어 연결한다. NULL 소유자만 관리자로.
+6. **`anomaly_alerts.vehicle_id`는 FK로 만들지 않았다.** 알림은 Kafka 배치가 넣는다 — 미등록 차량의 알림이 FK 위반으로
+   배치를 되돌리면 저장 경로가 차량 등록에 묶인다. 접근 제어는 조회 시점에 건다.
+7. 실제 쿼리 6종을 200만 행에서 `EXPLAIN ANALYZE`로 재고(`docs/verification/2026-09-27-postgres-explain.md`),
+   목록의 HIGH 건수 N+1(차량당 25ms)을 **부분 인덱스(V5) + GROUP BY 1회**로 고쳤다. 나머지 경로는 인덱스를 탄다.
+
+### 대가와 한계
+
+- 비밀번호 변경·재설정 API가 없다. 관리자가 사용자를 다시 만들거나 DB에서 해시를 바꿔야 한다.
+- 관리자가 여럿일 수 있지만(`role=ADMIN` 행 추가) env가 관리하는 것은 `ADMIN_USERNAME` 한 명뿐이다.
+- 앱의 차량 등록 화면은 아직 소유자 이름을 자유 입력받는다. 존재하지 않는 사용자를 넣으면 400이 난다 — 앱 쪽 후속.
+- **다중 사용자 E2E**: 이 커밋의 컨테이너에서 관리자 → 사용자 생성 → 그 사용자로 남의 차량 404·자기 차량 200을
+  확인했다(`docs/verification/2026-09-27-multi-user-e2e.md`). 1회다.
+- 파티셔닝·keyset 페이지네이션은 근거가 없어 하지 않았다(검증 문서 "한계").
+

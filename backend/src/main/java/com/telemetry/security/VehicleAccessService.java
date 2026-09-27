@@ -25,7 +25,7 @@ public class VehicleAccessService {
         if (isAdmin(authentication)) {
             return vehicleRepository.existsByVehicleIdAndActiveTrue(vehicleId);
         }
-        return vehicleRepository.existsByVehicleIdAndOwnerAndActiveTrue(
+        return vehicleRepository.existsByVehicleIdAndOwner_UsernameAndActiveTrue(
             vehicleId, authentication.getName());
     }
 

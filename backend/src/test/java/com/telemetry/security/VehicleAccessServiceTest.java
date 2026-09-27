@@ -23,7 +23,7 @@ class VehicleAccessServiceTest {
     @Test
     void nonAdminCanAccessOnlyOwnedActiveVehicle() {
         var auth = new UsernamePasswordAuthenticationToken("user1", null, List.of());
-        given(vehicleRepository.existsByVehicleIdAndOwnerAndActiveTrue("KR-GA-1234", "user1"))
+        given(vehicleRepository.existsByVehicleIdAndOwner_UsernameAndActiveTrue("KR-GA-1234", "user1"))
             .willReturn(true);
 
         assertThat(service.canAccess(auth, "KR-GA-1234")).isTrue();

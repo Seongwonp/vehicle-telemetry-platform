@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,6 +23,21 @@ public interface AnomalyAlertRepository extends JpaRepository<AnomalyAlert, Long
     long countByVehicleIdAndSeverity(String vehicleId, String severity);
 
     Optional<AnomalyAlert> findByEventId(String eventId);
+
+    /**
+     * 차량 목록용 HIGH 건수를 한 번에 센다. 차량마다 count를 부르면 200만 행에서 차량당 25ms(N+1)였다 —
+     * V5 부분 인덱스(severity='HIGH')로 Index Only Scan, 20대 1.7ms. 건수 0인 차량은 결과에 없다.
+     */
+    @Query("""
+        SELECT a.vehicleId AS vehicleId, count(a) AS count FROM AnomalyAlert a
+        WHERE a.severity = 'HIGH' AND a.vehicleId IN :vehicleIds GROUP BY a.vehicleId
+        """)
+    List<HighCount> countHighByVehicleIds(@Param("vehicleIds") Collection<String> vehicleIds);
+
+    interface HighCount {
+        String getVehicleId();
+        long getCount();
+    }
 
     @Modifying
     @Query(value = """

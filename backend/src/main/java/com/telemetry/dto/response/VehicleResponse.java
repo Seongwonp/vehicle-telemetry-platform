@@ -21,7 +21,7 @@ public class VehicleResponse {
     @Schema(description = "차량 이름", example = "현대 아반떼")
     private final String name;
 
-    @Schema(description = "소유자", example = "홍길동")
+    @Schema(description = "소유자 username", example = "hong")
     private final String owner;
 
     @Schema(description = "활성 여부")
@@ -52,7 +52,7 @@ public class VehicleResponse {
         this.id = vehicle.getId();
         this.vehicleId = vehicle.getVehicleId();
         this.name = vehicle.getName();
-        this.owner = vehicle.getOwner();
+        this.owner = vehicle.getOwnerUsername();
         this.active = vehicle.isActive();
         this.registeredAt = vehicle.getRegisteredAt();
         this.summaryStatus = FleetSummaryStatus.NO_DATA;

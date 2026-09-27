@@ -33,6 +33,7 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 | 4-b | ~~감지 DLQ `x-dlq-replay-count` 미복사~~ **재현·수정 완료(2026-09-13)** | `anomaly_detector.dlq_headers`가 원본 header를 복사하지 않아 재주입 후 재실패 시 카운트가 0으로 돌아갔다. Java 저장 경로는 같은 문제를 이미 고쳤었다 | 실제 Kafka 전용 토픽 재현: 수정 전 DLQ `(없음)×3`·차단 안 됨(FAIL) → 수정 후 `(없음)→1→2`·3회차 차단(PASS). Python 회귀 테스트 2건. **각 1회** — [`RESULT`](../load-test/dlq-replay-count/RESULT_20260913_replay_count.md) |
 | 5 | Flutter 실기기 E2E | CI는 format/analyze/widget test만 검증한다 | 실제 기기에서 로그인·재연결·stale·중복·로그아웃 통과 |
 | 6 | 핵심 A/B 반복과 성능 측정 재설계 | OFF/timeout 실험이 각 1회이고 호스트 발열이 처리량 비교를 오염했다 | 조건별 3회, 휴지·순서 섞기·온도/클럭 기록 |
+| 7 | ~~사용자·차량 소유권 RDB 모델~~ **완료(2026-09-27)** | InMemory admin 한 명이라 ADR-025의 소유권 검사가 갈리는 경우가 없었고, `vehicles.owner`가 자유 문자열이었다 | `users` 테이블 + `owner_id` FK(V4), DB 기반 인증, 관리자 전용 사용자 생성 API, 200만 행 `EXPLAIN`으로 목록 HIGH 건수 N+1 제거(V5 부분 인덱스). 백필은 Testcontainers로 확인 — ADR-027, [`verification/2026-09-27-postgres-explain.md`](verification/2026-09-27-postgres-explain.md). **남은 것**: 비밀번호 변경 API, 앱 등록 화면의 소유자 입력 |
 
 1~2번은 P0, 3~6번은 P1이다. multi-broker, schema version, 롤백 자동화는 이 작업들이
 끝난 뒤 필요성이 확인될 때만 P2로 수행한다. Kubernetes는 목표로 두지 않는다.

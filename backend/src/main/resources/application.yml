@@ -20,6 +20,9 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 1
+    placeholders:
+      # V4가 관리자 행을 이 이름으로 만든다. 해시는 AdminBootstrap이 채운다.
+      admin_username: ${ADMIN_USERNAME:admin}
 
   # ── Redis ────────────────────────────────────────────────────
   data:

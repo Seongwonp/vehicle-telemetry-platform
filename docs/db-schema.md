@@ -7,6 +7,63 @@ PostgreSQL은 "어떤 차량이 등록되어 있는가"와 "어떤 이상이 발
 
 ---
 
+### ERD
+
+```mermaid
+erDiagram
+    users ||--o{ vehicles : "owner_id"
+    vehicles ||..o{ anomaly_alerts : "vehicle_id (문자열, FK 아님)"
+    users {
+        bigint id PK
+        varchar username UK
+        varchar password_hash "NULL=로그인 불가"
+        varchar role "ADMIN | USER"
+        boolean active
+        timestamptz created_at
+    }
+    vehicles {
+        bigint id PK
+        varchar vehicle_id UK "InfluxDB tag와 같은 값"
+        varchar name
+        bigint owner_id FK
+        boolean active "soft delete"
+        timestamp registered_at
+    }
+    anomaly_alerts {
+        bigint id PK
+        varchar event_id UK "재전달 중복 방지"
+        varchar vehicle_id
+        varchar anomaly_type
+        varchar severity "HIGH | MEDIUM"
+        timestamptz detected_at
+    }
+```
+
+> **`anomaly_alerts.vehicle_id`가 FK가 아닌 이유**: 알림은 Kafka 컨슈머가 배치로 넣는다. 등록 전 차량(또는
+> 등록을 안 하는 시뮬레이터 차량)의 알림이 FK 위반으로 배치 전체를 되돌리면 저장 경로가 **차량 등록 여부에 묶인다.**
+> InfluxDB 텔레메트리도 같은 이유로 등록과 무관하게 저장된다. 접근 제어는 조회 시점에 `vehicles`로 건다(ADR-025).
+
+---
+
+### `users` 테이블 (V4, ADR-027)
+
+로그인 계정. 2026-09-27까지는 `InMemoryUserDetailsManager`의 admin 한 명이었고 `vehicles.owner`는 자유 문자열이었다.
+
+| 컬럼 | 타입 | 제약 | 설명 |
+|------|------|------|------|
+| `id` | BIGINT | PK | 내부 식별자 |
+| `username` | VARCHAR(50) | UNIQUE, NOT NULL | 로그인 이름. JWT `sub` |
+| `password_hash` | VARCHAR(100) | | BCrypt. **NULL이면 로그인 불가** — V4가 옛 owner 문자열에서 백필한 계정, 또는 기동 전의 admin |
+| `role` | VARCHAR(10) | NOT NULL, CHECK IN ('ADMIN','USER') | `ROLE_` 접두는 코드가 붙인다 |
+| `active` | BOOLEAN | NOT NULL, DEFAULT true | false면 로그인 불가 |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT now() | |
+
+- 관리자 행은 V4가 Flyway placeholder `${admin_username}`(= `ADMIN_USERNAME`)으로 만들고, 해시는 기동 시
+  `AdminBootstrap`이 `ADMIN_PASSWORD`로 채운다. **env가 관리자 비밀번호의 단일 기준**이다.
+- 자가 가입은 없다. `POST /api/users`는 관리자만.
+
+---
+
 ### `vehicles` 테이블
 
 차량 등록 정보. 물리 삭제 없이 `active` 플래그로 비활성화한다.
@@ -19,20 +76,17 @@ PostgreSQL은 "어떤 차량이 등록되어 있는가"와 "어떤 이상이 발
 | `id` | BIGINT | PK, AUTO_INCREMENT | 내부 식별자 |
 | `vehicle_id` | VARCHAR(50) | UNIQUE, NOT NULL | 외부 식별자 (예: `KR-GA-1234`) |
 | `name` | VARCHAR(100) | | 차량 이름/별칭 |
-| `owner` | VARCHAR(100) | | 차량 소유자 |
+| `owner_id` | BIGINT | FK → users.id, NOT NULL | 소유자. V4 이전엔 `owner VARCHAR(100)` 자유 문자열 |
 | `active` | BOOLEAN | NOT NULL, DEFAULT true | false = 비활성화(soft delete) |
 | `registered_at` | TIMESTAMP | NOT NULL, 자동 설정 | 등록 시각 |
 
 ```sql
-CREATE TABLE vehicles (
-    id            BIGSERIAL PRIMARY KEY,
-    vehicle_id    VARCHAR(50)  NOT NULL UNIQUE,
-    name          VARCHAR(100),
-    owner         VARCHAR(100),
-    active        BOOLEAN      NOT NULL DEFAULT true,
-    registered_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
+CREATE INDEX idx_vehicles_owner_active ON vehicles (owner_id) WHERE active;
 ```
+
+> **V4 백필 규칙**: 옛 `owner` 문자열마다 `users` 행을 **비활성·해시 없음**으로 만들어 연결한다(데이터를 admin 소유로
+> 조용히 바꾸지 않는다). `owner`가 NULL이던 행만 관리자 소유가 된다 — 그 행은 이전에도 소유자 검사에서 아무도 통과
+> 못 했으므로 권한이 늘지 않는다. `FlywayPostgresContractTest`가 실제 PostgreSQL에서 이 백필을 확인한다.
 
 ---
 
@@ -72,11 +126,16 @@ CREATE TABLE anomaly_alerts (
 CREATE INDEX idx_anomaly_vehicle_id  ON anomaly_alerts (vehicle_id);
 CREATE INDEX idx_anomaly_detected_at ON anomaly_alerts (detected_at);
 CREATE INDEX idx_anomaly_vehicle_detected_at ON anomaly_alerts (vehicle_id, detected_at DESC);
+CREATE INDEX idx_anomaly_vehicle_high ON anomaly_alerts (vehicle_id) WHERE severity = 'HIGH';  -- V5
 ```
 
 > **인덱스 선택 이유**: 대부분의 조회 패턴이 "특정 차량의 최근 N건" 형태이므로
 > 복합 인덱스(`vehicle_id, detected_at DESC`)로 차량 필터와 최신순 정렬을 함께 처리한다.
 > 단독 인덱스는 전체 차량 기준 조회와 기존 운영 쿼리 호환을 위해 유지한다.
+>
+> **`idx_anomaly_vehicle_high`(V5)**: 차량 목록의 HIGH 건수가 차량마다 heap 4,000블록을 읽어 25ms였다(200만 행).
+> HIGH만 담는 부분 인덱스로 Index Only Scan 0.06ms·3.5MB(복합 인덱스 14MB보다 작다). 호출도 차량마다가 아니라
+> `GROUP BY` 1회로 바꿨다 — [`verification/2026-09-27-postgres-explain.md`](verification/2026-09-27-postgres-explain.md).
 
 ---
 

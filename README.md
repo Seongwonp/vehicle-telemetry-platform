@@ -35,7 +35,8 @@ flowchart LR
 | **같은 초 타임스탬프로 50% 덮어쓰기** | InfluxDB 초 정밀도. Kafka lag은 0이라 정상처럼 보임 | 밀리초 정밀도 → 유실 0. 이후 strict 입력 계약(누락 필드가 0으로 저장되던 것 차단) | [ADR-014](docs/architecture-decisions.md), [입력 계약](docs/telemetry-schema-decision-table.md) |
 
 그 외: Redis 장애 시 조회 fail-open / 로그인·진단 fail-closed 분리([정책](docs/redis-failure-policy.md)),
-독성 메시지 1건이 정상 100건을 막지 않음, REST 소유권 검사(ADR-025), MQTT mTLS(ADR-013).
+독성 메시지 1건이 정상 100건을 막지 않음, REST 소유권 검사(ADR-025), MQTT mTLS(ADR-013),
+사용자·소유권 RDB 모델과 200만 행 `EXPLAIN`으로 잡은 목록 N+1([ADR-027](docs/architecture-decisions.md), [실행계획](docs/verification/2026-09-27-postgres-explain.md)).
 전체 실험 서사와 수치는 [상세 기록](docs/portfolio-detail.md).
 
 ## 검증 방식
