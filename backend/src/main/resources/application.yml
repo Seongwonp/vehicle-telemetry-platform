@@ -45,6 +45,12 @@ spring:
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       acks: all
       retries: 3
+      properties:
+        # 파티션 내 순서 보장의 근거(README·load-test/order-integrity). 두 값은 Kafka 3.0+
+        # 클라이언트 기본값과 같아서 없어도 동작은 같지만, 순서 실험(2026-09-05)이 이 조합에
+        # 의존하므로 명시로 고정한다 — session.timeout.ms와 같은 이유(KafkaProducerContractTest).
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
     consumer:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

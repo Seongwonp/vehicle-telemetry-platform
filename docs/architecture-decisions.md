@@ -1164,3 +1164,29 @@ Paho는 재연결을 1초에서 시작해 매번 두 배로 늘리고 **기본 �
 - **관리자도 비활성 차량에는 접근하지 못한다**(`existsBy...ActiveTrue`). 비활성 차량의 이력 조회가 필요하면 별도 결정.
 - **다중 사용자 E2E는 미검증**이다 — 사용자가 InMemory 한 명이라 두 계정으로 실제 스택을 확인하지 못했다.
 - 앱은 관리자 계정을 쓰므로 지금 동작은 그대로다. 다중 사용자를 도입하면 **앱의 차량 목록이 사용자별로 달라진다.**
+
+## ADR-026: 프로듀서 순서 보장 설정을 기본값에서 명시로 — 문서가 주장하는 값은 코드에 있어야 한다
+
+### 배경
+
+README·roadmap·order-integrity 결과는 "정상 경로 역전 0"의 근거로 `enable.idempotence=true` +
+`max.in.flight.requests.per.connection ≤ 5`를 든다. 그런데 `application.yml`에는 `acks: all`,
+`retries: 3`만 있었다. 두 값은 Kafka 3.0+ 클라이언트 **기본값**이라 실험 당시 실제로 켜져 있었고
+(`load-test/order-integrity/evidence/*/producer-config.txt`), 결과 문서도 "설정하지 않았는데 기본값으로
+켜져 있었다"고 적어뒀다. 하지만 설정으로 고정하지 않으면 클라이언트 업그레이드나 `retries`·`acks`
+변경 한 줄로 조용히 꺼질 수 있고, 문서와 코드가 다른 말을 한다 — `session.timeout.ms`(ADR-024 무렵,
+`KafkaConsumerContractTest`)와 같은 종류의 문제다.
+
+### 결정
+
+1. `spring.kafka.producer.properties`에 `enable.idempotence: true`,
+   `max.in.flight.requests.per.connection: 5`를 명시한다. 동작은 바뀌지 않는다(지금 값 = 기본값).
+2. `KafkaProducerContractTest`가 실제 `application.yml`을 읽어 두 값이 `ProducerFactory`에 도달하는지
+   고정한다. `acks=all`도 함께 — idempotence는 `acks=all`이 아니면 기동 시 실패한다.
+
+### 대가와 한계
+
+- 순서 실험을 재실행하지는 않았다. 값이 같으므로 결과가 달라질 이유가 없지만, "설정 명시 후 재측정"은
+  하지 않은 것으로 남긴다.
+- 파티션 내 순서만이다. spool 드레인 구간의 역전(0.38%)은 이 설정과 무관하고 앱에서 막는다.
+
