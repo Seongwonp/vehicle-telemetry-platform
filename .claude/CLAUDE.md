@@ -21,7 +21,7 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 4. `docs/issue-guidelines.md` — GitHub Issue 작성·종료 기준
 5. 해당 작업의 ADR, Runbook, `load-test/<scenario>/RESULT_*.md`
 
-`README.md`는 포트폴리오 독자를 위한 요약이다. 세부 작업 상태의 기준은 위 문서다.
+`README.md`는 채용 독자용 100줄 요약이고, 긴 판은 `docs/portfolio-detail.md`다. 세부 작업 상태의 기준은 위 문서다.
 
 ## 현재 상태 요약
 
@@ -273,7 +273,7 @@ HTTP MDC traceId만으로는 MQTT→Kafka→InfluxDB/Python→PostgreSQL/WebSock
 
 앱 저장소: `../vehicle-telemetry-app`
 
-- 앱의 `AGENTS.md`와 `CLAUDE.md`를 먼저 읽는다.
+- 앱의 `.claude/AGENTS.md`와 `.claude/CLAUDE.md`를 먼저 읽는다.
 - Android 실제 기기 또는 에뮬레이터에서 로그인, refresh, WebSocket 재연결, stale,
   out-of-order, 동일 timestamp, 로그아웃을 검증한다.
 - macOS integration test는 secure storage Keychain entitlement 문제로 로그인 단계에서 막힌다.
