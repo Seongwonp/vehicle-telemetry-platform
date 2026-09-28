@@ -83,7 +83,10 @@ class SecurityBoundaryTest {
     void ordinaryUserCannotClaimVehicleEvenWithoutOwner() throws Exception {
         mvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON)
             .content("{\"vehicleId\":\"TEST-001\",\"name\":\"test\"}"))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden())
+            // 본문까지 본다 — sendError(403)였다면 MockMvc는 본문이 비고, 실제 Tomcat은 /error 디스패치에서
+            // 401로 바뀐다(2026-09-28 E2E). JSON을 직접 쓰는 handler만 이 assertion을 통과한다.
+            .andExpect(jsonPath("$.code").value("FORBIDDEN"));
         verify(vehicles, never()).register(any(), any());
     }
 

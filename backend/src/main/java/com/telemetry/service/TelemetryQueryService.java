@@ -95,20 +95,27 @@ public class TelemetryQueryService {
     public Map<String, TelemetryResponse> getLatestByVehicleIds(List<String> vehicleIds) {
         if (vehicleIds.isEmpty()) return Map.of();
         vehicleIds.forEach(this::validateVehicleId);
-        String ids = vehicleIds.stream()
+        // 등호 OR 체인이다 — contains(value:, set:)이 아니다. contains()는 스토리지 푸시다운이 안 돼
+        // InfluxDB가 24시간치 전 시리즈를 메모리로 올린 뒤 Flux에서 걸렀고, 시뮬레이터 3대·95k 포인트에서
+        // 7.8초(read timeout 5초 초과)가 나 목록 전체가 UNAVAILABLE이었다. 등호 OR은 푸시다운되어 1.1초,
+        // 여기에 last()를 먼저 걸면 0.44초다(2026-09-28, docs/verification/2026-09-28-multi-user-e2e.md).
+        String idFilter = vehicleIds.stream()
             .distinct()
-            .map(id -> "\"" + id + "\"")
-            .collect(Collectors.joining(", "));
+            .map(id -> "r.vehicle_id == \"" + id + "\"")
+            .collect(Collectors.joining(" or "));
+        // last()는 시리즈(vehicle_id, _field)별 마지막 값이다. 한 포인트에 모든 필드가 같은 _time으로
+        // 저장되므로 pivot 뒤 차량당 한 행이 된다. 아래 sort+limit는 그 전제가 깨졌을 때의 가드다.
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -%dh)
               |> filter(fn: (r) => r._measurement == "vehicle_telemetry")
-              |> filter(fn: (r) => contains(value: r.vehicle_id, set: [%s]))
+              |> filter(fn: (r) => %s)
+              |> last()
               |> pivot(rowKey: ["_time"], columnKey: ["_field"], valueColumn: "_value")
               |> group(columns: ["vehicle_id"])
               |> sort(columns: ["_time"], desc: true)
               |> limit(n: 1)
-            """, bucket, LATEST_LOOKBACK_HOURS, ids);
+            """, bucket, LATEST_LOOKBACK_HOURS, idFilter);
 
         Map<String, TelemetryResponse> latest = new HashMap<>();
         for (FluxTable table : query(flux, "fleet")) {

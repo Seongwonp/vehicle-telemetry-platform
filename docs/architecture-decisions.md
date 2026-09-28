@@ -1229,4 +1229,7 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
 - 파티셔닝·keyset 페이지네이션은 근거가 없어 하지 않았다(검증 문서 "한계").
 - 같은 날 제3자 리뷰로 닫은 것: WebSocket 클라이언트 SEND 차단, DLQ `published` 카운터가 발행 실패도 세던 것,
   refresh가 비활성 계정을 거르지 않던 것, JWT 필터가 없는 계정 예외를 전파하던 것.
+- **E2E 2회차(2026-09-28)**에서 둘을 더 찾았다 — 인가 거부 403이 Tomcat `/error` 디스패치를 거쳐 **401로 바뀌어 나가던 것**
+  (MockMvc는 못 잡는다), 목록의 fleet 요약 Flux가 `contains()` 때문에 푸시다운이 안 돼 24시간치가 쌓이자 **timeout → 전부
+  `UNAVAILABLE`**이던 것. `docs/verification/2026-09-28-multi-user-e2e.md`.
 

@@ -43,10 +43,20 @@ class InfluxDbContractTest {
         String url = "http://" + INFLUX.getHost() + ":" + INFLUX.getMappedPort(8086);
         try (InfluxDBClient client = InfluxDBClientFactory.create(
             url, TOKEN.toCharArray(), ORG, BUCKET)) {
+            Instant now = Instant.now();
             client.getWriteApiBlocking().writePoint(Point.measurement("vehicle_telemetry")
                 .addTag("vehicle_id", "TEST-001")
                 .addField("speed", 87.3)
-                .time(Instant.now(), WritePrecision.MS));
+                .time(now, WritePrecision.MS));
+            // fleet 쿼리의 last()+pivot이 차량별 **최신** 포인트를 고르는지 — 더 오래된 포인트와 다른 차량을 같이 넣는다.
+            client.getWriteApiBlocking().writePoint(Point.measurement("vehicle_telemetry")
+                .addTag("vehicle_id", "TEST-001")
+                .addField("speed", 12.0)
+                .time(now.minusSeconds(60), WritePrecision.MS));
+            client.getWriteApiBlocking().writePoint(Point.measurement("vehicle_telemetry")
+                .addTag("vehicle_id", "TEST-002")
+                .addField("speed", 55.5)
+                .time(now.minusSeconds(5), WritePrecision.MS));
 
             TelemetryQueryService service = new TelemetryQueryService(
                 client, mock(VehicleRepository.class), new SimpleMeterRegistry());
@@ -54,11 +64,12 @@ class InfluxDbContractTest {
             ReflectionTestUtils.setField(service, "influxOrg", ORG);
 
             assertThat(service.getRecent("TEST-001", 10))
-                .singleElement()
                 .extracting(response -> response.getSpeed())
-                .isEqualTo(87.3);
-            assertThat(service.getLatestByVehicleIds(List.of("TEST-001")))
-                .containsKey("TEST-001");
+                .containsExactly(87.3, 12.0);
+            var fleet = service.getLatestByVehicleIds(List.of("TEST-001", "TEST-002", "TEST-NONE"));
+            assertThat(fleet).containsOnlyKeys("TEST-001", "TEST-002");
+            assertThat(fleet.get("TEST-001").getSpeed()).isEqualTo(87.3);
+            assertThat(fleet.get("TEST-002").getSpeed()).isEqualTo(55.5);
         }
     }
 }

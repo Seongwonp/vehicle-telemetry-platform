@@ -97,9 +97,11 @@ class TelemetryQueryServiceTest {
 
         verify(queryApi).query(
             org.mockito.ArgumentMatchers.<String>argThat(query ->
-                query.contains("contains(value: r.vehicle_id")
-                    && query.contains("\"KR-GA-1234\"")
-                    && query.contains("\"KR-GA-5678\"")
+                // contains(value:, set:)은 푸시다운이 안 돼 24시간치를 메모리에서 걸렀다(2026-09-28 E2E, 7.8초).
+                // 등호 OR 체인 + last()여야 한다.
+                !query.contains("contains(")
+                    && query.contains("r.vehicle_id == \"KR-GA-1234\" or r.vehicle_id == \"KR-GA-5678\"")
+                    && query.contains("|> last()")
                     && query.contains("group(columns: [\"vehicle_id\"])")
                     && query.contains("limit(n: 1)")),
             eq("vehicle-telemetry")

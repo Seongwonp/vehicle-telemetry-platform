@@ -69,11 +69,16 @@ public class SecurityConfig {
 
             // ── Stateless 세션 ──────────────────────────────────────
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
-                response.setStatus(401);
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다\"}");
-            }))
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((request, response, exception) ->
+                    writeJson(response, 401, "UNAUTHORIZED", "인증이 필요합니다"))
+                // 403도 직접 쓴다. 기본 AccessDeniedHandlerImpl은 sendError(403)를 부르고, 그러면 Tomcat이
+                // /error로 ERROR 디스패치를 한다 — 그 디스패치에는 JWT 필터가 돌지 않아(OncePerRequestFilter는
+                // ERROR 디스패치를 건너뛴다) /error가 anyRequest().authenticated()에 걸려 위 entry point의
+                // **401로 바뀌어 나갔다.** MockMvc는 ERROR 디스패치를 하지 않아 테스트는 403을 봤고, 실제
+                // 컨테이너 E2E(2026-09-28)에서만 401이 나왔다.
+                .accessDeniedHandler((request, response, exception) ->
+                    writeJson(response, 403, "FORBIDDEN", "접근 권한이 없습니다")))
 
             // ── 보안 헤더 ───────────────────────────────────────────
             .headers(headers -> headers
@@ -115,6 +120,13 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    private static void writeJson(jakarta.servlet.http.HttpServletResponse response, int status,
+                                  String code, String message) throws java.io.IOException {
+        response.setStatus(status);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write("{\"code\":\"" + code + "\",\"message\":\"" + message + "\"}");
     }
 
     @Bean
