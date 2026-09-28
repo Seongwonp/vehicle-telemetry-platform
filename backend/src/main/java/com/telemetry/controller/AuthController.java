@@ -20,6 +20,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +39,17 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final ClientIpResolver clientIpResolver;
     private final LoginRateLimiter loginRateLimiter;
+    // refresh는 DB를 다시 본다 — 토큰이 살아 있어도 계정이 비활성이면 재발급하지 않는다(ADR-027).
+    private final UserDetailsService userDetailsService;
+
+    @org.springframework.web.bind.annotation.GetMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
+    @Operation(summary = "현재 사용자와 권한 조회")
+    public java.util.Map<String, Object> me(Authentication authentication) {
+        return java.util.Map.of("username", authentication.getName(), "roles",
+            authentication.getAuthorities().stream()
+                .map(org.springframework.security.core.GrantedAuthority::getAuthority).toList());
+    }
 
     @PostMapping("/login")
     @Operation(summary = "로그인", description = "username/password로 JWT Access/Refresh 토큰 발급. 5회 실패 시 15분 IP 차단.")
@@ -80,6 +93,7 @@ public class AuthController {
     )
     public ResponseEntity<?> refresh(@Valid @RequestBody RefreshRequest request) {
         return refreshTokenService.rotate(request.getRefreshToken())
+            .filter(this::canStillLogin)
             .<ResponseEntity<?>>map(username -> {
                 String accessToken = jwtTokenProvider.generateToken(username);
                 String newRefreshToken = refreshTokenService.issue(username);
@@ -89,6 +103,16 @@ public class AuthController {
             })
             .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponse("UNAUTHORIZED", "유효하지 않거나 만료된 리프레시 토큰입니다")));
+    }
+
+    private boolean canStillLogin(String username) {
+        try {
+            userDetailsService.loadUserByUsername(username);
+            return true;
+        } catch (UsernameNotFoundException e) {
+            // rotate()가 이미 옛 토큰을 지웠으므로 비활성 계정의 refresh 체인은 여기서 끝난다.
+            return false;
+        }
     }
 
     @PostMapping("/logout")

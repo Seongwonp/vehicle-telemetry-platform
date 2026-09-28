@@ -84,7 +84,8 @@ public class MqttMessageHandler {
             telemetry.getEngineTemp(),
             telemetry.getBatteryVoltage());
 
-        // spool/Kafka 전송 실패는 삼키지 않아 MQTT 어댑터가 실패를 인지하고 재처리할 수 있게 한다.
+        // Kafka 발행은 비동기다. 실패 시 producer가 spool을 시도하며 spool 실패는 유실 로그로 남는다.
+        // 이 반환이 Kafka 저장 확인이나 MQTT 재전달 보장을 뜻하지 않는다(ADR-019).
         telemetryProducer.send(telemetry);
     }
 

@@ -22,7 +22,8 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    /** 100인 이유: V4가 옛 {@code vehicles.owner VARCHAR(100)}을 그대로 백필한다. 새 계정은 API가 3~50자로 제한한다. */
+    @Column(nullable = false, unique = true, length = 100)
     private String username;
 
     @Column(name = "password_hash", length = 100)

@@ -211,7 +211,7 @@ ML 고도화, 다중 사용자, multi-broker, 배포 롤백은 위 P0/P1을 닫�
 | 장애 발생 | Spring Boot `TelemetryProducer`의 `kafkaTemplate.send()` 실패 |
 | 즉각 영향 | 차량 데이터가 즉시 InfluxDB/이상 감지로 전달되지 않음 |
 | MQTT 수신 | Mosquitto는 독립적으로 계속 동작. 데이터는 Spring Boot까지 도달 |
-| 복구 시 | 전송 전 로컬 volume에 기록한 spool을 Kafka ACK 후 삭제하며, 재연결 시 보류 파일부터 재전송 |
+| 복구 시 | 정상 경로는 비동기 직접 전송, 실패하거나 backlog가 있으면 로컬 spool에 기록. spool은 Kafka ACK 후 삭제하며 보류 파일을 재전송 |
 | 미구현 한계 | spool volume 자체가 손실되면 복구 불가. 운영에서는 디스크 사용량 경보와 HA 수집 계층 필요 |
 
 ### 시나리오 2 — Python 이상 감지 서비스 다운

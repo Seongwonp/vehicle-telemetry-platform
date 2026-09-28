@@ -87,6 +87,20 @@ class WebSocketAuthChannelInterceptorTest {
         org.mockito.Mockito.verify(sessionRegistry).closeExpired("expired-session");
     }
 
+    @Test
+    void rejectsClientSendEvenFromAuthenticatedOwner() {
+        // 구독 권한이 있는 소유자라도 발행은 못 한다 — 발행 경로는 서버뿐이다.
+        var authentication = new UsernamePasswordAuthenticationToken("hong", null, java.util.List.of());
+        StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.SEND);
+        accessor.setDestination("/topic/vehicle/KR-GA-1234/telemetry");
+        accessor.setUser(authentication);
+        accessor.setSessionAttributes(new HashMap<>());
+
+        assertThatThrownBy(() -> interceptor.preSend(message(accessor), channel))
+            .isInstanceOf(AccessDeniedException.class);
+        org.mockito.Mockito.verifyNoInteractions(vehicleAccessService);
+    }
+
     private Message<byte[]> message(StompHeaderAccessor accessor) {
         accessor.setLeaveMutable(true);
         return MessageBuilder.createMessage(new byte[0], accessor.getMessageHeaders());

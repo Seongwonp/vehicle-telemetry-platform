@@ -45,7 +45,25 @@ class FlywayPostgresContractTest {
     }
 
     @Test
-    @DisplayName("V1~V5 전체 적용, event_id 멱등 insert, V4의 소유자 백필이 실제 PostgreSQL에서 동작한다")
+    @DisplayName("기존 50자 사용자 스키마를 V6가 데이터와 FK를 유지하며 확장한다")
+    void widensAlreadyAppliedUserSchema() {
+        JdbcTemplate jdbc = jdbc();
+        jdbc.execute("CREATE SCHEMA legacy_users");
+        jdbc.execute("CREATE TABLE legacy_users.users(id BIGINT PRIMARY KEY, username VARCHAR(50) UNIQUE NOT NULL, password_hash VARCHAR(100))");
+        jdbc.execute("CREATE TABLE legacy_users.vehicles(id BIGINT PRIMARY KEY, owner_id BIGINT REFERENCES legacy_users.users(id))");
+        jdbc.update("INSERT INTO legacy_users.users VALUES (1, 'existing', 'test-only-hash')");
+        jdbc.update("INSERT INTO legacy_users.vehicles VALUES (1, 1)");
+        Flyway.configure().dataSource(POSTGRES.getJdbcUrl(), POSTGRES.getUsername(), POSTGRES.getPassword())
+            .defaultSchema("legacy_users").locations("classpath:db/migration")
+            .placeholders(Map.of("admin_username", "admin"))
+            .baselineOnMigrate(true).baselineVersion("5").load().migrate();
+        jdbc.update("INSERT INTO legacy_users.users VALUES (2, ?, NULL)", "x".repeat(100));
+        assertThat(jdbc.queryForObject("SELECT u.password_hash FROM legacy_users.users u JOIN legacy_users.vehicles v ON v.owner_id=u.id", String.class))
+            .isEqualTo("test-only-hash");
+    }
+
+    @Test
+    @DisplayName("V1~V6 전체 적용, event_id 멱등 insert, V4의 소유자 백필이 실제 PostgreSQL에서 동작한다")
     void migrationsAndOwnerBackfillWorkOnPostgres() {
         JdbcTemplate jdbc = jdbc();
 
@@ -54,9 +72,12 @@ class FlywayPostgresContractTest {
         jdbc.update("INSERT INTO vehicles(vehicle_id, name, owner) VALUES ('OLD-001', 'a', 'hong')");
         jdbc.update("INSERT INTO vehicles(vehicle_id, name, owner) VALUES ('OLD-002', 'b', 'admin')");
         jdbc.update("INSERT INTO vehicles(vehicle_id, name, owner) VALUES ('OLD-003', 'c', NULL)");
+        // 옛 컬럼이 허용하던 최대 길이(100자). users.username이 더 짧으면 여기서 V4가 죽는다.
+        String longOwner = "o".repeat(100);
+        jdbc.update("INSERT INTO vehicles(vehicle_id, name, owner) VALUES ('OLD-004', 'd', ?)", longOwner);
 
         // ── V4 ──
-        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(2);
+        assertThat(flyway(null).migrate().migrationsExecuted).isEqualTo(3);
 
         // 관리자는 활성 ADMIN, 백필된 hong은 로그인 불가(비활성·해시 없음)
         assertThat(jdbc.queryForMap("SELECT role, active, password_hash FROM users WHERE username = 'admin'"))
@@ -71,6 +92,10 @@ class FlywayPostgresContractTest {
         assertThat(jdbc.queryForObject("""
             SELECT u.username FROM vehicles v JOIN users u ON u.id = v.owner_id WHERE v.vehicle_id = 'OLD-003'
             """, String.class)).isEqualTo("admin");
+
+        assertThat(jdbc.queryForObject("""
+            SELECT u.username FROM vehicles v JOIN users u ON u.id = v.owner_id WHERE v.vehicle_id = 'OLD-004'
+            """, String.class)).isEqualTo(longOwner);
 
         // 옛 컬럼은 사라지고 FK가 있다 — 존재하지 않는 사용자 소유는 스키마가 막는다
         assertThat(jdbc.queryForObject("""

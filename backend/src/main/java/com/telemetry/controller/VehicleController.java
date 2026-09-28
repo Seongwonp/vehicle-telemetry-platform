@@ -25,7 +25,7 @@ public class VehicleController {
     private final VehicleService vehicleService;
 
     @PostMapping
-    @Operation(summary = "차량 등록", description = "새 차량을 시스템에 등록합니다")
+    @Operation(summary = "차량 등록 (관리자 전용)", description = "새 차량을 등록하고 소유자를 지정한다. 일반 사용자는 403")
     public ResponseEntity<VehicleResponse> register(
         @Valid @RequestBody VehicleRegisterRequest request, Authentication authentication) {
         return ResponseEntity.status(HttpStatus.CREATED).body(vehicleService.register(request, authentication));

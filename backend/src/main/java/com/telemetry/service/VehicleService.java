@@ -37,15 +37,14 @@ public class VehicleService {
 
     @Transactional
     public VehicleResponse register(VehicleRegisterRequest request, Authentication authentication) {
-        // 남의 이름으로 등록하면 그 차량 ID의 텔레메트리를 그 사람이 가져가고, 반대로 내가 남의
-        // 차량 ID를 선점할 수도 있다. 다른 사람 소유로 등록하는 것은 관리자만 할 수 있다.
-        String ownerName = request.getOwner() == null || request.getOwner().isBlank()
-            ? (authentication == null ? null : authentication.getName())
-            : request.getOwner().trim();
-        if (!vehicleAccessService.isAdmin(authentication)
-            && (authentication == null || !authentication.getName().equals(ownerName))) {
-            throw new AccessDeniedException("다른 사용자 소유로는 차량을 등록할 수 없습니다");
+        // 등록은 관리자만(ADR-027). 일반 사용자가 미등록 차량 ID를 자기 소유로 먼저 등록하면 그 차량의
+        // 텔레메트리를 가져가는 선점 경로가 된다 — 인증서는 "누가 보내는가"를 검증하지 "누구 차인가"는 모른다.
+        if (!vehicleAccessService.isAdmin(authentication)) {
+            throw new AccessDeniedException("차량 등록은 관리자만 할 수 있습니다");
         }
+        String ownerName = request.getOwner() == null || request.getOwner().isBlank()
+            ? authentication.getName()
+            : request.getOwner().trim();
         // 소유자는 users 행이어야 한다(V4 FK). 문자열이던 시절엔 오타 소유자가 조용히 들어갔다.
         User owner = userRepository.findByUsername(ownerName)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다: " + ownerName));

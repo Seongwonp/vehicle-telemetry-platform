@@ -4,7 +4,9 @@
 
 CREATE TABLE IF NOT EXISTS users (
     id            BIGSERIAL PRIMARY KEY,
-    username      VARCHAR(50)  NOT NULL UNIQUE,
+    -- 100인 이유: 옛 vehicles.owner가 VARCHAR(100)이라 백필이 그 길이를 그대로 받아야 한다.
+    -- 새 계정의 username 규칙(3~50자)은 API 검증(UserCreateRequest)이 건다.
+    username      VARCHAR(100) NOT NULL UNIQUE,
     -- NULL = 아직 비밀번호가 없어 로그인 불가(백필된 소유자, 또는 기동 시 env로 채워지는 admin).
     password_hash VARCHAR(100),
     role          VARCHAR(10)  NOT NULL CHECK (role IN ('ADMIN', 'USER')),

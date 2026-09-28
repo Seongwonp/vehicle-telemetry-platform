@@ -133,9 +133,9 @@ CREATE INDEX idx_anomaly_vehicle_high ON anomaly_alerts (vehicle_id) WHERE sever
 > 복합 인덱스(`vehicle_id, detected_at DESC`)로 차량 필터와 최신순 정렬을 함께 처리한다.
 > 단독 인덱스는 전체 차량 기준 조회와 기존 운영 쿼리 호환을 위해 유지한다.
 >
-> **`idx_anomaly_vehicle_high`(V5)**: 차량 목록의 HIGH 건수가 차량마다 heap 4,000블록을 읽어 25ms였다(200만 행).
-> HIGH만 담는 부분 인덱스로 Index Only Scan 0.06ms·3.5MB(복합 인덱스 14MB보다 작다). 호출도 차량마다가 아니라
-> `GROUP BY` 1회로 바꿨다 — [`verification/2026-09-27-postgres-explain.md`](verification/2026-09-27-postgres-explain.md).
+> **`idx_anomaly_vehicle_high`(V5)**: 차량 목록의 HIGH 건수가 차량마다 heap 4,000블록을 읽어 7.1ms였다(200만 행, HIGH 25%).
+> HIGH만 담는 부분 인덱스로 Index Only Scan 0.96ms·3.5MB(복합 인덱스 14MB보다 작다). 호출도 차량마다가 아니라
+> `GROUP BY` 1회로 바꿨다(인덱스가 시간을, GROUP BY가 왕복을 줄인다) — [`verification/2026-09-27-postgres-explain.md`](verification/2026-09-27-postgres-explain.md).
 
 ---
 

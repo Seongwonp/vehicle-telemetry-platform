@@ -181,14 +181,25 @@ class VehicleServiceTest {
     }
 
     @Test
-    @DisplayName("소유자를 비우면 요청한 사용자 본인이 소유자가 된다")
-    void register_소유자생략_본인() {
+    @DisplayName("일반 사용자는 자기 소유로도 등록하지 못한다 — 미등록 차량 ID 선점 경로를 막는다")
+    void register_일반사용자_403() {
+        VehicleRegisterRequest request = makeRequest("KR-GA-1234", "아반떼", "hong");
+
+        assertThatThrownBy(() -> vehicleService.register(request, OWNER))
+            .isInstanceOf(org.springframework.security.access.AccessDeniedException.class);
+        verify(vehicleRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("관리자가 소유자를 비우면 관리자 본인 소유가 된다")
+    void register_소유자생략_관리자본인() {
         VehicleRegisterRequest request = makeRequest("KR-GA-1234", "아반떼", null);
+        given(userRepository.findByUsername("admin")).willReturn(Optional.of(new User("admin", "x", Role.ADMIN)));
         given(vehicleRepository.save(any(Vehicle.class))).willAnswer(inv -> inv.getArgument(0));
 
-        VehicleResponse result = vehicleService.register(request, OWNER);
+        VehicleResponse result = vehicleService.register(request, ADMIN);
 
-        assertThat(result.getOwner()).isEqualTo("hong");
+        assertThat(result.getOwner()).isEqualTo("admin");
     }
 
     @Test

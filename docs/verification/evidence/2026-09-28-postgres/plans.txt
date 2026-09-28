@@ -1,0 +1,70 @@
+Pager usage is off.
+                                         version                                          
+------------------------------------------------------------------------------------------
+ PostgreSQL 16.15 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+(1 row)
+
+  total  |  high  
+---------+--------
+ 2000000 | 500112
+(1 row)
+
+ min | max  | count 
+-----+------+-------
+ 935 | 1067 |   500
+(1 row)
+
+SET
+                                                                 QUERY PLAN                                                                  
+---------------------------------------------------------------------------------------------------------------------------------------------
+ Aggregate  (cost=3523.16..3523.17 rows=1 width=8) (actual time=6.765..6.767 rows=1 loops=1)
+   Buffers: shared hit=1063 read=4
+   ->  Bitmap Heap Scan on anomaly_alerts  (cost=12.00..3522.35 rows=325 width=0) (actual time=4.882..6.728 rows=349 loops=1)
+         Recheck Cond: (((vehicle_id)::text = 'V-0123'::text) AND ((severity)::text = 'HIGH'::text))
+         Filter: ((detected_at <= now()) AND (detected_at >= (now() - '30 days'::interval)))
+         Rows Removed by Filter: 714
+         Heap Blocks: exact=1063
+         Buffers: shared hit=1063 read=4
+         ->  Bitmap Index Scan on idx_anomaly_vehicle_high  (cost=0.00..11.91 rows=999 width=0) (actual time=4.724..4.725 rows=1063 loops=1)
+               Index Cond: ((vehicle_id)::text = 'V-0123'::text)
+               Buffers: shared read=4
+ Planning:
+   Buffers: shared hit=21
+ Planning Time: 0.910 ms
+ Execution Time: 6.836 ms
+(15 rows)
+
+                                                                                            QUERY PLAN                                                                                            
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ GroupAggregate  (cost=0.42..550.62 rows=500 width=15) (actual time=2.391..19.626 rows=20 loops=1)
+   Group Key: vehicle_id
+   Buffers: shared hit=100 read=18
+   ->  Index Only Scan using idx_anomaly_vehicle_high on anomaly_alerts  (cost=0.42..444.03 rows=20318 width=7) (actual time=1.791..17.881 rows=20012 loops=1)
+         Index Cond: (vehicle_id = ANY ('{V-0001,V-0002,V-0003,V-0004,V-0005,V-0006,V-0007,V-0008,V-0009,V-0010,V-0011,V-0012,V-0013,V-0014,V-0015,V-0016,V-0017,V-0018,V-0019,V-0020}'::text[]))
+         Heap Fetches: 0
+         Buffers: shared hit=100 read=18
+ Planning:
+   Buffers: shared hit=46
+ Planning Time: 1.106 ms
+ Execution Time: 19.722 ms
+(11 rows)
+
+                                                                                                                     QUERY PLAN                                                                                                                     
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ HashAggregate  (cost=34578.08..34583.08 rows=500 width=15) (actual time=23.864..23.872 rows=20 loops=1)
+   Group Key: vehicle_id
+   Batches: 1  Memory Usage: 49kB
+   Buffers: shared hit=4172
+   ->  Bitmap Heap Scan on anomaly_alerts  (cost=245.98..34476.49 rows=20318 width=15) (actual time=2.845..17.293 rows=20012 loops=1)
+         Recheck Cond: (((vehicle_id)::text = ANY ('{V-0001,V-0002,V-0003,V-0004,V-0005,V-0006,V-0007,V-0008,V-0009,V-0010,V-0011,V-0012,V-0013,V-0014,V-0015,V-0016,V-0017,V-0018,V-0019,V-0020}'::text[])) AND ((severity)::text = 'HIGH'::text))
+         Heap Blocks: exact=4097
+         Buffers: shared hit=4172
+         ->  Bitmap Index Scan on idx_anomaly_vehicle_high  (cost=0.00..240.85 rows=20318 width=0) (actual time=2.257..2.258 rows=20012 loops=1)
+               Index Cond: ((vehicle_id)::text = ANY ('{V-0001,V-0002,V-0003,V-0004,V-0005,V-0006,V-0007,V-0008,V-0009,V-0010,V-0011,V-0012,V-0013,V-0014,V-0015,V-0016,V-0017,V-0018,V-0019,V-0020}'::text[]))
+               Buffers: shared hit=75
+ Planning:
+   Buffers: shared hit=6
+ Planning Time: 0.244 ms
+ Execution Time: 24.405 ms
+(15 rows)
+

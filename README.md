@@ -22,9 +22,12 @@ flowchart LR
     API --> PROM["Prometheus / Grafana"]
 ```
 
-설계 결정 25건과 이유는 [ADR](docs/architecture-decisions.md).
+설계 결정 27건과 이유는 [ADR](docs/architecture-decisions.md).
 
-## 핵심 결과 5개 — 전부 재현 스크립트와 원본 증거가 있다
+## 핵심 결과 5개 — 결과별 재현·원본 보존 범위를 구분한다
+
+초기 72% 유실 등 일부 과거 관찰은 원본 로그가 남아 있지 않다. 수정 후 반복 실행의
+원본은 보존했지만 최초 실패의 원본을 대신하지 않는다. 각 결과 문서의 검증 상태·한계를 함께 본다.
 
 | 무엇을 찾았나 | 원인 | 결과 | 근거 |
 | --- | --- | --- | --- |
@@ -69,5 +72,5 @@ cd backend && ./gradlew test                        # Docker 필요(Testcontaine
 | [상세 기록](docs/portfolio-detail.md) | 장애 시나리오별 동작, 실측 서사 전체 |
 | [ADR](docs/architecture-decisions.md) | 왜 이렇게 골랐고 무엇을 포기했는지 |
 | [로드맵](docs/roadmap.md) · [현재 상태 감사](docs/current-state-audit-2026-09-09.md) | 완료/미검증 경계와 다음 작업 |
-| [Runbook](docs/runbook/) | DLQ 재처리, Redis 장애, 저장 스케일아웃 |
+| [Runbook](docs/runbook/) | DLQ 재처리, Redis 장애, 저장 스케일아웃, 사용자 스키마 전환 |
 | [개발 일지](docs/devlog.md) | 어디서 틀렸고 무엇이 그걸 드러냈는지 |

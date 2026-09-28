@@ -25,8 +25,9 @@ public interface AnomalyAlertRepository extends JpaRepository<AnomalyAlert, Long
     Optional<AnomalyAlert> findByEventId(String eventId);
 
     /**
-     * 차량 목록용 HIGH 건수를 한 번에 센다. 차량마다 count를 부르면 200만 행에서 차량당 25ms(N+1)였다 —
-     * V5 부분 인덱스(severity='HIGH')로 Index Only Scan, 20대 1.7ms. 건수 0인 차량은 결과에 없다.
+     * 차량 목록용 HIGH 건수를 한 번에 센다 — 차량마다 count를 부르면 목록 크기만큼 왕복한다(N+1).
+     * V5 부분 인덱스를 활용한다. 실행계획은 데이터 분포와 visibility map에 따라 달라진다.
+     * 건수 0인 차량은 결과에 없다.
      */
     @Query("""
         SELECT a.vehicleId AS vehicleId, count(a) AS count FROM AnomalyAlert a

@@ -18,6 +18,6 @@ public class VehicleRegisterRequest {
     @Schema(description = "차량 이름", example = "현대 아반떼")
     private String name;
 
-    @Schema(description = "소유자 username. 비우면 요청한 사용자 본인. 다른 사용자로 지정은 관리자만 가능", example = "hong")
+    @Schema(description = "소유자 username(users에 있어야 함). 비우면 등록하는 관리자 본인", example = "hong")
     private String owner;
 }

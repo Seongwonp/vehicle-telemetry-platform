@@ -69,6 +69,11 @@ public class SecurityConfig {
 
             // ── Stateless 세션 ──────────────────────────────────────
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) -> {
+                response.setStatus(401);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다\"}");
+            }))
 
             // ── 보안 헤더 ───────────────────────────────────────────
             .headers(headers -> headers
@@ -85,7 +90,9 @@ public class SecurityConfig {
 
             // ── 엔드포인트 인가 ─────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/auth/me").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
                 // WebSocket 핸드셰이크(HTTP 업그레이드) 자체는 열어두고, 실제 인증은
                 // STOMP CONNECT 프레임에서 WebSocketConfig의 인터셉터가 검사한다.
                 .requestMatchers("/ws/**").permitAll()
