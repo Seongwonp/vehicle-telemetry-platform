@@ -11,10 +11,6 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.HexFormat;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
@@ -63,23 +59,25 @@ public class MqttMessageHandler {
         try {
             telemetry = telemetryDecoder.decode(payload);
         } catch (TelemetryContractException e) {
-            reject(topic, payload, e.getReason());
+            reject(topic, payload, e.getReason(), null);
             return;
         }
 
         Matcher topicMatcher = topic == null ? null : TELEMETRY_TOPIC.matcher(topic);
         if (!validTimestamp(telemetry.getTimestamp())) {
-            reject(topic, payload, "INVALID_TIMESTAMP");
+            reject(topic, payload, "INVALID_TIMESTAMP", telemetry);
             return;
         }
         if (topicMatcher == null || !topicMatcher.matches()
             || !topicMatcher.group(1).equals(telemetry.getVehicleId())) {
-            reject(topic, payload, "TOPIC_VEHICLE_MISMATCH");
+            reject(topic, payload, "TOPIC_VEHICLE_MISMATCH", telemetry);
             return;
         }
 
-        log.debug("[MQTT→Kafka] vehicle={} speed={} engine_temp={} battery_voltage={}",
+        // 추적 키는 전 구간 같은 이름이다 — vehicle=, ts=(원본 timestamp 문자열). ADR-028.
+        log.debug("[MQTT→Kafka] vehicle={} ts={} speed={} engine_temp={} battery_voltage={}",
             telemetry.getVehicleId(),
+            telemetry.getTimestamp(),
             telemetry.getSpeed(),
             telemetry.getEngineTemp(),
             telemetry.getBatteryVoltage());
@@ -89,7 +87,11 @@ public class MqttMessageHandler {
         telemetryProducer.send(telemetry);
     }
 
-    private void reject(String topic, String payload, String reason) {
+    /**
+     * @param decoded 계약은 통과했지만 MQTT 고유 검사에서 걸린 경우의 도메인 객체. 계약 위반이면 null.
+     *                추적 키(vehicle·ts)를 남기되 <b>신뢰하지 않는다</b> — 거부된 메시지의 필드다.
+     */
+    private void reject(String topic, String payload, String reason, VehicleTelemetry decoded) {
         // 기존 지표 — MQTT 입구의 **모든** 거부를 센다. 이름·의미를 바꾸지 않는다.
         invalidCounter.increment();
         // 사유별 지표는 **계약 사유일 때만** 올린다. `TOPIC_VEHICLE_MISMATCH`는 MQTT 고유
@@ -97,8 +99,12 @@ public class MqttMessageHandler {
         if (TelemetryContractException.isContractReason(reason)) {
             com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_MQTT, reason);
         }
-        log.warn("[MQTT] 메시지 거부 — topic={} reason={} payloadLength={} payloadSha256={}",
-            topic, reason, payload.length(), sha256(payload));
+        // 거부 경로의 추적 키는 payloadSha256이다 — DLQ value와 대조한다. 값은 남기지 않는다.
+        log.warn("[MQTT] 메시지 거부 — topic={} reason={} vehicle={} ts={} payloadLength={} payloadSha256={}",
+            topic, reason,
+            decoded == null ? "-" : decoded.getVehicleId(),
+            decoded == null ? "-" : decoded.getTimestamp(),
+            payload.length(), sha256(payload));
         invalidMessagePublisher.publish(topic, payload, reason);
     }
 
@@ -112,12 +118,6 @@ public class MqttMessageHandler {
     }
 
     static String sha256(String payload) {
-        try {
-            return HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(payload.getBytes(StandardCharsets.UTF_8))
-            );
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("SHA-256을 사용할 수 없습니다", e);
-        }
+        return com.telemetry.domain.PayloadDigest.sha256(payload);
     }
 }

@@ -87,12 +87,15 @@ public class TelemetryConsumer {
                 // **계약 위반만** 사유별로 센다. 아래 일반 catch는 변환 실패 등이라
                 // 계약 오류가 아니고, 섞으면 "거부가 늘었다"의 뜻이 흐려진다.
                 com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_KAFKA_STORAGE, e.getReason());
-                log.warn("[Kafka→InfluxDB] 계약 위반 {} — DLQ로 이동 vehicle={} offset={} partition={}",
-                    e.getReason(), record.key(), record.offset(), record.partition());
+                // 거부 경로의 추적 키는 payloadSha256 — MQTT 거부 로그·DLQ value와 같은 함수로 같은 값이다(ADR-028).
+                log.warn("[Kafka→InfluxDB] 계약 위반 {} — DLQ로 이동 vehicle={} partition={} offset={} payloadSha256={}",
+                    e.getReason(), record.key(), record.partition(), record.offset(),
+                    com.telemetry.domain.PayloadDigest.sha256(record.value()));
                 sendToDlq(TELEMETRY_DLQ_TOPIC, record, e);
             } catch (Exception e) {
-                log.error("[Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
-                    record.key(), record.offset(), record.partition(), e);
+                log.error("[Kafka→InfluxDB] 역직렬화/변환 실패 — DLQ로 이동 vehicle={} partition={} offset={} payloadSha256={}",
+                    record.key(), record.partition(), record.offset(),
+                    com.telemetry.domain.PayloadDigest.sha256(record.value()), e);
                 sendToDlq(TELEMETRY_DLQ_TOPIC, record, e);
             }
         }
@@ -162,8 +165,9 @@ public class TelemetryConsumer {
             } catch (Exception e) {
                 // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 —
                 // 알림 누락으로 이어질 수 있어 DLQ로 격리한다.
-                log.error("[Kafka→Anomaly] 변환 실패 — DLQ로 이동 vehicle={} offset={} partition={}",
-                    record.key(), record.offset(), record.partition(), e);
+                log.error("[Kafka→Anomaly] 변환 실패 — DLQ로 이동 vehicle={} partition={} offset={} payloadSha256={}",
+                    record.key(), record.partition(), record.offset(),
+                    com.telemetry.domain.PayloadDigest.sha256(record.value()), e);
                 sendToDlq(ANOMALY_DLQ_TOPIC, record, e);
             }
         }
@@ -266,8 +270,8 @@ public class TelemetryConsumer {
         } catch (Exception e) {
             // timeout이면 발행 여부를 **알 수 없다** — dlqPublishFailed가 그 경우를 따로 센다.
             com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, dlqTopic, e);
-            log.error("[DLQ] {} 전송 실패 — 원본 offset을 커밋하지 않음 key={}",
-                dlqTopic, record.key(), e);
+            log.error("[DLQ] {} 전송 실패 — 원본 offset을 커밋하지 않음 vehicle={} partition={} offset={}",
+                dlqTopic, record.key(), record.partition(), record.offset(), e);
             throw new IllegalStateException("DLQ 전송 실패", e);
         }
     }

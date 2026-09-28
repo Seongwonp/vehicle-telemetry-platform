@@ -1,0 +1,3 @@
+10:07:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=SIM-003 ts=2026-09-28T10:07:04.309Z speed=108.7 engine_temp=92.2 battery_voltage=10.41
+10:07:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-003 ts=2026-09-28T10:07:04.309Z partition=1 offset=69705
+10:07:08 [-] [-] INFO  c.t.s.AnomalyService - [이상 저장] vehicle=SIM-003 ts=2026-09-28T10:07:04.309Z type=배터리 저전압 severity=MEDIUM event=3ee127a28d2bf221da87c4f226317ef6f33aaaf169fe45fb833f2af7568d2fb8

@@ -107,7 +107,7 @@ public class TelemetryProducer {
             payload = objectMapper.writeValueAsString(telemetry);
         } catch (Exception e) {
             // 직렬화 실패는 도메인 객체 자체의 문제일 가능성이 높아 데이터 내용을 남긴다
-            log.error("[Kafka] 직렬화 실패로 전송 불가 — vehicle={} timestamp={} speed={} rpm={}",
+            log.error("[Kafka] 직렬화 실패로 전송 불가 — vehicle={} ts={} speed={} rpm={}",
                 telemetry.getVehicleId(),
                 telemetry.getTimestamp(),
                 telemetry.getSpeed(),
@@ -119,10 +119,10 @@ public class TelemetryProducer {
         // 이미 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 그래야 retryPending()이
         // 파일명(타임스탬프+시퀀스) 순서대로 드레인하면서 차량별 순서가 유지된다.
         if (backlog.get()) {
-            storeForRetry(telemetry.getVehicleId(), payload, null);
+            storeForRetry(telemetry.getVehicleId(), telemetry.getTimestamp(), payload, null);
             return;
         }
-        sendDirect(telemetry.getVehicleId(), payload);
+        sendDirect(telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
     }
 
     /**
@@ -153,7 +153,7 @@ public class TelemetryProducer {
             try {
                 String payload = telemetrySpool.read(spoolFile);
                 VehicleTelemetry telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
-                sendSpooled(spoolFile, telemetry.getVehicleId(), payload);
+                sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
             } catch (Exception e) {
                 inFlight.remove(spoolFile);
                 log.error("[Kafka] spool 재전송 준비 실패 path={}", spoolFile, e);
@@ -162,21 +162,22 @@ public class TelemetryProducer {
     }
 
     /** 정상 경로 — spool 파일 없이 바로 보내고, 실패했을 때만 spool에 남긴다. */
-    private void sendDirect(String vehicleId, String payload) {
+    private void sendDirect(String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
             future = kafkaTemplate.send(TOPIC, vehicleId, payload);
         } catch (Exception e) {
-            storeForRetry(vehicleId, payload, e);
+            storeForRetry(vehicleId, ts, payload, e);
             return;
         }
 
         future.whenComplete((result, ex) -> {
             if (ex != null) {
-                storeForRetry(vehicleId, payload, ex);
+                storeForRetry(vehicleId, ts, payload, ex);
             } else {
-                log.debug("[Kafka] 전송 완료 — vehicle={} partition={} offset={}",
-                    vehicleId,
+                // vehicle·ts가 (partition, offset)과 한 줄에 있어야 로그에서 Kafka 좌표로 건너갈 수 있다(ADR-028).
+                log.debug("[Kafka] 전송 완료 — vehicle={} ts={} partition={} offset={}",
+                    vehicleId, ts,
                     result.getRecordMetadata().partition(),
                     result.getRecordMetadata().offset());
             }
@@ -184,14 +185,14 @@ public class TelemetryProducer {
     }
 
     /** spool에서 꺼낸 메시지 재전송 — 성공해야만 파일을 지운다. */
-    private void sendSpooled(Path spoolFile, String vehicleId, String payload) {
+    private void sendSpooled(Path spoolFile, String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
             future = kafkaTemplate.send(TOPIC, vehicleId, payload);
         } catch (Exception e) {
             inFlight.remove(spoolFile);
             backlog.set(true);
-            log.error("[Kafka] spool 재전송 시작 실패 — 파일 유지 vehicle={}", vehicleId, e);
+            log.error("[Kafka] spool 재전송 시작 실패 — 파일 유지 vehicle={} ts={}", vehicleId, ts, e);
             return;
         }
 
@@ -199,9 +200,14 @@ public class TelemetryProducer {
             inFlight.remove(spoolFile);
             if (ex != null) {
                 backlog.set(true);
-                log.error("[Kafka] spool 재전송 실패 — 파일 유지 vehicle={} topic={}",
-                    vehicleId, TOPIC, ex);
+                log.error("[Kafka] spool 재전송 실패 — 파일 유지 vehicle={} ts={} topic={}",
+                    vehicleId, ts, TOPIC, ex);
             } else {
+                // 드레인된 메시지는 새 offset을 받는다 — 추적할 때 이 줄이 원래 좌표와 새 좌표를 잇는다.
+                log.debug("[Kafka] spool 드레인 완료 — vehicle={} ts={} partition={} offset={}",
+                    vehicleId, ts,
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
                 telemetrySpool.delete(spoolFile);
                 // 선택된 파일이 아니라 **실제로 빠져나간 파일**을 센다. 선택 시점에 세면
                 // 이전 주기의 전송이 아직 안 끝난 파일을 다음 주기가 또 집어 중복 계산된다
@@ -212,18 +218,18 @@ public class TelemetryProducer {
     }
 
     /** 전송 실패분을 spool에 적어 재전송 대상으로 남긴다. */
-    private void storeForRetry(String vehicleId, String payload, Throwable cause) {
+    private void storeForRetry(String vehicleId, String ts, String payload, Throwable cause) {
         backlog.set(true);
         try {
             telemetrySpool.store(payload);
             if (cause != null) {
-                log.error("[Kafka] 브로커 전송 실패 — spool에 보관 vehicle={} topic={}",
-                    vehicleId, TOPIC, cause);
+                log.error("[Kafka] 브로커 전송 실패 — spool에 보관 vehicle={} ts={} topic={}",
+                    vehicleId, ts, TOPIC, cause);
             }
         } catch (RuntimeException spoolFailure) {
             // 여기까지 실패하면 이 메시지는 정말로 유실된다 — 조용히 넘기지 않는다.
-            log.error("[Kafka] 전송 실패 후 spool 저장까지 실패 — 메시지 유실 vehicle={}",
-                vehicleId, spoolFailure);
+            log.error("[Kafka] 전송 실패 후 spool 저장까지 실패 — 메시지 유실 vehicle={} ts={}",
+                vehicleId, ts, spoolFailure);
         }
     }
 }

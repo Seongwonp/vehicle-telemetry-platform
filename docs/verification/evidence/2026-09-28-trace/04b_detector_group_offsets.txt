@@ -1,0 +1,4 @@
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 0          -               0               -               kafka-python-3.0.9-0663f2ec-ba16-48db-967b-1dfe5da24a4a /172.18.0.15    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          35075           35080           5               kafka-python-3.0.9-e37bb23f-3f66-4464-8663-3904880321d1 /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 1          70156           70161           5               kafka-python-3.0.9-30c8ed62-38b2-44df-afd8-df52f3ffcf2e /172.18.0.13    kafka-python-3.0.9

@@ -1,0 +1,1 @@
+10:22:06 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 메시지 거부 — topic=vehicle/telemetry/TRACE-01 reason=PAYLOAD_VALIDATION_FAILED vehicle=- ts=- payloadLength=212 payloadSha256=ae82ae1009b8a9dab6245af56b9e6b503afc29241c3a5d3d98a3d8021a1b4f77

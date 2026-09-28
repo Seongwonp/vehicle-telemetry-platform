@@ -247,8 +247,11 @@ def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> No
 
         futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
 
+        # 추적 키는 백엔드와 같은 이름이다 — vehicle=, ts=(원본 timestamp), event=(알림 키). ADR-028.
         logger.warning(
             f"[이상 감지] vehicle={vehicle_id} "
+            f"ts={data.get('timestamp')} "
+            f"event={payload['event_id']} "
             f"type={event.anomaly_type} "
             f"field={event.field} "
             f"value={event.value} "
@@ -529,10 +532,12 @@ def main() -> None:
                     except contract.ContractViolation as e:
                         CONTRACT_REJECTED[e.reason] += 1
                         CONTRACT_REJECTED_TOTAL.labels(entrance=ENTRANCE, reason=e.reason).inc()
-                        # 값은 남기지 않는다 — 사유 코드와 위치만.
+                        # 값은 남기지 않는다 — 사유 코드와 위치, 그리고 원본의 SHA-256(DLQ value와 대조용).
                         logger.warning(
                             f"[계약 위반] {e.reason} — DLQ로 이동 "
+                            f"vehicle={message.key.decode('utf-8', 'replace') if message.key else '-'} "
                             f"partition={message.partition} offset={message.offset} "
+                            f"payloadSha256={hashlib.sha256(message.value).hexdigest()} "
                             f"detail={e.detail}")
                         send_to_dlq(dlq_producer, message, e)
                         dlq_count += 1
@@ -545,7 +550,8 @@ def main() -> None:
                         PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
                             f"검증 중 예상 못 한 실패 — DLQ로 이동 "
-                            f"partition={message.partition} offset={message.offset}: {e}",
+                            f"partition={message.partition} offset={message.offset} "
+                            f"payloadSha256={hashlib.sha256(message.value).hexdigest()}: {e}",
                             exc_info=True,
                         )
                         send_to_dlq(dlq_producer, message, e)
@@ -593,6 +599,7 @@ def main() -> None:
                         PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
                             f"메시지 처리 실패 — DLQ로 이동 "
+                            f"vehicle={data.get('vehicle_id')} ts={data.get('timestamp')} "
                             f"partition={message.partition} offset={message.offset}: {e}",
                             exc_info=True,
                         )

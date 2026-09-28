@@ -117,15 +117,17 @@ public class AnomalyService {
         meterRegistry.counter("telemetry.anomaly.stored",
             "result", isNew ? "new" : "duplicate").increment();
         if (isNew) {
-            log.info("[이상 저장] vehicle={} type={} severity={}",
-                alert.getVehicleId(), alert.getAnomalyType(), alert.getSeverity());
+            // 원본 추적 키(vehicle·ts = 원본 timestamp)와 알림 키(event)를 한 줄에 — msg가 원인, event가 결과(ADR-028).
+            log.info("[이상 저장] vehicle={} ts={} type={} severity={} event={}",
+                alert.getVehicleId(), alert.getVehicleTimestamp(), alert.getAnomalyType(),
+                alert.getSeverity(), alert.getEventId());
         } else {
             // 재처리에서는 정상적인 결과다. 로그를 나누는 이유는 두 가지다 —
             // (1) 예전엔 중복도 "[이상 저장]"으로 찍혀서, 재처리 후 로그를 세면 실제
             //     저장된 건수보다 많이 나왔다(실측: 9건 재처리에 행 증가는 6건).
             // (2) 중복 비율이 높으면 재처리 범위가 필요 이상으로 넓다는 신호다.
-            log.info("[이상 중복] 이미 저장된 이벤트라 건너뜀 vehicle={} type={} event={}",
-                alert.getVehicleId(), alert.getAnomalyType(), alert.getEventId());
+            log.info("[이상 중복] 이미 저장된 이벤트라 건너뜀 vehicle={} ts={} type={} event={}",
+                alert.getVehicleId(), alert.getVehicleTimestamp(), alert.getAnomalyType(), alert.getEventId());
         }
         return new SaveResult(saved, isNew);
     }

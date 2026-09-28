@@ -1,0 +1,1 @@
+Partition:1|Offset:69705|SIM-003|{"timestamp":"2026-09-28T10:07:04.309Z","speed":108.7,"rpm":3017.0,"gps":{"lat":37.485567,"lng":127.154265},"vehicle_id":"SIM-003","engine_temp":92.2,"throttle_position":37.9,"fuel_level":0.0,"battery_voltage":10.41,"dtc_codes":[]}

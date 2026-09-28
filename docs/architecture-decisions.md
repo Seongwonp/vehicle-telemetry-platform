@@ -1233,3 +1233,42 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
   (MockMvc는 못 잡는다), 목록의 fleet 요약 Flux가 `contains()` 때문에 푸시다운이 안 돼 24시간치가 쌓이자 **timeout → 전부
   `UNAVAILABLE`**이던 것. `docs/verification/2026-09-28-multi-user-e2e.md`.
 
+## ADR-028: 이벤트 상관관계 1단계 — 새 ID 없이 `(vehicle_id, timestamp)`를 전 구간 추적 키로 표준화한다
+
+### 배경
+
+HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/감지기→PostgreSQL→WebSocket을 흐르는 **메시지 한 건**과 무관했다.
+"차량 X가 T에 보낸 한 건이 어디까지 갔나"에 답하려면 로그마다 다른 이름으로 흩어진 식별자(`vehicle=`·`timestamp=`·`key=`·없음)를
+따라가야 했다(`docs/event-correlation-design.md` §1). 원본 메시지에는 전용 ID가 없고, 넣으려면 두 언어의 계약·재직렬화 DTO·
+시뮬레이터·배포 순서가 함께 바뀐다(§10).
+
+### 결정 (§10-7 다섯 가지, 2026-09-28)
+
+| # | 결정 |
+| --- | --- |
+| ① 이름 | 원본은 `message_id`, 알림에 복사되는 참조는 `source_message_id`. 기존 알림 `event_id`와 섞지 않는다 |
+| ② 형식 | 생성은 UUIDv7. **수신 검증은 UUID 형식 36자까지만** — 버전 nibble은 보지 않는다 |
+| ③ 형식 오류 | 계약 위반으로 거부(DLQ). "계약 밖 값은 거부" 원칙과 같다 |
+| ④ 같은 ID·다른 payload | 막지 않고 식별만(로그 `payloadSha256`). 입구 캐시는 Redis 의존을 수집 경로에 끌어들인다 |
+| ⑤ 착수 | **1단계 먼저**(이 ADR). 2단계는 `(vehicle_id, timestamp)`로 못 찾는 사례가 실제로 나올 때 |
+
+**1단계가 한 것 — 계약·저장·DTO 변경 없음:**
+
+- 파이프라인 로그의 추적 키 이름을 통일했다: `vehicle=`, `ts=`(payload의 `timestamp` **문자열 그대로**, 정규화하지 않는다).
+  MQTT 수신·거부, Kafka 발행·spool·드레인, 저장 DLQ, 알림 저장·중복(백엔드), 이상 감지·계약 위반·처리 실패(감지기).
+  알림 줄에는 `event=`(알림 키)를 같이 둔다 — 한 줄에서 `ts`가 원인, `event`가 결과다.
+- 거부 경로는 **`payloadSha256=`**을 남긴다. MQTT 거부·Kafka 저장 DLQ·감지 DLQ가 같은 함수(`PayloadDigest`·`hashlib.sha256`)로
+  원본 바이트를 해시하므로 세 로그와 DLQ value가 같은 값으로 이어진다. 값 자체는 남기지 않는다.
+- Kafka 좌표가 있는 줄(발행 완료·드레인 완료·DLQ 이동)은 `partition=`·`offset=`을 `vehicle`·`ts`와 **한 줄**에 둔다 —
+  로그에서 Kafka로, Kafka에서 DLQ 헤더(`x-dlq-origin-*`)로 건너가는 연결 고리다.
+- 절차를 [runbook](runbook/trace-one-message.md)에 쿼리로 적었다(로그 grep → Kafka key·offset → InfluxDB `vehicle_id`+`_time` →
+  감지기 로그·committed offset → PostgreSQL `vehicle_id`+`vehicle_timestamp` → DLQ `payloadSha256`).
+
+### 대가와 한계
+
+- **같은 차량·같은 밀리초의 두 건은 구분할 수 없다** — InfluxDB identity와 같은 한계다. 깨진 JSON은 `vehicle`·`ts`를 읽을 수 없어
+  `payloadSha256`과 수신 시각뿐이다. 이 둘이 2단계를 여는 조건이다.
+- 정상 경로의 수신·발행 줄은 DEBUG다. INFO에서는 거부·알림·실패만 보이고, 정상 한 건의 "수신됐다"는 Kafka에서 확인한다.
+- QoS1 재전송·Kafka 재전달·DLQ 재주입은 같은 키를 **자동으로** 유지한다(원본 value를 그대로 나르므로). 재주입은 새 offset을 받아
+  한 건에 좌표가 둘이 된다 — runbook 6.
+- 재전달·spool 드레인·DLQ 재주입 각 1회에서 같은 키로 찾아지는지는 **각 시나리오 1회 관측**으로만 말한다(검증 문서).

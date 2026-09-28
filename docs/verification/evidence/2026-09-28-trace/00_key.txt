@@ -1,0 +1,5 @@
+vehicle=SIM-003
+ts=2026-09-28T10:07:04.309Z
+backend_commit=88cf7f1+dirty
+backend_image=0d6030172418
+captured_at=2026-09-28T10:07:47Z
