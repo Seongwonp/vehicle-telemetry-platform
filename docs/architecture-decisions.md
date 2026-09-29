@@ -797,6 +797,15 @@ fsync 없이 rename해서 전원이 끊기면 이름만 `.json`인 빈 파일이
 - 테스트: `TelemetryProducerTest.unreadableSpoolFileIsQuarantinedAndBacklogClears`(빈 파일·잘린 JSON·`{}` 세 경우) — 격리 뒤 backlog가
   풀리고 새 메시지가 Kafka로 바로 가는 것까지 본다.
 
+
+### 후속 (2026-09-29) — backlog 해제와 순서
+
+- spool 드레인 뒤 backlog가 안 풀리던 결함(유입이 있는 한 스캔이 비지 않음)을 고쳤다: 한 주기 안에서 빌 때까지 배치를 보내고 완료를
+  기다린 뒤, 빈 스캔을 본 자리에서만 푼다(`b4f1073` → `ae4e684`). 배치 크기는 주기당 상한이 아니라 한 번에 집는 수가 됐다.
+- **한계 — spool 드레인 순서는 메시지 시각이 아니라 저장 시각이다.** producer 타임아웃(`delivery.timeout.ms` 120초)으로 늦게 저장된
+  옛 메시지와 backlog로 즉시 저장된 새 메시지가 섞여, 같은 차량에서 ts가 뒤집힌 채 Kafka에 들어간다(150초 정지 실측 2회: 드레인끼리
+  역전 129·36쌍). 저장은 point identity로, 앱은 역전 방어로 흡수한다. 감지기 상태는 확인하지 않았다. 고치려면 드레인 배치를 ts로
+  정렬해야 하지만 배치 경계를 넘는 역전은 남는다 — 이번엔 하지 않았다. `docs/verification/2026-09-29-spool-backlog-fix.md` §6.
 ## ADR-020: 이상 알림의 재처리 멱등성 — 저장은 event_id, 알림은 insert 성공에만
 
 **날짜**: 2026-09-05

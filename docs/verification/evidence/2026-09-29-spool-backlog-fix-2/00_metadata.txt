@@ -1,0 +1,12 @@
+run_date_utc=2026-09-29T13:44:05Z
+git_head=ed95c4c03f9d8931ebf54feaa1ee0c41f971e92a
+git_status_short=?? docs/verification/evidence/2026-09-29-spool-backlog-fix-2/;
+docker_server=29.7.2
+compose=5.4.0
+backend_image=sha256:86cd7cfa7dcc33f04307035c48271a9ad72a2a0a2dad07f2a021c9efdb0177cc
+detector_image=sha256:1f5d3d8beba3af2e8e2768c6893e69e09cb5a06534ca07e4230807c063a36fad
+simulator_image=sha256:e2728fe30781f839c344841a2efa12979703f0c9898e980386f3d449c32e72b7
+profile=dev(평문 1883) + --profile simulator, 무부하, 시뮬레이터 기본값
+backend_log_level=LOGGING_LEVEL_COM_TELEMETRY=DEBUG (저장소 밖 compose override, 종료 시 제거)
+host=desktop, Windows 11 Pro 10.0.26200
+note=HEAD ed95c4c는 ae4e684 위에 테스트 파일 2개만 추가(backend/src/test) — 실행 코드는 ae4e684와 같다

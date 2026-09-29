@@ -1,0 +1,14 @@
+direct_sent_lines=2232 drained_lines=381
+inversion_pairs=38
+  direct->drain=2
+  drain->drain=36
+SIM-001 p2 offset 18104(drain) ts=2026-09-29T13:52:05.278Z -> offset 18105(drain) ts=2026-09-29T13:49:58.142Z
+SIM-001 p2 offset 18111(drain) ts=2026-09-29T13:52:06.278Z -> offset 18112(drain) ts=2026-09-29T13:50:04.147Z
+SIM-001 p2 offset 18116(drain) ts=2026-09-29T13:52:07.278Z -> offset 18117(drain) ts=2026-09-29T13:50:08.153Z
+SIM-001 p2 offset 18123(drain) ts=2026-09-29T13:52:08.279Z -> offset 18124(drain) ts=2026-09-29T13:50:14.162Z
+SIM-001 p2 offset 18128(drain) ts=2026-09-29T13:52:09.279Z -> offset 18129(drain) ts=2026-09-29T13:50:18.165Z
+SIM-001 p2 offset 18133(drain) ts=2026-09-29T13:52:10.280Z -> offset 18134(drain) ts=2026-09-29T13:50:22.171Z
+SIM-001 p2 offset 18141(drain) ts=2026-09-29T13:52:11.280Z -> offset 18142(drain) ts=2026-09-29T13:50:29.179Z
+SIM-001 p2 offset 18151(drain) ts=2026-09-29T13:52:12.282Z -> offset 18152(drain) ts=2026-09-29T13:50:38.189Z
+SIM-001 p2 offset 18164(drain) ts=2026-09-29T13:52:13.279Z -> offset 18165(drain) ts=2026-09-29T13:50:50.202Z
+SIM-001 p2 offset 18173(drain) ts=2026-09-29T13:52:14.282Z -> offset 18174(drain) ts=2026-09-29T13:50:58.211Z
