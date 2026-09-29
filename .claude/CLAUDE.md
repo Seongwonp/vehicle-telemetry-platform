@@ -29,11 +29,14 @@ Telemetrix는 차량 텔레메트리 파이프라인의 기술 개수를 늘리�
 
 - `vehicle_id`가 telemetry topic의 Kafka partition key다.
 - 저장(`telemetry-storage-group`)과 이상 감지(`anomaly-detector-group`)는 서로 다른
-  Consumer Group이며, 이상 감지 lag이 200만 건 이상 밀려도 저장 경로가 따라갔다.
+  Consumer Group이며, 1 vs 3 인스턴스 A/B(각 arm 1회)와 6시간 soak 1회에서 감지기 lag이 저장 경로에
+  영향을 주지 않았다(초기 "lag 200만+" 관찰은 원본이 없어 근거로 쓰지 않는다 — README 2026-09-29 정정).
 - 저장 listener는 InfluxDB 성공 또는 DLQ 발행 성공 뒤에만 수동으로 offset을 커밋한다.
 - DLQ 발행 결과를 확인하며, DLQ 발행 실패 시 원본 offset을 넘기지 않는다.
-- 초 단위 InfluxDB timestamp 충돌로 약 50%가 덮어써진 문제를 밀리초 정밀도로 수정했다.
-- MQTT broker 90초 장애에서 재연결 상한과 queue 크기를 조정한 뒤 해당 조건 유실 0을 확인했다.
+- 초 단위 InfluxDB timestamp 충돌로 약 50%가 덮어써진 문제를 밀리초 정밀도로 수정했다(차량당 200 msg/s 이하 충돌 0,
+  각 속도 1회. 1,000 msg/s부터는 밀리초 충돌로 다시 유실 — 초기 50% 수치는 원시 로그 미보존).
+- MQTT broker 90초 장애에서 재연결 상한과 queue 크기를 조정한 뒤 해당 조건 유실 0을 반복 관찰 3/3(전부 dirty 트리라
+  `검증 완료` 아님). 300초는 1회.
 - storage consumer 강제 종료·재전달과 anomaly alert 재처리의 멱등성을 실험했다.
 - 부하 중 저장 인스턴스 제거를 3회 실행했고, 정적 멤버십 ON에서 재할당 46/52/54초,
   정지 파티션 6개, topic=Influx rows로 유실 0을 확인했다.
