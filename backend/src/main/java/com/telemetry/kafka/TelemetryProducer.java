@@ -61,6 +61,7 @@ public class TelemetryProducer {
 
     private final Timer spoolScanTimer;
     private final Counter spoolDrainedCounter;
+    private final Counter spoolCorruptCounter;
     private final AtomicLong spoolDepth = new AtomicLong();
 
     public TelemetryProducer(KafkaTemplate<String, String> kafkaTemplate,
@@ -74,6 +75,8 @@ public class TelemetryProducer {
         this.retryBatchSize = retryBatchSize;
         this.spoolScanTimer = meterRegistry.timer("telemetry.spool.scan");
         this.spoolDrainedCounter = meterRegistry.counter("telemetry.spool.drained");
+        // 0이 아니면 사람이 .corrupt 파일을 봐야 한다 — 유실 후보다.
+        this.spoolCorruptCounter = meterRegistry.counter("telemetry.spool.corrupt");
         // 백로그가 쌓이는데 안 줄어드는 상황을 알림으로 잡으려면 깊이가 지표로 있어야 한다.
         meterRegistry.gauge("telemetry.spool.pending", spoolDepth, AtomicLong::get);
     }
@@ -150,14 +153,33 @@ public class TelemetryProducer {
         spoolDepth.set(pending.size());
         for (Path spoolFile : pending) {
             if (!inFlight.add(spoolFile)) continue;
+            String payload;
             try {
-                String payload = telemetrySpool.read(spoolFile);
-                VehicleTelemetry telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
-                sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
+                payload = telemetrySpool.read(spoolFile);
             } catch (Exception e) {
+                // 읽기 실패는 일시적일 수 있다(잠금 등) — 다음 주기에 다시 본다.
                 inFlight.remove(spoolFile);
-                log.error("[Kafka] spool 재전송 준비 실패 path={}", spoolFile, e);
+                log.error("[Kafka] spool 읽기 실패 — 다음 주기에 재시도 path={}", spoolFile, e);
+                continue;
             }
+            VehicleTelemetry telemetry;
+            try {
+                telemetry = objectMapper.readValue(payload, VehicleTelemetry.class);
+                if (telemetry == null || telemetry.getVehicleId() == null) {
+                    throw new IllegalArgumentException("vehicle_id 없음");
+                }
+            } catch (Exception e) {
+                // **내용을 해석할 수 없는 파일은 몇 번을 다시 읽어도 같다.** 예전엔 여기서 로그만 남기고 파일을 뒀다 —
+                // pending이 영원히 비지 않아 backlog가 켜진 채로 모든 새 메시지가 디스크를 거쳤다(ADR-019가 고친 병목).
+                // 격리하고 센다. 0바이트·잘린 JSON이 전형이다(전원 차단 — TelemetrySpool.store의 force 참고).
+                inFlight.remove(spoolFile);
+                spoolCorruptCounter.increment();
+                Path moved = telemetrySpool.quarantine(spoolFile);
+                log.error("[Kafka] spool 손상 파일 격리 — 드레인에서 제외 path={} quarantined={} bytes={} payloadSha256={}",
+                    spoolFile, moved, payload.length(), com.telemetry.domain.PayloadDigest.sha256(payload), e);
+                continue;
+            }
+            sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
         }
     }
 

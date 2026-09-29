@@ -32,9 +32,9 @@ flowchart LR
 | 무엇을 찾았나 | 원인 | 결과 | 근거 |
 | --- | --- | --- | --- |
 | **MQTT 브로커 90초 장애에서 72% 유실** | Paho 재연결 상한 기본값 128초 동안 브로커 큐(10k)가 넘침. 우리 지표는 "받은 것"만 세서 정상으로 보였고, 브로커 `$SYS` dropped만 알고 있었다 | 상한 5초·큐 100k → **유실 0, 3회 반복** | [ADR-021](docs/architecture-decisions.md), [결과](load-test/fault-injection/RESULT_20260905_mqtt_broker.md) |
-| **수집 파이프라인 99.8% 유실** (10,000 → 20 msg/s) | "안전하게" 넣은 메시지당 spool 파일 쓰기 + InfluxDB 건당 HTTP가 직렬 병목. 바꾼 뒤 처리량을 안 재서 4주간 몰랐다 | 배치 쓰기 + spool은 실패 시에만 → **약 9,600 msg/s**, 안전장치 유지 | [ADR-011](docs/architecture-decisions.md), [ADR-019](docs/architecture-decisions.md) |
+| **수집 파이프라인 99.8% 유실** (10,000 → 20 msg/s) | "안전하게" 넣은 메시지당 spool 파일 쓰기 + InfluxDB 건당 HTTP가 직렬 병목. 바꾼 뒤 처리량을 안 재서 4주간 몰랐다 | 배치 쓰기 + spool은 실패 시에만 → 저장 처리량 8.2 → **약 9,600 msg/s**, 안전장치 유지. **1회 관찰, 원시 로그 미보존** — 회복을 보인 값이지 처리량 상한이 아니다 | [ADR-011](docs/architecture-decisions.md), [ADR-019](docs/architecture-decisions.md), [측정 기록](docs/load-test-plan.md) |
 | **저장 실패가 조용히 유실되는 구조** | auto-commit + 단건 처리 | InfluxDB 저장 성공 **또는 DLQ 발행 성공 뒤에만** 수동 commit. DLQ 발행 실패면 offset 안 넘김. 재처리 횟수 헤더 전파 | [ADR-012](docs/architecture-decisions.md), [Runbook](docs/runbook/dlq-reprocessing.md) |
-| **이상 감지 lag 200만+ 에도 저장 경로 무영향** | Consumer Group 분리 | 24h soak에서 저장 lag 수백 유지. 감지기 3인스턴스로 lag 1,500 이하 | [ADR-002](docs/architecture-decisions.md), [ADR-016](docs/architecture-decisions.md) |
+| **단일 이상 감지 인스턴스가 첫 확장 병목** | 감지기 1개가 유입의 약 88%만 처리. 저장과는 Consumer Group이 달라(ADR-002) 서로 막지 않는다 | 1 vs 3 인스턴스 A/B에서 1개는 lag 선형 발산, 3개는 1,500 이하. 3인스턴스 **6시간 soak 1회**(평균 7,497 msg/s) lag 평균 914. 초기 24h 관찰은 원본이 없고 당시 저장 lag은 '저장'이 아니라 '소비'였다 — 근거로 쓰지 않는다 | [ADR-016](docs/architecture-decisions.md), [6h soak](load-test/anomaly-detector-scale/AB7_soak_summary_20260903.md) |
 | **같은 초 타임스탬프로 50% 덮어쓰기** | InfluxDB 초 정밀도. Kafka lag은 0이라 정상처럼 보임 | 밀리초 정밀도 → 유실 0. 이후 strict 입력 계약(누락 필드가 0으로 저장되던 것 차단) | [ADR-014](docs/architecture-decisions.md), [입력 계약](docs/telemetry-schema-decision-table.md) |
 
 그 외: Redis 장애 시 조회 fail-open / 로그인·진단 fail-closed 분리([정책](docs/redis-failure-policy.md)),

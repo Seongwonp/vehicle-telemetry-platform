@@ -44,7 +44,9 @@ public class VehicleController {
     }
 
     @DeleteMapping("/{vehicleId}")
-    @Operation(summary = "차량 비활성화", description = "차량을 소프트 삭제(비활성화)합니다")
+    // URL 규칙(SecurityConfig)과 이중이다 — 한쪽이 빠져도 열리지 않게. 사용자 관리(/api/users)와 같은 방식.
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "차량 비활성화 (관리자 전용)", description = "차량을 소프트 삭제(비활성화)한다. 일반 사용자는 403. 되돌리는 API는 아직 없다")
     public ResponseEntity<Void> deactivate(@PathVariable String vehicleId) {
         vehicleService.deactivate(vehicleId);
         return ResponseEntity.noContent().build();

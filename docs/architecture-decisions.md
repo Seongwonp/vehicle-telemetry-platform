@@ -784,6 +784,19 @@ spool로 보낸다. 그래야 `retryPending()`이 파일명(타임스탬프+시�
 
 ---
 
+### 후속 (2026-09-29) — 해석할 수 없는 spool 파일이 이 ADR을 조용히 되돌리고 있었다
+
+외부 리뷰가 찾았다. `retryPending()`은 spool 파일을 읽어 `VehicleTelemetry`로 해석하는데, 해석에 실패하면 **로그만 남기고
+파일을 그대로 뒀다.** 그러면 `pending()`이 영원히 비지 않아 `backlog`가 꺼지지 않고, 그 뒤의 **모든 새 메시지가 MQTT 콜백
+스레드에서 디스크를 거쳤다** — 이 ADR이 없앤 99.8% 유실의 경로다. 전형은 0바이트·잘린 파일이다: `store()`가 `writeString` 뒤
+fsync 없이 rename해서 전원이 끊기면 이름만 `.json`인 빈 파일이 남을 수 있었다.
+
+- 해석 실패는 `.corrupt`로 **격리**한다(지우지 않는다 — 사람이 볼 증거). `telemetry.spool.corrupt` 카운터 + ERROR 로그(`payloadSha256`).
+- 읽기 실패(잠금 등)는 일시적일 수 있어 격리하지 않고 다음 주기에 다시 본다.
+- `store()`는 `FileChannel.force(true)` 뒤에 rename한다. 디렉터리 fsync는 하지 않는다(Windows 미지원) — rename 자체가 유실될 여지는 남는다.
+- 테스트: `TelemetryProducerTest.unreadableSpoolFileIsQuarantinedAndBacklogClears`(빈 파일·잘린 JSON·`{}` 세 경우) — 격리 뒤 backlog가
+  풀리고 새 메시지가 Kafka로 바로 가는 것까지 본다.
+
 ## ADR-020: 이상 알림의 재처리 멱등성 — 저장은 event_id, 알림은 insert 성공에만
 
 **날짜**: 2026-09-05
@@ -1224,6 +1237,9 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
 - 관리자가 여럿일 수 있지만(`role=ADMIN` 행 추가) env가 관리하는 것은 `ADMIN_USERNAME` 한 명뿐이다.
 - 앱의 차량 등록 화면은 관리자 계정에서만 의미가 있고 소유자 이름을 자유 입력받는다(없는 사용자면 400). 앱 쪽 후속.
 - 소유권 이전·차량 재배정 API가 없다. 관리자가 비활성화 후 다른 소유자로 다시 등록해야 한다.
+- **비활성화도 관리자만 한다(2026-09-29).** 등록만 관리자고 `DELETE /api/vehicles/{id}`는 소유자도 되던 비대칭이었다 —
+  비활성 차량은 관리자도 접근할 수 없고 같은 ID 재등록은 409라, 일반 사용자가 **되돌릴 수 없는 삭제**를 할 수 있었다(외부 리뷰).
+  URL 규칙 + `@PreAuthorize` 이중. 재활성화 API는 여전히 없다 — 관리자가 DB에서 `active`를 되돌린다.
 - **다중 사용자 E2E**: 이 커밋의 컨테이너에서 관리자 → 사용자 생성 → 그 사용자로 남의 차량 404·자기 차량 200을
   확인했다(`docs/verification/2026-09-27-multi-user-e2e.md`). 1회다.
 - 파티셔닝·keyset 페이지네이션은 근거가 없어 하지 않았다(검증 문서 "한계").

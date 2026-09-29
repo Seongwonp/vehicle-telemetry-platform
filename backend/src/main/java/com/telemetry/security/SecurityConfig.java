@@ -98,6 +98,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/me").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
+                // 비활성화도 관리자만. 등록만 관리자고 비활성화는 소유자도 되던 비대칭이었다 — 비활성 차량은 관리자도
+                // 접근할 수 없고 같은 ID 재등록은 409라, 일반 사용자가 되돌릴 수 없는 삭제를 할 수 있었다(2026-09-29 리뷰).
+                .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/vehicles/*").hasRole("ADMIN")
                 // WebSocket 핸드셰이크(HTTP 업그레이드) 자체는 열어두고, 실제 인증은
                 // STOMP CONNECT 프레임에서 WebSocketConfig의 인터셉터가 검사한다.
                 .requestMatchers("/ws/**").permitAll()

@@ -23,4 +23,17 @@ class TelemetrySpoolTest {
         spool.delete(stored);
         assertThat(spool.pending(10)).isEmpty();
     }
+
+    @Test
+    void quarantineMovesFileOutOfPendingWithoutDeletingIt() {
+        TelemetrySpool spool = new TelemetrySpool(tempDirectory.toString());
+        Path stored = spool.store("not-json");
+
+        Path moved = spool.quarantine(stored);
+
+        assertThat(spool.pending(10)).isEmpty();
+        assertThat(spool.depth()).isZero();
+        assertThat(moved).exists().hasFileName(stored.getFileName() + ".corrupt");
+        assertThat(spool.read(moved)).isEqualTo("not-json");
+    }
 }

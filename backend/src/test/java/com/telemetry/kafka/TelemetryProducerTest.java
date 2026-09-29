@@ -75,6 +75,35 @@ class TelemetryProducerTest {
         assertThat(spool.pending(10)).hasSize(2);
     }
 
+    /**
+     * 해석할 수 없는 spool 파일 하나가 backlog를 영원히 켜 두던 결함(2026-09-29 리뷰). 0바이트는 전원 차단 후의 전형,
+     * 잘린 JSON과 vehicle_id 없는 객체도 같다. 격리 뒤에는 backlog가 풀리고 새 메시지가 디스크를 거치지 않아야 한다.
+     */
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"", "{\"vehicle_id\":\"SIM-0", "{}"})
+    void unreadableSpoolFileIsQuarantinedAndBacklogClears(String content) throws Exception {
+        TelemetrySpool spool = new TelemetrySpool(tempDirectory.toString());
+        Path broken = tempDirectory.resolve("0000000000001-00000000000000000000-broken.json");
+        java.nio.file.Files.writeString(broken, content);
+        io.micrometer.core.instrument.MeterRegistry registry = new SimpleMeterRegistry();
+        TelemetryProducer producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool, registry, 2000);
+        producer.initializeBacklog();
+        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
+            .willReturn(CompletableFuture.completedFuture(sendResult()));
+
+        producer.retryPending();   // 격리
+        producer.retryPending();   // pending이 비었으니 backlog 해제
+
+        assertThat(spool.pending(10)).isEmpty();
+        assertThat(tempDirectory.resolve(broken.getFileName() + ".corrupt")).exists().hasContent(content);
+        assertThat(registry.counter("telemetry.spool.corrupt").count()).isEqualTo(1.0);
+
+        producer.send(telemetry());
+        // backlog가 풀렸으므로 spool이 아니라 Kafka로 바로 간다.
+        verify(kafkaTemplate).send(anyString(), anyString(), anyString());
+        assertThat(spool.pending(10)).isEmpty();
+    }
+
     private SendResult<String, String> sendResult() {
         return new SendResult<>(
             new ProducerRecord<>("vehicle-telemetry", "SIM-001", "{}"),

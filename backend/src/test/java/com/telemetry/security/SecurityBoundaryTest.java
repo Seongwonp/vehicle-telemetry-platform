@@ -91,6 +91,25 @@ class SecurityBoundaryTest {
     }
 
     @Test
+    @WithMockUser(username = "driver", roles = "USER")
+    void ownerCannotDeactivateOwnVehicle() throws Exception {
+        // 비활성 차량은 관리자도 못 보고 재등록은 409다 — 일반 사용자가 되돌릴 수 없는 삭제를 하던 경로(2026-09-29).
+        given(access.canAccess(any(), anyString())).willReturn(true);
+        mvc.perform(delete("/api/vehicles/TEST-001"))
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.code").value("FORBIDDEN"));
+        verify(vehicles, never()).deactivate(anyString());
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void adminCanDeactivateVehicle() throws Exception {
+        given(access.canAccess(any(), anyString())).willReturn(true);
+        mvc.perform(delete("/api/vehicles/TEST-001")).andExpect(status().isNoContent());
+        verify(vehicles).deactivate("TEST-001");
+    }
+
+    @Test
     @WithMockUser(roles = "ADMIN")
     void adminCanRegisterVehicle() throws Exception {
         mvc.perform(post("/api/vehicles").contentType(MediaType.APPLICATION_JSON)

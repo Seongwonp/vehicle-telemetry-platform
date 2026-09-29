@@ -5,10 +5,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,7 +35,14 @@ public class TelemetrySpool {
                 System.currentTimeMillis(), sequence.getAndIncrement(), UUID.randomUUID());
             Path temporary = spoolDirectory.resolve(id + ".tmp");
             Path target = spoolDirectory.resolve(id + ".json");
-            Files.writeString(temporary, payload, StandardCharsets.UTF_8);
+            // force() 뒤에 rename한다. 예전에는 writeString만 하고 rename해서, 전원이 끊기면 이름은 .json인데
+            // 내용이 비었거나 잘린 파일이 남을 수 있었다 — 그 파일 하나가 드레인을 영원히 막았다(quarantine 참고).
+            try (FileChannel channel = FileChannel.open(temporary,
+                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                ByteBuffer bytes = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
+                while (bytes.hasRemaining()) channel.write(bytes);
+                channel.force(true);
+            }
             try {
                 return Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE);
             } catch (java.nio.file.AtomicMoveNotSupportedException e) {
@@ -98,6 +108,24 @@ public class TelemetrySpool {
             return Files.readString(path, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException("텔레메트리 spool 읽기 실패", e);
+        }
+    }
+
+    /**
+     * 내용을 해석할 수 없는 spool 파일을 {@code .corrupt}로 옮겨 드레인 대상에서 뺀다. <b>지우지 않는다</b> — 사람이 볼 증거다.
+     *
+     * <p>이게 없던 때는 해석 실패 파일이 {@link #pending}에 영원히 남아 backlog가 꺼지지 않았고, 그 뒤의
+     * <b>모든 메시지가 MQTT 콜백 스레드에서 디스크를 거쳤다</b> — ADR-019의 99.8% 유실을 만든 그 경로다(2026-09-29 리뷰).
+     *
+     * @return 옮긴 경로. 옮기지 못하면 null — 호출자는 계속 막혀 있다는 뜻이라 크게 남겨야 한다.
+     */
+    public Path quarantine(Path path) {
+        Path target = path.resolveSibling(path.getFileName() + ".corrupt");
+        try {
+            return Files.move(path, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            log.error("spool 손상 파일 격리 실패 — 드레인이 계속 막힌다 path={}", path, e);
+            return null;
         }
     }
 
