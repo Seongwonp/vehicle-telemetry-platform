@@ -251,6 +251,66 @@ class KafkaStorageFailureContractTest {
         assertThat(committedOffset).isEqualTo(last.getRecordMetadata().offset() + 1);
     }
 
+    /**
+     * 저장·ack까지 끝난 뒤 WebSocket 브로드캐스트가 실패하는 경우 — 실제 컨테이너와
+     * DefaultErrorHandler(재시도 예산 150ms)로 돌린다. 저장된 배치는 재시도도, DLQ 이동도
+     * 되면 안 된다. 2026-09-29 수정 전 코드에서는 saveAll 3회 + DLQ 발행으로 실패했다.
+     */
+    @Test
+    void broadcastFailureAfterSaveDoesNotRetryOrDeadLetterStoredBatch() throws Exception {
+        String sourceTopic = "vehicle-telemetry-broadcast-contract-" + UUID.randomUUID();
+        String dlqTopic = sourceTopic + "-dlq";
+        createTopics(sourceTopic, dlqTopic);
+        kafkaTemplate = createKafkaTemplate();
+
+        TelemetryRepository telemetryRepository = mock(TelemetryRepository.class);
+        given(telemetryRepository.toPoint(any())).willReturn(Point.measurement("vehicle_telemetry"));
+        SimpMessagingTemplate messagingTemplate = mock(SimpMessagingTemplate.class);
+        doThrow(new org.springframework.messaging.MessageDeliveryException("broker down"))
+            .when(messagingTemplate).convertAndSend(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.any(Object.class));
+        TelemetryConsumer listener = new TelemetryConsumer(
+            telemetryRepository,
+            mock(AnomalyService.class),
+            new ObjectMapper(),
+            TestDecoders.telemetryDecoder(),
+            kafkaTemplate,
+            messagingTemplate,
+            new SimpleMeterRegistry()
+        );
+
+        SendResult<String, String> sent = kafkaTemplate
+            .send(sourceTopic, "BCAST-001", PAYLOAD.replace("TEST-001", "BCAST-001"))
+            .get(10, TimeUnit.SECONDS);
+        listenerContainer = startListener(listener, kafkaTemplate, sourceTopic, "earliest");
+
+        TopicPartition sourcePartition = new TopicPartition(
+            sourceTopic, sent.getRecordMetadata().partition());
+        long committedOffset = awaitCommittedOffset(sourcePartition, Duration.ofSeconds(10));
+        assertThat(committedOffset).isEqualTo(sent.getRecordMetadata().offset() + 1);
+        // 재시도 간격 100ms라 재시도가 있었다면 1초 안에 2회 더 보인다.
+        verify(telemetryRepository, org.mockito.Mockito.after(1_000).times(1)).saveAll(any());
+        assertThat(pollKeysFor(dlqTopic, Duration.ofSeconds(3)))
+            .as("저장된 레코드가 DLQ로 갔다").doesNotContain("BCAST-001");
+    }
+
+    private Set<String> pollKeysFor(String topic, Duration window) {
+        try (KafkaConsumer<String, String> consumer = new KafkaConsumer<>(Map.of(
+            ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA.getBootstrapServers(),
+            ConsumerConfig.GROUP_ID_CONFIG, "dlq-observer-" + UUID.randomUUID(),
+            ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest",
+            ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class,
+            ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class))) {
+            consumer.subscribe(List.of(topic));
+            Set<String> keys = new java.util.HashSet<>();
+            long deadline = System.nanoTime() + window.toNanos();
+            while (System.nanoTime() < deadline) {
+                for (var record : consumer.poll(Duration.ofMillis(500))) keys.add(record.key());
+            }
+            return keys;
+        }
+    }
+
     private MessageListenerContainer startListener(TelemetryConsumer listener) {
         return startListener(listener, kafkaTemplate);
     }
