@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -151,6 +153,7 @@ public class TelemetryProducer {
         // 배치를 가득 채워 왔다면 아직 더 남았다는 뜻이다. 정확한 깊이는 별도 스캔이
         // 필요해서 비싸므로, 게이지에는 "최소 이만큼"을 넣는다 — 알림 목적에는 충분하다.
         spoolDepth.set(pending.size());
+        List<CompletableFuture<Boolean>> sends = new ArrayList<>(pending.size());
         for (Path spoolFile : pending) {
             if (!inFlight.add(spoolFile)) continue;
             String payload;
@@ -179,7 +182,19 @@ public class TelemetryProducer {
                     spoolFile, moved, payload.length(), com.telemetry.domain.PayloadDigest.sha256(payload), e);
                 continue;
             }
-            sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
+            sends.add(sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload));
+        }
+        // **디스크에 있던 것을 이번 주기에 전부 집었고 전부 나갔으면 backlog를 여기서 푼다.**
+        // "다음 스캔이 빈 것을 볼 때"까지 기다리면, 유입이 있는 한 스캔은 영원히 비지 않는다 —
+        // backlog가 켜져 새 메시지가 spool로 가고, 5초 뒤 스캔이 그 파일들을 보고 다시 켜고…
+        // 정상 경로가 5초 주기 디스크 왕복에 갇힌다(2026-09-29 실측: pending 10 고정, 발행→수신 약 6초).
+        // 가득 찬 배치는 아직 남았다는 뜻이라 풀지 않는다. 드레인 중 spool로 간 새 메시지는 다음 주기가 집는다.
+        if (pending.size() < retryBatchSize) {
+            CompletableFuture.allOf(sends.toArray(CompletableFuture[]::new)).whenComplete((v, ex) -> {
+                if (sends.stream().allMatch(f -> Boolean.TRUE.equals(f.getNow(false)))) {
+                    backlog.set(false);
+                }
+            });
         }
     }
 
@@ -206,8 +221,8 @@ public class TelemetryProducer {
         });
     }
 
-    /** spool에서 꺼낸 메시지 재전송 — 성공해야만 파일을 지운다. */
-    private void sendSpooled(Path spoolFile, String vehicleId, String ts, String payload) {
+    /** spool에서 꺼낸 메시지 재전송 — 성공해야만 파일을 지운다. 성공 여부를 돌려준다(backlog 해제 판단용). */
+    private CompletableFuture<Boolean> sendSpooled(Path spoolFile, String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
             future = kafkaTemplate.send(TOPIC, vehicleId, payload);
@@ -215,15 +230,16 @@ public class TelemetryProducer {
             inFlight.remove(spoolFile);
             backlog.set(true);
             log.error("[Kafka] spool 재전송 시작 실패 — 파일 유지 vehicle={} ts={}", vehicleId, ts, e);
-            return;
+            return CompletableFuture.completedFuture(false);
         }
 
-        future.whenComplete((result, ex) -> {
+        return future.handle((result, ex) -> {
             inFlight.remove(spoolFile);
             if (ex != null) {
                 backlog.set(true);
                 log.error("[Kafka] spool 재전송 실패 — 파일 유지 vehicle={} ts={} topic={}",
                     vehicleId, ts, TOPIC, ex);
+                return false;
             } else {
                 // 드레인된 메시지는 새 offset을 받는다 — 추적할 때 이 줄이 원래 좌표와 새 좌표를 잇는다.
                 log.debug("[Kafka] spool 드레인 완료 — vehicle={} ts={} partition={} offset={}",
@@ -235,6 +251,7 @@ public class TelemetryProducer {
                 // 이전 주기의 전송이 아직 안 끝난 파일을 다음 주기가 또 집어 중복 계산된다
                 // (실측에서 drained 379,536 > MQTT 수신 261,340으로 드러났다).
                 spoolDrainedCounter.increment();
+                return true;
             }
         });
     }

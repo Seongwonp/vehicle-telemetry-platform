@@ -104,6 +104,65 @@ class TelemetryProducerTest {
         assertThat(spool.pending(10)).isEmpty();
     }
 
+    @Test
+    void backlogClearsRightAfterAFullyDrainedPartialBatch_notOnlyWhenTheNextScanIsEmpty() {
+        // 2026-09-29 실측: 3대가 1초마다 보내는 스택에서 pending이 10에 고정되고 정상 메시지가 전부 spool을
+        // 거쳤다(발행→수신 약 6초). backlog를 "다음 스캔이 빈 것을 볼 때"만 풀면, 유입이 있는 한 스캔은
+        // 영원히 비지 않는다. 디스크에 있던 것을 다 집어 다 보냈으면 그 자리에서 풀어야 한다.
+        TelemetrySpool spool = new TelemetrySpool(tempDirectory.toString());
+        spool.store("{\"vehicle_id\":\"SIM-001\",\"timestamp\":\"2026-05-09T09:59:59Z\"}");
+        TelemetryProducer producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool,
+            new SimpleMeterRegistry(), 2000);
+        producer.initializeBacklog();
+        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
+            .willReturn(CompletableFuture.completedFuture(sendResult()));
+
+        producer.retryPending();          // 1건 드레인, 배치(2000)에 못 미침 → 즉시 해제
+        producer.send(telemetry());       // 다음 스캔 없이도 Kafka로 바로 가야 한다
+
+        verify(kafkaTemplate, org.mockito.Mockito.times(2)).send(anyString(), anyString(), anyString());
+        assertThat(spool.pending(10)).isEmpty();
+    }
+
+    @Test
+    void backlogStaysWhenADrainedMessageFailed() {
+        TelemetrySpool spool = new TelemetrySpool(tempDirectory.toString());
+        spool.store("{\"vehicle_id\":\"SIM-001\",\"timestamp\":\"2026-05-09T09:59:59Z\"}");
+        spool.store("{\"vehicle_id\":\"SIM-002\",\"timestamp\":\"2026-05-09T09:59:59Z\"}");
+        TelemetryProducer producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool,
+            new SimpleMeterRegistry(), 2000);
+        producer.initializeBacklog();
+        CompletableFuture<SendResult<String, String>> failed = new CompletableFuture<>();
+        failed.completeExceptionally(new RuntimeException("Kafka down"));
+        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
+            .willReturn(CompletableFuture.completedFuture(sendResult()), failed);
+
+        producer.retryPending();          // 1건 성공, 1건 실패 → 실패 파일이 남았으니 backlog 유지
+        producer.send(telemetry());       // spool로 가야 한다(순서 보존)
+
+        verify(kafkaTemplate, org.mockito.Mockito.times(2)).send(anyString(), anyString(), anyString());
+        assertThat(spool.pending(10)).hasSize(2);
+    }
+
+    @Test
+    void backlogStaysWhenTheBatchWasFull() {
+        // 배치가 가득 찼으면 더 남았을 수 있으므로 전부 성공해도 풀지 않는다.
+        TelemetrySpool spool = new TelemetrySpool(tempDirectory.toString());
+        spool.store("{\"vehicle_id\":\"SIM-001\",\"timestamp\":\"2026-05-09T09:59:58Z\"}");
+        spool.store("{\"vehicle_id\":\"SIM-001\",\"timestamp\":\"2026-05-09T09:59:59Z\"}");
+        TelemetryProducer producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool,
+            new SimpleMeterRegistry(), 1);
+        producer.initializeBacklog();
+        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
+            .willReturn(CompletableFuture.completedFuture(sendResult()));
+
+        producer.retryPending();          // 배치 1 = 가득 참
+        producer.send(telemetry());
+
+        verify(kafkaTemplate, org.mockito.Mockito.times(1)).send(anyString(), anyString(), anyString());
+        assertThat(spool.pending(10)).hasSize(2);
+    }
+
     private SendResult<String, String> sendResult() {
         return new SendResult<>(
             new ProducerRecord<>("vehicle-telemetry", "SIM-001", "{}"),
