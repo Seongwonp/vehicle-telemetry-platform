@@ -1,0 +1,6 @@
+22:29:11 [Kafka] 브로커 전송 실패 — spool에 보관 vehicle=SIM-001 ts=2026-09-28T22:27:11.212Z topic=vehicle-telemetry
+22:29:11 [Kafka] 브로커 전송 실패 — spool에 보관 vehicle=SIM-001 ts=2026-09-28T22:27:12.213Z topic=vehicle-telemetry
+22:29:11 [Kafka] 브로커 전송 실패 — spool에 보관 vehicle=SIM-001 ts=2026-09-28T22:27:13.213Z topic=vehicle-telemetry
+spool_store_log_lines=195
+spool_drain_log_lines=2880
+spool_files_now=8

@@ -1,0 +1,20 @@
+# 시도 1 결과 — spool 관련 로그
+(위가 비어 있으면 spool 진입 자체가 없었다)
+# spool 디렉터리
+0
+# spool pending gauge
+# HELP telemetry_spool_pending  
+# TYPE telemetry_spool_pending gauge
+telemetry_spool_pending{application="vehicle-telemetry-backend",} 0.0
+# HELP telemetry_spool_drained_total  
+# TYPE telemetry_spool_drained_total counter
+telemetry_spool_drained_total{application="vehicle-telemetry-backend",} 0.0
+# 정지 구간(22:25:36~22:26:01Z)에 수신된 메시지가 복구 후 그대로 발행됐나
+## MQTT 수신(DEBUG) 건수
+78
+## 같은 구간 ts를 가진 Kafka 전송 완료 로그 표본
+22:26:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:25:40.172Z partition=2 offset=4960
+22:26:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:25:41.172Z partition=2 offset=4961
+22:26:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:25:42.173Z partition=2 offset=4962
+22:26:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:25:43.173Z partition=2 offset=4963
+22:26:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:25:44.174Z partition=2 offset=4964

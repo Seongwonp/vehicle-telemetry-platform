@@ -1,0 +1,5 @@
+# 시도 1 — 지시대로 Kafka 약 20초 정지 (spool 유도 실패 기록)
+stop_at_utc=2026-09-28T22:25:36Z
+kafka stopped
+start_at_utc=2026-09-28T22:26:01Z
+kafka started

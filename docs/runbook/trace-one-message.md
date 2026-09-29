@@ -61,6 +61,7 @@ docker exec telemetry-kafka kafka-console-consumer --bootstrap-server kafka:2909
 
 백엔드가 Kafka 발행 실패로 spool에 넣었다면 로그에 `[Kafka] 브로커 전송 실패 — spool에 보관 vehicle=… ts=…`가 있고,
 드레인되면 `[Kafka] spool 드레인 완료 — vehicle=… ts=… partition=… offset=…`(DEBUG)에 **새 좌표**가 찍힌다.
+spool은 producer가 `delivery.timeout.ms`(기본 120초)를 넘긴 뒤에야 쓰인다 — 브로커가 그 안에 돌아오면 버퍼에서 그대로 나가고 spool 로그는 없다(2026-09-29 실측, 25초 정지에서 0건).
 
 ## 3. 저장됐나 — InfluxDB
 

@@ -1,0 +1,6 @@
+# 시도 2 — Kafka 약 145초 정지 (delivery.timeout.ms 기본 120초를 넘긴다)
+stop_at_utc=2026-09-28T22:27:10Z
+kafka stopped
+start_at_utc=2026-09-28T22:29:40Z
+kafka started
+drained_at_utc=2026-09-28T22:43:51Z

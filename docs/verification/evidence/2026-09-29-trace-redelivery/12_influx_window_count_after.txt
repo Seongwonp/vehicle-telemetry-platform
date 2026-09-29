@@ -1,0 +1,5 @@
+Result: _result
+Table: keys: [_start, _stop, _field, _measurement, vehicle_id]
+                   _start:time                      _stop:time           _field:string     _measurement:string       vehicle_id:string                  _value:int
+------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------  --------------------------
+2026-09-28T22:22:28.000000000Z  2026-09-28T22:22:48.000000000Z                   speed       vehicle_telemetry                 SIM-001                          20

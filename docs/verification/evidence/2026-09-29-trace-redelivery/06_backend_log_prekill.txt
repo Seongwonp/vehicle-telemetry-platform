@@ -1,0 +1,2 @@
+22:22:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=SIM-001 ts=2026-09-28T22:22:28.084Z speed=62.4 engine_temp=91.9 battery_voltage=13.86
+22:22:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=SIM-001 ts=2026-09-28T22:22:28.084Z partition=2 offset=4768

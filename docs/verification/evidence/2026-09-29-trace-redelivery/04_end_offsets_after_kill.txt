@@ -1,0 +1,3 @@
+vehicle-telemetry:0:14
+vehicle-telemetry:1:9553
+vehicle-telemetry:2:4788

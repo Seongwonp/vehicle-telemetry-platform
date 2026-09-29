@@ -1,0 +1,3 @@
+
+GROUP                          TOPIC                          PARTITION  NEW-OFFSET     
+telemetry-storage-group        vehicle-telemetry              2          4768           

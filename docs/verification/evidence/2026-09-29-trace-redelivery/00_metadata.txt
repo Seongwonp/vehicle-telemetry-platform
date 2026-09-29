@@ -1,0 +1,12 @@
+run_date_local=2026-09-29 07:22:09    
+run_date_utc=2026-09-28T22:22:09Z
+git_head=6cf633150281469e63061fbf23a796c26227262c
+git_status_short=?? docs/verification/evidence/2026-09-29-trace-dlq-replay/;?? docs/verification/evidence/2026-09-29-trace-redelivery/;
+docker_server=29.7.2
+compose=5.4.0
+backend_image=sha256:57989d0d903af4eaa310bfc648d04eb84c9b6935d7de5abbd48be67d06984d6d
+detector_image=sha256:1f5d3d8beba3af2e8e2768c6893e69e09cb5a06534ca07e4230807c063a36fad
+simulator_image=sha256:e2728fe30781f839c344841a2efa12979703f0c9898e980386f3d449c32e72b7
+profile=dev(평문 1883) + --profile simulator, 무부하, VEHICLE_COUNT=3 PUBLISH_INTERVAL=1.0 ANOMALY_RATE=0.02
+backend_log_level=LOGGING_LEVEL_COM_TELEMETRY=DEBUG (저장소 밖 override, 종료 시 되돌림)
+host=desktop, Windows 11 Pro 10.0.26200
