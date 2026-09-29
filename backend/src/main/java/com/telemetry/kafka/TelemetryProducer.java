@@ -34,11 +34,15 @@ public class TelemetryProducer {
     private final TelemetrySpool telemetrySpool;
     private final Set<Path> inFlight = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean backlog = new AtomicBoolean();
+    /** 한 주기에 spool을 비우려고 도는 최대 바퀴 수. 유입이 드레인보다 빠르면 여기서 멈추고 backlog를 유지한다. */
+    private static final int MAX_DRAIN_PASSES = 20;
 
     /**
-     * 한 번의 재전송 주기에 처리할 spool 파일 수.
+     * 한 번의 스캔에 집어 보내는 spool 파일 수.
      *
-     * <p>이 값과 {@code telemetry.spool.retry-ms}가 곱해져 드레인 속도의 <b>상한</b>이 된다 —
+     * <p>2026-09-29부터 한 주기는 spool이 빌 때까지(최대 {@link #MAX_DRAIN_PASSES}바퀴) 배치를 이어 보내므로
+     * 이 값은 주기당 상한이 아니라 "배치 하나의 크기"다. 그 전에는 이 값과 {@code telemetry.spool.retry-ms}가
+     * 곱해져 드레인 속도의 <b>상한</b>이었다 —
      * 부하나 브로커 용량과 무관하다. 예전 값(100 / 5초)은 20 msg/s였는데, 유입이
      * 약 1,700 msg/s라 90초 장애가 약 35분의 복구 시간을 만들었다
      * ({@code load-test/fault-injection/RESULT_20260904_fault_injection.md}).
@@ -142,17 +146,33 @@ public class TelemetryProducer {
      */
     @Scheduled(fixedDelayString = "${telemetry.spool.retry-ms:5000}")
     public synchronized void retryPending() {
-        var pending = telemetrySpool.pending(retryBatchSize);
-        spoolScanTimer.record(telemetrySpool.lastScanNanos(), TimeUnit.NANOSECONDS);
-        if (pending.isEmpty()) {
-            backlog.set(false);
-            spoolDepth.set(0);
-            return;
+        // **한 주기 안에서 spool이 빌 때까지 돈다.** backlog를 "다음 5초 스캔이 빈 것을 볼 때"만 풀면 유입이 있는 한
+        // 스캔은 영원히 비지 않고(2026-09-29 실측: pending 10 고정, 정상 경로가 5초 디스크 왕복에 갇힘),
+        // 반대로 드레인이 끝나기 전에 풀면 드레인 중 spool에 들어간 것보다 새 직접 전송이 먼저 나가 같은 차량 순서가
+        // 뒤집힌다(같은 날 수정 후 실측: 완료 로그 기준 역전 132쌍). 그래서 배치를 보내고 **끝나기를 기다린 뒤** 다시 스캔해,
+        // 빈 스캔을 본 그 자리에서만 backlog를 푼다. 드레인 중 유입은 배치 한 번의 시간만큼이라 몇 바퀴면 따라잡는다.
+        for (int pass = 0; pass < MAX_DRAIN_PASSES; pass++) {
+            var pending = telemetrySpool.pending(retryBatchSize);
+            spoolScanTimer.record(telemetrySpool.lastScanNanos(), TimeUnit.NANOSECONDS);
+            if (pending.isEmpty()) {
+                backlog.set(false);
+                spoolDepth.set(0);
+                return;
+            }
+            backlog.set(true);
+            // 배치를 가득 채워 왔다면 아직 더 남았다는 뜻이다. 정확한 깊이는 별도 스캔이
+            // 필요해서 비싸므로, 게이지에는 "최소 이만큼"을 넣는다 — 알림 목적에는 충분하다.
+            spoolDepth.set(pending.size());
+            if (!drainBatch(pending)) {
+                return; // 실패·손상·읽기 실패가 있었다 — 파일이 남았으니 backlog를 유지하고 다음 주기에 본다.
+            }
         }
-        backlog.set(true);
-        // 배치를 가득 채워 왔다면 아직 더 남았다는 뜻이다. 정확한 깊이는 별도 스캔이
-        // 필요해서 비싸므로, 게이지에는 "최소 이만큼"을 넣는다 — 알림 목적에는 충분하다.
-        spoolDepth.set(pending.size());
+        // MAX_DRAIN_PASSES를 다 써도 안 비었다면 유입이 드레인 속도를 넘는 것이다. backlog는 켜진 채로 둔다.
+    }
+
+    /** 배치 하나를 보내고 끝나기를 기다린다. 전부 성공했으면 true. */
+    private boolean drainBatch(List<Path> pending) {
+        boolean clean = true;
         List<CompletableFuture<Boolean>> sends = new ArrayList<>(pending.size());
         for (Path spoolFile : pending) {
             if (!inFlight.add(spoolFile)) continue;
@@ -162,6 +182,7 @@ public class TelemetryProducer {
             } catch (Exception e) {
                 // 읽기 실패는 일시적일 수 있다(잠금 등) — 다음 주기에 다시 본다.
                 inFlight.remove(spoolFile);
+                clean = false;
                 log.error("[Kafka] spool 읽기 실패 — 다음 주기에 재시도 path={}", spoolFile, e);
                 continue;
             }
@@ -175,6 +196,7 @@ public class TelemetryProducer {
                 // **내용을 해석할 수 없는 파일은 몇 번을 다시 읽어도 같다.** 예전엔 여기서 로그만 남기고 파일을 뒀다 —
                 // pending이 영원히 비지 않아 backlog가 켜진 채로 모든 새 메시지가 디스크를 거쳤다(ADR-019가 고친 병목).
                 // 격리하고 센다. 0바이트·잘린 JSON이 전형이다(전원 차단 — TelemetrySpool.store의 force 참고).
+                // 격리는 spool에서 빠진 것이므로 이 배치의 "깨끗함"을 깨지 않는다.
                 inFlight.remove(spoolFile);
                 spoolCorruptCounter.increment();
                 Path moved = telemetrySpool.quarantine(spoolFile);
@@ -184,18 +206,11 @@ public class TelemetryProducer {
             }
             sends.add(sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload));
         }
-        // **디스크에 있던 것을 이번 주기에 전부 집었고 전부 나갔으면 backlog를 여기서 푼다.**
-        // "다음 스캔이 빈 것을 볼 때"까지 기다리면, 유입이 있는 한 스캔은 영원히 비지 않는다 —
-        // backlog가 켜져 새 메시지가 spool로 가고, 5초 뒤 스캔이 그 파일들을 보고 다시 켜고…
-        // 정상 경로가 5초 주기 디스크 왕복에 갇힌다(2026-09-29 실측: pending 10 고정, 발행→수신 약 6초).
-        // 가득 찬 배치는 아직 남았다는 뜻이라 풀지 않는다. 드레인 중 spool로 간 새 메시지는 다음 주기가 집는다.
-        if (pending.size() < retryBatchSize) {
-            CompletableFuture.allOf(sends.toArray(CompletableFuture[]::new)).whenComplete((v, ex) -> {
-                if (sends.stream().allMatch(f -> Boolean.TRUE.equals(f.getNow(false)))) {
-                    backlog.set(false);
-                }
-            });
+        for (CompletableFuture<Boolean> send : sends) {
+            // 브로커 왕복을 기다린다 — 스케줄러 스레드이고 send()와 락을 공유하지 않으므로 수집은 막히지 않는다.
+            if (!Boolean.TRUE.equals(send.join())) clean = false;
         }
+        return clean;
     }
 
     /** 정상 경로 — spool 파일 없이 바로 보내고, 실패했을 때만 spool에 남긴다. */
