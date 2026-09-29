@@ -138,7 +138,7 @@
 - **1단계**: 한 건을 MQTT 수신 로그 → Kafka(key·offset) → InfluxDB → 감지 로그 → PostgreSQL 알림 → WebSocket
   메시지까지 **같은 `(vehicle_id, timestamp)`로 찾는 절차**를 Runbook에 적고, 실제 스택에서 **1건을 끝까지 추적한 기록**을 evidence로 남긴다.
 - 재전달·spool 드레인·DLQ 재주입 각각 후에도 **같은 키로 찾아지는지** 시나리오별 1회.
-  → **재전달·spool 드레인 각 1회 확인(2026-09-29)**, DLQ 재주입·WebSocket은 미검증 — [`verification/2026-09-29-trace-redelivery-spool.md`](verification/2026-09-29-trace-redelivery-spool.md).
+  → **재전달·spool 드레인·DLQ 재주입(거부 1건+합성 성공 1건)·WebSocket 방송 각 1회 확인(2026-09-29)**. 로그에 `ts=`가 없는 곳(Kafka 저장 거부·배치 저장)은 `payloadSha256`·offset으로만 찾아진다. 감지 DLQ 재주입·알림 방송은 미검증 — [`verification/2026-09-29-trace-redelivery-spool.md`](verification/2026-09-29-trace-redelivery-spool.md).
   spool은 Kafka를 `delivery.timeout.ms`(120초) 넘게 멈춰야 켜진다(25초 정지로는 producer 버퍼가 흡수). 배치 저장 로그에는 키가 없다(추적 구멍, 기록만).
 - **2단계**: 공유 fixture에 `message_id` 있음·없음·형식 오류 칸 추가, Java·Python **같은 판정**.
   구버전 payload(필드 없음)가 **거부되지 않는** 회귀 테스트. 재직렬화·spool 보존 테스트.

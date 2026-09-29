@@ -1,0 +1,8 @@
+MESSAGE
+destination:/topic/vehicle/SIM-001/telemetry
+content-type:application/json
+subscription:sub-0
+message-id:8f41da34-5064-8ff7-6c81-8ec6779aeeeb-0
+content-length:206
+
+{"vehicleId":"SIM-001","timestamp":"2026-09-29T09:00:02.123Z","speed":61.5,"rpm":2500.0,"engineTemp":88.5,"throttlePosition":20.0,"fuelLevel":55.0,"batteryVoltage":13.5,"lat":37.5,"lng":127.0,"dtcCodes":[]}

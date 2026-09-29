@@ -1,0 +1,9 @@
+커서 그룹: dlq-replay-trace-20260929
+vehicle-telemetry-dlq → vehicle-telemetry
+  읽음     : 1건
+  재처리 대상: 1건
+
+발행 완료: 1건 성공, 0건 실패
+커서 전진 완료 — 다음 실행은 이 지점 이후만 본다(그룹 dlq-replay-trace-20260929).
+주의: 원본 DLQ 레코드 자체는 지워지지 않는다(Kafka는 임의 삭제가 안 된다).
+      건너뛴 레코드도 커서를 넘겼으므로, 다시 보려면 --group에 새 이름을 줘라.

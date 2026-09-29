@@ -1,0 +1,4 @@
+# 새 그룹 dlq-replay-trace-20260929 의 커서를 offset 16(대상 레코드)으로 맞춘다 — 앞의 기존 DLQ 16건이 함께 재주입되는 것을 막는다
+
+GROUP                          TOPIC                          PARTITION  NEW-OFFSET     
+dlq-replay-trace-20260929      vehicle-telemetry-dlq          0          16             

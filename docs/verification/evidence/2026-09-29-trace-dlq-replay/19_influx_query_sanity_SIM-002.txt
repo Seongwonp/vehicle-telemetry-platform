@@ -1,0 +1,5 @@
+Result: _result
+Table: keys: [_start, _stop, _measurement, vehicle_id]
+                   _start:time                      _stop:time     _measurement:string       vehicle_id:string             engine_temp:float         battery_voltage:float                      _time:time              fuel_level:float                     lat:flo
+------------------------------  ------------------------------  ----------------------  ----------------------  ----------------------------  ----------------------------  ------------------------------  ----------------------------  --------------------------
+2026-09-29T08:50:51.255000000Z  2026-09-29T08:50:51.256000000Z       vehicle_telemetry                 SIM-002                          90.8                         13.82  2026-09-29T08:50:51.255000000Z                          45.1                     37.4832

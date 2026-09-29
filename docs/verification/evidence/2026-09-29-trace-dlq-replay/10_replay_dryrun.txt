@@ -1,0 +1,7 @@
+# dry-run (기본)
+커서 그룹: dlq-replay-trace-20260929
+vehicle-telemetry-dlq → vehicle-telemetry
+  읽음     : 1건
+  재처리 대상: 1건
+
+--dry-run 상태다(기본값). 실제로 보내려면 --execute를 붙여라.

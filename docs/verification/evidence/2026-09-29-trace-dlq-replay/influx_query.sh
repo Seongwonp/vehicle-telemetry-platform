@@ -1,0 +1,2 @@
+# usage: influx_query.sh <vehicle> <start> <stop>   (INFLUXDB_ORG/BUCKET/TOKEN은 .env에서; 기록하지 않는다)
+docker exec telemetry-influxdb influx query --org "$INFLUXDB_ORG" --token "$INFLUXDB_TOKEN" "from(bucket:\"$INFLUXDB_BUCKET\") |> range(start: time(v: \"$2\"), stop: time(v: \"$3\")) |> filter(fn:(r)=>r._measurement==\"vehicle_telemetry\" and r.vehicle_id==\"$1\") |> pivot(rowKey:[\"_time\"], columnKey:[\"_field\"], valueColumn:\"_value\")"

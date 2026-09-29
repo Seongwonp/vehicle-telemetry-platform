@@ -1,0 +1,13 @@
+run_date_local=2026-09-29 17:48:47
+run_date_utc=2026-09-29T08:48:47Z
+git_head=6f1c0a00f705f7b535adfd0ce03b433c1bcd9f16
+git_status_short=?? docs/verification/evidence/2026-09-29-trace-dlq-replay/00_metadata.txt;?? docs/verification/evidence/2026-09-29-trace-websocket/;
+docker_server=29.7.2
+compose=5.4.0
+backend_image=sha256:57989d0d903af4eaa310bfc648d04eb84c9b6935d7de5abbd48be67d06984d6d
+detector_image=sha256:1f5d3d8beba3af2e8e2768c6893e69e09cb5a06534ca07e4230807c063a36fad
+simulator_image=sha256:e2728fe30781f839c344841a2efa12979703f0c9898e980386f3d449c32e72b7
+profile=dev(평문 1883) + --profile simulator, 무부하. 스택은 오전 실행분이 살아 있는 것을 그대로 썼다(재빌드 없음)
+backend_log_level=LOGGING_LEVEL_COM_TELEMETRY=DEBUG (저장소 밖 override: scratchpad/debug-override.yml, 종료 시 되돌림)
+image_vs_head=백엔드 이미지는 6cf6331 기준 빌드다. HEAD 6f1c0a0(WebSocket 방송 try/catch, TelemetryConsumer 변경)은 이 이미지에 들어 있지 않다
+host=desktop, Windows 11 Pro 10.0.26200

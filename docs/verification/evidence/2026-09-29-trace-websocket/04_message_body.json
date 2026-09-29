@@ -1,0 +1,13 @@
+{
+  "vehicleId": "SIM-001",
+  "timestamp": "2026-09-29T09:00:02.123Z",
+  "speed": 61.5,
+  "rpm": 2500.0,
+  "engineTemp": 88.5,
+  "throttlePosition": 20.0,
+  "fuelLevel": 55.0,
+  "batteryVoltage": 13.5,
+  "lat": 37.5,
+  "lng": 127.0,
+  "dtcCodes": []
+}

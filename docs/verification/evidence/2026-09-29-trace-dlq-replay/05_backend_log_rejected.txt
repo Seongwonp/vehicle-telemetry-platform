@@ -1,0 +1,1 @@
+08:49:36 [-] [-] WARN  c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 계약 위반 PAYLOAD_VALIDATION_FAILED — DLQ로 이동 vehicle=RPL-01 partition=2 offset=16498 payloadSha256=e2453abd7dc4ce7ba457893793da256e489215c8dd1d8acec20c4484b7368a71

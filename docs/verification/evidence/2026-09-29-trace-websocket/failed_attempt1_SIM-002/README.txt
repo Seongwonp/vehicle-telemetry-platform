@@ -1,0 +1,1 @@
+시도 1 — SIM-002 구독: STOMP ERROR 프레임(AccessDenied). 원인 추정(코드 확인): VehicleAccessService가 관리자도 '등록된 활성 차량'만 통과시키는데 vehicles 테이블에는 SIM-001 한 행뿐이다. 백엔드 로그에 StompSubProtocolHandler ERROR 1줄. 무효 사유: 시뮬레이터 차량이 미등록.

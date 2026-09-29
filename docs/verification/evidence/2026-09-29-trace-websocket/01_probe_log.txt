@@ -1,0 +1,6 @@
+2026-09-29T08:59:59.143+00:00 login HTTP 200 (token 미기록)
+2026-09-29T08:59:59.243+00:00 websocket open
+2026-09-29T08:59:59.259+00:00 recv CONNECTED: CONNECTED | version:1.2 heart-beat:0,0 user-name:admin
+2026-09-29T08:59:59.260+00:00 sent SUBSCRIBE /topic/vehicle/SIM-001/telemetry
+2026-09-29T09:00:08.446+00:00 recv first frame: MESSAGE
+received vehicleId=SIM-001 timestamp=2026-09-29T09:00:02.123Z speed=61.5
