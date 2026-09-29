@@ -1,0 +1,4 @@
+09:28:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] spool 드레인 완료 — vehicle=SIM-002 ts=2026-09-29T09:03:08.787Z partition=1 offset=36443
+09:28:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] spool 드레인 완료 — vehicle=SIM-003 ts=2026-09-29T09:03:08.992Z partition=1 offset=36444
+09:28:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] spool 드레인 완료 — vehicle=SIM-002 ts=2026-09-29T09:03:09.788Z partition=1 offset=36445
+09:28:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] spool 드레인 완료 — vehicle=SIM-003 ts=2026-09-29T09:03:09.993Z partition=1 offset=36446

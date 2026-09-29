@@ -1,0 +1,15 @@
+run_date_local=2026-09-29 18:29:26
+run_date_utc=2026-09-29T09:29:26Z
+git_head=84cffd517853a6328f93599d1ff145d5f1657e9a
+git_status_short=?? docs/verification/evidence/2026-09-29-password-e2e/;?? docs/verification/evidence/2026-09-29-spool-backlog-fix/;
+docker_server=29.7.2
+compose=5.4.0
+backend_image=sha256:49b22b5b458f033dde61493f636779f7e5511b757bfda526b04faec9479ba6a1
+detector_image=sha256:1f5d3d8beba3af2e8e2768c6893e69e09cb5a06534ca07e4230807c063a36fad
+simulator_image=sha256:e2728fe30781f839c344841a2efa12979703f0c9898e980386f3d449c32e72b7
+backend_image_created=2026-09-29T09:26:28.548081296Z
+profile=dev(평문 1883) + --profile simulator, 무부하, VEHICLE_COUNT/PUBLISH_INTERVAL/ANOMALY_RATE는 .env 값
+build=HEAD로 backend·anomaly-detector 재빌드(up -d --build)
+backend_log_level=LOGGING_LEVEL_COM_TELEMETRY=DEBUG (저장소 밖 override, 종료 시 되돌림)
+host=desktop, Windows 11 Pro 10.0.26200
+head_note=실행 중 HEAD가 b4f1073에서 84cffd5로 움직였다(그 사이 커밋은 README·docs·CLAUDE.md만 — git diff --stat b4f1073 HEAD 확인). 이미지는 backend/ 코드가 b4f1073과 동일한 상태에서 빌드

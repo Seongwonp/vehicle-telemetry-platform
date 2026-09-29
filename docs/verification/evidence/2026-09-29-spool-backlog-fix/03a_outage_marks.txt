@@ -1,0 +1,4 @@
+pre_outage_utc=09:36:41Z
+kafka_stop_utc=2026-09-29T09:36:41Z
+kafka_stop_done_utc=09:36:51Z
+kafka_start_utc=2026-09-29T09:39:17Z
