@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 
@@ -75,5 +77,27 @@ class RefreshTokenServiceTest {
         refreshTokenService.revoke("some-token");
 
         verify(redisTemplate).delete("refresh_token:some-token");
+    }
+
+    @Test
+    @DisplayName("revokeAll — prefix 키를 훑어 해당 사용자의 토큰만 지운다")
+    @SuppressWarnings("unchecked")
+    void revokeAll_해당사용자만() {
+        Cursor<String> cursor = org.mockito.Mockito.mock(Cursor.class);
+        given(cursor.hasNext()).willReturn(true, true, true, false);
+        given(cursor.next()).willReturn("refresh_token:a", "refresh_token:b", "refresh_token:c");
+        given(redisTemplate.scan(org.mockito.ArgumentMatchers.any(ScanOptions.class))).willReturn(cursor);
+        given(redisTemplate.opsForValue()).willReturn(valueOperations);
+        given(valueOperations.get("refresh_token:a")).willReturn("hong");
+        given(valueOperations.get("refresh_token:b")).willReturn("other");
+        given(valueOperations.get("refresh_token:c")).willReturn("hong");
+        given(redisTemplate.delete(anyString())).willReturn(true);
+
+        int removed = refreshTokenService.revokeAll("hong");
+
+        assertThat(removed).isEqualTo(2);
+        verify(redisTemplate).delete("refresh_token:a");
+        verify(redisTemplate).delete("refresh_token:c");
+        org.mockito.Mockito.verify(redisTemplate, org.mockito.Mockito.never()).delete("refresh_token:b");
     }
 }

@@ -1,6 +1,7 @@
 package com.telemetry.controller;
 
 import com.telemetry.dto.request.LoginRequest;
+import com.telemetry.dto.request.PasswordChangeRequest;
 import com.telemetry.dto.request.RefreshRequest;
 import com.telemetry.dto.response.LoginResponse;
 import com.telemetry.exception.ErrorResponse;
@@ -9,13 +10,16 @@ import com.telemetry.security.ClientIpResolver;
 import com.telemetry.security.JwtTokenProvider;
 import com.telemetry.security.LoginRateLimiter;
 import com.telemetry.security.RefreshTokenService;
+import com.telemetry.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -41,6 +45,7 @@ public class AuthController {
     private final LoginRateLimiter loginRateLimiter;
     // refresh는 DB를 다시 본다 — 토큰이 살아 있어도 계정이 비활성이면 재발급하지 않는다(ADR-027).
     private final UserDetailsService userDetailsService;
+    private final UserService userService;
 
     @org.springframework.web.bind.annotation.GetMapping("/me")
     @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
@@ -113,6 +118,22 @@ public class AuthController {
             // rotate()가 이미 옛 토큰을 지웠으므로 비활성 계정의 refresh 체인은 여기서 끝난다.
             return false;
         }
+    }
+
+    @PostMapping("/password")
+    @PreAuthorize("isAuthenticated()")
+    @SecurityRequirement(name = "bearerAuth")
+    @Operation(
+        summary = "비밀번호 변경 (본인)",
+        description = "현재 비밀번호를 확인하고 새 비밀번호로 바꾼다. 성공하면 이 사용자의 refresh token이 모두 폐기되어 "
+            + "다시 로그인해야 한다. 이미 발급된 Access Token은 자체 만료시간까지는 유효하다. "
+            + "현재 비밀번호 불일치는 400 CURRENT_PASSWORD_INCORRECT(401이 아니다)."
+    )
+    public ResponseEntity<Void> changePassword(
+        @Valid @RequestBody PasswordChangeRequest request, Authentication authentication
+    ) {
+        userService.changePassword(authentication.getName(), request.getCurrentPassword(), request.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/logout")

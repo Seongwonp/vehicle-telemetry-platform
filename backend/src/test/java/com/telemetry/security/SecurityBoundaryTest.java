@@ -40,6 +40,7 @@ class SecurityBoundaryTest {
     @MockBean VehicleService vehicles;
     @MockBean VehicleAccessService access;
     @MockBean RefreshTokenService refresh;
+    @MockBean com.telemetry.service.UserService userService;
     @MockBean BruteForceDetector bruteForce;
     @MockBean LoginRateLimiter loginLimiter;
     @MockBean ClientIpResolver ips;

@@ -34,7 +34,8 @@ class RefreshInactiveUserTest {
     private final RefreshTokenService refresh = mock(RefreshTokenService.class);
     private final UserDetailsService users = mock(UserDetailsService.class);
     private final AuthController controller = new AuthController(mock(AuthenticationManager.class), jwt,
-        mock(BruteForceDetector.class), refresh, mock(ClientIpResolver.class), mock(LoginRateLimiter.class), users);
+        mock(BruteForceDetector.class), refresh, mock(ClientIpResolver.class), mock(LoginRateLimiter.class), users,
+        mock(com.telemetry.service.UserService.class));
 
     private static RefreshRequest request() {
         RefreshRequest r = new RefreshRequest();

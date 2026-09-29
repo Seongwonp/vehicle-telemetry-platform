@@ -1,5 +1,6 @@
 package com.telemetry.controller;
 
+import com.telemetry.dto.request.PasswordResetRequest;
 import com.telemetry.dto.request.UserCreateRequest;
 import com.telemetry.dto.response.UserResponse;
 import com.telemetry.service.UserService;
@@ -32,6 +33,17 @@ public class UserController {
     @Operation(summary = "사용자 생성", description = "관리자만 호출할 수 있다. 자가 가입 없음")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody UserCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(request));
+    }
+
+    @PutMapping("/{username}/password")
+    @Operation(summary = "비밀번호 초기화",
+        description = "관리자가 대상 사용자의 비밀번호를 새 값으로 바꾸고 그 사용자의 refresh token을 모두 폐기한다. "
+            + "이미 발급된 access token은 자체 만료까지 유효하다")
+    public ResponseEntity<Void> resetPassword(
+        @PathVariable String username, @Valid @RequestBody PasswordResetRequest request
+    ) {
+        userService.resetPassword(username, request.getNewPassword());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping

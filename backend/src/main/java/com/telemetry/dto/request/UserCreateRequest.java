@@ -1,11 +1,11 @@
 package com.telemetry.dto.request;
 
 import com.telemetry.entity.Role;
+import com.telemetry.security.ValidPassword;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
@@ -17,8 +17,7 @@ public class UserCreateRequest {
     @Schema(description = "로그인 이름", example = "hong")
     private String username;
 
-    @NotBlank
-    @Size(min = 8, max = 72, message = "비밀번호는 8~72자")
+    @ValidPassword
     @Schema(description = "비밀번호", example = "dummy-test-pw-not-real")
     private String password;
 

@@ -2,6 +2,8 @@ package com.telemetry.security;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -49,5 +51,30 @@ public class RefreshTokenService {
 
     public void revoke(String token) {
         redisTemplate.delete(PREFIX + token);
+    }
+
+    /**
+     * 한 사용자의 refresh token을 전부 폐기한다(비밀번호 변경·초기화). 저장 구조가 {@code token -> username}
+     * 단방향이라 사용자별 색인이 없다 — {@code SCAN}으로 prefix 키를 훑어 값이 일치하는 것을 지운다.
+     * 키 수에 비례하는 비용이라 대량 사용자에는 맞지 않지만, 사용자별 색인을 추가하면 색인 도입 전에 발급된
+     * 토큰이 남는다. 이 프로젝트 규모(사용자 소수, 14일 TTL)에서는 색인 없이 확실히 지우는 쪽을 골랐다.
+     * Redis 오류는 그대로 전파한다 — 호출자가 비밀번호 변경을 되돌리도록.
+     *
+     * @return 지운 토큰 수
+     */
+    public int revokeAll(String username) {
+        int removed = 0;
+        ScanOptions options = ScanOptions.scanOptions().match(PREFIX + "*").count(500).build();
+        try (Cursor<String> cursor = redisTemplate.scan(options)) {
+            while (cursor.hasNext()) {
+                String key = cursor.next();
+                if (username.equals(redisTemplate.opsForValue().get(key))
+                    && Boolean.TRUE.equals(redisTemplate.delete(key))) {
+                    removed++;
+                }
+            }
+        }
+        log.info("[RefreshToken] 사용자 토큰 전체 폐기 — username={} removed={}", username, removed);
+        return removed;
     }
 }

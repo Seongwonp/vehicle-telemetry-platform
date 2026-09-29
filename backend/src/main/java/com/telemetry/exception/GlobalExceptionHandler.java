@@ -127,6 +127,18 @@ public class GlobalExceptionHandler {
             .body(new ErrorResponse("UNAUTHORIZED", "아이디 또는 비밀번호가 올바르지 않습니다"));
     }
 
+    /**
+     * 비밀번호 변경에서 현재 비밀번호가 틀렸다 — <b>401이 아니라 400</b>이다.
+     * 이 요청은 access token으로 이미 인증을 통과했다. 401을 주면 클라이언트가 "세션 만료"로 읽어
+     * refresh를 시도하거나 로그아웃시킨다. 세션은 멀쩡하고 입력만 틀렸다.
+     * 코드를 {@code UNAUTHORIZED}와 분리해 화면이 "현재 비밀번호를 확인하세요"를 보여줄 수 있게 한다.
+     */
+    @ExceptionHandler(CurrentPasswordMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleCurrentPasswordMismatch(CurrentPasswordMismatchException e) {
+        return ResponseEntity.badRequest()
+            .body(new ErrorResponse("CURRENT_PASSWORD_INCORRECT", e.getMessage()));
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException e) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)

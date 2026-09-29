@@ -43,6 +43,20 @@ class RedisRefreshTokenContractTest {
     }
 
     @Test
+    void revokeAllRemovesOnlyThatUsersTokensInRealRedis() {
+        String hong1 = service.issue("hong");
+        String hong2 = service.issue("hong");
+        String other = service.issue("other");
+
+        int removed = service.revokeAll("hong");
+
+        assertThat(removed).isEqualTo(2);
+        assertThat(service.rotate(hong1)).isEmpty();
+        assertThat(service.rotate(hong2)).isEmpty();
+        assertThat(service.rotate(other)).contains("other");
+    }
+
+    @Test
     void redisGetDelAllowsOnlyOneConcurrentRotation() throws Exception {
         String token = service.issue("admin");
         var executor = Executors.newFixedThreadPool(2);

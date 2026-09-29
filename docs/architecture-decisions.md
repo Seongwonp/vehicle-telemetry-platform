@@ -1233,7 +1233,17 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
 
 ### 대가와 한계
 
-- 비밀번호 변경·재설정 API가 없다. 관리자가 사용자를 다시 만들거나 DB에서 해시를 바꿔야 한다.
+- **비밀번호 변경·초기화 API(2026-09-29)**: `POST /api/auth/password`(본인, `{currentPassword,newPassword}`, 204)와
+  `PUT /api/users/{username}/password`(ADMIN, `{newPassword}`, 204). 새 비밀번호 규칙(8~72자)은 `PasswordPolicy`/`@ValidPassword`
+  한 곳에서 사용자 생성·변경·초기화가 같이 쓴다. 성공 시 **그 사용자의 refresh token을 전부 폐기**하고 같은 트랜잭션 안에서 하므로
+  Redis 오류면 변경도 롤백된다(503 `REDIS_UNAVAILABLE`, 비밀번호 그대로). 현재 비밀번호 불일치는 **401이 아니라
+  400 `CURRENT_PASSWORD_INCORRECT`** — 요청은 access token으로 이미 인증됐고, 401이면 클라이언트가 세션 만료로 읽어
+  refresh/로그아웃을 시도한다. 비활성 계정은 필터가 401로 막는다(서비스도 로그인 불가 계정을 거절). 관리자 초기화는 비활성 계정의
+  해시도 바꾼다(`active`는 그대로). 폐기는 사용자별 색인이 없어 Redis `SCAN`으로 prefix 키를 훑는다(키 수에 비례 — 사용자 소수·14일 TTL 규모 전제).
+  **한계**: 이미 발급된 access token은 자체 만료까지 유효하다. 현재 비밀번호 추측에는 로그인용 IP 차단·`LoginRateLimiter`를
+  걸지 않았다(일반 `/api/**` rate limit만) — 탈취된 access token으로 현재 비밀번호를 무제한 시도하는 경로가 남는다.
+  검증은 단위·슬라이스·실제 Redis 계약 테스트 수준이며 E2E(컨테이너 스택)는 하지 않았다.
+- 초기화한 비밀번호를 사용자에게 전달하는 절차·강제 변경 플래그(`must_change`)는 없다.
 - 관리자가 여럿일 수 있지만(`role=ADMIN` 행 추가) env가 관리하는 것은 `ADMIN_USERNAME` 한 명뿐이다.
 - 앱의 차량 등록 화면은 관리자 계정에서만 의미가 있고 소유자 이름을 자유 입력받는다(없는 사용자면 400). 앱 쪽 후속.
 - 소유권 이전·차량 재배정 API가 없다. 관리자가 비활성화 후 다른 소유자로 다시 등록해야 한다.

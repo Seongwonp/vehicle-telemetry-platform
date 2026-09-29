@@ -66,7 +66,8 @@ class LoginFailureDistinctionTest {
     void setUp() {
         // @RequiredArgsConstructor는 **필드 선언 순서**로 생성자를 만든다.
         controller = new AuthController(authenticationManager, jwtTokenProvider,
-            bruteForceDetector, refreshTokenService, clientIpResolver, loginRateLimiter, userDetailsService);
+            bruteForceDetector, refreshTokenService, clientIpResolver, loginRateLimiter, userDetailsService,
+            org.mockito.Mockito.mock(com.telemetry.service.UserService.class));
         handler = new GlobalExceptionHandler(new SimpleMeterRegistry());
         when(clientIpResolver.resolve(any())).thenReturn("10.0.0.1");
     }

@@ -95,7 +95,7 @@ public class SecurityConfig {
 
             // ── 엔드포인트 인가 ─────────────────────────────────────
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/me").authenticated()
+                .requestMatchers("/api/auth/me", "/api/auth/password").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
                 // 비활성화도 관리자만. 등록만 관리자고 비활성화는 소유자도 되던 비대칭이었다 — 비활성 차량은 관리자도

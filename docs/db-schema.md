@@ -60,7 +60,7 @@ erDiagram
 
 - 관리자 행은 V4가 Flyway placeholder `${admin_username}`(= `ADMIN_USERNAME`)으로 만들고, 해시는 기동 시
   `AdminBootstrap`이 `ADMIN_PASSWORD`로 채운다. **env가 관리자 비밀번호의 단일 기준**이다.
-- 자가 가입은 없다. `POST /api/users`는 관리자만.
+- 자가 가입은 없다. `POST /api/users`는 관리자만. 비밀번호 변경은 본인 `POST /api/auth/password`, 초기화는 관리자 `PUT /api/users/{username}/password`(둘 다 해당 사용자의 refresh 폐기).
 
 ---
 
