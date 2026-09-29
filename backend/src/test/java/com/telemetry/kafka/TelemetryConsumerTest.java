@@ -410,6 +410,42 @@ class TelemetryConsumerTest {
     }
 
     @Test
+    @DisplayName("WebSocket 방송이 실패해도 커밋된 배치를 다시 돌리지 않는다 — 예외를 삼키고 나머지는 방송한다")
+    void 방송실패_배치재시도안함() {
+        // 방송은 커밋 뒤의 부수 효과다. 여기서 던지면 에러 핸들러가 저장·커밋이 끝난 배치를
+        // 재시도하고, 알림 경로는 재시도에서 inserted=false가 되어 방송이 영구히 빠진다.
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
+        doThrow(new org.springframework.messaging.MessageDeliveryException("broker down"))
+            .doNothing()
+            .when(messagingTemplate).convertAndSend(anyString(), any(Object.class));
+
+        telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, VALID_TELEMETRY_JSON), telemetryRecord(1L, VALID_TELEMETRY_JSON)),
+            acknowledgment);
+
+        verify(acknowledgment, times(1)).acknowledge();
+        verify(messagingTemplate, times(2)).convertAndSend(
+            eq("/topic/vehicle/SIM-001/telemetry"), any(Object.class));
+        assertThat(count("telemetry.websocket.broadcast.failures", "channel", "telemetry")).isEqualTo(1.0);
+
+        // 알림 경로도 같다.
+        com.telemetry.entity.AnomalyAlert saved = alertEntity();
+        given(anomalyService.toEntity(any())).willReturn(saved);
+        given(anomalyService.saveAll(any())).willReturn(List.of(
+            new com.telemetry.service.AnomalyService.SaveResult(saved, true),
+            new com.telemetry.service.AnomalyService.SaveResult(saved, true)));
+        doThrow(new org.springframework.messaging.MessageDeliveryException("broker down"))
+            .doNothing()
+            .when(messagingTemplate).convertAndSend(eq("/topic/vehicle/SIM-001/anomalies"), any(Object.class));
+
+        telemetryConsumer.consumeAnomalyAlerts(
+            List.of(alertRecord(0L, ALERT_JSON), alertRecord(1L, ALERT_JSON)), acknowledgment);
+
+        verify(acknowledgment, times(2)).acknowledge();
+        assertThat(count("telemetry.websocket.broadcast.failures", "channel", "anomalies")).isEqualTo(1.0);
+    }
+
+    @Test
     @DisplayName("DLQ 전송 실패 시 원본 offset을 커밋하지 않는다")
     void dlq전송실패_offset미커밋() {
         CompletableFuture<SendResult<String, String>> failed = new CompletableFuture<>();

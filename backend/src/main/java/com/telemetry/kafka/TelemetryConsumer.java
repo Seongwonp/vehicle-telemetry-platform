@@ -128,6 +128,7 @@ public class TelemetryConsumer {
         log.debug("[Kafka→InfluxDB] 배치 저장 완료 — 수신 {}건 중 {}건 저장",
             records.size(), points.size());
         acknowledgment.acknowledge();
+        // 방송은 커밋 **뒤**이고 실패해도 던지지 않는다 — 아래 broadcastAnomaly 주석.
         converted.forEach(this::broadcastTelemetry);
     }
 
@@ -196,11 +197,7 @@ public class TelemetryConsumer {
         // (load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md).
         for (AnomalyService.SaveResult result : results) {
             if (!result.inserted()) continue;
-            AnomalyAlert saved = result.alert();
-            messagingTemplate.convertAndSend(
-                "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
-                new AnomalyResponse(saved)
-            );
+            broadcastAnomaly(result.alert());
         }
         log.debug("[Kafka→Anomaly] 배치 처리 완료 — 수신 {}건 중 저장 시도 {}건",
             records.size(), toSave.size());
@@ -208,6 +205,31 @@ public class TelemetryConsumer {
 
     // REST의 TelemetryResponse와 동일한 JSON 형태로 만들어 보낸다 — 앱이
     // 폴링 응답과 스트리밍 응답을 같은 모델(Telemetry.fromJson)로 파싱할 수 있도록.
+    /**
+     * WebSocket 방송은 offset 커밋 <b>뒤</b>에 하므로 여기서 던지면 안 된다.
+     *
+     * <p>던지면 에러 핸들러가 <b>이미 저장·커밋된 배치</b>를 실패로 보고 다시 돌린다 —
+     * 저장 경로는 InfluxDB point identity가 흡수하지만 재시도 예산을 소진하면 정상 레코드
+     * 전체가 DLQ로 간다. 알림 경로는 더 나쁘다: 재시도에서 {@code inserted=false}가 되어
+     * <b>방송이 영구히 빠진다</b>(2026-09-29 외부 평가 지적, 코드로 확인). 방송은 저장의
+     * 부수 효과이고 구독자가 없으면 원래 사라지는 것이라, 실패는 세고 로그만 남긴다.
+     */
+    private void broadcastAnomaly(AnomalyAlert saved) {
+        try {
+            messagingTemplate.convertAndSend(
+                "/topic/vehicle/" + saved.getVehicleId() + "/anomalies",
+                new AnomalyResponse(saved));
+        } catch (RuntimeException e) {
+            countBroadcastFailure("anomalies");
+            log.warn("[WebSocket] 알림 방송 실패 — 저장·커밋은 끝났다 vehicle={} event={} ({})",
+                saved.getVehicleId(), saved.getEventId(), e.getClass().getSimpleName());
+        }
+    }
+
+    private void countBroadcastFailure(String channel) {
+        meterRegistry.counter("telemetry.websocket.broadcast.failures", "channel", channel).increment();
+    }
+
     private void broadcastTelemetry(VehicleTelemetry t) {
         TelemetryResponse response = TelemetryResponse.builder()
             .vehicleId(t.getVehicleId())
@@ -222,8 +244,14 @@ public class TelemetryConsumer {
             .lng(t.getGps() != null ? t.getGps().getLng() : null)
             .dtcCodes(t.getDtcCodes())
             .build();
-        messagingTemplate.convertAndSend(
-            "/topic/vehicle/" + t.getVehicleId() + "/telemetry", response);
+        try {
+            messagingTemplate.convertAndSend(
+                "/topic/vehicle/" + t.getVehicleId() + "/telemetry", response);
+        } catch (RuntimeException e) {
+            countBroadcastFailure("telemetry");
+            log.warn("[WebSocket] 텔레메트리 방송 실패 — 저장·커밋은 끝났다 vehicle={} ts={} ({})",
+                t.getVehicleId(), t.getTimestamp(), e.getClass().getSimpleName());
+        }
     }
 
     /**

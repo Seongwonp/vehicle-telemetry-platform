@@ -33,6 +33,7 @@
 | 1 → 2 | 브로커 큐 오버플로, 백엔드가 유입을 못 따라감 | `telemetry_mqtt_broker_messages_dropped` |
 | 2 → 3 | Kafka 프로듀서 실패 | `telemetry_spool_pending` (0이 아니면 spool에 보관 중). `telemetry_spool_corrupt_total`이 0이 아니면 spool 디렉터리의 `*.corrupt`를 사람이 본다 — 해석 불가로 격리된 메시지(유실 후보) |
 | 3 → 4 | 저장 실패 | `telemetry_kafka_dlq_published_total`, `docs/runbook/dlq-reprocessing.md` |
+| 4 → 앱 | 저장·커밋은 끝났는데 WebSocket 방송이 실패 | `telemetry_websocket_broadcast_failures_total{channel=telemetry\|anomalies}`. 저장 데이터는 온전하고 실시간 화면만 빠진 것 — REST 조회로 확인 가능. 2026-09-29 전에는 여기서 예외가 커밋된 배치를 재시도시켰다 |
 
 **셋 다 0인데 단계가 갈라졌다면 계측이 부족한 것이다** — 어디로 샜는지 모른다는 뜻이므로,
 그 구간에 지표를 먼저 추가해야 한다.
