@@ -37,7 +37,8 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-@Testcontainers
+// Docker image builders have no daemon; the host CI job separately enforces zero skipped contracts.
+@Testcontainers(disabledWithoutDocker = true)
 class MqttKafkaAckContractTest {
     @Container static final KafkaContainer KAFKA = new KafkaContainer(DockerImageName.parse("confluentinc/cp-kafka:7.6.1"));
     @Container static final GenericContainer<?> BROKER = new GenericContainer<>("eclipse-mosquitto:2.0")

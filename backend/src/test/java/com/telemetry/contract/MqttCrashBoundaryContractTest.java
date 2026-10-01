@@ -20,7 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 /** Real MQTT + killed worker JVM; the Kafka completion boundary is a controlled pending future. */
-@Testcontainers
+// Docker image builders have no daemon; the host CI job separately enforces zero skipped contracts.
+@Testcontainers(disabledWithoutDocker = true)
 class MqttCrashBoundaryContractTest {
     @Container static final GenericContainer<?> BROKER = new GenericContainer<>("eclipse-mosquitto:2.0")
         .withExposedPorts(1883)
