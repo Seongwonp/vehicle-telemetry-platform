@@ -20,6 +20,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("MQTT 연결 옵션")
 class MqttConnectOptionsTest {
 
+    @Test
+    void telemetryAdapterRequiresManualAcknowledgments() {
+        MqttConfig config = new MqttConfig();
+        ReflectionTestUtils.setField(config, "host", "localhost");
+        ReflectionTestUtils.setField(config, "port", 1883);
+        ReflectionTestUtils.setField(config, "clientId", "ack-contract");
+        ReflectionTestUtils.setField(config, "topic", "vehicle/telemetry/#");
+        ReflectionTestUtils.setField(config, "maxReconnectDelayMs", 5000);
+        assertThat(ReflectionTestUtils.getField(config.mqttInbound(), "manualAcks")).isEqualTo(true);
+    }
+
     private MqttConnectOptions optionsWith(int maxReconnectDelayMs) {
         MqttConfig config = new MqttConfig();
         ReflectionTestUtils.setField(config, "host", "localhost");

@@ -26,6 +26,30 @@ import static org.mockito.Mockito.verify;
 @ExtendWith(MockitoExtension.class)
 class TelemetryProducerTest {
 
+    @Test
+    void receiptFailsWhenKafkaAndSpoolBothFail() {
+        TelemetrySpool spool = org.mockito.Mockito.mock(TelemetrySpool.class);
+        given(kafkaTemplate.send(anyString(), anyString(), anyString()))
+            .willReturn(CompletableFuture.failedFuture(new IllegalStateException("Kafka unavailable")));
+        given(spool.store(anyString())).willThrow(new IllegalStateException("disk full"));
+        var producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool, new SimpleMeterRegistry(), 10);
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> producer.send(telemetry()).join())
+            .hasRootCauseMessage("disk full");
+    }
+
+    @Test
+    void receiptWaitsForKafkaOrCompletedSpoolWrite() {
+        var pending = new CompletableFuture<SendResult<String, String>>();
+        given(kafkaTemplate.send(anyString(), anyString(), anyString())).willReturn(pending);
+        var spool = new TelemetrySpool(tempDirectory.toString());
+        var producer = new TelemetryProducer(kafkaTemplate, new ObjectMapper(), spool, new SimpleMeterRegistry(), 10);
+        var receipt = producer.send(telemetry());
+        assertThat(receipt).isNotDone();
+        pending.completeExceptionally(new IllegalStateException("Kafka unavailable"));
+        receipt.join();
+        assertThat(spool.pending(10)).hasSize(1);
+    }
+
     @TempDir Path tempDirectory;
     @Mock KafkaTemplate<String, String> kafkaTemplate;
 

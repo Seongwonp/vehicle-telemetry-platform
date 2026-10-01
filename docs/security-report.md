@@ -1,244 +1,55 @@
-# 보안 자체 점검 보고서
+# 보안 자체 점검 — 현재 구현과 남은 한계
 
-> **프로젝트**: Vehicle Telemetry Platform  
-> **점검 기준**: OWASP Top 10, UN R155 / ISO SAE 21434 (차량 사이버보안)  
-> **점검일**: 2026-05-09 (2026-07-01 Phase 6~10 반영 갱신)  
-> **작성자**: Sungwon
+점검일: 2026-10-01. 기준: `21cf99c`의 코드·설정 정적 대조.
+침투 테스트 완료나 UN R155 / ISO/SAE 21434 적합성 인증을 뜻하지 않는다.
+이전 문서의 단일 관리자·IDOR 보류·Access Token 24시간·TLS 주석 해제 안내는 현재 구현과 달라 철회한다.
 
----
+## 구현과 증거
 
-## 1. 점검 요약
+| 영역 | 현재 구현 | 근거와 한계 |
+| --- | --- | --- |
+| 인증 | PostgreSQL users, BCrypt, DB 기반 UserDetailsService. JWT 인증 때 활성 사용자 조회 | DbUserDetailsServiceTest, JwtAuthenticationFilterTest. 테스트 존재와 이번 실행 결과는 구분 |
+| 토큰 | Access 기본 600,000ms(10분), 환경변수로 변경 가능. Redis refresh rotation | RedisRefreshTokenContractTest, RefreshInactiveUserTest. 로그아웃은 해당 refresh 폐기; Access 즉시 폐기가 아님 |
+| 비밀번호 | 본인 변경·관리자 초기화, 성공 시 사용자 refresh 전부 폐기 | PasswordApiSecurityTest. 기존 Access는 자체 만료까지 유효 |
+| 차량 인가 | 활성 차량에 소유자 또는 관리자 접근. 차량 등록·비활성화와 사용자 관리 ADMIN 전용 | VehicleAccessService, VehicleAccessInterceptor, SecurityBoundaryTest, [다중 사용자 E2E](verification/2026-09-27-multi-user-e2e.md) |
+| WebSocket | CONNECT 인증, SUBSCRIBE 차량 권한 검사, 클라이언트 SEND 차단, 만료 세션 정리 | WebSocketAuthChannelInterceptorTest. 차량 비활성화가 열린 구독을 즉시 끊지는 않음(ADR-027) |
+| MQTT | 운영 8883 mTLS, 인증서 CN 기반 ACL, topic/payload 차량 ID 일치 검사 | broker/config/mosquitto.conf, broker/config/acl, MqttMessageHandlerTest. dev override는 평문 1883; dev 부하 실험을 TLS 검증으로 쓰지 않음 |
+| 로그인 방어 | 실패 누적 IP 차단, 로그인 rate limit, 신뢰 프록시 조건부 IP 해석 | BruteForceDetectorTest, LoginRateLimiterTest, ClientIpResolverTest |
+| SQL·응답 | 저장소 파라미터 바인딩, 401/403 JSON | 구현을 전체 SQL Injection 침투 테스트 완료로 확대하지 않음 |
 
-| 항목 | 위험도 | 상태 |
-|------|--------|------|
-| MQTT 평문 통신 | 높음 | 완화 (TLS 클라이언트 코드 구현 완료 — Phase 10. 기본값은 여전히 평문, 플래그로 전환) |
-| 브루트포스 로그인 공격 | 높음 | 완화 (Redis 기반 IP 차단) |
-| JWT 토큰 탈취/무효화 불가 | 높음 | 완화 (만료시간, HTTPS 적용, Phase 7에서 Refresh Token 로그아웃 무효화 추가) |
-| SQL Injection | 높음 | 완화 (JPA 파라미터 바인딩) |
-| Rate Limiting 미적용 | 중간 | 완화 (Redis 기반, 분당 60회) |
-| 보안 헤더 누락 | 중간 | 완화 (5개 헤더 적용) |
-| IDOR (권한 우회) | 중간 | 부분 완화 (현재 admin 단일 계정이라 실질 위험 낮음. 다중 사용자 도입 시 필요) |
-| 민감 정보 하드코딩 | 높음 | 완화 (.env 분리, .gitignore 처리) |
-| 인증서 없는 MQTT 클라이언트 | 높음 | 완화 (X.509 mTLS 클라이언트 코드 구현 완료 — Phase 10) |
-| 이상 접근 미감지 | 중간 | 완화 (감사 로그 + IP 차단) |
-| Actuator 인증 우회/정보 노출 | 중간 | 완화 (Phase 6 — `/actuator/prometheus` 인증 예외 처리, health `show-details: never`) |
-| 예외 응답 정보 노출 | 낮음 | 완화 (Phase 6 — AccessDenied/DataIntegrity/MessageNotReadable 핸들러 추가) |
+Java 소스는 `backend/src/main/java/com/telemetry/`, 테스트는 `backend/src/test/java/com/telemetry/` 기준.
 
----
+## 자산·위협·대응
 
-## 2. 상세 점검 결과
+간단한 위협 모델이며 정식 TARA의 위험 산정·승인을 대신하지 않는다.
 
----
+| 자산 | 위협 | 현재 대응 | 남은 일 |
+| --- | --- | --- | --- |
+| 계정·토큰 | 대입 공격, 탈취 토큰 재사용 | BCrypt, 로그인 제한, 짧은 Access, refresh rotation | Access 즉시 철회 요구와 키 회전 정책 |
+| 차량 위치·이력 | 타인 데이터 열람 | DB 소유권 및 구독 인가 | 열린 구독의 권한 변경 반영 |
+| 수집 데이터 | 차량 사칭, topic 위조 | 운영 mTLS·CN ACL·ID 일치 검사 | 인증서 교체·폐기 실험, 지연 재전송을 허용하는 중복 정책 |
+| 메시지·세션·spool | 프로세스 종료, 큐 포화, 디스크 실패 | persistent session, Kafka ACK, 실패 spool, 지표 | [ACK 작업 계획](plans/2026-10-01-mqtt-ack-boundary.md). 모든 장애에서 무손실을 보장하지 않음 |
+| 운영 정보·비밀값 | 메트릭 노출, 키·로그 유출 | 환경변수, ignore 규칙, payload digest | Prometheus·Swagger는 코드상 익명 접근 가능. 배포 경계 제한은 실제 확인 필요 |
 
-### 2-1. MQTT 통신 보안
+## 운영 한계
 
-**위험**: MQTT 평문 통신 시 센서 데이터 도청 및 위변조 가능
+- 인증서 생성기는 암호화하지 않은 개인키와 10년 인증서를 만든다. 키 접근권한·보관·교체·폐기 절차가 필요하다. `-nodes` 하나가 침해 증거는 아니다.
+- 환경변수·ignore 사용은 Git 전체 이력에 비밀값이 없다는 증거가 아니다. 이번 점검에서는 전체 이력 스캔을 실행하지 않았다.
+- HSTS 설정만으로 실제 외부 HTTPS·방화벽 배포 완료를 주장하지 않는다.
+- Alertmanager default receiver에는 외부 수신처가 없다. 규칙과 운영자 통보는 구분한다.
+- 메시지 replay 방어는 미구현. 과거 timestamp를 일괄 거부하면 정상 장애 복구 데이터를 버리므로 적용하지 않는다.
+- ML은 기본 비활성인 실험 기능이다. 실차 학습·탐지 성능이 입증된 것으로 설명하지 않는다.
 
-**재현 시나리오**:
-```bash
-# 공격자가 네트워크에서 MQTT 패킷 스니핑
-tcpdump -i eth0 -w capture.pcap port 1883
-# → 차량 위치, 속도, 배터리 상태 등 민감 데이터 평문 노출
-```
+## 브로커 기본값
 
-**적용된 대책**:
-- TLS 1.2 이상 암호화 (8883 포트) 설정 준비
-- 서버/클라이언트 상호 인증 (mTLS) — X.509 인증서 발급 스크립트 제공
-- 클라이언트 인증서 없으면 브로커 연결 거부
-- Spring Boot 백엔드(`MqttConfig.java`)와 Python 시뮬레이터 양쪽 모두 mTLS 클라이언트 코드 구현 완료(Phase 10)
-  — `mqtt.tls.enabled` 플래그로 켜고 끌 수 있어 평소 로컬 개발은 평문으로 유지
+Compose의 `eclipse-mosquitto:2.0`은 이동 가능한 태그다. 2026-10-01 로컬 이미지 `199ea8ef2e35`를 네트워크 없이 `mosquitto -h`로 실행해 **2.0.22**를 확인했다. 다른 호스트까지 같은 버전으로 단정하지 않는다.
 
-**활성화 방법**:
-```bash
-# 1. 인증서 생성 (backend.p12 / 차량별 PEM / truststore.p12 생성)
-cd broker/certs && ./generate-certs.sh
+dev·운영 모두 persistence=true, max_queued_messages=100000. 생략된 기본값은 2.0.22 소스로 확인했다.
 
-# 2. mosquitto.conf 의 TLS 섹션 주석 해제
-# 3. docker-compose restart mosquitto
+| 설정 | 기본값 | 범위 |
+| --- | --- | --- |
+| autosave_interval | 1800초, autosave_on_changes=false | 주기·정상 종료·명시적 저장 요청에 따른 저장. 메시지별 fsync 보장이 아님 |
+| max_inflight_messages | 20 | 클라이언트로 전송 중인 QoS 1/2 한도. 대기열 제한과 별개 |
 
-# 4. 백엔드: .env에서 MQTT_TLS_ENABLED=true, MQTT_PORT=8883로 변경 후 재시작
-# 5. 시뮬레이터: .env에서 TLS_CA_CERT/TLS_CLIENT_CERT/TLS_CLIENT_KEY 경로 설정 시 자동 적용
-```
-
-> `backend.p12`는 Spring Boot 구독자 전용이며, Python 시뮬레이터는
-> `vehicles/<vehicle_id>.crt/.key`를 사용한다. Mosquitto ACL은 인증서 CN과 topic의
-> vehicle ID를 일치시켜 다른 차량 topic 발행을 차단한다.
-
----
-
-### 2-2. 인증 / JWT 보안
-
-**위험**: 토큰 탈취, 브루트포스 공격
-
-**적용된 대책**:
-
-| 대책 | 구현 위치 |
-|------|----------|
-| HMAC-SHA256 서명 | `JwtTokenProvider.java` |
-| Access Token 만료 (기본 10분) | `application.yml` |
-| 5회 실패 → 15분 IP 차단 | `BruteForceDetector.java` |
-| STATELESS 세션 | `SecurityConfig.java` |
-| Refresh Token (Redis opaque token, rotation) | `RefreshTokenService.java`, `AuthController.java` |
-| 로그아웃 시 토큰 무효화 | `AuthController.logout()` — Redis에서 Refresh Token 삭제. Access Token은 Stateless라 자체 만료 전까지는 유효(블랙리스트 아님) |
-
-**남은 개선 사항**:
-- 로그아웃 즉시 Access Token 무효화가 필요하면 jti 블랙리스트 도입 검토
-
----
-
-### 2-3. SQL Injection
-
-**위험**: 악의적인 SQL 구문 삽입으로 DB 무단 접근
-
-**테스트**:
-```
-POST /api/vehicles
-{ "vehicleId": "'; DROP TABLE vehicles; --" }
-```
-
-**결과**: 차단됨  
-**이유**: Spring Data JPA는 모든 쿼리를 PreparedStatement로 실행 — 파라미터 값은 SQL 구문으로 해석되지 않음
-
-```java
-// JPA 내부 동작
-vehicleRepository.findByVehicleId(vehicleId)
-// → SELECT * FROM vehicles WHERE vehicle_id = ? (바인딩)
-```
-
----
-
-### 2-4. IDOR (Insecure Direct Object Reference)
-
-**위험**: 다른 사용자의 차량 데이터에 무단 접근
-
-**현재 상태**: 부분 완화  
-- 현재 단일 admin 계정 사용 → IDOR 위험 낮음
-- Phase 4 개선 필요: 사용자-차량 소유 관계 검증
-
-**개선 방향**:
-```java
-// 추가 예정: 차량 조회 시 소유자 검증
-public VehicleResponse findByVehicleId(String vehicleId, String requestingUser) {
-    Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId)...;
-    if (!vehicle.getOwner().equals(requestingUser)) {
-        throw new AccessDeniedException("접근 권한 없음");
-    }
-    return new VehicleResponse(vehicle);
-}
-```
-
----
-
-### 2-5. 보안 헤더
-
-**적용 헤더**:
-
-| 헤더 | 값 | 목적 |
-|------|-----|------|
-| `X-Frame-Options` | DENY | Clickjacking 방지 |
-| `X-Content-Type-Options` | nosniff | MIME 스니핑 방지 |
-| `Strict-Transport-Security` | max-age=31536000 | HTTPS 강제 |
-| `Referrer-Policy` | strict-origin-when-cross-origin | 레퍼러 정보 최소화 |
-| `X-Trace-Id` | UUID | 요청 추적 |
-
----
-
-### 2-6. Rate Limiting
-
-**적용**: `RateLimitInterceptor.java`
-- 일반 API 분당 60회 초과 → 429 Too Many Requests
-- `X-Forwarded-For`는 설정된 신뢰 프록시 peer에서 온 경우만 사용
-- 로그인은 신뢰 IP+username 기준 분당 10회 별도 제한
-- Redis key: `rate_limit:{ip}`, TTL 1분
-- 응답 헤더: `X-RateLimit-Limit`, `X-RateLimit-Remaining`
-- 예외: `/api/auth/login` (브루트포스 감지가 별도 처리)
-
----
-
-### 2-7. 민감 정보 관리
-
-**점검 항목**:
-
-| 항목 | 상태 |
-|------|------|
-| DB 비밀번호 | `.env`에만 존재, 코드 없음 |
-| JWT 시크릿 | `.env`에만 존재, 코드 없음 |
-| TLS 인증서 | `.gitignore`에 등록 (`broker/certs/*.key`) |
-| `.env` 파일 | `.gitignore`에 등록 |
-| InfluxDB 토큰 | `.env`에만 존재 |
-
----
-
-### 2-8. 이상 접근 감지
-
-**적용 내용**:
-- 모든 요청 MDC 로깅 (`RequestLoggingFilter.java`)
-  - traceId, clientIp, method, URI, status, duration
-- 4xx/5xx 요청 자동 경고/에러 레벨 로깅
-- 브루트포스 감지 (`BruteForceDetector.java`)
-
-**로그 샘플**:
-```
-10:23:15 [a3f91c2b] [192.168.1.10] WARN  c.t.security.RequestLoggingFilter
-  - [a3f91c2b] POST /api/auth/login → 401 (23ms) ip=192.168.1.10
-10:23:16 [b7e21a4c] [192.168.1.10] WARN  c.t.security.BruteForceDetector
-  - [BruteForce] 로그인 실패 ip=192.168.1.10 count=3/5
-```
-
----
-
-### 2-9. Actuator 엔드포인트 노출 (Phase 6에서 발견 및 수정)
-
-**위험**: Prometheus 스크레이핑 대상인 `/actuator/prometheus`가 인증이 걸린 채 방치되어 있었고,
-동시에 인증이 필요 없는 `/actuator/health`는 `show-details: always`로 DB/Redis 연결 상태 등
-상세 정보를 익명 사용자에게 노출하고 있었다. Phase 5(모니터링) 완료 표시와 달리
-실제로는 Prometheus가 401만 받고 메트릭을 전혀 수집하지 못하는 상태였다.
-
-**수정**:
-```java
-// SecurityConfig.java
-.requestMatchers("/actuator/health", "/actuator/prometheus").permitAll()
-```
-```yaml
-# application.yml
-management.endpoint.health.show-details: never
-```
-
-**운영 배포 시 추가 권고**: 애플리케이션 레벨 인증 대신 보안그룹/리버스프록시로
-`/actuator/**` 자체를 내부망에서만 접근 가능하도록 제한할 것 (`docs/deployment-guide.md` 참고).
-
----
-
-## 3. UN R155 / ISO SAE 21434 대응 현황
-
-자동차 사이버보안 국제 규제 기준으로 점검:
-
-| 규제 요구사항 | 구현 여부 | 비고 |
-|--------------|----------|------|
-| 차량-서버 통신 암호화 | 준비됨 | MQTT TLS 설정 완료 |
-| 접근 제어 및 인증 | 구현됨 | JWT + X.509 |
-| 보안 이벤트 로깅 | 구현됨 | MDC 감사 로그 |
-| 이상 접근 감지 | 구현됨 | BruteForce, RateLimit |
-| 보안 취약점 관리 | 진행중 | 이 문서 |
-| 펌웨어/소프트웨어 보안 업데이트 | 미구현 | Phase 5 배포 시 고려 |
-
----
-
-## 4. 잔여 취약점 및 향후 계획
-
-| 취약점 | 우선순위 | 계획 |
-|--------|----------|------|
-| IDOR 완전 차단 | 높음(다중 사용자 도입 시) | 현재 admin 단일 계정이라 보류. 다중 사용자 도입 시 사용자-차량 소유 관계 검증 필요 |
-| MQTT 1883 포트 운영 차단 | 높음 | 코드/설정은 Phase 10에서 완료. 운영 배포 시 인증서 발급 + `mqtt.tls.enabled=true` + 1883 포트 자체를 닫는 것은 배포 단계에서 적용 필요 |
-| CSP 헤더 추가 | 낮음 | Content Security Policy 설정 |
-| 의존성 취약점 스캔 | 중간 | OWASP Dependency-Check 도입 |
-| Access Token 즉시 무효화 | 낮음 | 현재는 만료시간(24h)까지 유효. 필요 시 블랙리스트 또는 만료시간 단축 검토 |
-
----
-
-## 5. 참고 기준
-
-- [OWASP Top 10 2021](https://owasp.org/Top10/)
-- [UN Regulation No. 155 (Vehicle Cybersecurity)](https://unece.org/transport/documents/2021/03/standards/un-regulation-no-155-cyber-security-and-cyber-security)
-- [ISO/SAE 21434 Road Vehicles — Cybersecurity Engineering](https://www.iso.org/standard/70918.html)
-- [MQTT Security Fundamentals](https://www.hivemq.com/mqtt-security-fundamentals/)
+[버전 고정 기본값](https://github.com/eclipse-mosquitto/mosquitto/blob/v2.0.22/src/conf.c), [설정 설명](https://mosquitto.org/man/mosquitto-conf-5.html).
+브로커 강제 종료 때 마지막 저장 이후 상태를 잃을 수 있다. autosave 단축을 내구성 보장과 동일시하지 않는다.

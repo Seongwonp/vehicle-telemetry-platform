@@ -1310,3 +1310,26 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 - QoS1 재전송·Kafka 재전달·DLQ 재주입은 같은 키를 **자동으로** 유지한다(원본 value를 그대로 나르므로). 재주입은 새 offset을 받아
   한 건에 좌표가 둘이 된다 — runbook 6.
 - 재전달·spool 드레인·DLQ 재주입 각 1회에서 같은 키로 찾아지는지는 **각 시나리오 1회 관측**으로만 말한다(검증 문서).
+
+## ADR-029 — MQTT ACK를 Kafka 또는 spool 기록 뒤로 이동 (2026-10-01)
+
+### 문제와 범위
+
+자동 ACK에서는 handler가 Kafka 비동기 전송을 시작하고 반환하면 브로커가 메시지를 처리 완료로 본다. 그 뒤 Kafka 완료 전 백엔드가 종료되면 인메모리 메시지를 복구하지 못한다. 기존 ADR-019에 공개된 한계다.
+
+보호 대상은 **MQTT 브로커가 살아 있고 동일 client ID·세션 및 로컬 spool 볼륨을 유지한 백엔드 프로세스 종료**다. 브로커 강제 종료·큐 포화·호스트 전원 차단·디스크 손실까지 보장하지 않는다.
+
+### 결정
+
+- telemetry 어댑터만 manualAcks=true. SYS 메트릭 어댑터는 기존 QoS 0을 유지한다.
+- TelemetryProducer.send는 Kafka 성공 또는 실패분 spool 저장 성공 뒤 완료되는 future를 반환한다. 직렬화·spool 실패는 exceptional completion이다.
+- 첫 구현은 **Paho 단일 수신 콜백에서 완료를 기다린 뒤 ACK**한다. 비동기 Kafka 완료 스레드가 ACK하지 않으므로 수신 순서가 유지되고, 재접속 뒤 호출될 ACK 콜백을 별도 작업 큐에 남기지 않는다.
+- 대기는 최대 150초. 인터럽트·실패·timeout은 ACK하지 않고 DirectChannel/Paho로 예외를 전달한다. 나중에 Kafka 성공해도 그 future가 ACK를 호출하지 않는다. 재전달 중복은 가능하다.
+- 잘못된 입력은 기존 MQTT DLQ 발행 성공 뒤 ACK. DLQ 실패 시 ACK하지 않는다.
+- spool은 기존 force + rename 성공이 확인 경계다. 디렉터리 fsync·호스트 전원 차단 보장이 아니다. 디스크 실패 때 ACK를 보류하므로 브로커 유한 큐와 운영 복구가 필요하다.
+
+### 대가
+
+한 MQTT 수집 인스턴스의 처리 동시성이 줄어든다. broker inflight=20이어도 handler는 한 번에 한 건의 Kafka/spool 완료를 기다린다. RTT·디스크 지연에 민감하고 기존 비동기 경로의 처리량 수치를 이 구현에 재사용하면 안 된다. 처리량 요구를 충족하지 못하면 연결 세대와 순서를 관리하는 bounded 비동기 ACK 설계를 별도 검증해야 한다.
+
+브로커 autosave/inflight 값을 무작정 늘리지 않는다. 2.0.22 기본값과 한계는 [보안 문서](security-report.md)에 기록했다. [실험 기록](verification/2026-10-01-mqtt-ack-boundary.md)의 검증 범위를 따른다.

@@ -106,11 +106,11 @@ public class TelemetryProducer {
      *
      * <p>spool의 목적은 <i>Kafka 브로커 장애 시 유실 방지</i>인데, Kafka 프로듀서 자체가
      * 내부 버퍼와 재시도(acks=all, retries=3)를 갖고 있다. 그래서 전송에 실패했을 때만
-     * spool에 적는다. 트레이드오프: 백엔드가 Kafka ack 전에 죽으면 그 인플라이트 구간은
-     * 유실된다. 항상 spool하던 예전 방식은 이 구간까지 지켰지만, 그 대가로 실제로는
-     * 99.8%를 잃고 있었다.
+     * spool에 적는다. 반환 future는 Kafka 또는 spool 기록 성공 뒤 완료된다.
+     * MQTT 입구는 이 완료를 기다려 ACK한다. 프로세스 종료 시 미확인 메시지는
+     * 살아 있는 브로커의 동일 세션에서 재전달한다(ADR-029).
      */
-    public void send(VehicleTelemetry telemetry) {
+    public CompletableFuture<Void> send(VehicleTelemetry telemetry) {
         String payload;
         try {
             payload = objectMapper.writeValueAsString(telemetry);
@@ -122,16 +122,15 @@ public class TelemetryProducer {
                 telemetry.getSpeed(),
                 telemetry.getRpm(),
                 e);
-            return;
+            return CompletableFuture.failedFuture(e);
         }
 
         // 이미 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 그래야 retryPending()이
         // 파일명(타임스탬프+시퀀스) 순서대로 드레인하면서 차량별 순서가 유지된다.
         if (backlog.get()) {
-            storeForRetry(telemetry.getVehicleId(), telemetry.getTimestamp(), payload, null);
-            return;
+            return storeForRetry(telemetry.getVehicleId(), telemetry.getTimestamp(), payload, null);
         }
-        sendDirect(telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
+        return sendDirect(telemetry.getVehicleId(), telemetry.getTimestamp(), payload);
     }
 
     /**
@@ -214,26 +213,26 @@ public class TelemetryProducer {
     }
 
     /** 정상 경로 — spool 파일 없이 바로 보내고, 실패했을 때만 spool에 남긴다. */
-    private void sendDirect(String vehicleId, String ts, String payload) {
+    private CompletableFuture<Void> sendDirect(String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
             future = kafkaTemplate.send(TOPIC, vehicleId, payload);
         } catch (Exception e) {
-            storeForRetry(vehicleId, ts, payload, e);
-            return;
+            return storeForRetry(vehicleId, ts, payload, e);
         }
 
-        future.whenComplete((result, ex) -> {
+        return future.handle((result, ex) -> {
             if (ex != null) {
-                storeForRetry(vehicleId, ts, payload, ex);
+                return storeForRetry(vehicleId, ts, payload, ex);
             } else {
                 // vehicle·ts가 (partition, offset)과 한 줄에 있어야 로그에서 Kafka 좌표로 건너갈 수 있다(ADR-028).
                 log.debug("[Kafka] 전송 완료 — vehicle={} ts={} partition={} offset={}",
                     vehicleId, ts,
                     result.getRecordMetadata().partition(),
                     result.getRecordMetadata().offset());
+                return CompletableFuture.<Void>completedFuture(null);
             }
-        });
+        }).thenCompose(receipt -> receipt);
     }
 
     /** spool에서 꺼낸 메시지 재전송 — 성공해야만 파일을 지운다. 성공 여부를 돌려준다(backlog 해제 판단용). */
@@ -272,7 +271,7 @@ public class TelemetryProducer {
     }
 
     /** 전송 실패분을 spool에 적어 재전송 대상으로 남긴다. */
-    private void storeForRetry(String vehicleId, String ts, String payload, Throwable cause) {
+    private CompletableFuture<Void> storeForRetry(String vehicleId, String ts, String payload, Throwable cause) {
         backlog.set(true);
         try {
             telemetrySpool.store(payload);
@@ -280,10 +279,11 @@ public class TelemetryProducer {
                 log.error("[Kafka] 브로커 전송 실패 — spool에 보관 vehicle={} ts={} topic={}",
                     vehicleId, ts, TOPIC, cause);
             }
+            return CompletableFuture.completedFuture(null);
         } catch (RuntimeException spoolFailure) {
-            // 여기까지 실패하면 이 메시지는 정말로 유실된다 — 조용히 넘기지 않는다.
-            log.error("[Kafka] 전송 실패 후 spool 저장까지 실패 — 메시지 유실 vehicle={} ts={}",
+            log.error("[Kafka] 전송 실패 후 spool 저장까지 실패 — MQTT ACK 금지 vehicle={} ts={}",
                 vehicleId, ts, spoolFailure);
+            return CompletableFuture.failedFuture(spoolFailure);
         }
     }
 }

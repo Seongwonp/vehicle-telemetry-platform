@@ -23,3 +23,4 @@ load-test/redis-load/evidence/20260914-stallprobe/** -text
 
 # 운영 스크립트도 같은 이유로 LF 고정 — CRLF로 체크아웃되면 Linux에서 실행이 깨진다.
 scripts/**/*.sh text eol=lf
+docs/verification/evidence/2026-10-01-mqtt-ack/** text eol=lf

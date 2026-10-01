@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.telemetry.contract.MqttCrashBoundaryContractTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-01T02:39:18" hostname="LAPTOP-MV7C23S3" time="69.529">
+  <properties/>
+  <testcase name="automaticAckLosesPendingMessageAfterProcessKill()" classname="com.telemetry.contract.MqttCrashBoundaryContractTest" time="38.469"/>
+  <testcase name="manualAckRetainsPendingMessageAfterProcessKill()" classname="com.telemetry.contract.MqttCrashBoundaryContractTest" time="31.058"/>
+  <system-out><![CDATA[11:39:14.672 [Test worker] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+11:39:14.679 [Test worker] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+11:39:14.692 [Test worker] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 1.20.4
+11:39:14.916 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+11:39:15.277 [Test worker] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+11:39:15.279 [Test worker] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+11:39:15.297 [Test worker] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.8.0
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7782 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+11:39:15.548 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Creating container for image: testcontainers/ryuk:0.11.0
+11:39:16.169 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 is starting: 908e686a490db261fe43bdf5094a1b30a678997ed5857f148e794f8515d57f5a
+11:39:17.169 [Test worker] INFO tc.testcontainers/ryuk:0.11.0 -- Container testcontainers/ryuk:0.11.0 started in PT1.6216442S
+11:39:17.178 [Test worker] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+11:39:17.179 [Test worker] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+11:39:17.180 [Test worker] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+11:39:17.181 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Creating container for image: eclipse-mosquitto:2.0
+11:39:17.529 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Container eclipse-mosquitto:2.0 is starting: 4f02cd43e5ba3e2b4970e6040c0a0fd2d37bef4c577111c60f87061fd0b0de09
+11:39:18.014 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Container eclipse-mosquitto:2.0 started in PT0.8337011S
+CRASH_BOUNDARY manual=false iteration=0 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=0
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:39:22.805 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:39:23.620 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:39:24.059 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@588545ac
+
+CRASH_BOUNDARY manual=false iteration=1 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=0
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:39:36.982 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:39:40.291 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:39:40.798 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@575cabf0
+
+CRASH_BOUNDARY manual=false iteration=2 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=0
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:39:50.307 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:39:51.093 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:39:51.546 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@588545ac
+
+CRASH_BOUNDARY manual=true iteration=0 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=1
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:40:00.778 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:40:01.586 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:40:02.036 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@575cabf0
+
+CRASH_BOUNDARY manual=true iteration=1 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=1
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:40:11.507 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:40:13.809 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:40:14.370 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@588545ac
+
+CRASH_BOUNDARY manual=true iteration=2 publisherConfirmed=1 forwarded=1 kafkaCompleted=0 redelivered=1
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+11:40:23.295 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+11:40:24.777 [main] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+11:40:25.229 [main] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@575cabf0
+
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -78,6 +78,11 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    def workerClasspath = layout.buildDirectory.file('mqtt-worker-classpath.txt')
+    systemProperty 'test.runtime.classpath.file', workerClasspath.get().asFile.absolutePath
+    doFirst {
+        workerClasspath.get().asFile.setText(sourceSets.test.runtimeClasspath.asPath, 'UTF-8')
+    }
     // Docker Engine 29+는 legacy API를 거부한다. docker-java/Testcontainers가
     // 지원되는 API로 통신하도록 명시해 로컬/CI 계약 테스트가 조용히 skip되지 않게 한다.
     systemProperty 'api.version', '1.44'

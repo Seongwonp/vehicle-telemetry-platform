@@ -9,6 +9,10 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
+import org.springframework.integration.IntegrationMessageHeaderAccessor;
+import org.springframework.integration.acks.SimpleAcknowledgment;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -60,17 +64,20 @@ public class MqttMessageHandler {
             telemetry = telemetryDecoder.decode(payload);
         } catch (TelemetryContractException e) {
             reject(topic, payload, e.getReason(), null);
+            acknowledge(message, CompletableFuture.completedFuture(null));
             return;
         }
 
         Matcher topicMatcher = topic == null ? null : TELEMETRY_TOPIC.matcher(topic);
         if (!validTimestamp(telemetry.getTimestamp())) {
             reject(topic, payload, "INVALID_TIMESTAMP", telemetry);
+            acknowledge(message, CompletableFuture.completedFuture(null));
             return;
         }
         if (topicMatcher == null || !topicMatcher.matches()
             || !topicMatcher.group(1).equals(telemetry.getVehicleId())) {
             reject(topic, payload, "TOPIC_VEHICLE_MISMATCH", telemetry);
+            acknowledge(message, CompletableFuture.completedFuture(null));
             return;
         }
 
@@ -82,9 +89,26 @@ public class MqttMessageHandler {
             telemetry.getEngineTemp(),
             telemetry.getBatteryVoltage());
 
-        // Kafka 발행은 비동기다. 실패 시 producer가 spool을 시도하며 spool 실패는 유실 로그로 남는다.
-        // 이 반환이 Kafka 저장 확인이나 MQTT 재전달 보장을 뜻하지 않는다(ADR-019).
-        telemetryProducer.send(telemetry);
+        acknowledge(message, telemetryProducer.send(telemetry));
+    }
+
+    private void acknowledge(Message<?> message, CompletableFuture<Void> receipt) {
+        var acknowledgment = message.getHeaders().get(
+            IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, SimpleAcknowledgment.class);
+        // Header-free calls are used by the legacy comparison and decoder unit tests.
+        if (acknowledgment == null) return;
+        try {
+            // Stay on Paho's single callback thread: ordered ACKs, no old async callback after reconnect.
+            // This deliberately trades concurrency for a small, auditable boundary (ADR-029).
+            receipt.get(150, TimeUnit.SECONDS);
+            acknowledgment.acknowledge();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("MQTT 저장 확인 중단 — ACK하지 않음", e);
+        } catch (Exception e) {
+            // Propagate through DirectChannel to Paho; disconnect/reconnect permits redelivery.
+            throw new IllegalStateException("MQTT 저장 확인 실패 — ACK하지 않음", e);
+        }
     }
 
     /**

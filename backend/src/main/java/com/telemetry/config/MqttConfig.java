@@ -151,6 +151,7 @@ public class MqttConfig {
         adapter.setConverter(new DefaultPahoMessageConverter());
         // QoS 1: 최소 1회 전달 보장. QoS 0은 유실 가능, QoS 2는 핸드셰이크 2배로 처리량 감소
         adapter.setQos(1);
+        adapter.setManualAcks(true);
         adapter.setOutputChannel(mqttInputChannel());
         return adapter;
     }

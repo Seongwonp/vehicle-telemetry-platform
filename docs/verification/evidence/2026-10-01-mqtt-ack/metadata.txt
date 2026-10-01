@@ -1,0 +1,11 @@
+Baseline: 21cf99cc0bf9314f54ce206d078135078bf4a78d
+State: dirty working tree; partial verification, not clean-commit certification.
+Date: 2026-10-01 Asia/Seoul
+Java: Temurin 17.0.20; Gradle 8.7; Paho 1.2.5; Spring Integration MQTT 6.2.4
+MQTT image: sha256:199ea8ef2e35ec2b1b37e59cfd1dbae538ed4dfa4a2251a121a52215a6248a21 (2.0.22)
+Before: baseline production sources, added MqttCrashWorker + MqttCrashBoundaryContractTest + classpath helper.
+After: implementation.patch plus attached new Java test sources.
+Crash: real MQTT and worker JVM; Kafka send completion intentionally held by mock future.
+Crash process termination: Java Process.destroyForcibly on Windows; not a Linux SIGKILL measurement.
+Real Kafka test: shortened delivery timeout 3000ms; pause until spool, then resume; not long outage.
+Full-stack InfluxDB reconciliation, TLS load, host power loss and device measurements: not executed.

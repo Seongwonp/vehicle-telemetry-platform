@@ -14,7 +14,7 @@ OBD-II 동글 또는 시뮬레이터에서 발생하는 차량 센서 데이터�
 InfluxDB 저장 행을 대조해 조용한 유실·중복·순서 역전과 장애 복구 범위를 확인하는 데
 초점을 둔다.
 
-- **핵심 키워드**: 차량 데이터 수집, at-least-once, 장애 격리, 재처리, 관측 가능성
+- **핵심 키워드**: 차량 데이터 수집, Kafka 이후 재전달·멱등 처리, 장애 격리, 재처리, 관측 가능성. MQTT 수신부터 저장까지 전체 경로의 at-least-once 보장을 뜻하지 않는다.
 - **개발 기간**: 2026.01 ~ 진행 중
 - **개발자**: 박성원 (Park Sungwon)
 - **모바일 앱 레포**: https://github.com/Seongwonp/vehicle-telemetry-app (Flutter, 이 백엔드의 API를 사용)
@@ -583,7 +583,7 @@ print(response.value)  # 예: 87 kph
 | [아키텍처 결정 기록 (ADR)](architecture-decisions.md) | 기술 선택의 이유 — "무엇을 썼냐"가 아니라 "왜 이걸 골랐냐" |
 | [DB 스키마](db-schema.md) | PostgreSQL(메타데이터/이상 이력) + InfluxDB(시계열) 스키마 |
 | [배포 가이드](deployment-guide.md) | AWS EC2 배포 절차 |
-| [보안 자체 점검 보고서](security-report.md) | OWASP Top 10, UN R155 / ISO SAE 21434 기준 점검 결과 |
+| [보안 자체 점검 보고서](security-report.md) | 현재 인증·인가·mTLS 구현, 근거와 운영 한계. 규제 적합성 인증 아님 |
 | [데이터 보존·삭제와 개인정보](data-retention.md) | 저장소별로 무엇이 얼마나 남는지, 삭제 절차, **안 정한 것** |
 | [Runbook — 저장 경로 수평 확장](runbook/storage-scale-out.md) | 저장 전용 인스턴스를 언제·어떻게 늘리고 줄이는지. **줄일 때 45초가 든다** |
 | [검증 증거 정책](evidence-policy.md) | 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지 |
