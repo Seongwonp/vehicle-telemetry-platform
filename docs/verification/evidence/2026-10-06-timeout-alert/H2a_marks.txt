@@ -1,0 +1,5 @@
+backend_recreate_begin=2026-10-05T22:05:53.474Z
+backend_recreate_done=2026-10-05T22:06:02.682Z
+h2_publish_start=2026-10-05T22:06:15.758Z
+note: first attempt used 'docker run -d' (no stdin) and published nothing; replaced
+puback=672 sent=673 killed=2026-10-05T22:10:27Z

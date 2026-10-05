@@ -1,0 +1,3 @@
+1791237197: New connection from 172.18.0.11:34544 on port 1883.
+1791237197: New client connected from 172.18.0.11:34544 as auto-D7405F59-7CE2-DB14-B568-F65D501B0E59 (p2, c1, k60).
+1791237458: Client auto-D7405F59-7CE2-DB14-B568-F65D501B0E59 disconnected.

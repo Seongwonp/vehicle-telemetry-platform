@@ -1,0 +1,8 @@
+1791238275: Client telemetry-backend-h2-sys closed its connection.
+1791238292: New client connected from 172.18.0.10:34038 as telemetry-backend-h2 (p2, c0, k60).
+1791238292: New client connected from 172.18.0.10:34048 as telemetry-backend-h2-sys (p2, c0, k60).
+1791238292: telemetry-backend-h2-sys 0 $SYS/broker/publish/messages/dropped
+1791238292: telemetry-backend-h2-sys 0 $SYS/broker/publish/messages/received
+1791238292: telemetry-backend-h2-sys 0 $SYS/broker/clients/connected
+1791238318: New client connected from 172.18.0.12:36806 as h2-probe (p2, c1, k60).
+1791238318: Client h2-probe disconnected.

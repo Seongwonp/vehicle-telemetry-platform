@@ -1,0 +1,9 @@
+begin=2026-10-05T21:46:58.364Z
+publish_start=2026-10-05T21:47:03.100Z
+kafka_stop_begin=2026-10-05T21:47:33.171Z
+kafka_stop_done=2026-10-05T21:47:38.844Z
+kafka_start_begin=2026-10-05T21:50:08.901Z
+kafka_start_done=2026-10-05T21:50:10.923Z
+kafka_healthy=2026-10-05T21:50:40.352Z
+publish_end=2026-10-05T21:51:32.182Z
+sent=720 puback_rc0=720

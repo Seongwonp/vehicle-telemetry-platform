@@ -1,0 +1,14 @@
+1791237572: Warning: File /mosquitto/config/acl-h has world readable permissions. Future versions will refuse to load this file.
+To fix this, use `chmod 0700 /mosquitto/config/acl-h`.
+1791237572: Warning: File /mosquitto/config/acl-h owner is not mosquitto. Future versions will refuse to load this file.To fix this, use `chown mosquitto /mosquitto/config/acl-h`.
+1791237572: Warning: File /mosquitto/config/acl-h group is not mosquitto. Future versions will refuse to load this file.
+1791237587: New connection from 172.18.0.11:53570 on port 1883.
+1791237587: New client connected from 172.18.0.11:53570 as auto-A0BE44F1-9231-8D41-4790-0A4F43606E9F (p2, c1, k60).
+1791237595: New connection from 172.18.0.10:37976 on port 1883.
+1791237596: New client connected from 172.18.0.10:37976 as telemetry-backend (p2, c0, k60).
+1791237596: New connection from 172.18.0.10:37984 on port 1883.
+1791237596: telemetry-backend 1 vehicle/telemetry/#
+1791237596: New client connected from 172.18.0.10:37984 as telemetry-backend-sys (p2, c0, k60).
+1791237596: telemetry-backend-sys 0 $SYS/broker/publish/messages/dropped
+1791237596: telemetry-backend-sys 0 $SYS/broker/publish/messages/received
+1791237596: telemetry-backend-sys 0 $SYS/broker/clients/connected

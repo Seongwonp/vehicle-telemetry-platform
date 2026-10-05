@@ -1,0 +1,4 @@
+telemetry_mqtt_messages_invalid_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_broker_messages_received{application="vehicle-telemetry-backend",} 778.0
+telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_broker_clients_connected{application="vehicle-telemetry-backend",} 3.0

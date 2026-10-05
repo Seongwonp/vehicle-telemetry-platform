@@ -1,0 +1,2 @@
+topic write vehicle/telemetry/#
+topic read $SYS/#

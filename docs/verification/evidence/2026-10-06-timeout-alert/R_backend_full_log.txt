@@ -1,0 +1,1736 @@
+22:17:00 [-] [-] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+22:17:00 [-] [-] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+22:17:01 [-] [-] INFO  o.s.d.j.r.q.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+22:17:03 [-] [-] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+22:17:03 [-] [-] INFO  o.s.b.a.e.w.EndpointLinksResolver - Exposing 4 endpoint(s) beneath base path '/actuator'
+22:17:05 [-] [-] INFO  o.a.k.c.a.AdminClientConfig - AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.servers = [kafka:29092]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+
+22:17:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238625179
+22:17:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.admin.client for adminclient-1 unregistered
+22:17:05 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+22:17:05 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+22:17:05 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+22:17:05 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 1 subscriber(s).
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean '_org.springframework.integration.errorLogger'
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttBrokerMetricsHandler.handle.serviceActivator} as a subscriber to the 'mqttBrokerMetricsChannel' channel
+22:17:05 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttBrokerMetricsChannel' has 1 subscriber(s).
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttBrokerMetricsHandler.handle.serviceActivator'
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttMessageHandler.handle.serviceActivator} as a subscriber to the 'mqttInputChannel' channel
+22:17:05 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttInputChannel' has 1 subscriber(s).
+22:17:05 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttMessageHandler.handle.serviceActivator'
+22:17:05 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttInbound()'
+22:17:06 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttBrokerMetricsInbound()'
+22:17:06 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626164
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626193
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626214
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626230
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-0-f3bda14e-6ee5-4bca-b449-a6086c01e262', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Skipped assignment for returning static leader at generation 29. The static leader will continue with its existing assignment.
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-1-6bbf170d-39cf-41e6-bf25-4c60efea9294', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-2-45aae34b-8ef0-4a34-9393-ad70019219a0', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-2-45aae34b-8ef0-4a34-9393-ad70019219a0', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-1-6bbf170d-39cf-41e6-bf25-4c60efea9294', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626243
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-0-f3bda14e-6ee5-4bca-b449-a6086c01e262', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-1])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-2])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-0])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-1
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-0
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-2
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-0-5689f5bf-9b3f-4c31-9c01-d740e2b7e4fc', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Skipped assignment for returning static leader at generation 29. The static leader will continue with its existing assignment.
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-0-5689f5bf-9b3f-4c31-9c01-d740e2b7e4fc', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-0])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-0
+22:17:06 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-2 to the committed offset FetchPosition{offset=21378, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-1 to the committed offset FetchPosition{offset=42684, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-0 to the committed offset FetchPosition{offset=1, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-0 to the committed offset FetchPosition{offset=745, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238626270
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-1-136b4475-2318-4ec5-afa6-ede5496ba72e', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-1-136b4475-2318-4ec5-afa6-ede5496ba72e', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-1])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-1
+22:17:06 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+22:17:06 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6066c4ff]]
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-1 to the committed offset FetchPosition{offset=844, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+22:17:06 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] (Re-)joining group
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=29, memberId='telemetry-backend-consumer-2-c63e8c26-92ef-4fdf-99df-e302096f33eb', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=29, memberId='telemetry-backend-consumer-2-c63e8c26-92ef-4fdf-99df-e302096f33eb', protocol='range'}
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-2])
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-2
+22:17:06 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-2 to the committed offset FetchPosition{offset=384, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+22:17:06 [-] [-] INFO  c.t.TelemetryApplication - Started TelemetryApplication in 12.58 seconds (process running for 13.186)
+22:17:20 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+22:17:20 [-] [-] INFO  o.s.w.s.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+22:17:20 [-] [-] INFO  o.s.w.s.DispatcherServlet - Completed initialization in 2 ms
+22:17:20 [32566847] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [32566847] GET /actuator/prometheus → 200 (77ms) ip=172.18.0.8
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:19.333Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [kafka:29092]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.type = none
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 30000
+	enable.idempotence = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 10000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 10000
+	retries = 3
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+
+22:17:23 [-] [-] INFO  o.a.k.c.p.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+22:17:23 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+22:17:23 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+22:17:23 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791238643610
+22:17:23 [-] [-] INFO  o.a.k.clients.Metadata - [Producer clientId=producer-1] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+22:17:23 [-] [-] INFO  o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-1] ProducerId set to 20000 with epoch 0
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:19.333Z partition=2 offset=21378
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:19.666Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:19.666Z partition=2 offset=21379
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:19.999Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:19.999Z partition=2 offset=21380
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:20.332Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:20.332Z partition=2 offset=21381
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:20.665Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:20.665Z partition=2 offset=21382
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:20.998Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:20.998Z partition=2 offset=21383
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:21.331Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:21.331Z partition=2 offset=21384
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:21.664Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:21.664Z partition=2 offset=21385
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:21.997Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:21.997Z partition=2 offset=21386
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:22.330Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:22.330Z partition=2 offset=21387
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:22.663Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:22.663Z partition=2 offset=21388
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:22.996Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:22.996Z partition=2 offset=21389
+22:17:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:23.329Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:23.329Z partition=2 offset=21390
+22:17:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:23.662Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:23.662Z partition=2 offset=21391
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 12건 중 12건 저장
+22:17:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:23.995Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:23.995Z partition=2 offset=21392
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:24.328Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:24.328Z partition=2 offset=21393
+22:17:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:24.661Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:24.661Z partition=2 offset=21394
+22:17:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:24.994Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:24.994Z partition=2 offset=21395
+22:17:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:25.327Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:25.327Z partition=2 offset=21396
+22:17:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:25.660Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:25.660Z partition=2 offset=21397
+22:17:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:25.993Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:25.993Z partition=2 offset=21398
+22:17:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:26.326Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:26.326Z partition=2 offset=21399
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:26.659Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:26.659Z partition=2 offset=21400
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:26.992Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:26.992Z partition=2 offset=21401
+22:17:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:27.325Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:27.325Z partition=2 offset=21402
+22:17:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:27.658Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:27.658Z partition=2 offset=21403
+22:17:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:27.991Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:27.991Z partition=2 offset=21404
+22:17:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:28.324Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:28.324Z partition=2 offset=21405
+22:17:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:28.657Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:28.657Z partition=2 offset=21406
+22:17:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:28.990Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:28.990Z partition=2 offset=21407
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:29.323Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:29.323Z partition=2 offset=21408
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:29.656Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:29.656Z partition=2 offset=21409
+22:17:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:29.989Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:29.989Z partition=2 offset=21410
+22:17:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:30.322Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:30.322Z partition=2 offset=21411
+22:17:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:30.655Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:30.655Z partition=2 offset=21412
+22:17:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:30.988Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:30.988Z partition=2 offset=21413
+22:17:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:31.321Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:31.321Z partition=2 offset=21414
+22:17:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:31.654Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:31.654Z partition=2 offset=21415
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:31.987Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:31.987Z partition=2 offset=21416
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:32.320Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:32.320Z partition=2 offset=21417
+22:17:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:32.653Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:32.653Z partition=2 offset=21418
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:32.986Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:32.986Z partition=2 offset=21419
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:33.319Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:33.319Z partition=2 offset=21420
+22:17:34 [5324e181] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [5324e181] GET /actuator/prometheus → 200 (15ms) ip=172.18.0.8
+22:17:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:33.652Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:33.652Z partition=2 offset=21421
+22:17:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:33.985Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:33.985Z partition=2 offset=21422
+22:17:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:34.318Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:34.318Z partition=2 offset=21423
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:34.651Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:34.651Z partition=2 offset=21424
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:34.984Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:34.984Z partition=2 offset=21425
+22:17:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:35.317Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:35.317Z partition=2 offset=21426
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:35.650Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:35.650Z partition=2 offset=21427
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:35.983Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:35.983Z partition=2 offset=21428
+22:17:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:36.316Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:36.316Z partition=2 offset=21429
+22:17:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:36.649Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:36.649Z partition=2 offset=21430
+22:17:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:36.982Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:36.982Z partition=2 offset=21431
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:37.315Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:37.315Z partition=2 offset=21432
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:37.648Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:37.648Z partition=2 offset=21433
+22:17:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:37.981Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:37.981Z partition=2 offset=21434
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:38.314Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:38.314Z partition=2 offset=21435
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:38.647Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:38.647Z partition=2 offset=21436
+22:17:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:38.980Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:38.980Z partition=2 offset=21437
+22:17:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:39.313Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:39.313Z partition=2 offset=21438
+22:17:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:39.646Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:39.646Z partition=2 offset=21439
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:39.979Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:39.979Z partition=2 offset=21440
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:40.312Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:40.312Z partition=2 offset=21441
+22:17:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:40.645Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:40.645Z partition=2 offset=21442
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:40.978Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:40.978Z partition=2 offset=21443
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:41.311Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:41.311Z partition=2 offset=21444
+22:17:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:41.644Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:41.644Z partition=2 offset=21445
+22:17:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:41.977Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:41.977Z partition=2 offset=21446
+22:17:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:42.310Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:42.310Z partition=2 offset=21447
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:42.643Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:42.643Z partition=2 offset=21448
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:42.976Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:42.976Z partition=2 offset=21449
+22:17:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:43.309Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:43.309Z partition=2 offset=21450
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:43.642Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:43.642Z partition=2 offset=21451
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:43.975Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:43.975Z partition=2 offset=21452
+22:17:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:44.308Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:44.308Z partition=2 offset=21453
+22:17:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:44.641Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:44.641Z partition=2 offset=21454
+22:17:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:44.974Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:44.974Z partition=2 offset=21455
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:45.307Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:45.307Z partition=2 offset=21456
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:45.640Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:45.640Z partition=2 offset=21457
+22:17:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:45.973Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:45.973Z partition=2 offset=21458
+22:17:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:46.306Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:46.306Z partition=2 offset=21459
+22:17:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:46.639Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:46.639Z partition=2 offset=21460
+22:17:49 [7de5b216] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [7de5b216] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.8
+22:17:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:46.972Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:46.972Z partition=2 offset=21461
+22:17:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:47.305Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:47.305Z partition=2 offset=21462
+22:17:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:47.638Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:47.638Z partition=2 offset=21463
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:47.971Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:47.971Z partition=2 offset=21464
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:48.304Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:48.304Z partition=2 offset=21465
+22:17:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:48.637Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:48.637Z partition=2 offset=21466
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:48.970Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:48.970Z partition=2 offset=21467
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:49.303Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:49.303Z partition=2 offset=21468
+22:17:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:49.636Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:49.636Z partition=2 offset=21469
+22:17:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:49.969Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:49.969Z partition=2 offset=21470
+22:17:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:50.302Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:50.302Z partition=2 offset=21471
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:50.635Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:50.635Z partition=2 offset=21472
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:50.968Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:50.968Z partition=2 offset=21473
+22:17:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:51.301Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:51.301Z partition=2 offset=21474
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:51.634Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:51.634Z partition=2 offset=21475
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:51.967Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:51.967Z partition=2 offset=21476
+22:17:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:52.300Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:52.300Z partition=2 offset=21477
+22:17:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:52.633Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:52.633Z partition=2 offset=21478
+22:17:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:52.966Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:52.966Z partition=2 offset=21479
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:53.299Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:53.299Z partition=2 offset=21480
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:53.632Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:53.632Z partition=2 offset=21481
+22:17:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:53.965Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:53.965Z partition=2 offset=21482
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:54.298Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:54.298Z partition=2 offset=21483
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:54.631Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:54.631Z partition=2 offset=21484
+22:17:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:54.964Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:54.964Z partition=2 offset=21485
+22:17:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:17:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:55.297Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:17:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:55.297Z partition=2 offset=21486
+22:17:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:55.630Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:55.630Z partition=2 offset=21487
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:55.963Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:55.963Z partition=2 offset=21488
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:56.296Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:56.296Z partition=2 offset=21489
+22:18:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:56.629Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:56.629Z partition=2 offset=21490
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:56.962Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:56.962Z partition=2 offset=21491
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:57.295Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:57.295Z partition=2 offset=21492
+22:18:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:57.628Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:57.628Z partition=2 offset=21493
+22:18:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:57.961Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:57.961Z partition=2 offset=21494
+22:18:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:58.294Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:58.294Z partition=2 offset=21495
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:58.627Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:58.627Z partition=2 offset=21496
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:58.960Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:58.960Z partition=2 offset=21497
+22:18:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:59.293Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:59.293Z partition=2 offset=21498
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:59.626Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:59.626Z partition=2 offset=21499
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:17:59.959Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:17:59.959Z partition=2 offset=21500
+22:18:04 [-] [-] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+22:18:04 [370626cb] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [370626cb] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+22:18:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:00.292Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:00.292Z partition=2 offset=21501
+22:18:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:00.625Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:00.625Z partition=2 offset=21502
+22:18:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:00.958Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:00.958Z partition=2 offset=21503
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:01.291Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:01.291Z partition=2 offset=21504
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:01.624Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:01.624Z partition=2 offset=21505
+22:18:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:01.957Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:01.957Z partition=2 offset=21506
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:02.290Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:02.290Z partition=2 offset=21507
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:02.623Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:02.623Z partition=2 offset=21508
+22:18:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:02.956Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:02.956Z partition=2 offset=21509
+22:18:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:03.289Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:03.289Z partition=2 offset=21510
+22:18:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:03.622Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:03.622Z partition=2 offset=21511
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:03.955Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:03.955Z partition=2 offset=21512
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:04.288Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:04.288Z partition=2 offset=21513
+22:18:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:04.621Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:04.621Z partition=2 offset=21514
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:04.954Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:04.954Z partition=2 offset=21515
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:05.287Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:05.287Z partition=2 offset=21516
+22:18:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:11 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:05.620Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:11 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:05.620Z partition=2 offset=21517
+22:18:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:11 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:05.953Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:11 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:05.953Z partition=2 offset=21518
+22:18:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:11 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:06.286Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:11 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:06.286Z partition=2 offset=21519
+22:18:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:06.619Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:12 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:06.619Z partition=2 offset=21520
+22:18:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:06.952Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:12 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:06.952Z partition=2 offset=21521
+22:18:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:13 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:07.285Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:07.285Z partition=2 offset=21522
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:13 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:07.618Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:07.618Z partition=2 offset=21523
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:13 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:07.951Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:07.951Z partition=2 offset=21524
+22:18:13 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:08.284Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:08.284Z partition=2 offset=21525
+22:18:14 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:08.617Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:08.617Z partition=2 offset=21526
+22:18:14 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:08.950Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:08.950Z partition=2 offset=21527
+22:18:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:15 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:09.283Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:15 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:09.283Z partition=2 offset=21528
+22:18:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:15 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:09.616Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:15 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:09.616Z partition=2 offset=21529
+22:18:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:09.949Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:09.949Z partition=2 offset=21530
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:10.282Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:10.282Z partition=2 offset=21531
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:10.615Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:10.615Z partition=2 offset=21532
+22:18:16 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:10.948Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:10.948Z partition=2 offset=21533
+22:18:17 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:11.281Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:11.281Z partition=2 offset=21534
+22:18:17 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:11.614Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:11.614Z partition=2 offset=21535
+22:18:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:18 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:11.947Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:18 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:11.947Z partition=2 offset=21536
+22:18:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:18 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:12.280Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:18 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:12.280Z partition=2 offset=21537
+22:18:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:12.613Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:12.613Z partition=2 offset=21538
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:12.946Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:12.946Z partition=2 offset=21539
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:13.279Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:13.279Z partition=2 offset=21540
+22:18:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:19 [e68daef1] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [e68daef1] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8
+22:18:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:13.612Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:13.612Z partition=2 offset=21541
+22:18:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:13.945Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:13.945Z partition=2 offset=21542
+22:18:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:14.278Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:14.278Z partition=2 offset=21543
+22:18:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:14.611Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:14.611Z partition=2 offset=21544
+22:18:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:14.944Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:14.944Z partition=2 offset=21545
+22:18:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:22 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:15.277Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:15.277Z partition=2 offset=21546
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:22 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:15.610Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:15.610Z partition=2 offset=21547
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:22 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:15.943Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:15.943Z partition=2 offset=21548
+22:18:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:16.276Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:16.276Z partition=2 offset=21549
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:16.609Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:16.609Z partition=2 offset=21550
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:16.942Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:16.942Z partition=2 offset=21551
+22:18:23 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:17.275Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:17.275Z partition=2 offset=21552
+22:18:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:17.608Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:17.608Z partition=2 offset=21553
+22:18:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:17.941Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:17.941Z partition=2 offset=21554
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:18.274Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:18.274Z partition=2 offset=21555
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:18.607Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:18.607Z partition=2 offset=21556
+22:18:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:18.940Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:18.940Z partition=2 offset=21557
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:19.273Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:19.273Z partition=2 offset=21558
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:19.606Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:19.606Z partition=2 offset=21559
+22:18:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:19.939Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:19.939Z partition=2 offset=21560
+22:18:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:20.272Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:20.272Z partition=2 offset=21561
+22:18:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:20.605Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:20.605Z partition=2 offset=21562
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:20.938Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:20.938Z partition=2 offset=21563
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:21.271Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:21.271Z partition=2 offset=21564
+22:18:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:21.604Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:21.604Z partition=2 offset=21565
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:21.937Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:21.937Z partition=2 offset=21566
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:22.270Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:22.270Z partition=2 offset=21567
+22:18:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:22.603Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:22.603Z partition=2 offset=21568
+22:18:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:22.936Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:22.936Z partition=2 offset=21569
+22:18:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:23.269Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:23.269Z partition=2 offset=21570
+22:18:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:23.602Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:23.602Z partition=2 offset=21571
+22:18:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:23.935Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:23.935Z partition=2 offset=21572
+22:18:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:24.268Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:24.268Z partition=2 offset=21573
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:24.601Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:24.601Z partition=2 offset=21574
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:24.934Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:24.934Z partition=2 offset=21575
+22:18:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:25.267Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:25.267Z partition=2 offset=21576
+22:18:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:25.600Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:25.600Z partition=2 offset=21577
+22:18:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:25.933Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:25.933Z partition=2 offset=21578
+22:18:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:26.266Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:26.266Z partition=2 offset=21579
+22:18:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:26.599Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:26.599Z partition=2 offset=21580
+22:18:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:34 [2850209b] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [2850209b] GET /actuator/prometheus → 200 (14ms) ip=172.18.0.8
+22:18:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:26.932Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:26.932Z partition=2 offset=21581
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:27.265Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:27.265Z partition=2 offset=21582
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:27.598Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:27.598Z partition=2 offset=21583
+22:18:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:27.931Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:27.931Z partition=2 offset=21584
+22:18:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:28.264Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:28.264Z partition=2 offset=21585
+22:18:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:28.597Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:28.597Z partition=2 offset=21586
+22:18:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:28.930Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:28.930Z partition=2 offset=21587
+22:18:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:29.263Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:29.263Z partition=2 offset=21588
+22:18:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:29.596Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:29.596Z partition=2 offset=21589
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:29.929Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:29.929Z partition=2 offset=21590
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:30.262Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:30.262Z partition=2 offset=21591
+22:18:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:30.595Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:30.595Z partition=2 offset=21592
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:30.928Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:30.928Z partition=2 offset=21593
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:31.261Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:31.261Z partition=2 offset=21594
+22:18:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:31.594Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:31.594Z partition=2 offset=21595
+22:18:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:31.927Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:31.927Z partition=2 offset=21596
+22:18:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:32.260Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:32.260Z partition=2 offset=21597
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:32.593Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:32.593Z partition=2 offset=21598
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:32.926Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:32.926Z partition=2 offset=21599
+22:18:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:33.259Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:33.259Z partition=2 offset=21600
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:33.592Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:33.592Z partition=2 offset=21601
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:33.925Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:33.925Z partition=2 offset=21602
+22:18:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:34.258Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:34.258Z partition=2 offset=21603
+22:18:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:34.591Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:34.591Z partition=2 offset=21604
+22:18:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:34.924Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:34.924Z partition=2 offset=21605
+22:18:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:35.257Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:35.257Z partition=2 offset=21606
+22:18:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:35.590Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:35.590Z partition=2 offset=21607
+22:18:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:35.923Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:35.923Z partition=2 offset=21608
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:36.256Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:36.256Z partition=2 offset=21609
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:36.589Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:36.589Z partition=2 offset=21610
+22:18:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:36.922Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:36.922Z partition=2 offset=21611
+22:18:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:37.255Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:37.255Z partition=2 offset=21612
+22:18:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:37.588Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:37.588Z partition=2 offset=21613
+22:18:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:37.921Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:37.921Z partition=2 offset=21614
+22:18:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:38.254Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:38.254Z partition=2 offset=21615
+22:18:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:38.587Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:38.587Z partition=2 offset=21616
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:38.920Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:38.920Z partition=2 offset=21617
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:39.253Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:39.253Z partition=2 offset=21618
+22:18:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:39.586Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:39.586Z partition=2 offset=21619
+22:18:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:39.919Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:39.919Z partition=2 offset=21620
+22:18:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:49 [8517cd41] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [8517cd41] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8
+22:18:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:40.252Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:40.252Z partition=2 offset=21621
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:40.585Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:40.585Z partition=2 offset=21622
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:40.918Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:40.918Z partition=2 offset=21623
+22:18:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:41.251Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:41.251Z partition=2 offset=21624
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:41.584Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:41.584Z partition=2 offset=21625
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:41.917Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:41.917Z partition=2 offset=21626
+22:18:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:42.250Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:42.250Z partition=2 offset=21627
+22:18:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:42.583Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:42.583Z partition=2 offset=21628
+22:18:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:42.916Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:42.916Z partition=2 offset=21629
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:43.249Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:43.249Z partition=2 offset=21630
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:43.582Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:43.582Z partition=2 offset=21631
+22:18:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:43.915Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:43.915Z partition=2 offset=21632
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:44.248Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:44.248Z partition=2 offset=21633
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:44.581Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:44.581Z partition=2 offset=21634
+22:18:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:44.914Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:44.914Z partition=2 offset=21635
+22:18:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:45.247Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:45.247Z partition=2 offset=21636
+22:18:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:45.580Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:45.580Z partition=2 offset=21637
+22:18:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:45.913Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:45.913Z partition=2 offset=21638
+22:18:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:46.246Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:46.246Z partition=2 offset=21639
+22:18:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:46.579Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:46.579Z partition=2 offset=21640
+22:18:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:46.912Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:46.912Z partition=2 offset=21641
+22:18:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:47.245Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:47.245Z partition=2 offset=21642
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:47.578Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:47.578Z partition=2 offset=21643
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:47.911Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:47.911Z partition=2 offset=21644
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:48.244Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:48.244Z partition=2 offset=21645
+22:18:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:48.577Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:48.577Z partition=2 offset=21646
+22:18:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:18:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:48.910Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:18:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:48.910Z partition=2 offset=21647
+22:18:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:49.243Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:49.243Z partition=2 offset=21648
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:49.576Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:49.576Z partition=2 offset=21649
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:49.909Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:49.909Z partition=2 offset=21650
+22:19:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:50.242Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:50.242Z partition=2 offset=21651
+22:19:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:50.575Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:50.575Z partition=2 offset=21652
+22:19:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:50.908Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:50.908Z partition=2 offset=21653
+22:19:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:51.241Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:51.241Z partition=2 offset=21654
+22:19:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:51.574Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:51.574Z partition=2 offset=21655
+22:19:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:51.907Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:51.907Z partition=2 offset=21656
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:52.240Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:52.240Z partition=2 offset=21657
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:52.573Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:52.573Z partition=2 offset=21658
+22:19:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:52.906Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:52.906Z partition=2 offset=21659
+22:19:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:53.239Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:53.239Z partition=2 offset=21660
+22:19:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:04 [a0905871] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [a0905871] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+22:19:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:53.572Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:53.572Z partition=2 offset=21661
+22:19:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:53.905Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:53.905Z partition=2 offset=21662
+22:19:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:54.238Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:54.238Z partition=2 offset=21663
+22:19:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:54.571Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:54.571Z partition=2 offset=21664
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:54.904Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:54.904Z partition=2 offset=21665
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:55.237Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:55.237Z partition=2 offset=21666
+22:19:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:55.570Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:55.570Z partition=2 offset=21667
+22:19:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:55.903Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:55.903Z partition=2 offset=21668
+22:19:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:56.236Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:56.236Z partition=2 offset=21669
+22:19:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:56.569Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:56.569Z partition=2 offset=21670
+22:19:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:56.902Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:56.902Z partition=2 offset=21671
+22:19:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:57.235Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:57.235Z partition=2 offset=21672
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:57.568Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:57.568Z partition=2 offset=21673
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:57.901Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:57.901Z partition=2 offset=21674
+22:19:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:58.234Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:58.234Z partition=2 offset=21675
+22:19:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:58.567Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:58.567Z partition=2 offset=21676
+22:19:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=OUTAGE-R ts=2026-10-05T22:18:58.900Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+22:19:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=OUTAGE-R ts=2026-10-05T22:18:58.900Z partition=2 offset=21677
+22:19:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+22:19:19 [cde30dca] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [cde30dca] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+22:19:34 [0acbe243] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [0acbe243] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+22:19:49 [067b0040] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [067b0040] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+22:20:04 [682e2567] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [682e2567] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.8
+22:20:19 [e2a3b438] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [e2a3b438] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.8
+22:20:34 [a707f859] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [a707f859] GET /actuator/prometheus → 200 (8ms) ip=172.18.0.8
+22:20:49 [886eae9b] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [886eae9b] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.8
+22:21:04 [d4b9d1e4] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [d4b9d1e4] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.8

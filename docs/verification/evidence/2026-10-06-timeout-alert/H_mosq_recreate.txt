@@ -1,0 +1,4 @@
+ Container telemetry-mosquitto Recreate 
+ Container telemetry-mosquitto Recreated 
+ Container telemetry-mosquitto Starting 
+ Container telemetry-mosquitto Started 

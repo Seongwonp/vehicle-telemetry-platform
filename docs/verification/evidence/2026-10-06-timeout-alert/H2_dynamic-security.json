@@ -1,0 +1,9 @@
+{
+  "defaultACLAccess": {"publishClientToBroker": true, "publishClientReceive": true, "subscribe": true, "unsubscribe": true},
+  "clients": [],
+  "groups": [{"groupname": "anon-g", "roles": [{"rolename": "deny-telemetry-sub", "priority": 1}]}],
+  "anonymousGroup": "anon-g",
+  "roles": [{"rolename": "deny-telemetry-sub", "acls": [
+    {"acltype": "subscribeLiteral", "topic": "vehicle/telemetry/#", "priority": 0, "allow": false}
+  ]}]
+}

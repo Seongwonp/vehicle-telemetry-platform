@@ -1,0 +1,10 @@
+begin=2026-10-05T21:59:25.681Z
+mosquitto_recreated_with_acl=2026-10-05T21:59:32.429Z
+backend_restart_done=2026-10-05T21:59:43.383Z
+publish_start=2026-10-05T21:59:43.712Z
+first_pending_seen=2026-10-05T22:00:30.970Z
+first_firing_seen=2026-10-05T22:02:35.104Z
+poll_end=2026-10-05T22:03:37.121Z
+h1_publisher_killed=2026-10-05T22:05:07Z sent=880 puback=879
+h1_publisher_killed_again=2026-10-05T22:05:42Z (initial kill missed the container; mosquitto_pub reconnected after broker recreate)
+puback_total=966 sent=967

@@ -1,0 +1,8 @@
+# 첫 실행은 grep 필터가 맞지 않아 출력이 비었다. 같은 설정(H-1)에서 프로브를 다시 돌린 출력을 옮겨 적었다(수작업 전사).
+Client h-probe sending CONNECT
+Client h-probe received CONNACK (0)
+Client h-probe sending SUBSCRIBE (Mid: 1, Topic: vehicle/telemetry/#, QoS: 1, Options: 0x00)
+Client h-probe received SUBACK
+Subscribed (mid: 1): 1
+Client h-probe sending DISCONNECT
+Timed out

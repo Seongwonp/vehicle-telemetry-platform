@@ -1,0 +1,14 @@
+1791237955: Client telemetry-backend disconnected.
+1791237958: Client telemetry-backend-sys closed its connection.
+1791237966: New connection from 172.18.0.11:33896 on port 1883.
+1791237966: New client connected from 172.18.0.11:33896 as auto-1E363542-E54C-4904-6E69-7FAE0B22D3C2 (p2, c1, k60).
+1791237972: Client auto-1E363542-E54C-4904-6E69-7FAE0B22D3C2 closed its connection.
+1791237974: New connection from 172.18.0.10:54358 on port 1883.
+1791237974: New client connected from 172.18.0.10:54358 as telemetry-backend-h2 (p2, c0, k60).
+1791237974: New connection from 172.18.0.10:54372 on port 1883.
+1791237974: New client connected from 172.18.0.10:54372 as telemetry-backend-h2-sys (p2, c0, k60).
+1791237974: telemetry-backend-h2-sys 0 $SYS/broker/publish/messages/dropped
+1791237974: telemetry-backend-h2-sys 0 $SYS/broker/publish/messages/received
+1791237974: telemetry-backend-h2-sys 0 $SYS/broker/clients/connected
+1791237978: New connection from 172.18.0.11:43340 on port 1883.
+1791237978: New client connected from 172.18.0.11:43340 as auto-4A6F2943-D53F-BAD7-9283-CF4D975FD35F (p2, c1, k60).

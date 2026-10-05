@@ -1,0 +1,7 @@
+begin=2026-10-05T22:11:09.856Z
+backend_recreate_done=2026-10-05T22:11:19.450Z
+publish_start=2026-10-05T22:11:19.787Z
+first_pending_seen=2026-10-05T22:12:07.291Z
+first_firing_seen=2026-10-05T22:14:11.592Z
+poll_end=2026-10-05T22:15:13.610Z
+h2_publisher_killed puback=845 sent=845

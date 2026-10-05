@@ -1,0 +1,3 @@
+1791236826: New connection from 172.18.0.11:54288 on port 1883.
+1791236826: New client connected from 172.18.0.11:54288 as auto-D816D8C2-DF08-9090-BDF3-1EE23AA82F92 (p2, c1, k60).
+1791237089: Client auto-D816D8C2-DF08-9090-BDF3-1EE23AA82F92 disconnected.

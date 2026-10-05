@@ -1,0 +1,2 @@
+/run/desktop/mnt/host/d/vehicle-telemetry-platform/broker/config/acl -> /mosquitto/config/acl
+/run/desktop/mnt/host/d/vehicle-telemetry-platform/broker/config/mosquitto-dev.conf -> /mosquitto/config/mosquitto.conf

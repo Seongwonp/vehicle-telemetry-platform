@@ -1,0 +1,3 @@
+vehicle-telemetry p0=745 p1=41244 p2=21378 SUM=63367
+vehicle-telemetry-dlq p0=19 SUM=19
+vehicle-telemetry-mqtt-dlq p0=15 SUM=15

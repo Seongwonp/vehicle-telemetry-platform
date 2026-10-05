@@ -1,0 +1,2 @@
+1791238625: New client connected from 172.18.0.10:40518 as telemetry-backend (p2, c0, k60).
+1791238626: New client connected from 172.18.0.10:40532 as telemetry-backend-sys (p2, c0, k60).

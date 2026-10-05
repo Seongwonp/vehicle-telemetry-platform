@@ -1,0 +1,1 @@
+vehicle-telemetry p0=745 p1=42684 p2=21378 SUM=64807

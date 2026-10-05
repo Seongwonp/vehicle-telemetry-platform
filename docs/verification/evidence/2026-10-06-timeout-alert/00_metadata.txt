@@ -1,0 +1,14 @@
+start_utc=2026-10-05T21:46:52Z
+git_head=46937e715b22d1f4463ea137ea33a66db90237eb
+git_status_porcelain= M docs/verification/2026-10-01-mqtt-ack-boundary.md ?? docs/verification/evidence/2026-10-06-timeout-alert/ 
+docker=29.7.2
+backend_image=sha256:3c62ed8f2d3aa507948af7c810e0d8db58d208c97f6508a1546eb79bc39ce3f4 2026-10-05T21:43:03.15605033Z
+image_check=jar application.yml: see image_check.txt
+compose=docker-compose.yml + docker-compose.dev.yml + scratchpad debug-override.yml (LOGGING_LEVEL_COM_TELEMETRY=DEBUG; deleted/not in repo)
+prometheus scrape_interval=15s evaluation_interval=15s (monitoring/prometheus/prometheus.yml)
+alertmanager receiver default: no webhook/email config -> no external send (monitoring/alertmanager/alertmanager.yml)
+volumes kept; no down -v
+note_mosquitto_for_H: 저장소 밖 설정(scratchpad h/)을 compose override로 마운트해 재생성; 종료 시 override 없이 --force-recreate로 원복(R_mosquitto_mounts.txt가 원래 mosquitto-dev.conf/acl 마운트를 보여줌). scratchpad 사본은 삭제함.
+note_backend_client_id: H2a/H2는 MQTT_CLIENT_ID=telemetry-backend-h2 override(G와 같은 방식, 세션 구독 영속 영향 배제). 원복 시 원래 ID.
+note_publishers: 모두 mosquitto_pub -q 1 -l (docker run), 호스트 sleep 0.333 루프
+end_utc=2026-10-05T22:24:22Z
