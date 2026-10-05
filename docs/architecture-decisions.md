@@ -1338,7 +1338,12 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 ~~**남은 위험(추정, 미검증)**: producer 기본값(max.block 60·delivery 120초)이면 Kafka 장애 때 첫 메시지가 콜백을 120초 막아 keepAlive 60초를 넘긴다.~~
 → **실험 E·E2(2026-10-05)에서 실제로 끊겼다**(유실은 0). 2026-10-06 `delivery.timeout.ms` 30초·`request.timeout.ms` 10초·`max.block.ms` 10초로 명시해 최악 대기(40초)를 keepAlive 아래로 내렸다 — `KafkaProducerContractTest`가 이 부등식을 고정한다. 대가: 30초 넘는 Kafka 정지는 spool을 거친다(전에는 120초). 09-29 spool 문서의 "120초"는 그 시점 설정 기준이다.
 
-**수신 정지 감지**: 브로커 수신 > 0인데 백엔드 수신 = 0이 2분이면 `MqttIngestStopped`(critical). 기존 `MqttIngestFallingBehind`는 차이가 초당 10건을 넘어야 떠서 소규모(초당 약 3건)에서 백엔드가 완전히 멈춰도 안 떴다.
+**수신 정지 감지**: 브로커 수신 > 0인데 백엔드 수신 = 0이 2분이면 `MqttIngestStopped`(critical). 실험 H(1회)에서 ACL로 전달만 막은 경우와 SUBACK 0x80 둘 다 약 2분 30초에 firing했다. 이 알림은 브로커 `$SYS` 게이지에 기대므로, 게이지가 없을 때를 `MqttBrokerMetricsMissing`(5분)으로 따로 잡는다.
+
+**구독 실패 예방은 하지 않기로(2026-10-06)**:
+- 재시작 직후 `Error subscribing … Timed out`(연결 +5초, 실험 C·E·F·G 4회)은 브로커 구독이 성립한 채 데이터가 계속 들어왔다 — 해로운 실패가 아니었다.
+- `completionTimeout`을 5초에서 늘리는 안은 보류한다. 로그상 timeout 직후에야 메시지 처리가 시작돼, SUBACK이 콜백 진행을 기다리는 구조라면 대기만 길어질 수 있다(추정, 원인 미확정).
+- 진짜 해로운 경우(SUBACK 0x80·ACL 전달 차단)는 재시도로 풀리지 않는다 — 브로커 설정 문제라 사람이 고쳐야 하므로 알림이 맞는 대응이다. 기존 `MqttIngestFallingBehind`는 차이가 초당 10건을 넘어야 떠서 소규모(초당 약 3건)에서 백엔드가 완전히 멈춰도 안 떴다.
 
 브로커 autosave/inflight 값을 무작정 늘리지 않는다. 2.0.22 기본값과 한계는 [보안 문서](security-report.md)에 기록했다. [실험 기록](verification/2026-10-01-mqtt-ack-boundary.md)의 검증 범위를 따른다.
 
