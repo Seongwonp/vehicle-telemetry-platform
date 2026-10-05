@@ -1,0 +1,5 @@
+services:
+  mosquitto:
+    volumes:
+      - C:/Users/USER/AppData/Local/Temp/claude/D--vehicle-telemetry-platform/d456ac25-a739-4b31-8e65-c5c2cb0ea080/scratchpad/h/mosquitto-t.conf:/mosquitto/config/mosquitto.conf:ro
+      - C:/Users/USER/AppData/Local/Temp/claude/D--vehicle-telemetry-platform/d456ac25-a739-4b31-8e65-c5c2cb0ea080/scratchpad/h/dynsec:/mosquitto/dynsec

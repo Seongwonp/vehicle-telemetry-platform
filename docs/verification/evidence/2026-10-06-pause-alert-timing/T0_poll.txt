@@ -1,0 +1,17 @@
+utc | phase | ALERTS | backend_rate2m | broker_rate2m | backend_recv_total | up
+22:51:49 | baseline | TelemetryBackendDown/pending:1 | 0 | 0.018380224723096344 | - | 0
+22:52:05 | baseline | TelemetryBackendDown/pending:1 | 0 | 0.01672397098274521 | 0 | 1
+22:52:20 | baseline | - | 0 | 0.6559890600048891 | 0 | 1
+22:52:36 | baseline | - | 0 | 0.8970719240598759 | 0 | 1
+22:52:51 | baseline | MqttIngestStopped/pending:1 | 0 | 1.1568842305103686 | 0 | 1
+22:53:07 | baseline | MqttIngestStopped/pending:1 | 0 | 1.6889794480668114 | 0 | 1
+22:53:23 | baseline | MqttIngestStopped/pending:1 | 0 | 1.9519515682178468 | 0 | 1
+22:53:39 | baseline | MqttIngestStopped/pending:1 | 0 | 2.465159848881693 | 0 | 1
+22:53:54 | baseline | MqttIngestStopped/pending:1 | 0 | 2.7414254647046685 | 0 | 1
+22:54:10 | baseline | MqttIngestStopped/pending:1 | 0 | 2.5430266779690074 | 0 | 1
+22:54:26 | baseline | MqttIngestStopped/pending:1 | 0 | 2.8381763288474904 | 0 | 1
+22:54:41 | baseline | MqttIngestStopped/pending:1 | 0 | 2.838257424233766 | 0 | 1
+22:54:57 | baseline | MqttIngestStopped/firing:1 | 0 | 2.5524781896453193 | 0 | 1
+22:55:24 | revoked | MqttIngestStopped/firing:1 | 0 | 2.4762848108499376 | 0 | 1
+22:55:40 | revoked | MqttIngestStopped/firing:1 | 0 | 2.4858326586980333 | 0 | 1
+22:55:55 | revoked | MqttIngestStopped/firing:1 | 0 | 2.504881184818325 | 0 | 1

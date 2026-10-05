@@ -1,0 +1,1 @@
+{"status":"success","data":{"resultType":"matrix","result":[{"metric":{"__name__":"ALERTS","alertname":"MqttIngestStopped","alertstate":"firing","severity":"critical"},"values":[[1791241650,"1"],[1791241655,"1"],[1791241660,"1"],[1791241665,"1"],[1791241670,"1"],[1791241675,"1"]]}]}}

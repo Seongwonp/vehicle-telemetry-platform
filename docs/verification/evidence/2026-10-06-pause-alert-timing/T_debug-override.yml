@@ -1,0 +1,4 @@
+services:
+  backend:
+    environment:
+      LOGGING_LEVEL_COM_TELEMETRY: DEBUG

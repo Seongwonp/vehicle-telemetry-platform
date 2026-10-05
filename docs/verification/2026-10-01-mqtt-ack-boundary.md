@@ -369,6 +369,85 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - **세션이 있는 상태에서 구독이 거부되는 경우**(H-2는 새 세션)와, SUBACK 0x80 이후 백엔드를 재시작하지 않고 브로커 설정만 풀었을 때 구독이 회복되는지는 **미검증**이다(재시도 코드가 없음을 로그로 본 것뿐). 실제 운영 브로커(mTLS, `acl` 파일)에서의 거부 형태도 보지 않았다 — 운영 `acl`은 H-1과 같은 방식이라 **구독은 허용되고 전달만 막힐 가능성**이 있다(추정).
 - 테스트 데이터: InfluxDB `OUTAGE-R` 300행(`OUTAGE-H`·`OUTAGE-H2`는 0행), 브로커 영속 세션 2개(위).
 
+## 실험 P — Kafka 20초 pause (2026-10-06)
+
+상태: **1회 관찰 완료(결과는 아래).** 가설·기준은 실행 전에 적었다. 원본: [`evidence/2026-10-06-pause-alert-timing/`](evidence/2026-10-06-pause-alert-timing/)(`P_*`). 대상 커밋 `f5ff7a9`(백엔드 `src/main`은 `46937e7` 이후 변경 없음 — 같은 이미지 `sha256:3c62ed8f…` 재사용).
+
+**질문**: 실험 S의 `docker stop`/`start` 20초는 Kafka 기동 지연 때문에 실제 불가가 80초를 넘었다. 기동 지연이 없는 `docker pause`/`unpause` 20초로 "30초 미만 불가는 producer가 흡수한다"를 볼 수 있는가.
+**조작**: E3·S와 같은 발행(`expP.sh`, 차량 `OUTAGE-P`, 720건, 호스트 `sleep 0.333`)에서 시작 30초 뒤 `docker pause telemetry-kafka`, 20초 뒤 `docker unpause`. 시뮬레이터·감지기 없음. 실제 불가 시간은 백엔드 DEBUG 로그(`docker logs -t`)의 `[Kafka] 전송 완료` 간격으로 잰다(pause 직전 마지막 완료 ~ unpause 뒤 첫 완료).
+**가설(실행 전, 추정)**: pause 중 TCP 연결은 유지되고 브로커 프로세스만 멈춘다. 20초 < `delivery.timeout.ms` 30초이므로 producer가 대기·재시도로 흡수해 **spool 보관 0건, keepAlive 끊김 0, 유실 0, 중복 0, DLQ 0**일 것이다. **위험 요인을 미리 적는다**: (1) Kafka의 Zookeeper 세션 타임아웃(기본 약 18초)을 20초 pause가 넘기면 브로커가 재등록·컨트롤러 재선출을 거쳐 unpause 뒤에도 요청을 못 받는 구간이 생길 수 있다(이 경우 실제 불가가 30초를 넘어 spool 보관이 나올 수 있고, 가설 위반이 아니라 "불가 시간 정의" 문제로 기록한다). (2) `request.timeout.ms` 10초가 pause 중 in-flight 요청을 만료시켜 재시도가 일어난다 — 중복은 멱등 producer 설정에 달려 있고 이번에 설정을 확인하지 않았다.
+**성공 기준(실행 전)**: PUBACK(RC:0) 720, Kafka 고유 timestamp 720, InfluxDB 고유 시점 720, `telemetry.spool.stored` 증가 0(= `브로커 전송 실패 — spool에 보관` 로그 0), keepAlive 끊김 로그 0, DLQ 증가 0, 브로커 `dropped` 0. 중복 수는 기록만 한다. **실패 기준**: 고유 수 < 720, DLQ 증가, 끊김 ≥ 1, spool 보관 ≥ 1(이 경우 위험 요인 (1)의 확인 여부와 함께 해석).
+
+### 결과
+
+상태 갱신: **1회 관찰 완료 — 성공 기준 충족(브로커 `dropped`만 미확인).** 반복·안정성 주장 없음.
+
+| 항목 | 값 |
+| --- | --- |
+| pause 시작(`docker pause` 호출) → unpause 호출 (UTC) | 22:44:58.406 → 22:45:18.950 (약 20.5초) |
+| **클라이언트가 본 실제 불가**: pause 직전 마지막 `[Kafka] 전송 완료` ~ unpause 뒤 첫 완료 | 22:44:58.414 → 22:45:19.127 = **20.7초**(unpause 호출 0.18초 뒤 재개). 720건 전체에서 1초 넘는 간격은 이 하나뿐 |
+| 발행 / PUBACK(RC:0) | 720 / **720** |
+| `vehicle-telemetry` p0 end offset | 745 → 1465 (**+720**), p1·p2 불변 |
+| Kafka 고유 timestamp / 중복 | **720 / 0** |
+| InfluxDB 고유 시점(`OUTAGE-P`) | **720** |
+| `messages.received` / invalid | 720 / 0 |
+| spool: `브로커 전송 실패 — spool에 보관` 로그 / `spool.drained` / 최종 `spool.pending` | **0 / 0 / 0** |
+| keepAlive 끊김(`no activity`/`Lost connection`) / 백엔드 로그 ERROR | **0 / 0**(브로커 로그에도 백엔드 연결 종료 없음, 발행기 종료 1건만) |
+| DLQ(`-dlq`, `-mqtt-dlq`) 증가 | 0 / 0 (19 / 15 그대로) |
+| 브로커 `dropped` | **미확인**(실행 전후 수집하지 않았다) |
+
+**판정: 성공 기준 충족(1회), 가설과 일치.** spool 보관 0, 끊김 0, 유실 0, 중복 0, DLQ 0.
+
+**관찰에서 읽은 것**
+- 20초 불가(30초 `delivery.timeout.ms` 미만)는 이 조건에서 producer 재시도·버퍼가 흡수했다. 백엔드 로그에 `REQUEST_TIMED_OUT … retrying (2 attempts left)` WARN 1건(22:45:08, 요청 시작 10초 뒤 `request.timeout.ms`)과 `Disconnecting from node 1 due to request timeout` INFO 2건이 있고, 그 요청이 재시도로 통과했다. 재시도로 인한 Kafka 중복은 없었다(고유 720·중복 0 — 멱등 producer 설정 덕인지는 이번에 설정을 확인하지 않아 **단정하지 않는다**).
+- **위험 요인 (1)은 실제로 일어났다**: Kafka 로그에 `Client session timed out, have not heard from server in 22817ms`(22:45:19.121)와 `session … has expired`(22:45:20.650)가 있고, 컨테이너 health는 unpause(22:45:20) 뒤에도 `unhealthy`로 있다가 22:45:53(unpause 호출 +약 35초)에 `healthy`가 됐다(`P_health_poll.txt`). 그런데 **producer 전송은 unpause 직후 재개**됐고 이후 지연이 관찰되지 않았다. 즉 "브로커 health가 돌아오는 시간"과 "클라이언트가 요청을 처리받는 시간"이 달랐다. Kafka가 세션 만료 뒤에도 전송을 받아 준 이유는 확인하지 않았다(로그만 보고 내부 동작을 추정하지 않는다). S(`stop`/`start`)는 이 구간이 길었고 이번 `pause`는 프로세스가 살아 있어 짧았다는 차이로 읽을 수 있으나 **추정**이다.
+- 이 결과는 20초 한 점이다. 30초 경계(delivery timeout 근처)·그 이상의 pause·ZK 세션 만료 뒤 컨트롤러 변경이 일어나는 pause는 시험하지 않았다.
+
+### 한계
+
+1회, 단일 차량, 약 2.7건/초, 호스트 `sleep` 기반 공급. `pause`는 프로세스 정지이며 네트워크 분리와 다르다(TCP 연결은 유지, producer가 먼저 본 증상은 요청 timeout). 브로커 `dropped`를 수집하지 않았다. 남긴 테스트 데이터: InfluxDB `OUTAGE-P` 720행·`OUTAGE-TR` 5행, Kafka p0 720건(retention 1시간).
+
+## 실험 T — 수신 중 멈춤과 알림 탐지 시간 (2026-10-06)
+
+상태: **1회 관찰 완료(결과는 아래).** 가설·기준은 실행 전에 적었다. 원본: 위와 같은 폴더(`T_*`).
+
+**질문**: 정상 수신 중이던 백엔드의 MQTT 수신이 갑자기 0이 될 때 `MqttIngestStopped`가 pending → firing까지 걸리는 시간은 규칙상 예상(약 4분)과 맞는가. 실험 H는 수신이 처음부터 0인 상태(재시작 직후)여서 이 시간을 재지 못했다.
+**멈추는 방법의 선택과 이유**: 백엔드 컨테이너 `docker pause`는 쓰지 않는다. 프로세스가 멈추면 Prometheus 스크레이프도 실패해 `up == 0`이 되고, `telemetry_mqtt_messages_received_total` 시계열이 stale로 사라져 `MqttIngestStopped` 식(`… == 0`)이 **빈 결과가 되어 알림이 아예 안 뜬다** — 이 알림이 잡으려는 상황("백엔드는 살아 있고 스크레이프는 되는데 수신만 0")이 아니라 `TelemetryBackendDown`(`for: 2m`)의 영역이다. 대신 **브로커에서 백엔드의 수신(전달)만 실행 중에 회수**한다. mosquitto dynamic-security 플러그인으로 익명 그룹 role에 `publishClientReceive` deny(`vehicle/telemetry/#`)를 런타임 명령(`$CONTROL/dynamic-security/v1`의 `addRoleACL`)으로 추가한다. 연결·구독(SUBACK)은 유지되고 `$SYS` 전달도 유지되며, 백엔드 프로세스·스크레이프는 영향이 없다. 이는 실험 H-1에서 본 "구독은 허용되고 전달만 막히는" 형태이며, 운영 `acl`이 그런 방식일 수 있다는 추정(§2)에 가장 가깝다. 실험 H의 **구독 시점 거부(SUBACK 0x80)** 와 다르다 — 그쪽은 이미 측정했다. dev 프로파일이 익명 접속이라 규칙은 client ID가 아니라 익명 전체에 적용된다(이 스택에서 `vehicle/telemetry/#`를 읽는 클라이언트는 백엔드뿐 — H와 같은 한계). 실험 용도로 익명 그룹에 `$CONTROL` 사용을 허용한 로컬 dev 브로커이며 비밀번호·토큰은 쓰지 않았다.
+**조작**: 저장소 밖 mosquitto 설정(dev 설정 + dynamic-security 플러그인)을 compose override로 마운트해 브로커를 재생성하고 백엔드를 원래 client ID로 재시작한다. 발행기(`OUTAGE-T`, 약 3건/초)를 계속 돌리며 먼저 약 3분 정상 수신을 확인한 뒤(알림 없음, 백엔드 수신률 > 0) `addRoleACL`을 보낸다(= 수신 멈춤 시각 t0). 15초 간격으로 `ALERTS`·`sum(rate(telemetry_mqtt_messages_received_total[2m]))`·브로커 수신률을 폴링하고, 종료 뒤 범위 질의로 정확한 pending/firing 첫 샘플 시각을 뽑는다. firing 확인 뒤 `removeRoleACL`로 원복(t1)하고 수신 회복·알림 해제를 확인한다. Prometheus 스크레이프·평가 간격 15초, Alertmanager receiver는 `default`뿐(외부 발송 없음, H에서 확인).
+**가설(실행 전, 추정)**: (1) ACL 추가 직후(수 초 안) 백엔드 `messages.received_total` 증가가 멈추고 InfluxDB·Kafka에 이후 행이 없으며 브로커 수신률은 유지된다. (2) 백엔드 로그에는 구독 오류·경고가 없다(연결·구독 정상) — 로그는 침묵한다. (3) `rate(...[2m])`이 0이 되려면 마지막 증가가 창 밖으로 나가야 하므로 t0 + 약 2분(+0~30초 스크레이프·평가 지연)에 pending, 거기서 2분 뒤 firing — **t0부터 firing까지 약 4분~4분 45초**. (4) 원복 뒤 수신이 회복되면 알림은 1~2번의 평가(15~30초) 안에 해제된다. (5) 이 방법에서는 `up`이 1이므로 `TelemetryBackendDown`·`MqttBrokerMetricsMissing`은 뜨지 않는다. 회수 중 발행된 메시지는 H와 같이 나중에 복구되지 않을 것이다(H에서 관찰, 이번에 세션 큐 길이는 보지 않는다). **위험 요인**: dynsec 런타임 변경이 이미 맺어진 구독에 즉시 적용되지 않으면(전달 시점 검사가 아니면) 수신이 멈추지 않는다 — 그 경우 실패로 기록하고 방법을 바꾸지 않고 멈춘다.
+**성공 기준(실행 전)**: (1) t0 이후 백엔드 수신이 0이 되고 발행·브로커 수신은 계속된다. (2) `ALERTS`에 pending → firing이 나타난다(범위 질의의 첫 샘플 시각 기록). (3) 원복 뒤 수신 회복·알림 해제. **판정 구간**: t0→firing이 3분 30초~5분이면 "규칙 예상과 일치"로 읽는다. **실패 기준**: t0 후 15분 안에 firing이 안 됨, 또는 수신이 멈추지 않음.
+
+### 결과
+
+상태 갱신: **1회 관찰 완료(두 번째 시도). 첫 시도 `T0_*`는 무효였다 — 아래 기록.** 반복·안정성 주장 없음.
+
+**첫 시도(`T0_*`) 무효 사유**: 초기 dynamic-security 파일의 `defaultACLAccess`에 키를 `publishClientToBroker`로 적어(올바른 키는 `publishClientSend`) 익명의 **발행 기본값이 거부**로 들어갔다(`getDefaultACLAccess`로 확인: `publishClientSend: false`). mosquitto_pub는 QoS 1에서도 PUBACK RC:0을 받았지만 메시지는 전달되지 않았고, 백엔드 수신이 baseline부터 0이었다. 이 실행에서 ACL을 추가했을 때 알림이 이미 firing이었으므로 탐지 시간 측정이 아니다. 같은 파일에 `$CONTROL` 허용 role(`ctrl`)도 처음에는 빠져 있어 응답 구독이 거부됐다(그건 즉시 고쳤다). 원본은 `T0_*`에 남겼다. 실험 H-2·H-2a의 `H2_dynamic-security.json`도 같은 `publishClientToBroker` 키를 쓴다 — **H-2에서도 발행이 조용히 거부됐을 가능성이 있고, 그렇다면 H-2의 "백엔드 수신 0" 해석에 영향이 있다. 이번에 확인하지 않았다.**
+
+**두 번째 시도(`T_*`)**: 키를 고친 뒤 `getDefaultACLAccess`와 프로브 발행·구독으로 전달을 확인하고, 브로커 재생성·백엔드 재생성 후 실행했다.
+
+| 시각(UTC) | 사건 | 근거 |
+| --- | --- | --- |
+| 22:58:38 | 발행 시작(`OUTAGE-T`, 약 3건/초) | `T_marks.txt` |
+| 22:58:53 ~ 23:02:01 | 정상 수신: 백엔드 수신률 0.29 → 2.7/s, 브로커 수신률과 비슷, 알림 없음(백엔드 재기동 직후 `TelemetryBackendDown` pending 샘플 1개, 22:58:30, 해소) | `T_poll.txt` |
+| **23:02:08.231** | **t0** — `addRoleACL`(익명 role에 `publishClientReceive` deny `vehicle/telemetry/#`) 처리, 브로커가 클라이언트들을 `disconnected by administrative action`으로 끊음 | `T_mosquitto_log.txt` (`revoke_send` 마크 23:02:01은 명령 컨테이너 기동 전 시각이라 t0로 쓰지 않는다) |
+| 23:02:07.904 | 백엔드의 마지막 `[MQTT→Kafka]` 수신 로그(t0 직전) | `T_backend_full_log.txt` |
+| 23:02:09.540 | 백엔드 재접속·재구독(`telemetry-backend 1 vehicle/telemetry/#`) — 이후 **수신 0**, 발행·브로커 수신은 계속(약 2.6~2.9/s) | 위 로그, `T_poll.txt` |
+| 23:04:03 → 23:04:18 | 백엔드 수신률(`rate[2m]`) 0.076 → **0** (마지막 수신 + 2분과 일치) | `T_poll.txt` |
+| **23:04:15** | `MqttIngestStopped` **pending** 첫 샘플(범위 질의) — t0 + 약 2분 7초 | `T_alerts_range.json`; 15초 폴링은 23:04:34에 처음 봄 |
+| **23:06:15** | **firing** 첫 샘플(범위 질의). Alertmanager 활성 알림 `startsAt` **23:06:12.957** — t0 + **약 4분 5초**, pending + 2분. 15초 폴링은 23:06:39에 처음 봄. receiver `default`(외부 발송 없음) | `T_alerts_range.json`, `T_alertmanager_alerts.json` |
+| 23:07:48.176 | `removeRoleACL`(원복) — 다시 admin 끊김, 23:07:49.480 재접속과 동시에 수신 재개 | 로그 |
+| 23:07:53 | 수신률 0.048(폴링에는 아직 firing) | `T_poll.txt` |
+| 23:08:26 | 폴링에서 알림이 처음 사라짐(복구 + 약 38초). **범위 질의에서는 firing 마지막 샘플이 23:07:45이고 23:08:00부터 없다** — 15초 폴링(23:07:53·23:08:10 firing)과 어긋난다. 원인 미확인(rule 평가·stale marker 시점 가능성은 추정일 뿐) | `T_poll.txt`, `T_alerts_range_fine.json` |
+
+- 발행 1688 / PUBACK 1688. 백엔드 수신·Kafka(p1 42684 → 43451)·InfluxDB 고유 시점(`OUTAGE-T`)은 모두 **767**. 즉 회수 구간(약 340초)에 발행된 **921건은 백엔드에 전달되지 않았고 재접속·원복 뒤에도 복구되지 않았다**(H와 같은 방향; 브로커 세션 큐 길이는 보지 않음). 브로커 로그에 `Denied` 같은 기록은 없다(전달 거부는 조용했다). DLQ 증가 0.
+- **백엔드 로그는 t0에 한 번 시끄럽고 그 뒤 침묵한다**: `MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost` ERROR 2건(t0), 같은 2건(원복 시점) 외에 구독 오류·경고는 없다. 가설 (2)의 "로그 침묵"은 **부분적으로만 맞았다**(끊김 로그가 t0에 있다). 이는 이 방법의 부수 효과다 — dynamic-security는 role 변경 시 해당 그룹의 클라이언트를 끊는다. 따라서 이 실험은 "연결이 유지된 채 전달만 멈춤"이 아니라 **끊김 → 재접속(약 1.3초) → 전달 거부 지속**이다. 운영 `acl`이 파일 기반이면 변경 시 끊김이 없을 수 있어 로그 양상이 다를 수 있다(추정).
+- 가설 대조: (1) 수신 중단·브로커 수신 지속 — 일치. (3) pending t0 + 2분 7초(예상 2분~2분 30초), firing t0 + 4분 5초(예상 4분~4분 45초, 판정 구간 3분 30초~5분) — **일치**. (4) 해제 15~30초 예상 — 폴링 기준 약 38초로 약간 길고 범위 질의는 더 짧아 **확정 못 함**. (5) `up`은 계속 1, `TelemetryBackendDown`·`MqttBrokerMetricsMissing` 없음 — 일치(백엔드 재기동 직후의 `TelemetryBackendDown` pending 1샘플 제외). 성공 기준 (1)~(3) 충족.
+- **알림 의미의 해석**: 실제 탐지는 "마지막 수신 + 2분"(rate 창)에 `for` 2분이 더해진 약 4분이며, H(수신이 처음부터 0)의 약 2분 30초와는 다르다. 이 시간 동안 약 1,000건이 유실됐다(위). 알림 임계 조정은 이번에 시험하지 않았다.
+
+### 한계
+
+1회, 단일 차량, 약 3건/초, 백엔드 재기동 직후 3분 정상 수신 뒤 회수. 방법이 role 변경에 따른 클라이언트 끊김을 동반한다(위). dev 프로파일의 익명 접속이라 규칙이 client ID가 아니라 익명 전체에 적용된다(`publishClientReceive` deny는 구독자에게만 영향). 실험용으로 익명에게 `$CONTROL`을 허용한 로컬 dev 브로커이며 비밀값은 쓰지 않았다. 해제 시각이 폴링과 범위 질의에서 어긋난 원인은 미확인. 원복: 브로커를 원래 `mosquitto-dev.conf`·`acl` 마운트로 재생성(`R_mosquitto_mounts.txt`)하고 백엔드를 재기동한 뒤 5건 발행으로 수신 회복 확인(`R_pub.log`, 수신 5, 구독 오류 0). 남긴 데이터: InfluxDB `OUTAGE-T` 767행·Kafka p1 767건, `OUTAGE-TR` 5행.
+
 ## 환경·실행
 
 - 기준 commit: `21cf99cc0bf9314f54ce206d078135078bf4a78d`, 미커밋 변경 포함.
@@ -383,8 +462,8 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - ~~실제 Kafka 완료 경계에서 전체 백엔드 프로세스 강제 종료, 재시작 후 최종 InfluxDB 대조.~~ **1회 관찰 완료(2026-10-05, 실험 C)** — 30/30 저장, 중복 1건은 저장소가 흡수. 반복·임의 시점·대량 재전달은 미검증. 재시작 직후 구독 timeout 로그 1건의 원인 확인이 새로 남았다.
 - **Kafka 장기 정지 중 MQTT 연결 유지: 1회 관찰 완료(2026-10-05, 실험 E)** — 연결은 유지되지 않았고(keepalive 타임아웃, 약 120초 지점), 유실 0·중복 1(spool 보관 뒤 재전달). 반복·다른 정지 길이·고부하·복수 차량은 미검증. 재접속이 약 90초 늦은 원인은 미확정. **실험 E2(수정 후 재실행, 1회)에서는 끊김 약 2초 뒤 재접속됐고 `<unknown>` 타임아웃이 없었다 — 수정 효과인지는 단정 못 함, 원인은 여전히 미확정.**
 - **재시작 직후 구독 timeout: 재현됨(실험 F, 1회)** — 백로그가 있는 재접속에서 연결 5초 뒤 발생하고 구독은 유지됐다. 세션 소실 경로에서의 구독 상실 여부, 구독 실패 이벤트 감지 수단 부재는 미검증/결함 후보.
-- **producer timeout 30초(46937e7): E3 1회 관찰 완료(2026-10-06)** — 150초 정지에서 keepAlive 끊김 0, 첫 spool 보관 stop +30초, 유실 0·중복 0. **"30초 미만 정지는 버퍼가 흡수"는 미검증**(S의 20초 `docker stop`은 Kafka 복구 지연으로 실제 불가가 80초 넘어 spool 226건 사용). 30초 미만 불가를 만드는 방법(`pause`·네트워크 분리)으로 재시험 필요. 반복·고부하·복수 차량·spool 용량 한계는 미검증.
-- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간(약 4분)은 미측정.** 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다(결함 후보). 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
+- **producer timeout 30초(46937e7): E3 1회 관찰 완료(2026-10-06)** — 150초 정지에서 keepAlive 끊김 0, 첫 spool 보관 stop +30초, 유실 0·중복 0. **"30초 미만 정지는 버퍼가 흡수"는 1회 관찰(실험 P, 2026-10-06, 20초 `docker pause`, 실제 불가 20.7초): spool 0·끊김 0·유실 0·중복 0.** S의 20초 `docker stop`은 Kafka 복구 지연으로 실제 불가가 80초 넘어 spool 226건을 썼다. 30초 경계 부근·네트워크 분리·반복·고부하·복수 차량·spool 용량 한계는 미검증.
+- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다(결함 후보). 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
 - 네트워크 단절·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
 - 브로커 강제 종료/호스트 전원 차단은 이번 보호 범위 밖이다.

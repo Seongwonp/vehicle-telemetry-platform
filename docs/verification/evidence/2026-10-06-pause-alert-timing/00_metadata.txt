@@ -1,0 +1,13 @@
+git_head=2aba182ce46192b0098fcbae2c5759dcec183d26
+backend_src_diff_since_46937e7=4 lines (0 = 변경 없음)
+backend_image=sha256:3c62ed8f2d3aa507948af7c810e0d8db58d208c97f6508a1546eb79bc39ce3f4 2026-10-06 06:43:03 +0900 KST
+docker=29.7.2
+prometheus=2.51.0 scrape_interval=15s evaluation_interval=15s
+alertmanager receiver default: 외부 발송 설정 없음(H에서 확인)
+compose=docker-compose.yml + docker-compose.dev.yml + 저장소 밖 debug-override(T_debug-override.yml 사본)
+T_override=T_override-t.yml / T_mosquitto-t.conf / T_dynamic-security_initial.json (저장소 밖 마운트, 종료 뒤 원복)
+volumes kept; no down -v
+note_T0: T0_* 는 무효 실행(초기 dynsec 파일의 defaultACLAccess 키 오타 publishClientToBroker -> publishClientSend 가 false -> 발행이 조용히 거부). 문서 참조.
+note_publishers: mosquitto_pub -q 1 -l (docker run), 호스트 sleep 0.333 루프
+note_scripts: expP.sh, expT.sh, ctl.sh (dynsec 명령 전송)
+end_utc=2026-10-05T23:11:54Z

@@ -1,0 +1,13 @@
+begin=2026-10-05T22:58:11.017Z
+backend_ready=2026-10-05T22:58:33.554Z
+publish_start=2026-10-05T22:58:38.034Z
+revoke_send=2026-10-05T23:02:01.109Z
+revoke_done=2026-10-05T23:02:13.455Z
+first_pending_seen=2026-10-05T23:04:35.095Z
+first_firing_seen=2026-10-05T23:06:40.233Z
+restore_send=2026-10-05T23:07:43.548Z
+restore_done=2026-10-05T23:07:53.799Z
+alert_cleared_seen=2026-10-05T23:08:26.815Z
+poll_end=2026-10-05T23:08:58.142Z
+publisher_stopped=2026-10-05T23:09:03.128Z
+sent=1688 puback_rc0=1688
