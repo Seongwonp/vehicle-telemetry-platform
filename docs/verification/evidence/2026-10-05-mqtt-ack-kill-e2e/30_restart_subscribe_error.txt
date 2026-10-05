@@ -1,0 +1,15 @@
+1720:12:16:25 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Error subscribing to [vehicle/telemetry/#]
+1721-org.eclipse.paho.client.mqttv3.MqttException: Timed out waiting for a response from the server
+1722-	at org.eclipse.paho.client.mqttv3.internal.Token.waitForCompletion(Token.java:112)
+1723-	at org.eclipse.paho.client.mqttv3.MqttToken.waitForCompletion(MqttToken.java:67)
+1724-	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.subscribe(MqttPahoMessageDrivenChannelAdapter.java:302)
+1725-	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.connectComplete(MqttPahoMessageDrivenChannelAdapter.java:425)
+1726-	at org.eclipse.paho.client.mqttv3.internal.ConnectActionListener.onSuccess(ConnectActionListener.java:104)
+1727-	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.fireActionEvent(CommsCallback.java:333)
+1728-	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleActionComplete(CommsCallback.java:272)
+1729-	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:198)
+1730-	at java.base/java.lang.Thread.run(Unknown Source)
+1731-12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+1732-12:16:25 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+1733-	acks = -1
+1734-	auto.include.jmx.reporter = true

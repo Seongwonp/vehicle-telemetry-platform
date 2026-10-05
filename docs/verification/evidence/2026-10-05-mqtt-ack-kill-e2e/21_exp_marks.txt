@@ -1,0 +1,10 @@
+telemetry-kafka
+kafka_paused_utc=2026-10-05T12:15:03Z
+publish_start_utc=2026-10-05T12:15:14Z
+publish_end_utc=2026-10-05T12:15:19Z
+backend_kill_utc=2026-10-05T12:15:31Z
+telemetry-backend
+exit=137 oom=false finished=2026-10-05T12:15:31.735961508Z
+telemetry-kafka
+kafka_unpaused_utc=2026-10-05T12:15:42Z
+backend_start_utc=2026-10-05T12:16:02Z

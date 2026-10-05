@@ -1,0 +1,6 @@
+=== EXP final ===
+2026-10-05T12:17:17Z
+vehicle-telemetry p0=14 p1=41244 p2=18914 SUM=60172
+vehicle-telemetry-dlq p0=19 SUM=19
+vehicle-telemetry-mqtt-dlq p0=15 SUM=15
+influx ACKTEST-B rows: [,,0,2026-09-05T12:17:22.637762826Z,2026-10-05T12:17:22.637762826Z,30]

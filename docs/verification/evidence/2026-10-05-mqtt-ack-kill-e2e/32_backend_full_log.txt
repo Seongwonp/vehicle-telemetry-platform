@@ -1,0 +1,1895 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+12:12:30 [-] [-] INFO  c.t.TelemetryApplication - Starting TelemetryApplication v0.0.1-SNAPSHOT using Java 17.0.20.1 with PID 1 (/app/app.jar started by root in /app)
+12:12:30 [-] [-] DEBUG c.t.TelemetryApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+12:12:30 [-] [-] INFO  c.t.TelemetryApplication - No active profile set, falling back to 1 default profile: "default"
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 353 ms. Found 3 JPA repository interfaces.
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.VehicleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.AnomalyAlertRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:12:32 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 15 ms. Found 0 Redis repository interfaces.
+12:12:32 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+12:12:32 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+12:12:34 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat initialized with port 8080 (http)
+12:12:34 [-] [-] INFO  o.a.c.c.StandardService - Starting service [Tomcat]
+12:12:34 [-] [-] INFO  o.a.c.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+12:12:34 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring embedded WebApplicationContext
+12:12:34 [-] [-] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3811 ms
+12:12:34 [-] [-] DEBUG c.t.s.RequestLoggingFilter - Filter 'requestLoggingFilter' configured for use
+12:12:34 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Starting...
+12:12:34 [-] [-] INFO  c.z.h.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@44a13699
+12:12:34 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Start completed.
+12:12:35 [-] [-] INFO  o.f.c.i.l.VersionPrinter - Flyway Community Edition 9.22.3 by Redgate
+12:12:35 [-] [-] INFO  o.f.c.i.l.VersionPrinter - See release notes here: https://rd.gt/416ObMi
+12:12:35 [-] [-] INFO  o.f.c.i.l.VersionPrinter - 
+12:12:35 [-] [-] INFO  o.f.core.FlywayExecutor - Database: jdbc:postgresql://postgres:5432/telemetry (PostgreSQL 16.15)
+12:12:35 [-] [-] WARN  o.f.c.i.d.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
+12:12:35 [-] [-] INFO  o.f.c.i.c.DbValidate - Successfully validated 6 migrations (execution time 00:00.081s)
+12:12:35 [-] [-] INFO  o.f.c.i.command.DbMigrate - Current version of schema "public": 6
+12:12:35 [-] [-] INFO  o.f.c.i.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+12:12:35 [-] [-] INFO  o.h.j.i.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+12:12:35 [-] [-] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+12:12:35 [-] [-] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+12:12:35 [-] [-] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+12:12:35 [-] [-] WARN  o.h.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+12:12:37 [-] [-] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+12:12:37 [-] [-] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+12:12:38 [-] [-] INFO  o.s.d.j.r.q.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+12:12:40 [-] [-] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+12:12:41 [-] [-] INFO  o.s.b.a.e.w.EndpointLinksResolver - Exposing 4 endpoint(s) beneath base path '/actuator'
+12:12:42 [-] [-] INFO  o.a.k.c.a.AdminClientConfig - AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.servers = [kafka:29092]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+
+12:12:42 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:42 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:42 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202362231
+12:12:42 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.admin.client for adminclient-1 unregistered
+12:12:42 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+12:12:42 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+12:12:42 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+12:12:42 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 1 subscriber(s).
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean '_org.springframework.integration.errorLogger'
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttBrokerMetricsHandler.handle.serviceActivator} as a subscriber to the 'mqttBrokerMetricsChannel' channel
+12:12:42 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttBrokerMetricsChannel' has 1 subscriber(s).
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttBrokerMetricsHandler.handle.serviceActivator'
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttMessageHandler.handle.serviceActivator} as a subscriber to the 'mqttInputChannel' channel
+12:12:42 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttInputChannel' has 1 subscriber(s).
+12:12:42 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttMessageHandler.handle.serviceActivator'
+12:12:42 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttInbound()'
+12:12:43 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttBrokerMetricsInbound()'
+12:12:43 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363226
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363257
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363280
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363293
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363312
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:12:43 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202363324
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+12:12:43 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@710ae7ec]]
+12:12:43 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+12:12:43 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:12:43 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] (Re-)joining group
+12:12:43 [-] [-] INFO  c.t.TelemetryApplication - Started TelemetryApplication in 13.72 seconds (process running for 14.451)
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-601b825e-3856-4766-8bf1-4d072fae1c76', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-5f0c5374-51d2-46d0-9a7e-6ea2a4a41334', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-5f797d40-35d8-43db-9785-51c7c30c14b4', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Finished assignment for group at generation 19: {telemetry-backend-consumer-2-601b825e-3856-4766-8bf1-4d072fae1c76=Assignment(partitions=[vehicle-telemetry-2]), telemetry-backend-consumer-1-5f0c5374-51d2-46d0-9a7e-6ea2a4a41334=Assignment(partitions=[vehicle-telemetry-1]), telemetry-backend-consumer-0-5f797d40-35d8-43db-9785-51c7c30c14b4=Assignment(partitions=[vehicle-telemetry-0])}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-8ce91240-f63a-48e5-b57f-bd3d1c524479', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-de018b7d-b4c5-49e2-a386-18350f8bbcdd', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Finished assignment for group at generation 19: {telemetry-backend-consumer-2-8ce91240-f63a-48e5-b57f-bd3d1c524479=Assignment(partitions=[vehicle-anomaly-alerts-2]), telemetry-backend-consumer-0-de018b7d-b4c5-49e2-a386-18350f8bbcdd=Assignment(partitions=[vehicle-anomaly-alerts-0]), telemetry-backend-consumer-1-1b8e62fa-232a-4607-812e-6ef4c7d27106=Assignment(partitions=[vehicle-anomaly-alerts-1])}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-1b8e62fa-232a-4607-812e-6ef4c7d27106', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-601b825e-3856-4766-8bf1-4d072fae1c76', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-8ce91240-f63a-48e5-b57f-bd3d1c524479', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-2])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-2])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-5f0c5374-51d2-46d0-9a7e-6ea2a4a41334', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-1])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-2
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-1
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-2
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-5f797d40-35d8-43db-9785-51c7c30c14b4', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-1b8e62fa-232a-4607-812e-6ef4c7d27106', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-de018b7d-b4c5-49e2-a386-18350f8bbcdd', protocol='range'}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-0])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-0])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-0
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-1])
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-0
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-1
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-0 to the committed offset FetchPosition{offset=1, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-1 to the committed offset FetchPosition{offset=41213, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-1 to the committed offset FetchPosition{offset=844, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-2 to the committed offset FetchPosition{offset=18884, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-0 to the committed offset FetchPosition{offset=14, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:12:46 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-2 to the committed offset FetchPosition{offset=384, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:13:24 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+12:13:24 [-] [-] INFO  o.s.w.s.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+12:13:24 [-] [-] INFO  o.s.w.s.DispatcherServlet - Completed initialization in 2 ms
+12:13:24 [de006e36] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [de006e36] GET /actuator/health → 200 (482ms) ip=172.18.0.1
+12:13:42 [-] [-] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [kafka:29092]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.type = none
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 3
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+
+12:14:05 [-] [-] INFO  o.a.k.c.p.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+12:14:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:14:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:14:05 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202445188
+12:14:05 [-] [-] INFO  o.a.k.clients.Metadata - [Producer clientId=producer-1] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:14:05 [-] [-] INFO  o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-1] ProducerId set to 14000 with epoch 0
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.001Z partition=2 offset=18884
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.002Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.002Z partition=2 offset=18885
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.003Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.003Z partition=2 offset=18886
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.004Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.004Z partition=2 offset=18887
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.005Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.005Z partition=2 offset=18888
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.006Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.006Z partition=2 offset=18889
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.007Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.007Z partition=2 offset=18890
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.008Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.008Z partition=2 offset=18891
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.009Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.009Z partition=2 offset=18892
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.010Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.010Z partition=2 offset=18893
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.011Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.011Z partition=2 offset=18894
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.012Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.012Z partition=2 offset=18895
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.013Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.013Z partition=2 offset=18896
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.014Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.014Z partition=2 offset=18897
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.015Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.015Z partition=2 offset=18898
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.016Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.016Z partition=2 offset=18899
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.017Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.017Z partition=2 offset=18900
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.018Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.018Z partition=2 offset=18901
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.019Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.019Z partition=2 offset=18902
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.020Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.020Z partition=2 offset=18903
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.021Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.021Z partition=2 offset=18904
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.022Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.022Z partition=2 offset=18905
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.023Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.023Z partition=2 offset=18906
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.024Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.024Z partition=2 offset=18907
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.025Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.025Z partition=2 offset=18908
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.026Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.026Z partition=2 offset=18909
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.027Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.027Z partition=2 offset=18910
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.028Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.028Z partition=2 offset=18911
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.029Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.029Z partition=2 offset=18912
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.030Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.030Z partition=2 offset=18913
+12:14:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+12:14:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+12:14:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 28건 중 28건 저장
+12:14:50 [ee73fe33] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [ee73fe33] GET /actuator/prometheus → 200 (35ms) ip=172.18.0.1
+12:15:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+12:16:08 [-] [-] INFO  c.t.TelemetryApplication - Starting TelemetryApplication v0.0.1-SNAPSHOT using Java 17.0.20.1 with PID 1 (/app/app.jar started by root in /app)
+12:16:08 [-] [-] DEBUG c.t.TelemetryApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+12:16:08 [-] [-] INFO  c.t.TelemetryApplication - No active profile set, falling back to 1 default profile: "default"
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 300 ms. Found 3 JPA repository interfaces.
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.VehicleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.AnomalyAlertRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+12:16:10 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 7 ms. Found 0 Redis repository interfaces.
+12:16:10 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+12:16:10 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+12:16:12 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat initialized with port 8080 (http)
+12:16:12 [-] [-] INFO  o.a.c.c.StandardService - Starting service [Tomcat]
+12:16:12 [-] [-] INFO  o.a.c.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+12:16:12 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring embedded WebApplicationContext
+12:16:12 [-] [-] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3919 ms
+12:16:12 [-] [-] DEBUG c.t.s.RequestLoggingFilter - Filter 'requestLoggingFilter' configured for use
+12:16:12 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Starting...
+12:16:13 [-] [-] INFO  c.z.h.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@666b91db
+12:16:13 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Start completed.
+12:16:13 [-] [-] INFO  o.f.c.i.l.VersionPrinter - Flyway Community Edition 9.22.3 by Redgate
+12:16:13 [-] [-] INFO  o.f.c.i.l.VersionPrinter - See release notes here: https://rd.gt/416ObMi
+12:16:13 [-] [-] INFO  o.f.c.i.l.VersionPrinter - 
+12:16:13 [-] [-] INFO  o.f.core.FlywayExecutor - Database: jdbc:postgresql://postgres:5432/telemetry (PostgreSQL 16.15)
+12:16:13 [-] [-] WARN  o.f.c.i.d.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
+12:16:13 [-] [-] INFO  o.f.c.i.c.DbValidate - Successfully validated 6 migrations (execution time 00:00.043s)
+12:16:13 [-] [-] INFO  o.f.c.i.command.DbMigrate - Current version of schema "public": 6
+12:16:13 [-] [-] INFO  o.f.c.i.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+12:16:13 [-] [-] INFO  o.h.j.i.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+12:16:13 [-] [-] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+12:16:13 [-] [-] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+12:16:13 [-] [-] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+12:16:13 [-] [-] WARN  o.h.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+12:16:14 [-] [-] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+12:16:14 [-] [-] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+12:16:15 [-] [-] INFO  o.s.d.j.r.q.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+12:16:17 [-] [-] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+12:16:18 [-] [-] INFO  o.s.b.a.e.w.EndpointLinksResolver - Exposing 4 endpoint(s) beneath base path '/actuator'
+12:16:19 [-] [-] INFO  o.a.k.c.a.AdminClientConfig - AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.servers = [kafka:29092]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+
+12:16:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202579827
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.admin.client for adminclient-1 unregistered
+12:16:20 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+12:16:20 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+12:16:20 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+12:16:20 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 1 subscriber(s).
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean '_org.springframework.integration.errorLogger'
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttBrokerMetricsHandler.handle.serviceActivator} as a subscriber to the 'mqttBrokerMetricsChannel' channel
+12:16:20 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttBrokerMetricsChannel' has 1 subscriber(s).
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttBrokerMetricsHandler.handle.serviceActivator'
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttMessageHandler.handle.serviceActivator} as a subscriber to the 'mqttInputChannel' channel
+12:16:20 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttInputChannel' has 1 subscriber(s).
+12:16:20 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttMessageHandler.handle.serviceActivator'
+12:16:20 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttInbound()'
+12:16:20 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttBrokerMetricsInbound()'
+12:16:20 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580887
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580924
+12:16:20 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] (Re-)joining group
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = telemetry-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] (Re-)joining group
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580946
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-f4566d4d-9ab4-4c30-8317-57f957e2419d', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Skipped assignment for returning static leader at generation 19. The static leader will continue with its existing assignment.
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-a13097a8-be20-4971-a119-309caef5506a', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-0
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-0
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-f4566d4d-9ab4-4c30-8317-57f957e2419d', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-a13097a8-be20-4971-a119-309caef5506a', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580965
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] (Re-)joining group
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-0])
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-1])
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-0
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-1
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-3f8a4f0e-790e-4fb8-befb-ae9a1d167072', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-3f8a4f0e-790e-4fb8-befb-ae9a1d167072', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-1
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-2])
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580976
+12:16:20 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] (Re-)joining group
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-0 to the committed offset FetchPosition{offset=14, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-2 to the committed offset FetchPosition{offset=18914, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-1 to the committed offset FetchPosition{offset=41213, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:20 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [kafka:29092]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-2
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = false
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = anomaly-storage-group
+	group.instance.id = telemetry-backend-consumer-2
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 2000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-48fc706e-cf82-4524-9762-c7208422f6fe', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Skipped assignment for returning static leader at generation 19. The static leader will continue with its existing assignment.
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-0-48fc706e-cf82-4524-9762-c7208422f6fe', protocol='range'}
+12:16:20 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-0])
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-0
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] (Re-)joining group
+12:16:20 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-0 to the committed offset FetchPosition{offset=1, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:20 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202580999
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-4002cff2-da4f-4cb5-9d5a-79edfa39f573', protocol='range'}
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-1-4002cff2-da4f-4cb5-9d5a-79edfa39f573', protocol='range'}
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-1])
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-1
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-1 to the committed offset FetchPosition{offset=844, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:21 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+12:16:21 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@58817895]]
+12:16:21 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+12:16:21 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] (Re-)joining group
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-bcaa8df3-707c-43a1-bbfd-dc4b4dbd20bd', protocol='range'}
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=19, memberId='telemetry-backend-consumer-2-bcaa8df3-707c-43a1-bbfd-dc4b4dbd20bd', protocol='range'}
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-2])
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-2
+12:16:21 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-2 to the committed offset FetchPosition{offset=384, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+12:16:21 [-] [-] INFO  c.t.TelemetryApplication - Started TelemetryApplication in 13.621 seconds (process running for 16.69)
+12:16:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+12:16:25 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Error subscribing to [vehicle/telemetry/#]
+org.eclipse.paho.client.mqttv3.MqttException: Timed out waiting for a response from the server
+	at org.eclipse.paho.client.mqttv3.internal.Token.waitForCompletion(Token.java:112)
+	at org.eclipse.paho.client.mqttv3.MqttToken.waitForCompletion(MqttToken.java:67)
+	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.subscribe(MqttPahoMessageDrivenChannelAdapter.java:302)
+	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.connectComplete(MqttPahoMessageDrivenChannelAdapter.java:425)
+	at org.eclipse.paho.client.mqttv3.internal.ConnectActionListener.onSuccess(ConnectActionListener.java:104)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.fireActionEvent(CommsCallback.java:333)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleActionComplete(CommsCallback.java:272)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:198)
+	at java.base/java.lang.Thread.run(Unknown Source)
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [kafka:29092]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.type = none
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 120000
+	enable.idempotence = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 60000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 3
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+
+12:16:25 [-] [-] INFO  o.a.k.c.p.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+12:16:25 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+12:16:25 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+12:16:25 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791202585550
+12:16:25 [-] [-] INFO  o.a.k.clients.Metadata - [Producer clientId=producer-1] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+12:16:25 [-] [-] INFO  o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-1] ProducerId set to 14001 with epoch 0
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.001Z partition=1 offset=41214
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.002Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.002Z partition=1 offset=41215
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.003Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.003Z partition=1 offset=41216
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.004Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.004Z partition=1 offset=41217
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.005Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.005Z partition=1 offset=41218
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.006Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.006Z partition=1 offset=41219
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.007Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.007Z partition=1 offset=41220
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.008Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.008Z partition=1 offset=41221
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.009Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.009Z partition=1 offset=41222
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.010Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.010Z partition=1 offset=41223
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.011Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.011Z partition=1 offset=41224
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.012Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.012Z partition=1 offset=41225
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.013Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.013Z partition=1 offset=41226
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.014Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.014Z partition=1 offset=41227
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.015Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.015Z partition=1 offset=41228
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.016Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.016Z partition=1 offset=41229
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.017Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.017Z partition=1 offset=41230
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.018Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.018Z partition=1 offset=41231
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.019Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.019Z partition=1 offset=41232
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.020Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.020Z partition=1 offset=41233
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.021Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.021Z partition=1 offset=41234
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.022Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.022Z partition=1 offset=41235
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.023Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.023Z partition=1 offset=41236
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.024Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.024Z partition=1 offset=41237
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.025Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.025Z partition=1 offset=41238
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.026Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.026Z partition=1 offset=41239
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.027Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.027Z partition=1 offset=41240
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.028Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.028Z partition=1 offset=41241
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.029Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.029Z partition=1 offset=41242
+12:16:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-B ts=2026-10-05T12:15:14.030Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-B ts=2026-10-05T12:15:14.030Z partition=1 offset=41243
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+12:16:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+12:16:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 28건 중 28건 저장
+12:16:58 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+12:16:58 [-] [-] INFO  o.s.w.s.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+12:16:58 [-] [-] INFO  o.s.w.s.DispatcherServlet - Completed initialization in 2 ms
+12:16:59 [8dfb6623] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [8dfb6623] GET /actuator/health → 200 (477ms) ip=172.18.0.1
+12:16:59 [a5a89248] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [a5a89248] GET /actuator/prometheus → 200 (38ms) ip=172.18.0.1
+12:17:19 [-] [-] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]

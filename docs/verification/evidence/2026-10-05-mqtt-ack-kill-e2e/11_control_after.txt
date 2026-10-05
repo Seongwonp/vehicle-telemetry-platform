@@ -1,0 +1,6 @@
+=== CONTROL after ===
+2026-10-05T12:14:30Z
+vehicle-telemetry p0=14 p1=41213 p2=18914 SUM=60141
+vehicle-telemetry-dlq p0=19 SUM=19
+vehicle-telemetry-mqtt-dlq p0=15 SUM=15
+influx ACKTEST-A rows: [,,0,2026-09-05T12:14:35.647397228Z,2026-10-05T12:14:35.647397228Z,30]

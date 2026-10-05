@@ -1,0 +1,60 @@
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.001Z partition=2 offset=18884
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.002Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.002Z partition=2 offset=18885
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.003Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.003Z partition=2 offset=18886
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.004Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.004Z partition=2 offset=18887
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.005Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.005Z partition=2 offset=18888
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.006Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.006Z partition=2 offset=18889
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.007Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.007Z partition=2 offset=18890
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.008Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.008Z partition=2 offset=18891
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.009Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.009Z partition=2 offset=18892
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.010Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.010Z partition=2 offset=18893
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.011Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.011Z partition=2 offset=18894
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.012Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.012Z partition=2 offset=18895
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.013Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.013Z partition=2 offset=18896
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.014Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.014Z partition=2 offset=18897
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.015Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.015Z partition=2 offset=18898
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.016Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.016Z partition=2 offset=18899
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.017Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.017Z partition=2 offset=18900
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.018Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.018Z partition=2 offset=18901
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.019Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.019Z partition=2 offset=18902
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.020Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.020Z partition=2 offset=18903
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.021Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.021Z partition=2 offset=18904
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.022Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.022Z partition=2 offset=18905
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.023Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.023Z partition=2 offset=18906
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.024Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.024Z partition=2 offset=18907
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.025Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.025Z partition=2 offset=18908
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.026Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.026Z partition=2 offset=18909
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.027Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.027Z partition=2 offset=18910
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.028Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.028Z partition=2 offset=18911
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.029Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.029Z partition=2 offset=18912
+12:14:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=ACKTEST-A ts=2026-10-05T12:13:58.030Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+12:14:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=ACKTEST-A ts=2026-10-05T12:13:58.030Z partition=2 offset=18913

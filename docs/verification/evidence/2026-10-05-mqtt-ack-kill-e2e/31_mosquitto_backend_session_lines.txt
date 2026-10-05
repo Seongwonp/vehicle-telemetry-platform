@@ -1,0 +1,22 @@
+1789180520: New client connected from 172.18.0.8:51920 as telemetry-backend (p2, c0, k60).
+1789181782: Client telemetry-backend disconnected.
+1789181800: New client connected from 172.18.0.8:33410 as telemetry-backend (p2, c0, k60).
+1789183237: Client telemetry-backend disconnected.
+1789216506: New client connected from 172.18.0.11:41852 as telemetry-backend (p2, c0, k60).
+1789218485: Client telemetry-backend disconnected.
+1789266347: New client connected from 172.18.0.9:37716 as telemetry-backend (p2, c0, k60).
+1789267755: Client telemetry-backend disconnected.
+1789561324: New client connected from 172.18.0.12:47840 as telemetry-backend (p2, c0, k60).
+1789565638: Client telemetry-backend disconnected.
+1790634088: New client connected from 172.18.0.13:32776 as telemetry-backend (p2, c0, k60).
+1790634167: Client telemetry-backend closed its connection.
+1790634237: New client connected from 172.18.0.13:33392 as telemetry-backend (p2, c0, k60).
+1790670932: New client connected from 172.18.0.9:36742 as telemetry-backend (p2, c0, k60).
+1790672590: Client telemetry-backend disconnected.
+1790674113: New client connected from 172.18.0.9:57004 as telemetry-backend (p2, c0, k60).
+1790675229: Client telemetry-backend disconnected.
+1790689401: New client connected from 172.18.0.11:58814 as telemetry-backend (p2, c0, k60).
+1790690641: Client telemetry-backend disconnected.
+1791202362: New client connected from 172.18.0.8:59750 as telemetry-backend (p2, c0, k60).
+1791202531: Client telemetry-backend closed its connection.
+1791202580: New client connected from 172.18.0.8:46328 as telemetry-backend (p2, c0, k60).

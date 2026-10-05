@@ -1,0 +1,194 @@
+diff --git a/backend/src/main/java/com/telemetry/kafka/TelemetryProducer.java b/backend/src/main/java/com/telemetry/kafka/TelemetryProducer.java
+index f172ad4..62d928c 100644
+--- a/backend/src/main/java/com/telemetry/kafka/TelemetryProducer.java
++++ b/backend/src/main/java/com/telemetry/kafka/TelemetryProducer.java
+@@ -107,8 +107,8 @@ public class TelemetryProducer {
+      * <p>spool의 목적은 <i>Kafka 브로커 장애 시 유실 방지</i>인데, Kafka 프로듀서 자체가
+      * 내부 버퍼와 재시도(acks=all, retries=3)를 갖고 있다. 그래서 전송에 실패했을 때만
+      * spool에 적는다. 반환 future는 Kafka 또는 spool 기록 성공 뒤 완료된다.
+-     * MQTT 입구는 이 완료를 기다려 ACK한다. 프로세스 종료 시 미확인 메시지는
+-     * 살아 있는 브로커의 동일 세션에서 재전달한다(ADR-029).
++     * MQTT 입구는 이 완료를 기다려 ACK한다(ADR-029). 직렬화 실패는 다시 보내도 같으므로
++     * {@link UnsendableTelemetryException}으로 구분한다 — 입구가 DLQ로 격리한 뒤 ACK한다.
+      */
+     public CompletableFuture<Void> send(VehicleTelemetry telemetry) {
+         String payload;
+@@ -122,7 +122,7 @@ public class TelemetryProducer {
+                 telemetry.getSpeed(),
+                 telemetry.getRpm(),
+                 e);
+-            return CompletableFuture.failedFuture(e);
++            return CompletableFuture.failedFuture(new UnsendableTelemetryException(e));
+         }
+ 
+         // 이미 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 그래야 retryPending()이
+@@ -286,4 +286,14 @@ public class TelemetryProducer {
+             return CompletableFuture.failedFuture(spoolFailure);
+         }
+     }
++
++    /**
++     * 재시도해도 결과가 같은 실패(직렬화 실패). 일시 실패(Kafka·spool)와 구분해야 MQTT 입구가
++     * 이 메시지를 ACK 없이 두지 않는다 — 두면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다.
++     */
++    public static class UnsendableTelemetryException extends RuntimeException {
++        public UnsendableTelemetryException(Throwable cause) {
++            super("telemetry를 Kafka payload로 만들 수 없다", cause);
++        }
++    }
+ }
+diff --git a/backend/src/main/java/com/telemetry/mqtt/MqttMessageHandler.java b/backend/src/main/java/com/telemetry/mqtt/MqttMessageHandler.java
+index 3e5b4e4..d397f16 100644
+--- a/backend/src/main/java/com/telemetry/mqtt/MqttMessageHandler.java
++++ b/backend/src/main/java/com/telemetry/mqtt/MqttMessageHandler.java
+@@ -33,6 +33,7 @@ public class MqttMessageHandler {
+     private final Counter receivedCounter;
+     private final Counter invalidCounter;
+     private final MqttInvalidMessagePublisher invalidMessagePublisher;
++    private final Counter missingAckCallbackCounter;
+ 
+     public MqttMessageHandler(
+         TelemetryProducer telemetryProducer,
+@@ -46,6 +47,8 @@ public class MqttMessageHandler {
+         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
+         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
+         this.invalidMessagePublisher = invalidMessagePublisher;
++        // 0이 아니면 manualAcks가 꺼진 것이다 — ACK가 저장 확인을 기다리지 않는다(ADR-029 보장 소실).
++        this.missingAckCallbackCounter = meterRegistry.counter("telemetry.mqtt.ack.callback.missing");
+     }
+ 
+     // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
+@@ -66,6 +69,12 @@ public class MqttMessageHandler {
+             reject(topic, payload, e.getReason(), null);
+             acknowledge(message, CompletableFuture.completedFuture(null));
+             return;
++        } catch (RuntimeException e) {
++            // 계약 예외가 아닌 decode 실패도 같은 payload면 매번 같다. ACK 없이 던지면 브로커가 재접속마다
++            // 맨 앞에서 재전달해 구독 전체가 막힌다(poison 루프). 격리하고 ACK한다 — DLQ 실패면 ACK하지 않는다.
++            reject(topic, payload, "DECODE_FAILED", null);
++            acknowledge(message, CompletableFuture.completedFuture(null));
++            return;
+         }
+ 
+         Matcher topicMatcher = topic == null ? null : TELEMETRY_TOPIC.matcher(topic);
+@@ -89,24 +98,40 @@ public class MqttMessageHandler {
+             telemetry.getEngineTemp(),
+             telemetry.getBatteryVoltage());
+ 
+-        acknowledge(message, telemetryProducer.send(telemetry));
++        CompletableFuture<Void> receipt = telemetryProducer.send(telemetry)
++            .exceptionallyCompose(e -> {
++                Throwable cause = e instanceof java.util.concurrent.CompletionException && e.getCause() != null
++                    ? e.getCause() : e;
++                if (!(cause instanceof TelemetryProducer.UnsendableTelemetryException)) {
++                    return CompletableFuture.failedFuture(cause); // 일시 실패 — ACK하지 않고 재전달을 기다린다
++                }
++                // 재시도해도 같은 실패 — 격리 뒤 ACK. DLQ 발행 실패는 그대로 실패로 남아 ACK하지 않는다.
++                reject(topic, payload, "SERIALIZATION_FAILED", telemetry);
++                return CompletableFuture.completedFuture(null);
++            });
++        acknowledge(message, receipt);
+     }
+ 
+     private void acknowledge(Message<?> message, CompletableFuture<Void> receipt) {
+         var acknowledgment = message.getHeaders().get(
+             IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, SimpleAcknowledgment.class);
+-        // Header-free calls are used by the legacy comparison and decoder unit tests.
+-        if (acknowledgment == null) return;
++        // 헤더가 없으면 어댑터가 자동 ACK다(manualAcks 꺼짐) — 기다려도 ACK 시점을 바꿀 수 없다.
++        // 자동 ACK 대조 실험과 decoder 단위 테스트가 이 경로를 쓴다. 운영에서 0이 아니면 설정 회귀다.
++        if (acknowledgment == null) {
++            missingAckCallbackCounter.increment();
++            return;
++        }
+         try {
+-            // Stay on Paho's single callback thread: ordered ACKs, no old async callback after reconnect.
+-            // This deliberately trades concurrency for a small, auditable boundary (ADR-029).
++            // Paho 단일 콜백 스레드에서 기다린다 — ACK가 수신 순서로 나가고 Kafka 완료 스레드가 ACK하지 않는다.
++            // 동시성을 내주고 작고 검토 가능한 경계를 샀다(ADR-029).
+             receipt.get(150, TimeUnit.SECONDS);
+             acknowledgment.acknowledge();
+         } catch (InterruptedException e) {
+             Thread.currentThread().interrupt();
+             throw new IllegalStateException("MQTT 저장 확인 중단 — ACK하지 않음", e);
+         } catch (Exception e) {
+-            // Propagate through DirectChannel to Paho; disconnect/reconnect permits redelivery.
++            // DirectChannel로 Paho까지 던진다 — 연결이 끊기고 재접속 뒤 재전달되는 것을 기대한다
++            // (실제 브로커에서의 재전달은 ADR-029 검증 범위 참고).
+             throw new IllegalStateException("MQTT 저장 확인 실패 — ACK하지 않음", e);
+         }
+     }
+diff --git a/backend/src/test/java/com/telemetry/mqtt/MqttAcknowledgmentTest.java b/backend/src/test/java/com/telemetry/mqtt/MqttAcknowledgmentTest.java
+index 8c1f5ca..0e0d312 100644
+--- a/backend/src/test/java/com/telemetry/mqtt/MqttAcknowledgmentTest.java
++++ b/backend/src/test/java/com/telemetry/mqtt/MqttAcknowledgmentTest.java
+@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
+ import java.util.concurrent.TimeUnit;
+ import static org.assertj.core.api.Assertions.*;
+ import static org.mockito.ArgumentMatchers.any;
++import static org.mockito.ArgumentMatchers.eq;
+ import static org.mockito.Mockito.*;
+ 
+ class MqttAcknowledgmentTest {
+@@ -62,6 +63,61 @@ class MqttAcknowledgmentTest {
+         verifyNoInteractions(ack);
+     }
+ 
++    @Test void unsendableTelemetryIsQuarantinedThenAcked_notLeftToRedeliverForever() {
++        // 직렬화 실패는 다시 보내도 같다. ACK 없이 던지면 브로커가 재접속마다 맨 앞에서 재전달해 구독이 막힌다.
++        var producer = mock(TelemetryProducer.class);
++        when(producer.send(any())).thenReturn(CompletableFuture.failedFuture(
++            new TelemetryProducer.UnsendableTelemetryException(new RuntimeException("boom"))));
++        var dlq = mock(MqttInvalidMessagePublisher.class);
++        var ack = mock(SimpleAcknowledgment.class);
++
++        handler(producer, dlq).handle(message(PAYLOAD, ack));
++
++        var order = inOrder(dlq, ack);
++        order.verify(dlq).publish(eq("vehicle/telemetry/ACK-001"), eq(PAYLOAD), eq("SERIALIZATION_FAILED"));
++        order.verify(ack).acknowledge();
++    }
++
++    @Test void unsendableTelemetryWithDlqFailureIsNotAcked() {
++        var producer = mock(TelemetryProducer.class);
++        when(producer.send(any())).thenReturn(CompletableFuture.failedFuture(
++            new TelemetryProducer.UnsendableTelemetryException(new RuntimeException("boom"))));
++        var dlq = mock(MqttInvalidMessagePublisher.class);
++        doThrow(new IllegalStateException("DLQ unavailable")).when(dlq).publish(any(), any(), any());
++        var ack = mock(SimpleAcknowledgment.class);
++
++        assertThatThrownBy(() -> handler(producer, dlq).handle(message(PAYLOAD, ack)))
++            .isInstanceOf(IllegalStateException.class);
++        verifyNoInteractions(ack);
++    }
++
++    @Test void nonContractDecodeFailureIsQuarantinedThenAcked() {
++        var decoder = mock(com.telemetry.domain.TelemetryDecoder.class);
++        when(decoder.decode(any())).thenThrow(new IllegalArgumentException("validator bug"));
++        var dlq = mock(MqttInvalidMessagePublisher.class);
++        var ack = mock(SimpleAcknowledgment.class);
++        var handler = new MqttMessageHandler(mock(TelemetryProducer.class), decoder, new SimpleMeterRegistry(), dlq);
++
++        handler.handle(message(PAYLOAD, ack));
++
++        var order = inOrder(dlq, ack);
++        order.verify(dlq).publish(any(), any(), eq("DECODE_FAILED"));
++        order.verify(ack).acknowledge();
++    }
++
++    @Test void missingAckCallbackIsCounted_soAManualAckRegressionIsVisible() {
++        var producer = mock(TelemetryProducer.class);
++        when(producer.send(any())).thenReturn(CompletableFuture.completedFuture(null));
++        var registry = new SimpleMeterRegistry();
++        var handler = new MqttMessageHandler(producer, TestDecoders.telemetryDecoder(), registry,
++            mock(MqttInvalidMessagePublisher.class));
++
++        handler.handle(MessageBuilder.withPayload(PAYLOAD)
++            .setHeader("mqtt_receivedTopic", "vehicle/telemetry/ACK-001").build());
++
++        assertThat(registry.counter("telemetry.mqtt.ack.callback.missing").count()).isEqualTo(1.0);
++    }
++
+     private static org.springframework.messaging.Message<String> message(String payload, SimpleAcknowledgment ack) {
+         return MessageBuilder.withPayload(payload).setHeader("mqtt_receivedTopic", "vehicle/telemetry/ACK-001")
+             .setHeader(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, ack).build();

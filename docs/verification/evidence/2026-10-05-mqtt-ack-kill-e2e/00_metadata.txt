@@ -1,0 +1,22 @@
+# 실험 C 메타데이터 (2026-10-05)
+start_utc=2026-10-05T12:02:36Z
+git_head=c5347c8f02d9ceba6ab4b922a5945400be56e7d1
+git_status_porcelain_at_start=[1 lines]
+docker_server=29.7.2
+compose=5.4.0
+compose_cmd=docker compose -f docker-compose.yml -f docker-compose.dev.yml
+backend_image_id=sha256:4a004892a1b52540cf4e3069f3f7728dc23df4d1cc8b1d7ff1e88ca208d71860
+backend_image_created=2026-10-05T12:08:44.938926741Z
+note_dirty=이미지 빌드(약 12:03Z=21:03 KST) 시점의 git status는 추적 파일 변경 0(증거 폴더만 untracked). 빌드 뒤 21:07:54 KST에 이 세션이 아닌 쪽이 TelemetryProducer.java/MqttMessageHandler.java/MqttAcknowledgmentTest.java를 수정함(mtime). 이미지는 그 수정을 포함하지 않는다고 판단(추정: mtime 순서) — HEAD c5347c8 코드.
+image_content_check=확인함: 이미지 jar(docker cp 후 zip 목록)에 UnsendableTelemetryException 클래스 없음, MqttMessageHandler.class에 'ack.callback.missing' 문자열 없음 -> 이미지는 HEAD c5347c8 코드이며 21:07:54 KST 이후 외부 수정은 미포함. (이미지 생성 시각 12:08:44Z는 빌드 완료 시각이고 빌드가 약 6분 걸렸다)
+compose_override=저장소 밖 scratchpad의 debug.override.yml: backend에 LOGGING_LEVEL_COM_TELEMETRY=DEBUG만 추가(종료 후 삭제)
+end_utc=2026-10-05T12:19:00Z
+head_changed_during_run=실행 중 다른 쪽이 690f50e를 커밋함(위 00b 패치와 동일 내용으로 보임, 확인: git log). 실험 대상 이미지는 c5347c8 기준이며 690f50e 변경은 포함하지 않는다.
+commands:
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend
+  docker compose ... up -d zookeeper kafka influxdb postgres redis mosquitto ; up kafka-init ; up -d --no-build backend (+ 저장소 밖 DEBUG override)
+  docker update --restart=no telemetry-backend  (kill 뒤 자동 재시작 방지; 종료 후 unless-stopped로 복구)
+  pub.sh VID 30 PREFIX  (docker run eclipse-mosquitto:2.0 mosquitto_pub -d -q 1 -l, PUBACK 로그로 발행 수 셈)
+  docker pause telemetry-kafka -> publish -> docker kill telemetry-backend -> docker unpause telemetry-kafka -> docker start telemetry-backend
+  offsets.sh / influx_count.sh / kafka-console-consumer --from-beginning (ACKTEST-B 필터)
+test_data=InfluxDB vehicle_id ACKTEST-A(30행), ACKTEST-B(30행)를 남겼다(볼륨 삭제 안 함). Kafka vehicle-telemetry에 A 30건, B 31건.
