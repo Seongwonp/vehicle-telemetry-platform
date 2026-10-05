@@ -149,10 +149,29 @@ class MqttAcknowledgmentTest {
                 .hasRootCauseInstanceOf(InterruptedException.class);
             verifyNoInteractions(ack);
             // 중단이 스레드에 인터럽트 플래그를 남기지 않는다 — 같은 스레드의 다음 메시지가 정상 ACK된다.
+            assertThat(worker.submit(() -> Thread.currentThread().isInterrupted()).get(5, TimeUnit.SECONDS)).isFalse();
             receipt.complete(null);
             var next = worker.submit(() -> handler.handle(message(PAYLOAD, ack)));
             next.get(5, TimeUnit.SECONDS);
             verify(ack).acknowledge();
+        } finally { worker.shutdownNow(); }
+    }
+
+    @Test void foreignInterruptIsNotSwallowed() throws Exception {
+        var producer = mock(TelemetryProducer.class);
+        when(producer.send(any())).thenReturn(new CompletableFuture<>());
+        var handler = handler(producer, mock(MqttInvalidMessagePublisher.class));
+        var ack = mock(SimpleAcknowledgment.class);
+        var worker = Executors.newSingleThreadExecutor();
+        try {
+            // 연결 끊김이 아닌 출처(종료 등)의 인터럽트는 ACK하지 않고 플래그를 되살린다.
+            var flag = worker.submit(() -> {
+                Thread.currentThread().interrupt();
+                try { handler.handle(message(PAYLOAD, ack)); } catch (IllegalStateException expected) { }
+                return Thread.interrupted();
+            });
+            assertThat(flag.get(5, TimeUnit.SECONDS)).isTrue();
+            verifyNoInteractions(ack);
         } finally { worker.shutdownNow(); }
     }
 

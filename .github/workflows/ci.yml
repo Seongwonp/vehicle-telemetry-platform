@@ -29,6 +29,11 @@ jobs:
       # 스크립트로 확인한다(docs/verification/2026-09-09-evidence-checksum.md).
       - name: Verify preserved evidence checksums
         run: bash load-test/lib/verify_evidence.sh
+      # 규칙식 회귀(문턱·for·지표 이름)를 promtool 단위 테스트로 막는다. 이미지 태그는 compose의 Prometheus와 같다.
+      - name: Prometheus alert rules
+        run: |
+          docker run --rm -v "$PWD/monitoring/prometheus:/p" -w /p --entrypoint promtool prom/prometheus:v2.51.0 check rules alerts.yml
+          docker run --rm -v "$PWD/monitoring/prometheus:/p" -w /p --entrypoint promtool prom/prometheus:v2.51.0 test rules alerts_test.yml
       - name: Backend unit and Testcontainers contracts
         working-directory: backend
         run: ./gradlew test --no-daemon

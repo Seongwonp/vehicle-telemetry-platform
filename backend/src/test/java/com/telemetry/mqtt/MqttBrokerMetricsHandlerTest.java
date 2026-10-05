@@ -49,6 +49,22 @@ class MqttBrokerMetricsHandlerTest {
     }
 
     @Test
+    @DisplayName("갱신 시각 게이지는 첫 추적 값에서 생기고 이후 수신마다 전진한다 — 멈춘 $SYS를 알리는 근거")
+    void 갱신시각_게이지() {
+        handler.handle(sysMessage("$SYS/broker/uptime", "10"));
+        assertThat(meterRegistry.find("telemetry.mqtt.broker.last.update.seconds").gauge()).isNull();
+
+        long before = System.currentTimeMillis();
+        handler.handle(sysMessage("$SYS/broker/publish/messages/received", "1"));
+        double first = meterRegistry.get("telemetry.mqtt.broker.last.update.seconds").gauge().value();
+        assertThat(first).isBetween(before / 1000.0 - 1, System.currentTimeMillis() / 1000.0 + 1);
+
+        handler.handle(sysMessage("$SYS/broker/publish/messages/dropped", "0"));
+        assertThat(meterRegistry.find("telemetry.mqtt.broker.last.update.seconds").gauges()).hasSize(1);
+        assertThat(meterRegistry.get("telemetry.mqtt.broker.last.update.seconds").gauge().value()).isGreaterThanOrEqualTo(first);
+    }
+
+    @Test
     @DisplayName("소수 값도 받아들인다 — 일부 $SYS 토픽은 이동평균을 담는다")
     void 소수값_처리() {
         handler.handle(sysMessage("$SYS/broker/clients/connected", "3.0"));

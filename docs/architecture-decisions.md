@@ -1338,7 +1338,7 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 ~~**남은 위험(추정, 미검증)**: producer 기본값(max.block 60·delivery 120초)이면 Kafka 장애 때 첫 메시지가 콜백을 120초 막아 keepAlive 60초를 넘긴다.~~
 → **실험 E·E2(2026-10-05)에서 실제로 끊겼다**(유실은 0). 2026-10-06 `delivery.timeout.ms` 30초·`request.timeout.ms` 10초·`max.block.ms` 10초로 명시해 최악 대기(40초)를 keepAlive 아래로 내렸다 — `KafkaProducerContractTest`가 이 부등식을 고정한다. 대가: 30초 넘는 Kafka 정지는 spool을 거친다(전에는 120초). 09-29 spool 문서의 "120초"는 그 시점 설정 기준이다.
 
-**수신 정지 감지**: 브로커 수신 > 0인데 백엔드 수신 = 0이 2분이면 `MqttIngestStopped`(critical). 실험 H(1회)에서 ACL로 전달만 막은 경우와 SUBACK 0x80 둘 다 약 2분 30초에 firing했다. 이 알림은 브로커 `$SYS` 게이지에 기대므로, 게이지가 없을 때를 `MqttBrokerMetricsMissing`(5분)으로 따로 잡는다.
+**수신 정지 감지**: 브로커 수신 > 0인데 백엔드 수신 = 0이 2분이면 `MqttIngestStopped`(critical). 실험 H(각 1회)에서 ACL로 전달만 막은 경우와 SUBACK 0x80 둘 다 약 2분 30초에 firing했다 — **둘 다 기동부터 백엔드 수신이 0인 상태**였고, 정상 수신이 도중에 멈추는 경우의 탐지 시간은 H가 재지 않았다(검증 문서 실험 T). 문턱 0.1/s는 이 저장소의 시뮬레이터 규모 기준이라 그보다 유입이 적으면 침묵한다. 이 알림은 브로커 `$SYS` 게이지에 기대므로, 게이지가 없을 때를 `MqttBrokerMetricsMissing`(5분), 게이지는 남았는데 갱신이 멈춘 때를 `MqttBrokerMetricsStale`(2분 + for 3m)로 따로 잡는다. 규칙식은 `monitoring/prometheus/alerts_test.yml`(promtool, CI)로 고정했다 — 실스택 탐지 시간의 근거가 아니라 식의 회귀 방지다.
 
 **구독 실패 예방은 하지 않기로(2026-10-06)**:
 - 재시작 직후 `Error subscribing … Timed out`(연결 +5초, 실험 C·E·F·G 4회)은 브로커 구독이 성립한 채 데이터가 계속 들어왔다 — 해로운 실패가 아니었다.
@@ -1350,3 +1350,9 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 ### 추가 (2026-10-05) — 재접속과 저장 대기
 
 콜백 스레드에서 저장 확인을 기다리는 구조는 Paho 재접속과 충돌했다. 옛 콜백 스레드가 끝날 때까지 재접속이 대기해, 브로커가 살아 있어도 최대 150초 동안 수신이 멈췄다. `MqttConnectionFailedEvent` 수신 시 대기 중인 콜백 스레드만 인터럽트해 ACK 없이 빠져나오도록 했다. 유실은 없고 재전달 중복이 늘 뿐이다. `$SYS` 어댑터는 제외한다. 범위와 한계는 [실험 D](verification/2026-10-01-mqtt-ack-boundary.md)를 따른다(1회 관찰, 깨끗한 TCP 단절만).
+
+### 추가 (2026-10-06) — 2차 리뷰 후속
+
+- **인터럽트는 대기 구간 안에서만 닿는다.** 처음 구현은 대기 스레드 참조를 지운 직후와 이벤트 발행이 경합하면 ACK 이후·다음 메시지·Paho 내부 코드에 인터럽트가 샐 수 있었다. 이벤트 쪽과 구간 종료 쪽이 같은 잠금을 쓰고, 연결 끊김으로 건 인터럽트는 구간 종료 때 지운다. 다른 출처(종료 등)의 인터럽트는 ACK하지 않고 플래그를 되살린다. 구간은 decode·DLQ 발행(`get(10s)`)·Kafka `send`(max.block)까지 덮는다 — 어디서 막혀 있든 깨울 수 있게. 단위 테스트 2건, 실스택 재검증은 하지 않았다.
+- **순서**: 중단된 메시지는 ACK되지 않고 같은 연결의 다음 메시지가 먼저 ACK될 수 있어, 재전달분이 뒤에 저장될 수 있다. 저장은 `(vehicle_id, timestamp)` identity라 결과는 같지만 "수신 순서 ACK"는 연결이 끊기지 않은 구간에서만 말한다.
+- 비계약 decode 실패는 원인 예외를 WARN으로 남기고 `telemetry.mqtt.decode.failed`를 올린다(DLQ 사유는 `DECODE_FAILED` 한 단어라 원인을 담지 않는다).

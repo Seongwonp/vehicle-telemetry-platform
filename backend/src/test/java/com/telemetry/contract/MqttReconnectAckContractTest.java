@@ -151,7 +151,7 @@ class MqttReconnectAckContractTest {
     private static long ms(long t0) { return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - t0); }
 
     @Test @SuppressWarnings("unchecked")
-    void staleAckAfterReconnectDoesNotLoseOrBlockMessages() throws Exception {
+    void ackPendingAcrossReconnectDoesNotLoseOrBlockMessages() throws Exception {
         String brokerHost = BROKER.getHost();
         int brokerPort = BROKER.getMappedPort(1883);
         String clientId = "reconnect-" + UUID.randomUUID();

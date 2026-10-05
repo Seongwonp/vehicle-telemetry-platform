@@ -41,6 +41,13 @@ public class MqttBrokerMetricsHandler {
 
     private final MeterRegistry meterRegistry;
     private final Map<String, AtomicLong> values = new ConcurrentHashMap<>();
+    /**
+     * 마지막으로 추적 대상 $SYS 값을 받은 시각(epoch ms). 위 게이지들은 한 번 등록되면 지워지지 않아,
+     * $SYS가 끊겨도 마지막 값이 그대로 노출된다 — 그 상태에서 MqttIngestStopped는 옛 값의 rate(=0)를 보고
+     * 조용해진다. 이 시각으로 "값이 멈췄다"를 따로 알린다(MqttBrokerMetricsStale). 첫 수신 때 등록한다 —
+     * 한 번도 안 왔으면 게이지가 없고, 그 경우는 MqttBrokerMetricsMissing이 본다.
+     */
+    private final AtomicLong lastUpdateMillis = new AtomicLong();
 
     public MqttBrokerMetricsHandler(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
@@ -70,5 +77,8 @@ public class MqttBrokerMetricsHandler {
             meterRegistry.gauge(name, holder, AtomicLong::get);
             return holder;
         }).set(value);
+        if (lastUpdateMillis.getAndSet(System.currentTimeMillis()) == 0) {
+            meterRegistry.gauge("telemetry.mqtt.broker.last.update.seconds", lastUpdateMillis, v -> v.get() / 1000.0);
+        }
     }
 }

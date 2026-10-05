@@ -77,7 +77,7 @@ class KafkaProducerContractTest {
             long delivery = Long.parseLong(String.valueOf(props.get(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG)));
             long request = Long.parseLong(String.valueOf(props.get(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG)));
             long maxBlock = Long.parseLong(String.valueOf(props.get(ProducerConfig.MAX_BLOCK_MS_CONFIG)));
-            long keepAliveMs = 60_000; // MqttConfig.setKeepAliveInterval(60)
+            long keepAliveMs = MqttConfig.KEEP_ALIVE_SECONDS * 1000L;
 
             // 한 메시지가 콜백을 막는 최악은 max.block(send 호출 자체) + delivery(완료 대기)다.
             assertThat(maxBlock + delivery).isLessThan(keepAliveMs);

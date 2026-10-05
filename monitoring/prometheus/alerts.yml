@@ -60,6 +60,8 @@ groups:
       # **완전히 0**이어도 영영 안 뜬다. 구독이 빠진 경우(재시작 직후 구독 timeout, 2026-10-05 실험 C·E·F·G),
       # 어댑터가 멈춘 경우, 핸들러가 막힌 경우를 원인과 무관하게 잡으려면 "브로커는 받는데 백엔드는 0"을 직접 본다.
       # 2분 창 + for 2m: 백엔드 재시작·재접속(실험 E2에서 수신 재개까지 약 7초)은 넘기고, 진짜 정지는 약 4분에 잡는다.
+      # 0.1/s(분당 6건) 문턱은 이 저장소의 시뮬레이터 규모(차량 수십 대 × 초당 수 건) 기준이다 — 유입이 이보다 적은 배치에선 침묵한다.
+      # 단위 테스트: monitoring/prometheus/alerts_test.yml (promtool test rules).
       - alert: MqttIngestStopped
         expr: >
           sum(rate(telemetry_mqtt_broker_messages_received[2m])) > 0.1
@@ -81,6 +83,16 @@ groups:
           severity: warning
         annotations:
           summary: "백엔드가 브로커 $SYS 통계를 받지 못함 — MqttIngestStopped가 동작하지 않는 상태"
+
+      # 위는 게이지가 **없을** 때다. 게이지는 한 번 생기면 지워지지 않아 $SYS가 끊겨도 마지막 값이 남고,
+      # 그 rate는 0이라 MqttIngestStopped가 조용해진다. mosquitto sys_interval 기본 10초 — 2분이면 12주기 누락.
+      - alert: MqttBrokerMetricsStale
+        expr: time() - max(telemetry_mqtt_broker_last_update_seconds) > 120
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "브로커 $SYS 통계가 2분 넘게 갱신되지 않음 — MqttIngestStopped가 동작하지 않는 상태"
 
       # 12시간 soak에서 실제로 일어난 사고의 신호다: MQTT는 계속 들어오는데 InfluxDB
       # 저장이 26초 만에 멈췄고, 그런데도 Kafka lag은 끝까지 0이라(offset이 계속 커밋됨)

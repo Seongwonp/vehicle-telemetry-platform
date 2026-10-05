@@ -22,6 +22,9 @@ import java.security.KeyStore;
 @Configuration
 public class MqttConfig {
 
+    /** MQTT keepAlive(초). producer 실패 확정 시간은 이보다 짧아야 한다(KafkaProducerContractTest). */
+    public static final int KEEP_ALIVE_SECONDS = 60;
+
     @Value("${mqtt.host}")
     private String host;
 
@@ -61,7 +64,7 @@ public class MqttConfig {
         options.setServerURIs(new String[]{scheme + "://" + host + ":" + port});
         options.setCleanSession(false);
         options.setConnectionTimeout(10);
-        options.setKeepAliveInterval(60);
+        options.setKeepAliveInterval(KEEP_ALIVE_SECONDS);
         // 브로커 재시작이나 네트워크 단절 시 자동 재연결 — 수동 복구 없이 파이프라인 유지
         options.setAutomaticReconnect(true);
         // 재연결 백오프의 상한을 반드시 낮춰야 한다. Paho는 1초에서 시작해 매번 두 배로
