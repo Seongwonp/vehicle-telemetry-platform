@@ -1,0 +1,1524 @@
+2026-10-05T12:38:02.644505190Z 
+2026-10-05T12:38:02.644537020Z   .   ____          _            __ _ _
+2026-10-05T12:38:02.644540128Z  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+2026-10-05T12:38:02.644542377Z ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+2026-10-05T12:38:02.644544510Z  \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+2026-10-05T12:38:02.644546629Z   '  |____| .__|_| |_|_| |_\__, | / / / /
+2026-10-05T12:38:02.644548835Z  =========|_|==============|___/=/_/_/_/
+2026-10-05T12:38:02.648383149Z  :: Spring Boot ::                (v3.2.5)
+2026-10-05T12:38:02.648412699Z 
+2026-10-05T12:38:02.768049948Z 12:38:02 [-] [-] INFO  c.t.TelemetryApplication - Starting TelemetryApplication v0.0.1-SNAPSHOT using Java 17.0.20.1 with PID 1 (/app/app.jar started by root in /app)
+2026-10-05T12:38:02.768334169Z 12:38:02 [-] [-] DEBUG c.t.TelemetryApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2026-10-05T12:38:02.768930062Z 12:38:02 [-] [-] INFO  c.t.TelemetryApplication - No active profile set, falling back to 1 default profile: "default"
+2026-10-05T12:38:04.724876079Z 12:38:04 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-05T12:38:04.726146587Z 12:38:04 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-05T12:38:04.994170673Z 12:38:04 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 253 ms. Found 3 JPA repository interfaces.
+2026-10-05T12:38:05.008085596Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Multiple Spring Data modules found, entering strict repository configuration mode
+2026-10-05T12:38:05.009121594Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-10-05T12:38:05.023840733Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-10-05T12:38:05.024088229Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.VehicleRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-10-05T12:38:05.025204332Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationExtensionSupport - Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.telemetry.repository.AnomalyAlertRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-10-05T12:38:05.025221380Z 12:38:05 [-] [-] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 8 ms. Found 0 Redis repository interfaces.
+2026-10-05T12:38:05.201945409Z 12:38:05 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+2026-10-05T12:38:05.210243937Z 12:38:05 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'integrationHeaderChannelRegistry' has been explicitly defined. Therefore, a default DefaultHeaderChannelRegistry will be created.
+2026-10-05T12:38:06.447412978Z 12:38:06 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat initialized with port 8080 (http)
+2026-10-05T12:38:06.471768568Z 12:38:06 [-] [-] INFO  o.a.c.c.StandardService - Starting service [Tomcat]
+2026-10-05T12:38:06.472026584Z 12:38:06 [-] [-] INFO  o.a.c.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2026-10-05T12:38:06.542077624Z 12:38:06 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring embedded WebApplicationContext
+2026-10-05T12:38:06.544519168Z 12:38:06 [-] [-] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3666 ms
+2026-10-05T12:38:06.946591206Z 12:38:06 [-] [-] DEBUG c.t.s.RequestLoggingFilter - Filter 'requestLoggingFilter' configured for use
+2026-10-05T12:38:07.094439805Z 12:38:07 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Starting...
+2026-10-05T12:38:07.294624228Z 12:38:07 [-] [-] INFO  c.z.h.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@8585cdd
+2026-10-05T12:38:07.297107141Z 12:38:07 [-] [-] INFO  c.z.h.HikariDataSource - HikariPool-1 - Start completed.
+2026-10-05T12:38:07.406214246Z 12:38:07 [-] [-] INFO  o.f.c.i.l.VersionPrinter - Flyway Community Edition 9.22.3 by Redgate
+2026-10-05T12:38:07.406247723Z 12:38:07 [-] [-] INFO  o.f.c.i.l.VersionPrinter - See release notes here: https://rd.gt/416ObMi
+2026-10-05T12:38:07.406392666Z 12:38:07 [-] [-] INFO  o.f.c.i.l.VersionPrinter - 
+2026-10-05T12:38:07.429119192Z 12:38:07 [-] [-] INFO  o.f.core.FlywayExecutor - Database: jdbc:postgresql://postgres:5432/telemetry (PostgreSQL 16.15)
+2026-10-05T12:38:07.447424109Z 12:38:07 [-] [-] WARN  o.f.c.i.d.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 15.
+2026-10-05T12:38:07.505462661Z 12:38:07 [-] [-] INFO  o.f.c.i.c.DbValidate - Successfully validated 6 migrations (execution time 00:00.039s)
+2026-10-05T12:38:07.521233119Z 12:38:07 [-] [-] INFO  o.f.c.i.command.DbMigrate - Current version of schema "public": 6
+2026-10-05T12:38:07.523882527Z 12:38:07 [-] [-] INFO  o.f.c.i.command.DbMigrate - Schema "public" is up to date. No migration necessary.
+2026-10-05T12:38:07.642175497Z 12:38:07 [-] [-] INFO  o.h.j.i.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-10-05T12:38:07.694881183Z 12:38:07 [-] [-] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2026-10-05T12:38:07.737326793Z 12:38:07 [-] [-] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2026-10-05T12:38:07.944174283Z 12:38:07 [-] [-] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-05T12:38:07.993482992Z 12:38:07 [-] [-] WARN  o.h.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-10-05T12:38:08.883108530Z 12:38:08 [-] [-] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-05T12:38:08.919619087Z 12:38:08 [-] [-] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-05T12:38:09.563873949Z 12:38:09 [-] [-] INFO  o.s.d.j.r.q.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-05T12:38:11.556431125Z 12:38:11 [-] [-] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-05T12:38:12.167851933Z 12:38:12 [-] [-] INFO  o.s.b.a.e.w.EndpointLinksResolver - Exposing 4 endpoint(s) beneath base path '/actuator'
+2026-10-05T12:38:13.281308646Z 12:38:13 [-] [-] INFO  o.a.k.c.a.AdminClientConfig - AdminClientConfig values: 
+2026-10-05T12:38:13.281333730Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:13.281335501Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:13.281336564Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:13.281337483Z 	client.id = 
+2026-10-05T12:38:13.281348082Z 	connections.max.idle.ms = 300000
+2026-10-05T12:38:13.281349136Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:13.281350017Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:13.281350858Z 	metric.reporters = []
+2026-10-05T12:38:13.281351693Z 	metrics.num.samples = 2
+2026-10-05T12:38:13.281352529Z 	metrics.recording.level = INFO
+2026-10-05T12:38:13.281353408Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:13.281354641Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:13.281355530Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:13.281356403Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:13.281357229Z 	request.timeout.ms = 30000
+2026-10-05T12:38:13.281358052Z 	retries = 2147483647
+2026-10-05T12:38:13.281358872Z 	retry.backoff.ms = 100
+2026-10-05T12:38:13.281359739Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:13.281360603Z 	sasl.jaas.config = null
+2026-10-05T12:38:13.281361452Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:13.281362305Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:13.281363185Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:13.281364024Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:13.281364894Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:13.281365760Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:13.281366629Z 	sasl.login.class = null
+2026-10-05T12:38:13.281367444Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:13.281368284Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:13.281369156Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:13.281369993Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:13.281370826Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:13.281371678Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:13.281372531Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:13.281373515Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:13.281374369Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:13.281375190Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:13.281376047Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:13.281376916Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:13.281377968Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:13.281378808Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:13.281379678Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:13.281382065Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:13.281382973Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:13.281383835Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:13.281384672Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:13.281385535Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:13.281386407Z 	security.providers = null
+2026-10-05T12:38:13.281387272Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:13.281388133Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:13.281389054Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:13.281389919Z 	ssl.cipher.suites = null
+2026-10-05T12:38:13.281390765Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:13.281391620Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:13.281393132Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:13.281394023Z 	ssl.key.password = null
+2026-10-05T12:38:13.281394865Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:13.281395710Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:13.281396587Z 	ssl.keystore.key = null
+2026-10-05T12:38:13.281397412Z 	ssl.keystore.location = null
+2026-10-05T12:38:13.281398303Z 	ssl.keystore.password = null
+2026-10-05T12:38:13.281399145Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:13.281399983Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:13.281400800Z 	ssl.provider = null
+2026-10-05T12:38:13.281401666Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:13.281402571Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:13.281403427Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:13.281404276Z 	ssl.truststore.location = null
+2026-10-05T12:38:13.281405131Z 	ssl.truststore.password = null
+2026-10-05T12:38:13.281405982Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:13.281406854Z 
+2026-10-05T12:38:13.374530183Z 12:38:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:13.374557314Z 12:38:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:13.374559252Z 12:38:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203893373
+2026-10-05T12:38:13.619758383Z 12:38:13 [-] [-] INFO  o.a.k.c.u.AppInfoParser - App info kafka.admin.client for adminclient-1 unregistered
+2026-10-05T12:38:13.624939240Z 12:38:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics scheduler closed
+2026-10-05T12:38:13.624966313Z 12:38:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Closing reporter org.apache.kafka.common.metrics.JmxReporter
+2026-10-05T12:38:13.625086170Z 12:38:13 [-] [-] INFO  o.a.k.c.metrics.Metrics - Metrics reporters closed
+2026-10-05T12:38:13.632696352Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+2026-10-05T12:38:13.633129949Z 12:38:13 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 1 subscriber(s).
+2026-10-05T12:38:13.633609543Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean '_org.springframework.integration.errorLogger'
+2026-10-05T12:38:13.633616962Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttBrokerMetricsHandler.handle.serviceActivator} as a subscriber to the 'mqttBrokerMetricsChannel' channel
+2026-10-05T12:38:13.633773044Z 12:38:13 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttBrokerMetricsChannel' has 1 subscriber(s).
+2026-10-05T12:38:13.633780769Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttBrokerMetricsHandler.handle.serviceActivator'
+2026-10-05T12:38:13.633782300Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {service-activator:mqttMessageHandler.handle.serviceActivator} as a subscriber to the 'mqttInputChannel' channel
+2026-10-05T12:38:13.633959289Z 12:38:13 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'vehicle-telemetry-backend.mqttInputChannel' has 1 subscriber(s).
+2026-10-05T12:38:13.633962241Z 12:38:13 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean 'mqttMessageHandler.handle.serviceActivator'
+2026-10-05T12:38:13.952479676Z 12:38:13 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttInbound()'
+2026-10-05T12:38:14.255843573Z 12:38:14 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.mqttBrokerMetricsInbound()'
+2026-10-05T12:38:14.267019248Z 12:38:14 [-] [-] INFO  o.s.b.w.e.t.TomcatWebServer - Tomcat started on port 8080 (http) with context path ''
+2026-10-05T12:38:14.290582834Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.290604194Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.290605903Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.290606888Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.290610721Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.290611645Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.290612625Z 	check.crcs = true
+2026-10-05T12:38:14.290613465Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.290614352Z 	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-0
+2026-10-05T12:38:14.290615297Z 	client.rack = 
+2026-10-05T12:38:14.290616178Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.290626560Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.290627569Z 	enable.auto.commit = false
+2026-10-05T12:38:14.290628464Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.290629292Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.290630120Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.290630984Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.290631829Z 	group.id = telemetry-storage-group
+2026-10-05T12:38:14.290632752Z 	group.instance.id = telemetry-backend-consumer-0
+2026-10-05T12:38:14.290633613Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.290634502Z 	interceptor.classes = []
+2026-10-05T12:38:14.290635348Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.290636300Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.290637299Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.290638243Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.290639185Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.290640046Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.290640915Z 	max.poll.records = 2000
+2026-10-05T12:38:14.290641751Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.290642562Z 	metric.reporters = []
+2026-10-05T12:38:14.290643390Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.290644231Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.290645116Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.290646062Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.290647066Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.290647922Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.290648743Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.290649558Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.290650385Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.290651220Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.290652135Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.290652972Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.290653840Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.290654721Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.290655671Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.290656720Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.290657594Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.290659964Z 	sasl.login.class = null
+2026-10-05T12:38:14.290660844Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.290661728Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.290662606Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.290663476Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.290664377Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.290665711Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.290666590Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.290667451Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.290668334Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.290669166Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.290670003Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.290670853Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.290671694Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.290672553Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.290673422Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.290674290Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.290675143Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.290676008Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.290676849Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.290677723Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.290696185Z 	security.providers = null
+2026-10-05T12:38:14.290697492Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.290698382Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.290699244Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.290700157Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.290701024Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.290701883Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.290702739Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.290703594Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.290704485Z 	ssl.key.password = null
+2026-10-05T12:38:14.290705334Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.290706197Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.290707071Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.290707899Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.290708755Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.290711017Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.290711924Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.290712779Z 	ssl.provider = null
+2026-10-05T12:38:14.290713616Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.290714473Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.290715326Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.290716184Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.290717039Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.290717888Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.290718777Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.290719745Z 
+2026-10-05T12:38:14.331366315Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.331582621Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.331594428Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894330
+2026-10-05T12:38:14.350835398Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.350865485Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.350868678Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.350870248Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.350871663Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.350873030Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.350874568Z 	check.crcs = true
+2026-10-05T12:38:14.350875944Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.350877455Z 	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-1
+2026-10-05T12:38:14.350878855Z 	client.rack = 
+2026-10-05T12:38:14.350880308Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.350882201Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.350883473Z 	enable.auto.commit = false
+2026-10-05T12:38:14.350884700Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.350885943Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.350887191Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.350888458Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.350889696Z 	group.id = telemetry-storage-group
+2026-10-05T12:38:14.350891001Z 	group.instance.id = telemetry-backend-consumer-1
+2026-10-05T12:38:14.350892302Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.350893445Z 	interceptor.classes = []
+2026-10-05T12:38:14.350894664Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.350895846Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.350910734Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.350912257Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.350913910Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.350915233Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.350916860Z 	max.poll.records = 2000
+2026-10-05T12:38:14.350918235Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.350919620Z 	metric.reporters = []
+2026-10-05T12:38:14.350920791Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.350921975Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.350923108Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.350924458Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.350926000Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.350927285Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.350928518Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.350929721Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.350931054Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.350932400Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.350933790Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.350935106Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.350936364Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.350937718Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.350938957Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.350940424Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.350941806Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.350943182Z 	sasl.login.class = null
+2026-10-05T12:38:14.350944517Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.350945809Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.350947018Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.350948206Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.350949855Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.350953812Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.350955269Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.350956681Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.350957968Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.350959378Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.350960762Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.350964436Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.350965876Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.350967171Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.350968593Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.350969757Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.350971035Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.350972283Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.350973517Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.350978609Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.350979950Z 	security.providers = null
+2026-10-05T12:38:14.350981160Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.350982336Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.350983528Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.350984874Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.350986130Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.350987424Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.350988757Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.350990162Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.350991507Z 	ssl.key.password = null
+2026-10-05T12:38:14.350992685Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.350994010Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.350995337Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.350996580Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.350998098Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.350999492Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.351000688Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.351001854Z 	ssl.provider = null
+2026-10-05T12:38:14.351003126Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.351004629Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.351005960Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.351007112Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.351008294Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.351009500Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.351010822Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.351012171Z 
+2026-10-05T12:38:14.356031869Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.356074065Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.356270073Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894355
+2026-10-05T12:38:14.362306054Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.362919656Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.365651259Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] (Re-)joining group
+2026-10-05T12:38:14.371008508Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.371036172Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.371038468Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.371039789Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.371040928Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.371042130Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.371043268Z 	check.crcs = true
+2026-10-05T12:38:14.371044805Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.371046301Z 	client.id = consumer-telemetry-storage-group-telemetry-backend-consumer-2
+2026-10-05T12:38:14.371047669Z 	client.rack = 
+2026-10-05T12:38:14.371049082Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.371050396Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.371051762Z 	enable.auto.commit = false
+2026-10-05T12:38:14.371052990Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.371056812Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.371058133Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.371059341Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.371061006Z 	group.id = telemetry-storage-group
+2026-10-05T12:38:14.371062232Z 	group.instance.id = telemetry-backend-consumer-2
+2026-10-05T12:38:14.371063449Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.371064805Z 	interceptor.classes = []
+2026-10-05T12:38:14.371066006Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.371067096Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.371068387Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.371069676Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.371082677Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.371084244Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.371085527Z 	max.poll.records = 2000
+2026-10-05T12:38:14.371086916Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.371088075Z 	metric.reporters = []
+2026-10-05T12:38:14.371089511Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.371090918Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.371092314Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.371093688Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.371095588Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.371096935Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.371098219Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.371099418Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.371100835Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.371102075Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.371103274Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.371104514Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.371105764Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.371106975Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.371108341Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.371109710Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.371111080Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.371112352Z 	sasl.login.class = null
+2026-10-05T12:38:14.371113444Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.371114797Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.371115981Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.371117197Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.371118470Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.371120999Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.371122250Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.371123380Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.371124503Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.371125552Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.371126586Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.371127629Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.371128750Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.371131972Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.371133195Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.371134353Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.371135465Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.371136541Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.371138576Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.371139785Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.371141007Z 	security.providers = null
+2026-10-05T12:38:14.371142100Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.371143269Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.371144453Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.371145617Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.371146860Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.371148070Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.371149496Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.371150914Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.371152025Z 	ssl.key.password = null
+2026-10-05T12:38:14.371153361Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.371154463Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.371155560Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.371156839Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.371158159Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.371159807Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.371162223Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.371163936Z 	ssl.provider = null
+2026-10-05T12:38:14.371165313Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.371166584Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.371167691Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.371169793Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.371171088Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.371172546Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.371174024Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.371175544Z 
+2026-10-05T12:38:14.373872693Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.373892672Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.373894753Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894373
+2026-10-05T12:38:14.373917349Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.374470943Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.375315067Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] (Re-)joining group
+2026-10-05T12:38:14.383285959Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.383307996Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.383309764Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.383310811Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.383311716Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.383312580Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.383313506Z 	check.crcs = true
+2026-10-05T12:38:14.383314405Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.383315376Z 	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-0
+2026-10-05T12:38:14.383316322Z 	client.rack = 
+2026-10-05T12:38:14.383317226Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.383318131Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.383318983Z 	enable.auto.commit = false
+2026-10-05T12:38:14.383319841Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.383320655Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.383321481Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.383322294Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.383323137Z 	group.id = anomaly-storage-group
+2026-10-05T12:38:14.383324033Z 	group.instance.id = telemetry-backend-consumer-0
+2026-10-05T12:38:14.383324902Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.383325735Z 	interceptor.classes = []
+2026-10-05T12:38:14.383326593Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.383327501Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.383328850Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.383329741Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.383330686Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.383331550Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.383332441Z 	max.poll.records = 2000
+2026-10-05T12:38:14.383341761Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.383342704Z 	metric.reporters = []
+2026-10-05T12:38:14.383343560Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.383344403Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.383345263Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.383346217Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.383347261Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.383348110Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.383348954Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.383349809Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.383350642Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.383351485Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.383352364Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.383353209Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.383354099Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.383354972Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.383355824Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.383356687Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.383357533Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.383358384Z 	sasl.login.class = null
+2026-10-05T12:38:14.383361984Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.383362886Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.383363829Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.383364675Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.383365527Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.383367100Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.383368040Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.383368909Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.383369775Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.383370589Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.383371463Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.383372294Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.383373180Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.383374039Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.383374926Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.383375831Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.383377818Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.383378699Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.383379558Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.383380434Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.383381294Z 	security.providers = null
+2026-10-05T12:38:14.383382148Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.383382992Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.383383849Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.383384732Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.383385591Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.383386445Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.383387288Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.383388145Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.383389002Z 	ssl.key.password = null
+2026-10-05T12:38:14.383389831Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.383390686Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.383391543Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.383392371Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.383393433Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.383394304Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.383395141Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.383395991Z 	ssl.provider = null
+2026-10-05T12:38:14.383396822Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.383397689Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.383398560Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.383399420Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.383400280Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.383401102Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.383401977Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.383402921Z 
+2026-10-05T12:38:14.386362120Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.386388997Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.386391308Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894385
+2026-10-05T12:38:14.388292935Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.389105082Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.389959487Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] (Re-)joining group
+2026-10-05T12:38:14.396990952Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.397017912Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.397020352Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.397021901Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.397023938Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.397025448Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.397026959Z 	check.crcs = true
+2026-10-05T12:38:14.397028464Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.397029846Z 	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-1
+2026-10-05T12:38:14.397031274Z 	client.rack = 
+2026-10-05T12:38:14.397032587Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.397034080Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.397035564Z 	enable.auto.commit = false
+2026-10-05T12:38:14.397036914Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.397038369Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.397039693Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.397041040Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.397042426Z 	group.id = anomaly-storage-group
+2026-10-05T12:38:14.397043777Z 	group.instance.id = telemetry-backend-consumer-1
+2026-10-05T12:38:14.397045268Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.397046615Z 	interceptor.classes = []
+2026-10-05T12:38:14.397047982Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.397049405Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.397050826Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.397052351Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.397053814Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.397055126Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.397056515Z 	max.poll.records = 2000
+2026-10-05T12:38:14.397057882Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.397059214Z 	metric.reporters = []
+2026-10-05T12:38:14.397060563Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.397061955Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.397074570Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.397076169Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.397077760Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.397082595Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.397083961Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.397085268Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.397086660Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.397088008Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.397089497Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.397090778Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.397092059Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.397093332Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.397094673Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.397096044Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.397097393Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.397098765Z 	sasl.login.class = null
+2026-10-05T12:38:14.397100104Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.397101385Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.397102739Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.397104097Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.397105511Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.397107738Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.397109208Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.397110570Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.397111948Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.397113320Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.397114755Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.397116177Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.397117575Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.397118992Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.397120413Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.397121875Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.397123260Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.397124709Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.397126095Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.397129376Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.397130795Z 	security.providers = null
+2026-10-05T12:38:14.397132191Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.397133411Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.397134643Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.397136164Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.397137616Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.397138957Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.397140401Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.397141589Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.397142902Z 	ssl.key.password = null
+2026-10-05T12:38:14.397144288Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.397145756Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.397147185Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.397148672Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.397150085Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.397151496Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.397153053Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.397154428Z 	ssl.provider = null
+2026-10-05T12:38:14.397155758Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.397157134Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.397158529Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.397159933Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.397161410Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.397162759Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.397164127Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.397165655Z 
+2026-10-05T12:38:14.399244933Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.399580689Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.399593271Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.399594845Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.399596357Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894399
+2026-10-05T12:38:14.400398101Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] (Re-)joining group
+2026-10-05T12:38:14.408052442Z 12:38:14 [-] [-] INFO  o.a.k.c.c.ConsumerConfig - ConsumerConfig values: 
+2026-10-05T12:38:14.408082906Z 	allow.auto.create.topics = true
+2026-10-05T12:38:14.408085571Z 	auto.commit.interval.ms = 5000
+2026-10-05T12:38:14.408087144Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:14.408088596Z 	auto.offset.reset = earliest
+2026-10-05T12:38:14.408089991Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:14.408091457Z 	check.crcs = true
+2026-10-05T12:38:14.408092750Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:14.408094057Z 	client.id = consumer-anomaly-storage-group-telemetry-backend-consumer-2
+2026-10-05T12:38:14.408095502Z 	client.rack = 
+2026-10-05T12:38:14.408096857Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:14.408098194Z 	default.api.timeout.ms = 60000
+2026-10-05T12:38:14.408099365Z 	enable.auto.commit = false
+2026-10-05T12:38:14.408100478Z 	exclude.internal.topics = true
+2026-10-05T12:38:14.408101660Z 	fetch.max.bytes = 52428800
+2026-10-05T12:38:14.408103027Z 	fetch.max.wait.ms = 500
+2026-10-05T12:38:14.408104908Z 	fetch.min.bytes = 1
+2026-10-05T12:38:14.408106075Z 	group.id = anomaly-storage-group
+2026-10-05T12:38:14.408107374Z 	group.instance.id = telemetry-backend-consumer-2
+2026-10-05T12:38:14.408108594Z 	heartbeat.interval.ms = 3000
+2026-10-05T12:38:14.408109839Z 	interceptor.classes = []
+2026-10-05T12:38:14.408111204Z 	internal.leave.group.on.close = true
+2026-10-05T12:38:14.408112499Z 	internal.throw.on.fetch.stable.offset.unsupported = false
+2026-10-05T12:38:14.408113884Z 	isolation.level = read_uncommitted
+2026-10-05T12:38:14.408115263Z 	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.408116707Z 	max.partition.fetch.bytes = 1048576
+2026-10-05T12:38:14.408117968Z 	max.poll.interval.ms = 300000
+2026-10-05T12:38:14.408119217Z 	max.poll.records = 2000
+2026-10-05T12:38:14.408120568Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:14.408121936Z 	metric.reporters = []
+2026-10-05T12:38:14.408123249Z 	metrics.num.samples = 2
+2026-10-05T12:38:14.408124680Z 	metrics.recording.level = INFO
+2026-10-05T12:38:14.408126174Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:14.408127579Z 	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+2026-10-05T12:38:14.408142447Z 	receive.buffer.bytes = 65536
+2026-10-05T12:38:14.408144019Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:14.408145249Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:14.408146391Z 	request.timeout.ms = 30000
+2026-10-05T12:38:14.408147596Z 	retry.backoff.ms = 100
+2026-10-05T12:38:14.408148858Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:14.408150037Z 	sasl.jaas.config = null
+2026-10-05T12:38:14.408151371Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:14.408152732Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:14.408154088Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:14.408155441Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:14.408156581Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:14.408157872Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:14.408159293Z 	sasl.login.class = null
+2026-10-05T12:38:14.408160606Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:14.408162011Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:14.408163456Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:14.408164794Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:14.408166102Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:14.408168849Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:14.408170343Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.408171569Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:14.408172984Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:14.408174259Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:14.408175613Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:14.408176910Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:14.408178186Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:14.408179476Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:14.408180783Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:14.408182105Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:14.408183498Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:14.408184747Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:14.408186058Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:14.408188792Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:14.408189822Z 	security.providers = null
+2026-10-05T12:38:14.408190729Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:14.408193470Z 	session.timeout.ms = 45000
+2026-10-05T12:38:14.408194397Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:14.408195669Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:14.408197043Z 	ssl.cipher.suites = null
+2026-10-05T12:38:14.408198350Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:14.408199795Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:14.408201199Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:14.408202489Z 	ssl.key.password = null
+2026-10-05T12:38:14.408203765Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:14.408205158Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:14.408206423Z 	ssl.keystore.key = null
+2026-10-05T12:38:14.408207908Z 	ssl.keystore.location = null
+2026-10-05T12:38:14.408209058Z 	ssl.keystore.password = null
+2026-10-05T12:38:14.408210332Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:14.408211585Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:14.408212772Z 	ssl.provider = null
+2026-10-05T12:38:14.408213868Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:14.408215108Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:14.408216254Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:14.408217491Z 	ssl.truststore.location = null
+2026-10-05T12:38:14.408218745Z 	ssl.truststore.password = null
+2026-10-05T12:38:14.408220042Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:14.408221394Z 	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+2026-10-05T12:38:14.408222719Z 
+2026-10-05T12:38:14.411077545Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.411359186Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.411643355Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:14.411990213Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:14.411999432Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] (Re-)joining group
+2026-10-05T12:38:14.413007841Z 12:38:14 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203894411
+2026-10-05T12:38:14.420291274Z 12:38:14 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2026-10-05T12:38:14.420899468Z 12:38:14 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@54733b9c]]
+2026-10-05T12:38:14.421268584Z 12:38:14 [-] [-] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2026-10-05T12:38:14.424280620Z 12:38:14 [-] [-] INFO  o.a.k.clients.Metadata - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:14.424588132Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Discovered group coordinator kafka:29092 (id: 2147483646 rack: null)
+2026-10-05T12:38:14.425305547Z 12:38:14 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] (Re-)joining group
+2026-10-05T12:38:14.452565842Z 12:38:14 [-] [-] INFO  c.t.TelemetryApplication - Started TelemetryApplication in 12.346 seconds (process running for 13.07)
+2026-10-05T12:38:14.752367681Z 12:38:14 [-] [-] INFO  o.a.c.c.C.[.[.[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-05T12:38:14.752397235Z 12:38:14 [-] [-] INFO  o.s.w.s.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-10-05T12:38:14.754724282Z 12:38:14 [-] [-] INFO  o.s.w.s.DispatcherServlet - Completed initialization in 2 ms
+2026-10-05T12:38:15.280599413Z 12:38:15 [4d643c23] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [4d643c23] GET /actuator/health → 200 (492ms) ip=172.18.0.1
+2026-10-05T12:38:17.383609468Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-2-b962bf7e-d0da-4220-9367-117b4a25a32c', protocol='range'}
+2026-10-05T12:38:17.383634943Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-0-55d138ba-95ed-4f99-beda-09891f8776c3', protocol='range'}
+2026-10-05T12:38:17.383637977Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-1-98c5ee68-9c1b-4f4f-b37c-5a3c421ecfdc', protocol='range'}
+2026-10-05T12:38:17.399962997Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Finished assignment for group at generation 22: {telemetry-backend-consumer-1-98c5ee68-9c1b-4f4f-b37c-5a3c421ecfdc=Assignment(partitions=[vehicle-telemetry-1]), telemetry-backend-consumer-2-b962bf7e-d0da-4220-9367-117b4a25a32c=Assignment(partitions=[vehicle-telemetry-2]), telemetry-backend-consumer-0-55d138ba-95ed-4f99-beda-09891f8776c3=Assignment(partitions=[vehicle-telemetry-0])}
+2026-10-05T12:38:17.404476813Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-2-b962bf7e-d0da-4220-9367-117b4a25a32c', protocol='range'}
+2026-10-05T12:38:17.404550855Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-1-98c5ee68-9c1b-4f4f-b37c-5a3c421ecfdc', protocol='range'}
+2026-10-05T12:38:17.404556853Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-0-55d138ba-95ed-4f99-beda-09891f8776c3', protocol='range'}
+2026-10-05T12:38:17.404828226Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-1])
+2026-10-05T12:38:17.404961580Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-0])
+2026-10-05T12:38:17.404972256Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-2])
+2026-10-05T12:38:17.406480221Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-1-08a0d8d1-9b0e-455d-866d-4164066578b1', protocol='range'}
+2026-10-05T12:38:17.406498213Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-0-7202a621-63e0-4445-9578-6d196b44ae48', protocol='range'}
+2026-10-05T12:38:17.406718455Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully joined group with generation Generation{generationId=22, memberId='telemetry-backend-consumer-2-f6f02da4-dee8-45d7-b821-ff578668296e', protocol='range'}
+2026-10-05T12:38:17.406882130Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Finished assignment for group at generation 22: {telemetry-backend-consumer-0-7202a621-63e0-4445-9578-6d196b44ae48=Assignment(partitions=[vehicle-anomaly-alerts-0]), telemetry-backend-consumer-1-08a0d8d1-9b0e-455d-866d-4164066578b1=Assignment(partitions=[vehicle-anomaly-alerts-1]), telemetry-backend-consumer-2-f6f02da4-dee8-45d7-b821-ff578668296e=Assignment(partitions=[vehicle-anomaly-alerts-2])}
+2026-10-05T12:38:17.407448576Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-0
+2026-10-05T12:38:17.407703816Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-1
+2026-10-05T12:38:17.407712042Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Adding newly assigned partitions: vehicle-telemetry-2
+2026-10-05T12:38:17.409596224Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-1-08a0d8d1-9b0e-455d-866d-4164066578b1', protocol='range'}
+2026-10-05T12:38:17.409613343Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-0-7202a621-63e0-4445-9578-6d196b44ae48', protocol='range'}
+2026-10-05T12:38:17.409689077Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Successfully synced group in generation Generation{generationId=22, memberId='telemetry-backend-consumer-2-f6f02da4-dee8-45d7-b821-ff578668296e', protocol='range'}
+2026-10-05T12:38:17.409874791Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-0])
+2026-10-05T12:38:17.409883606Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-2])
+2026-10-05T12:38:17.409885665Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Notifying assignor about the new Assignment(partitions=[vehicle-anomaly-alerts-1])
+2026-10-05T12:38:17.409896907Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-2
+2026-10-05T12:38:17.410016594Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-0
+2026-10-05T12:38:17.410025348Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Adding newly assigned partitions: vehicle-anomaly-alerts-1
+2026-10-05T12:38:17.417313029Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-2, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-2 to the committed offset FetchPosition{offset=19635, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:17.417341309Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-0, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-0 to the committed offset FetchPosition{offset=1, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:17.417344281Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-2, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-2, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-2 to the committed offset FetchPosition{offset=384, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:17.417362021Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-0, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-0, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-0 to the committed offset FetchPosition{offset=14, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:17.417455491Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-telemetry-storage-group-telemetry-backend-consumer-1, groupId=telemetry-storage-group] Setting offset for partition vehicle-telemetry-1 to the committed offset FetchPosition{offset=41244, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:17.417463223Z 12:38:17 [-] [-] INFO  o.a.k.c.c.i.ConsumerCoordinator - [Consumer instanceId=telemetry-backend-consumer-1, clientId=consumer-anomaly-storage-group-telemetry-backend-consumer-1, groupId=anomaly-storage-group] Setting offset for partition vehicle-anomaly-alerts-1 to the committed offset FetchPosition{offset=844, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[kafka:29092 (id: 1 rack: null)], epoch=0}}
+2026-10-05T12:38:18.959801111Z 12:38:18 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Error subscribing to [vehicle/telemetry/#]
+2026-10-05T12:38:18.959846215Z org.eclipse.paho.client.mqttv3.MqttException: Timed out waiting for a response from the server
+2026-10-05T12:38:18.959849467Z 	at org.eclipse.paho.client.mqttv3.internal.Token.waitForCompletion(Token.java:112)
+2026-10-05T12:38:18.959851524Z 	at org.eclipse.paho.client.mqttv3.MqttToken.waitForCompletion(MqttToken.java:67)
+2026-10-05T12:38:18.959852893Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.subscribe(MqttPahoMessageDrivenChannelAdapter.java:302)
+2026-10-05T12:38:18.959854367Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.connectComplete(MqttPahoMessageDrivenChannelAdapter.java:425)
+2026-10-05T12:38:18.959855908Z 	at org.eclipse.paho.client.mqttv3.internal.ConnectActionListener.onSuccess(ConnectActionListener.java:104)
+2026-10-05T12:38:18.959857270Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.fireActionEvent(CommsCallback.java:333)
+2026-10-05T12:38:18.959858779Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleActionComplete(CommsCallback.java:272)
+2026-10-05T12:38:18.959860113Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:198)
+2026-10-05T12:38:18.959861475Z 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-10-05T12:38:19.097234306Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.128813396Z 12:38:19 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+2026-10-05T12:38:19.128841260Z 	acks = -1
+2026-10-05T12:38:19.128843700Z 	auto.include.jmx.reporter = true
+2026-10-05T12:38:19.128845627Z 	batch.size = 16384
+2026-10-05T12:38:19.128846852Z 	bootstrap.servers = [kafka:29092]
+2026-10-05T12:38:19.128848267Z 	buffer.memory = 33554432
+2026-10-05T12:38:19.128849446Z 	client.dns.lookup = use_all_dns_ips
+2026-10-05T12:38:19.128850568Z 	client.id = producer-1
+2026-10-05T12:38:19.128851838Z 	compression.type = none
+2026-10-05T12:38:19.128853077Z 	connections.max.idle.ms = 540000
+2026-10-05T12:38:19.128854269Z 	delivery.timeout.ms = 120000
+2026-10-05T12:38:19.128855513Z 	enable.idempotence = true
+2026-10-05T12:38:19.128856799Z 	interceptor.classes = []
+2026-10-05T12:38:19.128858541Z 	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+2026-10-05T12:38:19.128859810Z 	linger.ms = 0
+2026-10-05T12:38:19.128861189Z 	max.block.ms = 60000
+2026-10-05T12:38:19.128862334Z 	max.in.flight.requests.per.connection = 5
+2026-10-05T12:38:19.128863865Z 	max.request.size = 1048576
+2026-10-05T12:38:19.128865079Z 	metadata.max.age.ms = 300000
+2026-10-05T12:38:19.128866403Z 	metadata.max.idle.ms = 300000
+2026-10-05T12:38:19.128879830Z 	metric.reporters = []
+2026-10-05T12:38:19.128881225Z 	metrics.num.samples = 2
+2026-10-05T12:38:19.128882520Z 	metrics.recording.level = INFO
+2026-10-05T12:38:19.128883756Z 	metrics.sample.window.ms = 30000
+2026-10-05T12:38:19.128885156Z 	partitioner.adaptive.partitioning.enable = true
+2026-10-05T12:38:19.128886486Z 	partitioner.availability.timeout.ms = 0
+2026-10-05T12:38:19.128887714Z 	partitioner.class = null
+2026-10-05T12:38:19.128888860Z 	partitioner.ignore.keys = false
+2026-10-05T12:38:19.128889912Z 	receive.buffer.bytes = 32768
+2026-10-05T12:38:19.128891279Z 	reconnect.backoff.max.ms = 1000
+2026-10-05T12:38:19.128892407Z 	reconnect.backoff.ms = 50
+2026-10-05T12:38:19.128893733Z 	request.timeout.ms = 30000
+2026-10-05T12:38:19.128894914Z 	retries = 3
+2026-10-05T12:38:19.128895952Z 	retry.backoff.ms = 100
+2026-10-05T12:38:19.128897615Z 	sasl.client.callback.handler.class = null
+2026-10-05T12:38:19.128899061Z 	sasl.jaas.config = null
+2026-10-05T12:38:19.128900391Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-05T12:38:19.128901938Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-05T12:38:19.128903258Z 	sasl.kerberos.service.name = null
+2026-10-05T12:38:19.128904460Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-05T12:38:19.128905937Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-05T12:38:19.128907408Z 	sasl.login.callback.handler.class = null
+2026-10-05T12:38:19.128908882Z 	sasl.login.class = null
+2026-10-05T12:38:19.128910013Z 	sasl.login.connect.timeout.ms = null
+2026-10-05T12:38:19.128911518Z 	sasl.login.read.timeout.ms = null
+2026-10-05T12:38:19.128912878Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-05T12:38:19.128914312Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-05T12:38:19.128915833Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-05T12:38:19.128917062Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-05T12:38:19.128918297Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-05T12:38:19.128919504Z 	sasl.login.retry.backoff.ms = 100
+2026-10-05T12:38:19.128920847Z 	sasl.mechanism = GSSAPI
+2026-10-05T12:38:19.128922384Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-05T12:38:19.128923769Z 	sasl.oauthbearer.expected.audience = null
+2026-10-05T12:38:19.128924886Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-05T12:38:19.128926007Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-05T12:38:19.128927263Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-05T12:38:19.128932060Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-05T12:38:19.128933295Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-05T12:38:19.128934733Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-05T12:38:19.128935935Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-05T12:38:19.128937119Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-05T12:38:19.128938490Z 	security.protocol = PLAINTEXT
+2026-10-05T12:38:19.128939727Z 	security.providers = null
+2026-10-05T12:38:19.128941308Z 	send.buffer.bytes = 131072
+2026-10-05T12:38:19.128942786Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-05T12:38:19.128944137Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-05T12:38:19.128945359Z 	ssl.cipher.suites = null
+2026-10-05T12:38:19.128946522Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-05T12:38:19.128947719Z 	ssl.endpoint.identification.algorithm = https
+2026-10-05T12:38:19.128948985Z 	ssl.engine.factory.class = null
+2026-10-05T12:38:19.128949999Z 	ssl.key.password = null
+2026-10-05T12:38:19.128951046Z 	ssl.keymanager.algorithm = SunX509
+2026-10-05T12:38:19.128952279Z 	ssl.keystore.certificate.chain = null
+2026-10-05T12:38:19.128953627Z 	ssl.keystore.key = null
+2026-10-05T12:38:19.128954723Z 	ssl.keystore.location = null
+2026-10-05T12:38:19.128956194Z 	ssl.keystore.password = null
+2026-10-05T12:38:19.128957358Z 	ssl.keystore.type = JKS
+2026-10-05T12:38:19.128958483Z 	ssl.protocol = TLSv1.3
+2026-10-05T12:38:19.128959519Z 	ssl.provider = null
+2026-10-05T12:38:19.128960592Z 	ssl.secure.random.implementation = null
+2026-10-05T12:38:19.128961772Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-05T12:38:19.128963191Z 	ssl.truststore.certificates = null
+2026-10-05T12:38:19.128964326Z 	ssl.truststore.location = null
+2026-10-05T12:38:19.128965557Z 	ssl.truststore.password = null
+2026-10-05T12:38:19.128966839Z 	ssl.truststore.type = JKS
+2026-10-05T12:38:19.128968239Z 	transaction.timeout.ms = 60000
+2026-10-05T12:38:19.128969498Z 	transactional.id = null
+2026-10-05T12:38:19.128970727Z 	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+2026-10-05T12:38:19.128972306Z 
+2026-10-05T12:38:19.138916656Z 12:38:19 [-] [-] INFO  o.a.k.c.p.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+2026-10-05T12:38:19.155840687Z 12:38:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-05T12:38:19.155869270Z 12:38:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-05T12:38:19.155892082Z 12:38:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791203899155
+2026-10-05T12:38:19.160446242Z 12:38:19 [-] [-] INFO  o.a.k.clients.Metadata - [Producer clientId=producer-1] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-05T12:38:19.273761467Z 12:38:19 [-] [-] INFO  o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-1] ProducerId set to 16000 with epoch 0
+2026-10-05T12:38:19.310590824Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.001Z partition=2 offset=19635
+2026-10-05T12:38:19.313881871Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.002Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.316606145Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.002Z partition=2 offset=19636
+2026-10-05T12:38:19.320851231Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.003Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.324000774Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.003Z partition=2 offset=19637
+2026-10-05T12:38:19.326911771Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.004Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.329552644Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.004Z partition=2 offset=19638
+2026-10-05T12:38:19.333196569Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.005Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.335613430Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.005Z partition=2 offset=19639
+2026-10-05T12:38:19.338436419Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.006Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.340908562Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.006Z partition=2 offset=19640
+2026-10-05T12:38:19.344801243Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.007Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.347405243Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.007Z partition=2 offset=19641
+2026-10-05T12:38:19.351314460Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.008Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.354696094Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.008Z partition=2 offset=19642
+2026-10-05T12:38:19.357787563Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.009Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.361658742Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.009Z partition=2 offset=19643
+2026-10-05T12:38:19.369168692Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.010Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.372026604Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.010Z partition=2 offset=19644
+2026-10-05T12:38:19.375096989Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.011Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.377712594Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.011Z partition=2 offset=19645
+2026-10-05T12:38:19.380683611Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.012Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.388096209Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.012Z partition=2 offset=19646
+2026-10-05T12:38:19.391030484Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.013Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.393664461Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.013Z partition=2 offset=19647
+2026-10-05T12:38:19.396371438Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.014Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.399187130Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.014Z partition=2 offset=19648
+2026-10-05T12:38:19.410108100Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.015Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.413742917Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.015Z partition=2 offset=19649
+2026-10-05T12:38:19.416562845Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.016Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.422772758Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.016Z partition=2 offset=19650
+2026-10-05T12:38:19.425404376Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.017Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.429338747Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.017Z partition=2 offset=19651
+2026-10-05T12:38:19.432015250Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.018Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.438828916Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.018Z partition=2 offset=19652
+2026-10-05T12:38:19.441862770Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.019Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.443821552Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.019Z partition=2 offset=19653
+2026-10-05T12:38:19.446117614Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.020Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.449016315Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.020Z partition=2 offset=19654
+2026-10-05T12:38:19.457059794Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.021Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.464767718Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.021Z partition=2 offset=19655
+2026-10-05T12:38:19.467402132Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.022Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.472666325Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.022Z partition=2 offset=19656
+2026-10-05T12:38:19.475329024Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.023Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.478000751Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.023Z partition=2 offset=19657
+2026-10-05T12:38:19.479950862Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.024Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.482834263Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.024Z partition=2 offset=19658
+2026-10-05T12:38:19.486753224Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.025Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.489636820Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.025Z partition=2 offset=19659
+2026-10-05T12:38:19.493084829Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.026Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.497000592Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.026Z partition=2 offset=19660
+2026-10-05T12:38:19.498925072Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.027Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.501600699Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.027Z partition=2 offset=19661
+2026-10-05T12:38:19.504297039Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.028Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.507279134Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.028Z partition=2 offset=19662
+2026-10-05T12:38:19.511982729Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.029Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.515579779Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.029Z partition=2 offset=19663
+2026-10-05T12:38:19.518191738Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.030Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.520859158Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.030Z partition=2 offset=19664
+2026-10-05T12:38:19.527946372Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.031Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.532467457Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.031Z partition=2 offset=19665
+2026-10-05T12:38:19.536464113Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.032Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.540686099Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.032Z partition=2 offset=19666
+2026-10-05T12:38:19.542849543Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.033Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.545722656Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.033Z partition=2 offset=19667
+2026-10-05T12:38:19.547489931Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.034Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.550207196Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.034Z partition=2 offset=19668
+2026-10-05T12:38:19.552260993Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.035Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.555604158Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.035Z partition=2 offset=19669
+2026-10-05T12:38:19.558765461Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.036Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.565240554Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.036Z partition=2 offset=19670
+2026-10-05T12:38:19.566920548Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.037Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.570030746Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.037Z partition=2 offset=19671
+2026-10-05T12:38:19.571769317Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.038Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.574730424Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.038Z partition=2 offset=19672
+2026-10-05T12:38:19.576997664Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.039Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.579631732Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.039Z partition=2 offset=19673
+2026-10-05T12:38:19.581165843Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.040Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.584136286Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.040Z partition=2 offset=19674
+2026-10-05T12:38:19.586977595Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.041Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.590535963Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.041Z partition=2 offset=19675
+2026-10-05T12:38:19.596254107Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.042Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.599491027Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.042Z partition=2 offset=19676
+2026-10-05T12:38:19.603754852Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.043Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.608574329Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.043Z partition=2 offset=19677
+2026-10-05T12:38:19.609798551Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.044Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.612617445Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.044Z partition=2 offset=19678
+2026-10-05T12:38:19.614345000Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.045Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.616580417Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.045Z partition=2 offset=19679
+2026-10-05T12:38:19.618219378Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.046Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.620622324Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.046Z partition=2 offset=19680
+2026-10-05T12:38:19.623197730Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.047Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.625659593Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.047Z partition=2 offset=19681
+2026-10-05T12:38:19.627468125Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.048Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.631288449Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.048Z partition=2 offset=19682
+2026-10-05T12:38:19.633778981Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.049Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.636959826Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.049Z partition=2 offset=19683
+2026-10-05T12:38:19.638236786Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.050Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.640056850Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-05T12:38:19.640442439Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.050Z partition=2 offset=19684
+2026-10-05T12:38:19.642093577Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.051Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.644264097Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.051Z partition=2 offset=19685
+2026-10-05T12:38:19.646357860Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.052Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.650959082Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.052Z partition=2 offset=19686
+2026-10-05T12:38:19.652365929Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.053Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.655407533Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.053Z partition=2 offset=19687
+2026-10-05T12:38:19.657838432Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.054Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.661542942Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.054Z partition=2 offset=19688
+2026-10-05T12:38:19.663661438Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.055Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.666146330Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.055Z partition=2 offset=19689
+2026-10-05T12:38:19.668338100Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.056Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.671898538Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.056Z partition=2 offset=19690
+2026-10-05T12:38:19.673361439Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.057Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.676014192Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.057Z partition=2 offset=19691
+2026-10-05T12:38:19.677745742Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.058Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.680271470Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.058Z partition=2 offset=19692
+2026-10-05T12:38:19.682464083Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.059Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.684965940Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.059Z partition=2 offset=19693
+2026-10-05T12:38:19.687541445Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.060Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.689948429Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.060Z partition=2 offset=19694
+2026-10-05T12:38:19.695539289Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.061Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.699762900Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.061Z partition=2 offset=19695
+2026-10-05T12:38:19.704927914Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.062Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.708198842Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.062Z partition=2 offset=19696
+2026-10-05T12:38:19.710174756Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.063Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.712464804Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.063Z partition=2 offset=19697
+2026-10-05T12:38:19.714517876Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.064Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.718705123Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.064Z partition=2 offset=19698
+2026-10-05T12:38:19.720000846Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.065Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.722015764Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.065Z partition=2 offset=19699
+2026-10-05T12:38:19.723195620Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.066Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.725371341Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.066Z partition=2 offset=19700
+2026-10-05T12:38:19.726109389Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-05T12:38:19.727041016Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.067Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.729291823Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.067Z partition=2 offset=19701
+2026-10-05T12:38:19.730874241Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.068Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.732844754Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.068Z partition=2 offset=19702
+2026-10-05T12:38:19.734628641Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.069Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.737153401Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.069Z partition=2 offset=19703
+2026-10-05T12:38:19.738912188Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.070Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.741212951Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.070Z partition=2 offset=19704
+2026-10-05T12:38:19.742620389Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.071Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.745015802Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.071Z partition=2 offset=19705
+2026-10-05T12:38:19.746730876Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.072Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.753312081Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.072Z partition=2 offset=19706
+2026-10-05T12:38:19.754657388Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.073Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.757383470Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.073Z partition=2 offset=19707
+2026-10-05T12:38:19.759032563Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.074Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.761866908Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.074Z partition=2 offset=19708
+2026-10-05T12:38:19.764287623Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.075Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.767179830Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.075Z partition=2 offset=19709
+2026-10-05T12:38:19.768591206Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.076Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.771062301Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.076Z partition=2 offset=19710
+2026-10-05T12:38:19.772986022Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.077Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.775407289Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.077Z partition=2 offset=19711
+2026-10-05T12:38:19.781581711Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.078Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.785027334Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.078Z partition=2 offset=19712
+2026-10-05T12:38:19.786259156Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.079Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.788972435Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.079Z partition=2 offset=19713
+2026-10-05T12:38:19.790613888Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.080Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.792704837Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.080Z partition=2 offset=19714
+2026-10-05T12:38:19.794404659Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.081Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.796608161Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.081Z partition=2 offset=19715
+2026-10-05T12:38:19.798187347Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.082Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.801377308Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.082Z partition=2 offset=19716
+2026-10-05T12:38:19.803032023Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.083Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.805053556Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.083Z partition=2 offset=19717
+2026-10-05T12:38:19.807221944Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.084Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.810079284Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.084Z partition=2 offset=19718
+2026-10-05T12:38:19.811315900Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.085Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.813736900Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.085Z partition=2 offset=19719
+2026-10-05T12:38:19.814896555Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.086Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.819153333Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.086Z partition=2 offset=19720
+2026-10-05T12:38:19.820260005Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.087Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.822156429Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.087Z partition=2 offset=19721
+2026-10-05T12:38:19.824060414Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.088Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.826141628Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.088Z partition=2 offset=19722
+2026-10-05T12:38:19.827737725Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.089Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.829786406Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.089Z partition=2 offset=19723
+2026-10-05T12:38:19.832249281Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.090Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.834062593Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.090Z partition=2 offset=19724
+2026-10-05T12:38:19.835168010Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.091Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.837040939Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.091Z partition=2 offset=19725
+2026-10-05T12:38:19.838353477Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.092Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.840291839Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.092Z partition=2 offset=19726
+2026-10-05T12:38:19.842653574Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.093Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.844679950Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.093Z partition=2 offset=19727
+2026-10-05T12:38:19.846293145Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.094Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.848505250Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.094Z partition=2 offset=19728
+2026-10-05T12:38:19.850232471Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.095Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.852867860Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.095Z partition=2 offset=19729
+2026-10-05T12:38:19.854443600Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.096Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.856423501Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.096Z partition=2 offset=19730
+2026-10-05T12:38:19.858577591Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.097Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.859459899Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 51건 중 51건 저장
+2026-10-05T12:38:19.860619660Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.097Z partition=2 offset=19731
+2026-10-05T12:38:19.862364409Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.098Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.865117602Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.098Z partition=2 offset=19732
+2026-10-05T12:38:19.868613419Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.099Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.870884007Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.099Z partition=2 offset=19733
+2026-10-05T12:38:19.872362932Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.100Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.873974553Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.100Z partition=2 offset=19734
+2026-10-05T12:38:19.875278979Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.101Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.877850461Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.101Z partition=2 offset=19735
+2026-10-05T12:38:19.878850149Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.102Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.880943449Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.102Z partition=2 offset=19736
+2026-10-05T12:38:19.882602445Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.103Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.884673647Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.103Z partition=2 offset=19737
+2026-10-05T12:38:19.886371719Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.104Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.889442356Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.104Z partition=2 offset=19738
+2026-10-05T12:38:19.891097291Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.105Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.895505546Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.105Z partition=2 offset=19739
+2026-10-05T12:38:19.897364100Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.106Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.899627867Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.106Z partition=2 offset=19740
+2026-10-05T12:38:19.901080128Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.107Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.903270636Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.107Z partition=2 offset=19741
+2026-10-05T12:38:19.905025663Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.108Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.907429971Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.108Z partition=2 offset=19742
+2026-10-05T12:38:19.911779596Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.109Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.913945763Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.109Z partition=2 offset=19743
+2026-10-05T12:38:19.915631458Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.110Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.918235894Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.110Z partition=2 offset=19744
+2026-10-05T12:38:19.919992285Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.111Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.922587126Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.111Z partition=2 offset=19745
+2026-10-05T12:38:19.924432720Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.112Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.929884906Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.112Z partition=2 offset=19746
+2026-10-05T12:38:19.933278265Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.113Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.935522852Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.113Z partition=2 offset=19747
+2026-10-05T12:38:19.936983364Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.114Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.939125460Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.114Z partition=2 offset=19748
+2026-10-05T12:38:19.940959289Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.115Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.943046784Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 15건 중 15건 저장
+2026-10-05T12:38:19.943073928Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.115Z partition=2 offset=19749
+2026-10-05T12:38:19.947992965Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.116Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.951562857Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.116Z partition=2 offset=19750
+2026-10-05T12:38:19.956928490Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.117Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.963969901Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.117Z partition=2 offset=19751
+2026-10-05T12:38:19.963999957Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.118Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.964003484Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.118Z partition=2 offset=19752
+2026-10-05T12:38:19.965183080Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.119Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.968446334Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.119Z partition=2 offset=19753
+2026-10-05T12:38:19.971604030Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.120Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.977455929Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.120Z partition=2 offset=19754
+2026-10-05T12:38:19.978500879Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.121Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.981178283Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.121Z partition=2 offset=19755
+2026-10-05T12:38:19.983905394Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.122Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.984603415Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.122Z partition=2 offset=19756
+2026-10-05T12:38:19.985966059Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.123Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.988285633Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.123Z partition=2 offset=19757
+2026-10-05T12:38:19.996829385Z 12:38:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.124Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:19.999145683Z 12:38:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.124Z partition=2 offset=19758
+2026-10-05T12:38:20.002088858Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.125Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.005145641Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.125Z partition=2 offset=19759
+2026-10-05T12:38:20.006413065Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.126Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.009009730Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.126Z partition=2 offset=19760
+2026-10-05T12:38:20.011473723Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.127Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.014023532Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.127Z partition=2 offset=19761
+2026-10-05T12:38:20.015225446Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.128Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.023409809Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.128Z partition=2 offset=19762
+2026-10-05T12:38:20.030749300Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.129Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.033295302Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.129Z partition=2 offset=19763
+2026-10-05T12:38:20.034425163Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.130Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.036721867Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.130Z partition=2 offset=19764
+2026-10-05T12:38:20.037857332Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.131Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.039983393Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.131Z partition=2 offset=19765
+2026-10-05T12:38:20.041032618Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.132Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.043163556Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.132Z partition=2 offset=19766
+2026-10-05T12:38:20.044225108Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.133Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.046337476Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.133Z partition=2 offset=19767
+2026-10-05T12:38:20.047432958Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.134Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.049305124Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.134Z partition=2 offset=19768
+2026-10-05T12:38:20.050425104Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.135Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.052419244Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.135Z partition=2 offset=19769
+2026-10-05T12:38:20.053801135Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.136Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.055962912Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.136Z partition=2 offset=19770
+2026-10-05T12:38:20.057103904Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.137Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.059227344Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.137Z partition=2 offset=19771
+2026-10-05T12:38:20.060233848Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.138Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.063579418Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.138Z partition=2 offset=19772
+2026-10-05T12:38:20.064682015Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.139Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.066327753Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 31건 중 31건 저장
+2026-10-05T12:38:20.066576642Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.139Z partition=2 offset=19773
+2026-10-05T12:38:20.068093013Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.140Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.070661321Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.140Z partition=2 offset=19774
+2026-10-05T12:38:20.070960860Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.141Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.072765527Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.141Z partition=2 offset=19775
+2026-10-05T12:38:20.073694784Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.142Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.076454183Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.142Z partition=2 offset=19776
+2026-10-05T12:38:20.077180829Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.143Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.079099407Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.143Z partition=2 offset=19777
+2026-10-05T12:38:20.082835347Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.144Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.085036237Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.144Z partition=2 offset=19778
+2026-10-05T12:38:20.086034683Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.145Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.088050057Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.145Z partition=2 offset=19779
+2026-10-05T12:38:20.092842266Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.146Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.095104369Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.146Z partition=2 offset=19780
+2026-10-05T12:38:20.096080683Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.147Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.100442698Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.147Z partition=2 offset=19781
+2026-10-05T12:38:20.101261752Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.148Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.102961102Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.148Z partition=2 offset=19782
+2026-10-05T12:38:20.103824202Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.149Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.105385567Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.149Z partition=2 offset=19783
+2026-10-05T12:38:20.106219603Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.150Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.107852153Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.150Z partition=2 offset=19784
+2026-10-05T12:38:20.108726050Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.151Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.110130011Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.151Z partition=2 offset=19785
+2026-10-05T12:38:20.110934888Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.152Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.112507098Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.152Z partition=2 offset=19786
+2026-10-05T12:38:20.113343707Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.153Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.115131028Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.153Z partition=2 offset=19787
+2026-10-05T12:38:20.117070282Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.154Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.118880694Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.154Z partition=2 offset=19788
+2026-10-05T12:38:20.120133619Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.155Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.122511625Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.155Z partition=2 offset=19789
+2026-10-05T12:38:20.123634822Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.156Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.126784425Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.156Z partition=2 offset=19790
+2026-10-05T12:38:20.127865503Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.157Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.131836275Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.157Z partition=2 offset=19791
+2026-10-05T12:38:20.132697164Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.158Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.135015241Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.158Z partition=2 offset=19792
+2026-10-05T12:38:20.136355504Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.159Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.140086851Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.159Z partition=2 offset=19793
+2026-10-05T12:38:20.140970739Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.160Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.143695640Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.160Z partition=2 offset=19794
+2026-10-05T12:38:20.144424104Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.161Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.146637404Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.161Z partition=2 offset=19795
+2026-10-05T12:38:20.147396298Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.162Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.149437925Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.162Z partition=2 offset=19796
+2026-10-05T12:38:20.150232156Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.163Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.151846410Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.163Z partition=2 offset=19797
+2026-10-05T12:38:20.152730120Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.164Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.155008235Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.164Z partition=2 offset=19798
+2026-10-05T12:38:20.156584158Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.165Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.157429016Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 16건 중 16건 저장
+2026-10-05T12:38:20.161213708Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.165Z partition=2 offset=19799
+2026-10-05T12:38:20.162234917Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.166Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.163871576Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.166Z partition=2 offset=19800
+2026-10-05T12:38:20.164502153Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.167Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.166551732Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.167Z partition=2 offset=19801
+2026-10-05T12:38:20.167204438Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.168Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.169063524Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.168Z partition=2 offset=19802
+2026-10-05T12:38:20.169634739Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.169Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.171391109Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.169Z partition=2 offset=19803
+2026-10-05T12:38:20.172012299Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.170Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.173542904Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.170Z partition=2 offset=19804
+2026-10-05T12:38:20.174277700Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.171Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.176010064Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.171Z partition=2 offset=19805
+2026-10-05T12:38:20.176952846Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.172Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.178680098Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.172Z partition=2 offset=19806
+2026-10-05T12:38:20.179566427Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.173Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.181171974Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.173Z partition=2 offset=19807
+2026-10-05T12:38:20.182041585Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.174Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.183649560Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.174Z partition=2 offset=19808
+2026-10-05T12:38:20.184643763Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.175Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.186797195Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.175Z partition=2 offset=19809
+2026-10-05T12:38:20.187971791Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.176Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.189834519Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.176Z partition=2 offset=19810
+2026-10-05T12:38:20.190799624Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.177Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.192786663Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.177Z partition=2 offset=19811
+2026-10-05T12:38:20.193648846Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.178Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.195359448Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.178Z partition=2 offset=19812
+2026-10-05T12:38:20.197404885Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.179Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.199635989Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.179Z partition=2 offset=19813
+2026-10-05T12:38:20.200603799Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.180Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.202084429Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.180Z partition=2 offset=19814
+2026-10-05T12:38:20.202885620Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.181Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.204437709Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.181Z partition=2 offset=19815
+2026-10-05T12:38:20.205251006Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.182Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.206896628Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.182Z partition=2 offset=19816
+2026-10-05T12:38:20.207700003Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.183Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.209341869Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.183Z partition=2 offset=19817
+2026-10-05T12:38:20.210103167Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.184Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.212068735Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.184Z partition=2 offset=19818
+2026-10-05T12:38:20.212960133Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.185Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.214564446Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.185Z partition=2 offset=19819
+2026-10-05T12:38:20.215416143Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.186Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.217326049Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.186Z partition=2 offset=19820
+2026-10-05T12:38:20.218195293Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.187Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.220109547Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.187Z partition=2 offset=19821
+2026-10-05T12:38:20.220966307Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.188Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.222822883Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.188Z partition=2 offset=19822
+2026-10-05T12:38:20.224104702Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.189Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.227509590Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.189Z partition=2 offset=19823
+2026-10-05T12:38:20.228375495Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.190Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.230122518Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.190Z partition=2 offset=19824
+2026-10-05T12:38:20.231029034Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.191Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.232922847Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.191Z partition=2 offset=19825
+2026-10-05T12:38:20.234832176Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.192Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.237659942Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.192Z partition=2 offset=19826
+2026-10-05T12:38:20.238668952Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.193Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.240599478Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.193Z partition=2 offset=19827
+2026-10-05T12:38:20.240622838Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 26건 중 26건 저장
+2026-10-05T12:38:20.241468131Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.194Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.242735956Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.194Z partition=2 offset=19828
+2026-10-05T12:38:20.243892342Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.195Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.246680163Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.195Z partition=2 offset=19829
+2026-10-05T12:38:20.247656069Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.196Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.249547804Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.196Z partition=2 offset=19830
+2026-10-05T12:38:20.250031438Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.197Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.251928153Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.197Z partition=2 offset=19831
+2026-10-05T12:38:20.252756568Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.198Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.254636587Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.198Z partition=2 offset=19832
+2026-10-05T12:38:20.255509598Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.199Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.257656166Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.199Z partition=2 offset=19833
+2026-10-05T12:38:20.258594440Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.200Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.260604951Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.200Z partition=2 offset=19834
+2026-10-05T12:38:20.263488363Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.201Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.265752664Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.201Z partition=2 offset=19835
+2026-10-05T12:38:20.266494189Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.202Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.268090906Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.202Z partition=2 offset=19836
+2026-10-05T12:38:20.268907329Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.203Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.270666283Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.203Z partition=2 offset=19837
+2026-10-05T12:38:20.271702152Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.204Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.273179006Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.204Z partition=2 offset=19838
+2026-10-05T12:38:20.273837836Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.205Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.275509861Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.205Z partition=2 offset=19839
+2026-10-05T12:38:20.276290812Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.206Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.278013196Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.206Z partition=2 offset=19840
+2026-10-05T12:38:20.278905890Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.207Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.280549847Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.207Z partition=2 offset=19841
+2026-10-05T12:38:20.281447429Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.208Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.283302393Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.208Z partition=2 offset=19842
+2026-10-05T12:38:20.284094386Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.209Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.285794194Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.209Z partition=2 offset=19843
+2026-10-05T12:38:20.286841234Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.210Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.288854210Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.210Z partition=2 offset=19844
+2026-10-05T12:38:20.290275854Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.211Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.294140486Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.211Z partition=2 offset=19845
+2026-10-05T12:38:20.295097461Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.212Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.297661565Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.212Z partition=2 offset=19846
+2026-10-05T12:38:20.298515471Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.213Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.300418925Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.213Z partition=2 offset=19847
+2026-10-05T12:38:20.301126479Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.214Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.302651259Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.214Z partition=2 offset=19848
+2026-10-05T12:38:20.303318517Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.215Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.304725883Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.215Z partition=2 offset=19849
+2026-10-05T12:38:20.305590619Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.216Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.307404874Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.216Z partition=2 offset=19850
+2026-10-05T12:38:20.308427889Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.217Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.310191885Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.217Z partition=2 offset=19851
+2026-10-05T12:38:20.315695159Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 25건 중 25건 저장
+2026-10-05T12:38:20.316183021Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.218Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.317873590Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.218Z partition=2 offset=19852
+2026-10-05T12:38:20.320314158Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.219Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.321977389Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.219Z partition=2 offset=19853
+2026-10-05T12:38:20.322504889Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.220Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.324325723Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.220Z partition=2 offset=19854
+2026-10-05T12:38:20.325134448Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.221Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.328413387Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.221Z partition=2 offset=19855
+2026-10-05T12:38:20.329348538Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.222Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.331271787Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.222Z partition=2 offset=19856
+2026-10-05T12:38:20.332263928Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.223Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.339914799Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.223Z partition=2 offset=19857
+2026-10-05T12:38:20.341098816Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.224Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.343332949Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.224Z partition=2 offset=19858
+2026-10-05T12:38:20.344198644Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.225Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.346355817Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.225Z partition=2 offset=19859
+2026-10-05T12:38:20.347194847Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.226Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.348914580Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.226Z partition=2 offset=19860
+2026-10-05T12:38:20.350095143Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.227Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.352194114Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.227Z partition=2 offset=19861
+2026-10-05T12:38:20.352945883Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.228Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.354983228Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.228Z partition=2 offset=19862
+2026-10-05T12:38:20.355838615Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.229Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.357953353Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.229Z partition=2 offset=19863
+2026-10-05T12:38:20.358678312Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.230Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.360504843Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.230Z partition=2 offset=19864
+2026-10-05T12:38:20.366571341Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.231Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.367655549Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.231Z partition=2 offset=19865
+2026-10-05T12:38:20.368517413Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.232Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.370545235Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.232Z partition=2 offset=19866
+2026-10-05T12:38:20.371420288Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.233Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.372937174Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.233Z partition=2 offset=19867
+2026-10-05T12:38:20.373685401Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.234Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.375409638Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.234Z partition=2 offset=19868
+2026-10-05T12:38:20.376374389Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.235Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.378311858Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.235Z partition=2 offset=19869
+2026-10-05T12:38:20.379150127Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.236Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.381363681Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.236Z partition=2 offset=19870
+2026-10-05T12:38:20.382194604Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.237Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.384323109Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.237Z partition=2 offset=19871
+2026-10-05T12:38:20.385632463Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.238Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.396460726Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.238Z partition=2 offset=19872
+2026-10-05T12:38:20.396489541Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.239Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.396492670Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.239Z partition=2 offset=19873
+2026-10-05T12:38:20.396494908Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.240Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.401754908Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.240Z partition=2 offset=19874
+2026-10-05T12:38:20.402382318Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.241Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.405644918Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.241Z partition=2 offset=19875
+2026-10-05T12:38:20.405674435Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.242Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.407785170Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.242Z partition=2 offset=19876
+2026-10-05T12:38:20.408265090Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 29건 중 29건 저장
+2026-10-05T12:38:20.409572390Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.243Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.411555848Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.243Z partition=2 offset=19877
+2026-10-05T12:38:20.413433624Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.244Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.415745663Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.244Z partition=2 offset=19878
+2026-10-05T12:38:20.418099540Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.245Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.420832073Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.245Z partition=2 offset=19879
+2026-10-05T12:38:20.428002845Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.246Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.428186663Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.246Z partition=2 offset=19880
+2026-10-05T12:38:20.428194260Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.247Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.431228934Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.247Z partition=2 offset=19881
+2026-10-05T12:38:20.432435852Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.248Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.434526314Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.248Z partition=2 offset=19882
+2026-10-05T12:38:20.435936724Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.249Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.438108519Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.249Z partition=2 offset=19883
+2026-10-05T12:38:20.440101952Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.250Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.441929317Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.250Z partition=2 offset=19884
+2026-10-05T12:38:20.443483426Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.251Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.445917950Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.251Z partition=2 offset=19885
+2026-10-05T12:38:20.452052129Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.252Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.453921458Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.252Z partition=2 offset=19886
+2026-10-05T12:38:20.455152329Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.253Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.457799148Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.253Z partition=2 offset=19887
+2026-10-05T12:38:20.458798982Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.254Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.462847597Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.254Z partition=2 offset=19888
+2026-10-05T12:38:20.462876654Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.255Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.466325704Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.255Z partition=2 offset=19889
+2026-10-05T12:38:20.467716948Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.256Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.470707461Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.256Z partition=2 offset=19890
+2026-10-05T12:38:20.471398881Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.257Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.474916229Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.257Z partition=2 offset=19891
+2026-10-05T12:38:20.475725349Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.258Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.477849487Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.258Z partition=2 offset=19892
+2026-10-05T12:38:20.478702541Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.259Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.480304636Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.259Z partition=2 offset=19893
+2026-10-05T12:38:20.481166407Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.260Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.483061453Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.260Z partition=2 offset=19894
+2026-10-05T12:38:20.483739238Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.261Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.485628469Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.261Z partition=2 offset=19895
+2026-10-05T12:38:20.486335060Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.262Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.488500014Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.262Z partition=2 offset=19896
+2026-10-05T12:38:20.489208044Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.263Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.491509993Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.263Z partition=2 offset=19897
+2026-10-05T12:38:20.492188520Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.264Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.494552654Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.264Z partition=2 offset=19898
+2026-10-05T12:38:20.495193317Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.265Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.499407469Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.265Z partition=2 offset=19899
+2026-10-05T12:38:20.499435007Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 24건 중 24건 저장
+2026-10-05T12:38:20.500066195Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.266Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.501401568Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.266Z partition=2 offset=19900
+2026-10-05T12:38:20.502139926Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.267Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.503948117Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.267Z partition=2 offset=19901
+2026-10-05T12:38:20.504592348Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.268Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.519779348Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.268Z partition=2 offset=19902
+2026-10-05T12:38:20.520488905Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.269Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.522368217Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.269Z partition=2 offset=19903
+2026-10-05T12:38:20.525976305Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.270Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.528560447Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.270Z partition=2 offset=19904
+2026-10-05T12:38:20.529284371Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.271Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.531089262Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.271Z partition=2 offset=19905
+2026-10-05T12:38:20.531863687Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.272Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.534739937Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.272Z partition=2 offset=19906
+2026-10-05T12:38:20.535416821Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.273Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.537313715Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.273Z partition=2 offset=19907
+2026-10-05T12:38:20.537907838Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.274Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.539396255Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.274Z partition=2 offset=19908
+2026-10-05T12:38:20.540044402Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.275Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.541427403Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.275Z partition=2 offset=19909
+2026-10-05T12:38:20.541980181Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.276Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.543767312Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.276Z partition=2 offset=19910
+2026-10-05T12:38:20.544398386Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.277Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.546030516Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.277Z partition=2 offset=19911
+2026-10-05T12:38:20.546580746Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.278Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.547854667Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.278Z partition=2 offset=19912
+2026-10-05T12:38:20.548262992Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.279Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.549293305Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.279Z partition=2 offset=19913
+2026-10-05T12:38:20.549693229Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.280Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.550797923Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.280Z partition=2 offset=19914
+2026-10-05T12:38:20.551317733Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.281Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.552924176Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.281Z partition=2 offset=19915
+2026-10-05T12:38:20.553419777Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.282Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.555038070Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.282Z partition=2 offset=19916
+2026-10-05T12:38:20.555609719Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.283Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.557581377Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.283Z partition=2 offset=19917
+2026-10-05T12:38:20.558267216Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.284Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.560240259Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.284Z partition=2 offset=19918
+2026-10-05T12:38:20.561059196Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.285Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.563116509Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.285Z partition=2 offset=19919
+2026-10-05T12:38:20.563775125Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.286Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.565456216Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.286Z partition=2 offset=19920
+2026-10-05T12:38:20.566397824Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.287Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.567987361Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.287Z partition=2 offset=19921
+2026-10-05T12:38:20.568536141Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.288Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.570003040Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.288Z partition=2 offset=19922
+2026-10-05T12:38:20.570424718Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.289Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.571660616Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.289Z partition=2 offset=19923
+2026-10-05T12:38:20.572396598Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.290Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.573751848Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.290Z partition=2 offset=19924
+2026-10-05T12:38:20.575342250Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.291Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.577154645Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.291Z partition=2 offset=19925
+2026-10-05T12:38:20.577673438Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.292Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.578994237Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.292Z partition=2 offset=19926
+2026-10-05T12:38:20.579792531Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.293Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.581109888Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.293Z partition=2 offset=19927
+2026-10-05T12:38:20.581828934Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.294Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.582767525Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 25건 중 25건 저장
+2026-10-05T12:38:20.584249880Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.294Z partition=2 offset=19928
+2026-10-05T12:38:20.585052540Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.295Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.587030276Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.295Z partition=2 offset=19929
+2026-10-05T12:38:20.587584355Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.296Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.589623166Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.296Z partition=2 offset=19930
+2026-10-05T12:38:20.590071982Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.297Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.592110349Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.297Z partition=2 offset=19931
+2026-10-05T12:38:20.592685024Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.298Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.594290907Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.298Z partition=2 offset=19932
+2026-10-05T12:38:20.594824705Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.299Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.596607443Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.299Z partition=2 offset=19933
+2026-10-05T12:38:20.597207503Z 12:38:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F ts=2026-10-05T12:37:47.300Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:20.598394636Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F ts=2026-10-05T12:37:47.300Z partition=2 offset=19934
+2026-10-05T12:38:20.665792841Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 23건 중 23건 저장
+2026-10-05T12:38:20.741043123Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 28건 중 28건 저장
+2026-10-05T12:38:20.815901120Z 12:38:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 5건 중 5건 저장
+2026-10-05T12:38:37.755172758Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.756701558Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.001Z partition=0 offset=14
+2026-10-05T12:38:37.757207237Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.002Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.758464405Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.002Z partition=0 offset=15
+2026-10-05T12:38:37.758828330Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.003Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.759929728Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.003Z partition=0 offset=16
+2026-10-05T12:38:37.760407181Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.004Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.761906324Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.004Z partition=0 offset=17
+2026-10-05T12:38:37.762512956Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.005Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.764224315Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.005Z partition=0 offset=18
+2026-10-05T12:38:37.764739530Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.006Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.766173213Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.006Z partition=0 offset=19
+2026-10-05T12:38:37.766930896Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.007Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.768293976Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.007Z partition=0 offset=20
+2026-10-05T12:38:37.768814035Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.008Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.769961439Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.008Z partition=0 offset=21
+2026-10-05T12:38:37.770379097Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.009Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.771290403Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.009Z partition=0 offset=22
+2026-10-05T12:38:37.771652369Z 12:38:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RESUB-F2 ts=2026-10-05T12:38:34.010Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-05T12:38:37.772605826Z 12:38:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RESUB-F2 ts=2026-10-05T12:38:34.010Z partition=0 offset=23
+2026-10-05T12:38:38.137912650Z 12:38:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-05T12:38:38.350919977Z 12:38:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-05T12:38:38.479144009Z 12:38:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 8건 중 8건 저장

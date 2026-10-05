@@ -96,6 +96,97 @@ warm-up·consumer group 할당·폴링이 포함됐고, 발행자는 publish 완
 - Kafka 레코드 고유 수는 차량 필터로 센 것이고, 다른 차량 데이터는 대조하지 않았다.
 - 남긴 테스트 데이터: InfluxDB `ACKTEST-A`·`ACKTEST-B` 각 30행, Kafka 같은 키 레코드(retention 1시간). 삭제하지 않았다.
 
+## 실험 E — Kafka 장기 정지 중 MQTT 연결 유지 (2026-10-05)
+
+상태: **1회 관찰.** 반복·안정성 주장 없음. 원본: [`evidence/2026-10-05-mqtt-ack-outage-resubscribe/`](evidence/2026-10-05-mqtt-ack-outage-resubscribe/) (`00_metadata.txt`, `E_*`). 아래 가설·기준은 실행 전에 먼저 적었다.
+
+**가설(실행 전, ADR-029 "남은 위험"에서 가져옴)**: Kafka가 `docker stop`으로 150초 내려가면 handler가 첫 메시지의 Kafka 완료를 기다리며(producer 기본 `max.block.ms`/`delivery.timeout.ms` 60·120초) Paho 콜백 스레드를 막고, keepAlive 60초 안에 PINGRESP를 처리하지 못해 MQTT 연결이 끊길 수 있다. 끊기면 미ACK 메시지가 재전달되어 중복이 생기지만 유실은 없어야 한다. 반대로 연결이 유지될 수도 있다고 보았다(PINGREQ/PINGRESP가 콜백 스레드와 별개일 가능성).
+**조작**: 고유 밀리초 timestamp 720건(차량 `OUTAGE-E`)을 호스트 루프 `sleep 0.333`으로 공급 → 시작 30초 뒤 `docker stop telemetry-kafka`(pause 아님) → 150초 뒤 `docker start`. 시뮬레이터·감지기 없음. 스크립트 `expE.sh`.
+**성공 기준(실행 전)**: (1) 발행자 PUBACK(RC:0) = N. (2) Kafka 고유 timestamp = N, InfluxDB 고유 시점 = N. (3) DLQ(`-dlq`, `-mqtt-dlq`) 증가 0. (4) 중복 수 기록(허용). (5) 연결 끊김/재연결 여부·시각 기록(끊김 자체는 실패가 아니라 관찰 대상). **실패 기준**: 고유 수 < N, DLQ 증가, 복구 후 수신 미재개.
+
+### 환경
+
+HEAD `7d3aafd`(작업 트리 변경 없음, 증거 폴더만 untracked). 이미지 `sha256:4eefa21d…`(이 실행에서 `build backend`). 이미지 jar에 `UnsendableTelemetryException` 클래스와 `ack.callback.missing` 문자열이 **있음을 확인**했다(HEAD 코드). dev(평문 1883) 스택, 기존 볼륨 유지, 백엔드 DEBUG는 저장소 밖 override(삭제함). Docker Desktop 29.7.2. producer/MQTT 설정은 코드 기본값 그대로다(`max.block.ms`·`delivery.timeout.ms` 미지정 → 기본, `keepAlive=60`, `cleanSession=false`, 자동 재연결 상한 5초).
+
+### 결과
+
+| 항목 | 값 |
+| --- | ---: |
+| 발행 수 / 발행자 PUBACK(RC:0) | 720 / **720** |
+| `vehicle-telemetry` end offset 증가 | +721 |
+| 그중 고유 timestamp (`kafka-console-consumer`, 차량 필터) | **720**(중복 1) |
+| InfluxDB 고유 시점 수 | **720** |
+| DLQ(`-dlq`, `-mqtt-dlq`) 증가 | 0 / 0 |
+| `telemetry.mqtt.messages.received` / invalid / `ack.callback.missing` | 721 / 0 / 0 |
+| 브로커 `dropped` | 0 |
+| spool 보관·드레인 | 1 / 1, 최종 pending 0 |
+
+실제 공급 속도는 약 2.6건/초였고 720건 발행에 약 328초가 걸렸다(호스트 `sleep` 루프 오버헤드. 목표 3건/초·240초와 다르다). 발행 시작 12:29:06Z, Kafka stop 12:29:36~42, start 12:32:12~15, 발행 종료 12:34:33 (UTC, `E_marks.txt`). 성공 기준 (1)~(4) **충족(1회)**.
+
+**시간표(백엔드·브로커 로그, UTC)**
+
+| 시각 | 사건 | 출처 |
+| --- | --- | --- |
+| 12:29:37.6 | Kafka stop 직후 들어온 71번째 메시지의 전송 대기 시작(전송 완료 로그 없음) | `E_backend_full_log.txt` |
+| 약 12:29:42 | 마지막 inbound 활동(`lastInboundActivity`로 역산) | 같은 파일, ClientState 로그 |
+| 12:30:37 | PINGREQ 송신(`lastPing`) — PINGRESP 처리 흔적 없음 | 같은 로그 |
+| **12:31:37.16** | **`ClientState: Timed out as no activity, keepAlive=60s` → `Lost connection`**. 브로커 로그는 `Client telemetry-backend closed its connection`(keepalive 초과 문구 없음) | 백엔드·브로커 로그 |
+| **12:31:37.71** | **`Expiring 1 record(s) … 120000 ms`** → spool 보관. 첫 메시지가 콜백을 **약 120초** 막았다(= `delivery.timeout.ms` 기본값) | 백엔드 로그 |
+| 12:31:38.18 | 브로커에 새 TCP 연결, CONNECT 없음 → 12:33:08.54 브로커 `Client <unknown> has exceeded timeout` | 브로커 로그 |
+| 12:32:14 | Kafka 시작(host mark) | `E_marks.txt` |
+| 12:32:38.8 | spool 드레인 완료(offset 18984) | 백엔드 로그 |
+| 12:33:08.84 | 재연결 성공(`p1`, c0) | 브로커 로그 |
+| **12:33:13.84** | **`Error subscribing … Timed out waiting for a response`(연결 5.0초 뒤)**, 직후 백로그 도착(483건/10초) | 백엔드 로그 |
+
+- **연결은 유지되지 않았다 — 가설이 맞았다(1회 관찰).** keepalive 60초 안에 PINGRESP가 처리되지 않아 클라이언트가 스스로 연결을 끊었다. `lastInboundActivity`가 약 12:29:42에서 멈춘 것은 콜백 스레드가 막힌 뒤 수신 큐가 찬 시점과 맞는다(2.6건/초 × 약 4~5초 ≈ 10건). **이 메커니즘(수신 큐 포화 → receiver 스레드 정지 → PINGRESP 미처리)은 Paho 소스를 읽어 확인한 것이 아니라 로그와 일치하는 추정이다.**
+- **ACK 경계가 중복을 만든 건은 이 건이다.** 71번째 메시지(`ts=…12:29:28.643Z`)는 12:31:37.71에 spool에 보관돼 future가 완료되며 ACK를 시도했지만, 연결은 0.5초 전에 끊긴 뒤였다. 이 메시지는 spool 드레인으로 offset 18984에 기록됐고, 재연결 뒤 브로커가 같은 메시지를 재전달해 12:33:13에 다시 처리되어 offset 18985에 한 번 더 들어갔다(Kafka 같은 timestamp 2건, `uniq -d`로 확인). ADR-029가 적은 "연결이 끊긴 사이 대기를 마친 콜백이 옛 메시지를 ACK할 수 있다"의 실스택 사례다. 옛 연결에서의 ACK가 실패했는지 무시됐는지는 로그에 없다. 저장소가 `(vehicle_id, ms)` 동일 시점을 하나로 흡수해 InfluxDB는 720이다.
+- **유실은 없었다.** 연결이 끊겨 있던 12:29:42~12:33:13 사이 들어온 약 560건은 브로커가 세션 큐에 보관했다가 재접속 뒤 전달했다(브로커 `dropped`=0). 브로커 큐 상한(100,000)과 한참 거리가 있는 저부하다.
+- **ADR-029의 "수신 큐가 차면 PINGRESP를 못 읽어 끊길 수 있다"는 추정이 이 조건에서 실제로 일어났다.** 끊김은 Kafka 정지 150초 중 **약 120초 지점**(delivery timeout 도달 직전)에서 발생했고, 끊김 이후의 spool 경로는 의도대로 동작했다.
+
+### 발견한 것 / 설명 못 한 것
+
+- **재접속이 약 90초 늦었다(원인 미확정).** Kafka가 돌아오기 전인 12:31:38에 TCP 연결은 열렸으나 브로커는 CONNECT를 받지 못했고(`<unknown>`), 90초 뒤 브로커가 그 소켓을 닫았다. 실제 MQTT 재연결은 12:33:08이다. 이 시점에 콜백 스레드는 12:31:37.7에 풀려 있었다. 자동 재연결 상한은 5초로 설정돼 있는데도 이 지연이 생겼다. 원인은 모른다(확인하지 않음). 결과적으로 **수집 중단 시간이 약 96초(12:31:37~12:33:13) 늘어났다.** 반복하지 않았으므로 상수로 쓰지 않는다. 이 지연 때문에 "Kafka 정지 150초 → 수집 정상화까지"는 정지 시작 후 약 217초였다.
+- 같은 날 실험 C의 구독 timeout 오류가 **여기서도 재현됐다**(12:33:13) — 실험 F 참고.
+
+### 한계
+
+각 1회, 단일 차량, 저부하(약 2.6건/초). Kafka 정지 길이 150초 하나만 시험했다(60·120초 경계 근처는 보지 않았다). 호스트 `sleep` 기반 공급이라 속도가 일정하지 않다. 브로커 쪽 큐 길이는 직접 측정하지 않고 메시지 수와 `dropped`로 추정했다. 실제 차량 속도·복수 차량·고부하에서는 수신 큐가 더 빨리 차거나 브로커 큐 상한에 닿을 수 있다. spool 용량·디스크는 건드리지 않았다.
+남긴 테스트 데이터: InfluxDB `OUTAGE-E` 720행, Kafka 721건(retention 1시간).
+
+## 실험 F — 재시작 직후 구독 timeout 재현 (2026-10-05)
+
+상태: **1회 관찰(재현됨).** 반복 없음. 원본: 위와 같은 폴더(`F_*`). 가설·기준은 실행 전에 적었다.
+
+**가설(실행 전)**: 실험 C의 `Error subscribing … Timed out waiting for a response` 1회는 재접속 직후 브로커가 offline 큐의 밀린 메시지를 먼저 쏟아내 SUBACK 처리가 completionTimeout 안에 끝나지 않았기 때문일 수 있다(추정). 그렇다면 백엔드를 `docker stop`한 채 300건을 쌓았다 `start`할 때 같은 로그가 재현되어야 한다. 로그가 나도 세션 구독이 브로커에 남아 있어 수신은 계속될 것이라고 예상했다(추정).
+**조작**: 백엔드 `docker stop` → `RESUB-F` 300건 발행(PUBACK을 센다) → `docker start` → 로그 관찰 → 새 10건(`RESUB-F2`) 발행.
+**성공 기준(실행 전)**: (1) PUBACK 300 → Kafka·InfluxDB 고유 300. (2) 구독 오류 로그 발생 여부와 이후 수신 재개 기록. (3) 새 10건 도착. (4) DLQ 증가 0. **실패 기준**: 300건 누락 또는 새 10건 미도착.
+
+### 결과
+
+| 항목 | 값 |
+| --- | ---: |
+| 발행자 PUBACK(RC:0) (백엔드 정지 중) | 300 / 300 |
+| 재시작 뒤 구독 오류 로그 | **1회 발생**(브로커 연결 12:38:13.95 → 오류 12:38:18.96, **5.0초**) |
+| 백엔드 수신 `RESUB-F` / 전송 완료 | 300 / 300 |
+| 구독 오류 뒤 첫 메시지 처리 | 12:38:19.10(오류 0.14초 뒤), 300건 완료 12:38:20.6 |
+| 새 10건(`RESUB-F2`) PUBACK / 수신 / Kafka / InfluxDB | 10 / 10 / 10 / 10 |
+| Kafka end offset 증가 / 고유 timestamp | +310 / 310 (중복 0) |
+| InfluxDB 고유 시점 | `RESUB-F` 300, `RESUB-F2` 10 |
+| DLQ 증가 | 0 / 0 |
+| `messages.received` / invalid | 310 / 0 |
+
+판정: 성공 기준 (1)~(4) **충족(1회)**. 이 로그는 실험 C·E·F에서 각 1회, **백로그가 있는 재접속 3건 모두**에서 났고, 백로그가 없던 최초 기동에서는 없었다(실험 C 기록). 같은 조건 3회 반복이 아니라 서로 다른 시나리오 3건이라 안정성 표현은 쓰지 않는다.
+
+### 관찰에서 읽은 것
+
+- **세 건 모두 오류 시각이 연결 직후 5.0초이고, 첫 메시지는 오류 직후(0.1~0.2초)에 처리됐다.** 연결~오류 사이 5초 동안 백엔드는 메시지를 한 건도 처리하지 않았다(F: 12:38:13.95~19.10, E: 12:33:08.84~13.84). 스택트레이스에서 `connectComplete → subscribe → waitForCompletion`이 **Paho `CommsCallback.run` 스레드**에서 실행됨이 확인된다(`F_backend_log.txt` 781행~). 메시지 전달도 같은 콜백 스레드라는 점(Paho 설계, 소스로 확인하지 않음)을 합치면, **콜백 스레드가 SUBACK을 기다리며 막혀 있고 그동안 브로커가 보낸 백로그가 수신 큐에 쌓여 SUBACK이 그 뒤에서 읽히지 못한다**는 설명이 로그와 맞는다. 이것은 **추정**이다(Paho 내부 큐·스레드 동작을 소스로 확인하지 않았고, 브로커가 SUBACK을 메시지 뒤에 보냈는지도 확인하지 않았다). 5초 값은 관찰값이며 Spring Integration의 기본 completion timeout 상수는 확인하지 못했다.
+- **오류 뒤 구독은 살아 있었다.** 새 10건이 모두 도착했다. 다만 `cleanSession=false`라 브로커가 이전 세션의 구독을 유지하고 있었으므로, "재구독 요청이 성공했다"와 "이전 구독이 유지됐다"는 이 실험으로 구분되지 않는다. 세션이 사라진 경우(브로커 볼륨 손실, client ID 변경)에 이 timeout이 구독 상실로 이어지는지는 **미검증**이다.
+- **Spring Integration 6.2.4의 처리(외부 소스 근거)**: `MqttPahoMessageDrivenChannelAdapter.subscribe()`는 `MqttException`을 `catch`해 `MqttConnectionFailedEvent`를 발행하고 `logger.error("Error subscribing to …")`를 남길 뿐, **재시도·재던지기·연결 종료 없이 연결을 유지한다.** 우리 로그의 메시지·스택(`subscribe` 302행 → `connectComplete` 425행, 이 줄 번호는 로그의 것)과 일치한다. 출처: [`MqttPahoMessageDrivenChannelAdapter.java` v6.2.4](https://github.com/spring-projects/spring-integration/blob/v6.2.4/spring-integration-mqtt/src/main/java/org/springframework/integration/mqtt/inbound/MqttPahoMessageDrivenChannelAdapter.java). 소스는 웹 조회 도구의 요약으로 확인했으므로 라인 단위 인용이 아니다(이 저장소에서 소스를 직접 열어 보지 않았다). **백엔드 코드에는 `MqttConnectionFailedEvent`·`MqttSubscribedEvent` 리스너가 없다**(`backend/src/main` 검색, 0건). 구독 실패가 로그 한 줄 외의 신호로 남지 않는다는 뜻이며, 세션 소실 경로에서 구독을 잃으면 감지할 수단이 없을 수 있다(결함 후보, 재현하지 않음).
+
+### 한계
+
+각 1회, N=300, 단일 차량 토픽, 무부하. 백엔드 정지 시간은 약 8초(발행 300건 동안)로 짧다. 브로커 큐에 더 많이(수천 건 이상) 쌓였을 때 timeout 횟수·지속 시간은 보지 않았다. 세션 소실 경로 미검증. 첫 발행 시도 한 번은 스크립트의 상대경로 오류로 0건 발행(브로커에 아무것도 가지 않음)했고 절대경로로 다시 실행했다(`F_marks.txt`에 `pub_done` 줄이 둘인 이유). 남긴 테스트 데이터: InfluxDB `RESUB-F` 300행·`RESUB-F2` 10행, Kafka 310건.
+
 ## 환경·실행
 
 - 기준 commit: `21cf99cc0bf9314f54ce206d078135078bf4a78d`, 미커밋 변경 포함.
@@ -108,6 +199,8 @@ warm-up·consumer group 할당·폴링이 포함됐고, 발행자는 publish 완
 ## 남은 검증
 
 - ~~실제 Kafka 완료 경계에서 전체 백엔드 프로세스 강제 종료, 재시작 후 최종 InfluxDB 대조.~~ **1회 관찰 완료(2026-10-05, 실험 C)** — 30/30 저장, 중복 1건은 저장소가 흡수. 반복·임의 시점·대량 재전달은 미검증. 재시작 직후 구독 timeout 로그 1건의 원인 확인이 새로 남았다.
+- **Kafka 장기 정지 중 MQTT 연결 유지: 1회 관찰 완료(2026-10-05, 실험 E)** — 연결은 유지되지 않았고(keepalive 타임아웃, 약 120초 지점), 유실 0·중복 1(spool 보관 뒤 재전달). 반복·다른 정지 길이·고부하·복수 차량은 미검증. 재접속이 약 90초 늦은 원인은 미확정.
+- **재시작 직후 구독 timeout: 재현됨(실험 F, 1회)** — 백로그가 있는 재접속에서 연결 5초 뒤 발생하고 구독은 유지됐다. 세션 소실 경로에서의 구독 상실 여부, 구독 실패 이벤트 감지 수단 부재는 미검증/결함 후보.
 - 네트워크 단절·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
 - 브로커 강제 종료/호스트 전원 차단은 이번 보호 범위 밖이다.

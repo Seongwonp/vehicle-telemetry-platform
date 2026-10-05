@@ -1,0 +1,2 @@
+2026-10-05T12:38:13.950920348Z 1791203893: New client connected from 172.18.0.8:47254 as telemetry-backend (p2, c0, k60).
+2026-10-05T12:38:14.255071022Z 1791203894: New client connected from 172.18.0.8:47270 as telemetry-backend-sys (p2, c0, k60).

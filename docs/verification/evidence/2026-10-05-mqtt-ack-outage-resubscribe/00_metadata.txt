@@ -1,0 +1,12 @@
+start_utc=2026-10-05T12:27:02Z
+git_head=7d3aafd6d25b629dd8135a592f969c3d3c1e4171
+git_status_porcelain=untracked evidence folder only
+docker=29.7.2
+backend_image_id=sha256:4eefa21db426f5d3381f80aa369035b4d3d0d856f02656540965977a13670faa
+backend_image_created=2026-10-05T12:25:59.455590346Z
+image_check=확인함: jar에 UnsendableTelemetryException 클래스 존재(unzip -l), MqttMessageHandler.class에 ack.callback.missing 문자열 존재 -> HEAD 7d3aafd(690f50e 이후) 코드
+compose_override=저장소 밖 scratchpad dbg-ofe.yml (LOGGING_LEVEL_COM_TELEMETRY=DEBUG만; 종료 후 삭제)
+commands: docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend; up -d zookeeper kafka influxdb postgres redis mosquitto; up kafka-init; up -d --no-build backend (+override)
+backend_ready_utc=2026-10-05T12:29:00Z
+E_end_utc=2026-10-05T12:37:17Z
+F_end_utc=2026-10-05T12:40:04Z
