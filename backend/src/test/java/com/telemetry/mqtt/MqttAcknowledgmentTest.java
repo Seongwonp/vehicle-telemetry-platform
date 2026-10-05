@@ -118,6 +118,44 @@ class MqttAcknowledgmentTest {
         assertThat(registry.counter("telemetry.mqtt.ack.callback.missing").count()).isEqualTo(1.0);
     }
 
+    @Test void connectionLossWakesWaitingThreadWithoutAckAndSysAdapterDoesNot() throws Exception {
+        var producer = mock(TelemetryProducer.class);
+        var receipt = new CompletableFuture<Void>();
+        var entered = new java.util.concurrent.CountDownLatch(1);
+        var handlerThread = new java.util.concurrent.atomic.AtomicReference<Thread>();
+        when(producer.send(any())).thenAnswer(call -> {
+            handlerThread.set(Thread.currentThread()); entered.countDown(); return receipt; });
+        var handler = handler(producer, mock(MqttInvalidMessagePublisher.class));
+        var ack = mock(SimpleAcknowledgment.class);
+        var telemetryAdapter = mock(org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.class);
+        when(telemetryAdapter.getTopic()).thenReturn(new String[]{"vehicle/telemetry/+"});
+        var sysAdapter = mock(org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.class);
+        when(sysAdapter.getTopic()).thenReturn(new String[]{"$SYS/broker/clients/connected"});
+        var worker = Executors.newSingleThreadExecutor();
+        try {
+            // 대기 중이 아닐 때의 이벤트는 아무것도 깨우지 않는다.
+            handler.onConnectionLost(new org.springframework.integration.mqtt.event.MqttConnectionFailedEvent(telemetryAdapter));
+            var result = worker.submit(() -> handler.handle(message(PAYLOAD, ack)));
+            assertThat(entered.await(5, TimeUnit.SECONDS)).isTrue();
+            // send() 반환 뒤 receipt.get()에 들어갈 때까지 기다린다 — 그 전에 보낸 이벤트는 깨울 대상이 없다.
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+            while (handlerThread.get().getState() != Thread.State.TIMED_WAITING && System.nanoTime() < deadline) {
+                Thread.onSpinWait();
+            }
+            handler.onConnectionLost(new org.springframework.integration.mqtt.event.MqttConnectionFailedEvent(sysAdapter));
+            assertThat(result.isDone()).isFalse();
+            handler.onConnectionLost(new org.springframework.integration.mqtt.event.MqttConnectionFailedEvent(telemetryAdapter));
+            assertThatThrownBy(() -> result.get(5, TimeUnit.SECONDS))
+                .hasRootCauseInstanceOf(InterruptedException.class);
+            verifyNoInteractions(ack);
+            // 중단이 스레드에 인터럽트 플래그를 남기지 않는다 — 같은 스레드의 다음 메시지가 정상 ACK된다.
+            receipt.complete(null);
+            var next = worker.submit(() -> handler.handle(message(PAYLOAD, ack)));
+            next.get(5, TimeUnit.SECONDS);
+            verify(ack).acknowledge();
+        } finally { worker.shutdownNow(); }
+    }
+
     private static org.springframework.messaging.Message<String> message(String payload, SimpleAcknowledgment ack) {
         return MessageBuilder.withPayload(payload).setHeader("mqtt_receivedTopic", "vehicle/telemetry/ACK-001")
             .setHeader(IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, ack).build();

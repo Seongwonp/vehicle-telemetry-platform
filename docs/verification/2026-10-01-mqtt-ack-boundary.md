@@ -205,3 +205,32 @@ HEAD `7d3aafd`(작업 트리 변경 없음, 증거 폴더만 untracked). 이미�
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
 - 브로커 강제 종료/호스트 전원 차단은 이번 보호 범위 밖이다.
 - ELM327 실측은 연결 가능한 장비·차량 정보가 없어 미실행. [절차](../runbook/elm327-measurement.md)만 준비했다.
+
+## 실험 D — 재접속 경계
+
+질문: 저장 확인을 기다리는 동안 MQTT TCP 연결이 끊겼다 이어지면, 옛 연결 기준 ACK가 새 연결을 오염시키거나 메시지를 잃게 하는가.
+
+### 소스 수준 판단 (Paho 1.2.5, Spring Integration MQTT 6.2.4)
+
+- `MqttPahoMessageDrivenChannelAdapter$AcknowledgmentImpl.acknowledge()`는 연결 세대를 확인하지 않고 `client.messageArrivedComplete(id, qos)`를 호출한다(6.2.4 jar을 javap로 확인: `ackClient`가 null이 아니면 그대로 호출).
+- 그래서 늦은 ACK는 새 연결에서 같은 packet ID의 PUBACK이 될 수 있다. 다만 Mosquitto 2.0.22는 cleanSession=false 세션의 미확인 메시지를 같은 mid로 재전송한다(브로커 로그 `m1..m3`, 재전달 헤더 `mqtt_id=1`). 늦은 ACK가 닿으면 같은 메시지의 재전송분이 ACK되는 것이지 다른 메시지가 아니다.
+- 실제로 먼저 걸린 것은 ACK 오염이 아니라 **재연결 지연**이었다. Paho의 재연결(`ClientComms$ConnectBG`)은 `CommsCallback.start()`에서 옛 콜백 스레드가 끝나기를 기다린다. 핸들러가 그 콜백 스레드에서 `receipt.get(150초)`로 막혀 있으면 브로커가 살아 있어도 재연결이 멈춘다.
+
+### 방법
+
+`MqttReconnectAckContractTest`. 실제 Mosquitto 2.0 + 실제 Spring 어댑터(manualAcks) + 실제 `MqttMessageHandler`. 어댑터와 브로커 사이에 테스트 안의 TCP 중계기를 두고 연결만 닫아 단절을 만들었다(컨테이너 네트워크 단절·pause 대신 — 포트와 소켓 종료 시점을 통제하려고). Kafka 전송 완료만 통제한 future이고 실제 Kafka 장애가 아니다. 순서: 메시지 3건 발행 → 1번의 저장 확인이 대기 중일 때 연결 단절 → 재접속 대기(30초 상한) → 저장 완료 → 같은 client ID로 다시 붙어 재전달 3초 관찰.
+
+### 결과
+
+- **수정 전(결함)**: 재접속이 30초 안에 일어나지 않았다. 스레드 덤프에서 `MQTT Call`이 `MqttMessageHandler.acknowledge`의 `receipt.get`에, `MQTT Con`(재접속)이 `CommsCallback.start`의 sleep에 있었다. 대기 상한(150초)이 지나서야 재접속이 이어졌고, 그동안 2·3번 메시지는 처리되지 않았다(유실은 아님, 브로커가 보관). 같은 실패를 3회 관찰했다(상한 30초와 200초 대기 각각 포함, 테스트를 고치는 중이라 정식 반복은 아님).
+- **수정**: 연결 끊김 이벤트(`MqttConnectionFailedEvent`)를 `MqttMessageHandler`가 받아, 저장 확인을 기다리는 콜백 스레드만 인터럽트한다. 그 스레드는 ACK 없이 예외로 빠져나오고 Paho가 재접속을 이어간다. `$SYS` 어댑터 이벤트는 무시한다.
+- **수정 후**: 같은 테스트 1회 통과. 단절 약 4ms 뒤 대기 중단, 약 1.4초 뒤 브로커가 재접속 확인. 1번은 재전달되어 전송 시도 2회(중복), 2·3번은 각 1회, 재접속 뒤 같은 client ID로 붙었을 때 재전달 0건(저장 확인된 것은 전부 ACK됨). 단위 테스트 `MqttAcknowledgmentTest`가 대기 스레드 중단·ACK 없음·`$SYS` 무시·인터럽트 플래그 비누수를 고정한다.
+- (a) 예외·크래시 없이 처리: 핸들러 예외는 Paho가 연결을 다시 끊고 재연결해 재전달하는 기존 경로로 흡수된다. (b) 유실 없음, 중복은 관찰. (c) 다른 메시지를 잘못 ACK한 흔적은 없다 — 다만 이는 "재전달 0건·2·3번 각 1회 처리"라는 관찰 범위이며, packet ID 단위 증명은 아니다.
+
+### 한계
+
+- 수정 후 전체 Java 375건 통과, 실패 0, skip 0(XML 67개 합, 9분). 실험 D 자체는 1회 관찰이다. 반복 3회 이상·dirty 트리라 `검증 완료`가 아니다.
+- TCP 중계기로 만든 깨끗한 단절만 다뤘다. 반쯤 열린 연결(keepalive 만료까지 감지 못 함), 브로커 재시작, TLS 경로는 미검증.
+- 이벤트는 어댑터가 연결 끊김을 알아챈 뒤에야 온다. 감지 전의 지연은 줄이지 못한다.
+- 인터럽트 직후 레이스(저장 확인이 완료된 직후 이벤트 도착)는 중복 재전달로만 귀결되도록 설계했으나 부하에서 재현 시험은 하지 않았다.
+- 실제 Kafka 지연·고부하와 겹친 경우는 미검증.

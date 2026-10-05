@@ -1338,3 +1338,7 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 **남은 위험(추정, 미검증)**: 운영 producer는 `max.block.ms`·`delivery.timeout.ms`를 명시하지 않아 기본값(60·120초)이다. Kafka가 죽으면 첫 메시지가 spool로 가기까지 콜백 스레드가 최대 약 120초 막히는데, keepAlive는 60초다. Paho 수신 큐가 차면 PINGRESP를 못 읽어 연결이 끊길 수 있다 — 끊기면 재전달로 이어져 유실은 아니지만, 실제 Kafka 장애에서 확인하기 전에는 timeout 값을 바꾸지 않는다.
 
 브로커 autosave/inflight 값을 무작정 늘리지 않는다. 2.0.22 기본값과 한계는 [보안 문서](security-report.md)에 기록했다. [실험 기록](verification/2026-10-01-mqtt-ack-boundary.md)의 검증 범위를 따른다.
+
+### 추가 (2026-10-05) — 재접속과 저장 대기
+
+콜백 스레드에서 저장 확인을 기다리는 구조는 Paho 재접속과 충돌했다. 옛 콜백 스레드가 끝날 때까지 재접속이 대기해, 브로커가 살아 있어도 최대 150초 동안 수신이 멈췄다. `MqttConnectionFailedEvent` 수신 시 대기 중인 콜백 스레드만 인터럽트해 ACK 없이 빠져나오도록 했다. 유실은 없고 재전달 중복이 늘 뿐이다. `$SYS` 어댑터는 제외한다. 범위와 한계는 [실험 D](verification/2026-10-01-mqtt-ack-boundary.md)를 따른다(1회 관찰, 깨끗한 TCP 단절만).

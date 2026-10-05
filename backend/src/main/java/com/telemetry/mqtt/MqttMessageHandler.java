@@ -13,6 +13,9 @@ import org.springframework.integration.IntegrationMessageHeaderAccessor;
 import org.springframework.integration.acks.SimpleAcknowledgment;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.springframework.context.event.EventListener;
+import org.springframework.integration.mqtt.event.MqttConnectionFailedEvent;
+import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -34,6 +37,9 @@ public class MqttMessageHandler {
     private final Counter invalidCounter;
     private final MqttInvalidMessagePublisher invalidMessagePublisher;
     private final Counter missingAckCallbackCounter;
+    /** 지금 저장 확인을 기다리는 Paho 콜백 스레드. 연결 끊김 때 깨우는 데만 쓴다. */
+    private final java.util.concurrent.atomic.AtomicReference<Thread> awaitingThread =
+        new java.util.concurrent.atomic.AtomicReference<>();
 
     public MqttMessageHandler(
         TelemetryProducer telemetryProducer,
@@ -124,15 +130,45 @@ public class MqttMessageHandler {
         try {
             // Paho 단일 콜백 스레드에서 기다린다 — ACK가 수신 순서로 나가고 Kafka 완료 스레드가 ACK하지 않는다.
             // 동시성을 내주고 작고 검토 가능한 경계를 샀다(ADR-029).
-            receipt.get(150, TimeUnit.SECONDS);
+            awaitingThread.set(Thread.currentThread());
+            try {
+                receipt.get(150, TimeUnit.SECONDS);
+            } finally {
+                awaitingThread.set(null);
+            }
+            // 저장 완료와 경합한 연결 끊김 인터럽트가 Paho 스레드에 남지 않게 지운다.
+            if (Thread.interrupted()) throw new InterruptedException();
             acknowledgment.acknowledge();
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            // 연결 끊김 인터럽트도 여기로 온다. Thread.interrupted()가 플래그를 이미 지웠으므로
+            // Paho 콜백 스레드는 정상으로 돌아가 재연결을 이어간다. ACK하지 않았으니 브로커가 재전달한다.
             throw new IllegalStateException("MQTT 저장 확인 중단 — ACK하지 않음", e);
         } catch (Exception e) {
             // DirectChannel로 Paho까지 던진다 — 연결이 끊기고 재접속 뒤 재전달되는 것을 기대한다
             // (실제 브로커에서의 재전달은 ADR-029 검증 범위 참고).
             throw new IllegalStateException("MQTT 저장 확인 실패 — ACK하지 않음", e);
+        }
+    }
+
+    /**
+     * 저장 확인을 기다리는 Paho 콜백 스레드를 연결 끊김 때 깨운다.
+     *
+     * <p>Paho의 재연결(ConnectBG)은 옛 콜백 스레드가 끝날 때까지 기다린다(CommsCallback.start).
+     * 콜백 스레드가 {@code receipt.get}에서 최대 150초 막혀 있으면 브로커가 살아 있어도 그동안 재연결이
+     * 멈춘다(실험 D, ADR-029). 옛 연결 기준 ACK는 어차피 쓸 수 없으니 기다림을 끝내고 ACK 없이 빠져나온다.
+     * 저장 경로는 그대로 진행되므로 브로커의 재전달은 중복이 될 뿐 유실이 아니다.
+     * {@code $SYS} 어댑터의 연결 끊김은 텔레메트리 ACK와 무관하다.
+     */
+    @EventListener
+    public void onConnectionLost(MqttConnectionFailedEvent event) {
+        if (event.getSource() instanceof MqttPahoMessageDrivenChannelAdapter adapter
+            && java.util.Arrays.stream(adapter.getTopic()).anyMatch(t -> t.startsWith("$SYS"))) {
+            return;
+        }
+        Thread waiting = awaitingThread.get();
+        if (waiting != null) {
+            log.warn("[MQTT] 연결 끊김 — 저장 확인 대기 중단, ACK 없이 재전달 대기");
+            waiting.interrupt();
         }
     }
 
