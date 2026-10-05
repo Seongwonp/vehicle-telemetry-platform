@@ -1,0 +1,7 @@
+date=2026-10-05 (UTC 13:06-13:12)
+git_head=4124bb0 (git diff c41ff49 HEAD -- backend/src/main is empty); backend image built earlier today, reused (no rebuild)
+overrides (outside repo, deleted after): override_g1.yml / override_g2.yml copies here set MQTT_CLIENT_ID only; mosq-sub.conf.used = mosquitto-dev.conf + log_type subscribe/unsubscribe, mounted over the dev conf to log SUBSCRIBE. Broker volume NOT deleted.
+G1: ID telemetry-backend-g1 -> connected+subscribed vehicle/telemetry/# QoS1 (13:07:15); 10 msgs SESSLOSS-G1 -> influx 10
+G2: marks in G2_marks.txt; ID telemetry-backend-g2 (no session at broker); publisher SESSLOSS-G2 every 100ms 13:08:05-13:09:38 started before backend start
+restored: backend client ID back to default telemetry-backend; stack stopped (not down)
+note: pub.log "sending PUBLISH" count 895 vs 900 payload lines; last stored row ts == last payload ts, so likely a log-count artifact (not investigated)

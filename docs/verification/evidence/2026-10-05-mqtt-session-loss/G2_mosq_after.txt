@@ -1,0 +1,23 @@
+1791205635: New connection from 172.18.0.8:34486 on port 1883.
+1791205635: New client connected from 172.18.0.8:34486 as telemetry-backend-g1 (p2, c0, k60).
+1791205635: New connection from 172.18.0.8:34500 on port 1883.
+1791205635: telemetry-backend-g1 1 vehicle/telemetry/#
+1791205636: New client connected from 172.18.0.8:34500 as telemetry-backend-g1-sys (p2, c0, k60).
+1791205636: telemetry-backend-g1-sys 0 $SYS/broker/publish/messages/dropped
+1791205636: telemetry-backend-g1-sys 0 $SYS/broker/publish/messages/received
+1791205636: telemetry-backend-g1-sys 0 $SYS/broker/clients/connected
+1791205652: New connection from 172.18.0.9:49246 on port 1883.
+1791205652: New client connected from 172.18.0.9:49246 as auto-B4FBD3FA-A09D-EE95-67AA-04BD202E62A9 (p2, c1, k60).
+1791205652: Client auto-B4FBD3FA-A09D-EE95-67AA-04BD202E62A9 disconnected.
+1791205673: Client telemetry-backend-g1 disconnected.
+1791205676: Client telemetry-backend-g1-sys closed its connection.
+1791205689: New connection from 172.18.0.8:45526 on port 1883.
+1791205689: New client connected from 172.18.0.8:45526 as auto-87D9DAF8-B82F-518C-D394-1F667075CDD6 (p2, c1, k60).
+1791205724: New connection from 172.18.0.9:54926 on port 1883.
+1791205724: New client connected from 172.18.0.9:54926 as telemetry-backend-g2 (p2, c0, k60).
+1791205724: New connection from 172.18.0.9:54932 on port 1883.
+1791205724: telemetry-backend-g2 1 vehicle/telemetry/#
+1791205724: New client connected from 172.18.0.9:54932 as telemetry-backend-g2-sys (p2, c0, k60).
+1791205724: telemetry-backend-g2-sys 0 $SYS/broker/publish/messages/dropped
+1791205724: telemetry-backend-g2-sys 0 $SYS/broker/publish/messages/received
+1791205724: telemetry-backend-g2-sys 0 $SYS/broker/clients/connected

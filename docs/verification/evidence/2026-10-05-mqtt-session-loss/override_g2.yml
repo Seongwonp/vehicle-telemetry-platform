@@ -1,0 +1,4 @@
+services:
+  backend:
+    environment:
+      MQTT_CLIENT_ID: telemetry-backend-g2

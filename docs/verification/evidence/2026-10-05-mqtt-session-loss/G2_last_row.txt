@@ -1,0 +1,2 @@
+61182Z,2026-10-05T13:09:38.261Z,60.5,speed,vehicle_telemetry,
+
