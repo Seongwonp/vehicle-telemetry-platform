@@ -1335,7 +1335,10 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 
 한 MQTT 수집 인스턴스의 처리 동시성이 줄어든다. broker inflight=20이어도 handler는 한 번에 한 건의 Kafka/spool 완료를 기다린다. RTT·디스크 지연에 민감하고 기존 비동기 경로의 처리량 수치를 이 구현에 재사용하면 안 된다. 처리량 요구를 충족하지 못하면 연결 세대와 순서를 관리하는 bounded 비동기 ACK 설계를 별도 검증해야 한다.
 
-**남은 위험(추정, 미검증)**: 운영 producer는 `max.block.ms`·`delivery.timeout.ms`를 명시하지 않아 기본값(60·120초)이다. Kafka가 죽으면 첫 메시지가 spool로 가기까지 콜백 스레드가 최대 약 120초 막히는데, keepAlive는 60초다. Paho 수신 큐가 차면 PINGRESP를 못 읽어 연결이 끊길 수 있다 — 끊기면 재전달로 이어져 유실은 아니지만, 실제 Kafka 장애에서 확인하기 전에는 timeout 값을 바꾸지 않는다.
+~~**남은 위험(추정, 미검증)**: producer 기본값(max.block 60·delivery 120초)이면 Kafka 장애 때 첫 메시지가 콜백을 120초 막아 keepAlive 60초를 넘긴다.~~
+→ **실험 E·E2(2026-10-05)에서 실제로 끊겼다**(유실은 0). 2026-10-06 `delivery.timeout.ms` 30초·`request.timeout.ms` 10초·`max.block.ms` 10초로 명시해 최악 대기(40초)를 keepAlive 아래로 내렸다 — `KafkaProducerContractTest`가 이 부등식을 고정한다. 대가: 30초 넘는 Kafka 정지는 spool을 거친다(전에는 120초). 09-29 spool 문서의 "120초"는 그 시점 설정 기준이다.
+
+**수신 정지 감지**: 브로커 수신 > 0인데 백엔드 수신 = 0이 2분이면 `MqttIngestStopped`(critical). 기존 `MqttIngestFallingBehind`는 차이가 초당 10건을 넘어야 떠서 소규모(초당 약 3건)에서 백엔드가 완전히 멈춰도 안 떴다.
 
 브로커 autosave/inflight 값을 무작정 늘리지 않는다. 2.0.22 기본값과 한계는 [보안 문서](security-report.md)에 기록했다. [실험 기록](verification/2026-10-01-mqtt-ack-boundary.md)의 검증 범위를 따른다.
 

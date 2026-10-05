@@ -56,6 +56,21 @@ groups:
         annotations:
           summary: "백엔드가 MQTT 유입 속도를 못 따라가고 있음 (브로커 수신 대비 처리 부족)"
 
+      # 위 규칙은 차이가 초당 10건을 넘어야 뜬다 — 3대 시뮬레이터(초당 약 3건) 규모에서는 백엔드 수신이
+      # **완전히 0**이어도 영영 안 뜬다. 구독이 빠진 경우(재시작 직후 구독 timeout, 2026-10-05 실험 C·E·F·G),
+      # 어댑터가 멈춘 경우, 핸들러가 막힌 경우를 원인과 무관하게 잡으려면 "브로커는 받는데 백엔드는 0"을 직접 본다.
+      # 2분 창 + for 2m: 백엔드 재시작·재접속(실험 E2에서 수신 재개까지 약 7초)은 넘기고, 진짜 정지는 약 4분에 잡는다.
+      - alert: MqttIngestStopped
+        expr: >
+          sum(rate(telemetry_mqtt_broker_messages_received[2m])) > 0.1
+            and sum(rate(telemetry_mqtt_messages_received_total[2m])) == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "브로커에는 메시지가 들어오는데 백엔드 수신이 0 — 구독 누락·어댑터 정지 의심"
+          runbook: "docs/runbook/pipeline-observability.md"
+
       # 12시간 soak에서 실제로 일어난 사고의 신호다: MQTT는 계속 들어오는데 InfluxDB
       # 저장이 26초 만에 멈췄고, 그런데도 Kafka lag은 끝까지 0이라(offset이 계속 커밋됨)
       # 기존 알림이 하나도 안 떴다. "lag이 0"은 "잘 처리되고 있다"가 아니라 "offset이

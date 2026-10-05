@@ -35,6 +35,10 @@
 | 3 → 4 | 저장 실패 | `telemetry_kafka_dlq_published_total`, `docs/runbook/dlq-reprocessing.md` |
 | 4 → 앱 | 저장·커밋은 끝났는데 WebSocket 방송이 실패 | `telemetry_websocket_broadcast_failures_total{channel=telemetry\|anomalies}`. 저장 데이터는 온전하고 실시간 화면만 빠진 것 — REST 조회로 확인 가능. 2026-09-29 전에는 여기서 예외가 커밋된 배치를 재시도시켰다 |
 
+**`MqttIngestStopped`(브로커 수신 > 0, 백엔드 수신 = 0이 2분)**: 백엔드 로그에서 `Error subscribing`·`MQTT 저장 확인`·연결 끊김을 찾는다.
+구독이 빠졌으면 백엔드 재시작으로 재구독한다(cleanSession=false라 브로커 세션 큐에 쌓인 것은 재구독 뒤 전달된다).
+브로커 `$SYS/broker/clients/connected`로 백엔드 클라이언트가 붙어 있는지 먼저 본다.
+
 **셋 다 0인데 단계가 갈라졌다면 계측이 부족한 것이다** — 어디로 샜는지 모른다는 뜻이므로,
 그 구간에 지표를 먼저 추가해야 한다.
 

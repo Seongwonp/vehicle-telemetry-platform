@@ -54,6 +54,13 @@ spring:
         # 의존하므로 명시로 고정한다 — session.timeout.ms와 같은 이유(KafkaProducerContractTest).
         enable.idempotence: true
         max.in.flight.requests.per.connection: 5
+        # MQTT 수동 ACK(ADR-029)는 Paho 콜백 스레드에서 Kafka 완료를 기다린다. 기본값(delivery 120초·max.block 60초)이면
+        # Kafka 장애 때 첫 메시지가 콜백을 120초 막아 MQTT keepAlive(60초)를 넘기고 연결이 끊겼다(2026-10-05 실험 E·E2).
+        # keepAlive보다 넉넉히 짧게 두어 실패를 빨리 확정하고 spool로 넘긴다. 대가: 30초 넘는 Kafka 정지는 spool을 거친다.
+        # 제약: delivery.timeout.ms >= linger.ms + request.timeout.ms.
+        delivery.timeout.ms: 30000
+        request.timeout.ms: 10000
+        max.block.ms: 10000
     consumer:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

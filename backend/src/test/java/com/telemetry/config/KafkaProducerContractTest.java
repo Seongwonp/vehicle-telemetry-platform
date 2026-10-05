@@ -68,4 +68,21 @@ class KafkaProducerContractTest {
                 .containsEntry(ProducerConfig.ACKS_CONFIG, "all");
         });
     }
+
+    @Test
+    @DisplayName("Kafka 실패 확정 시간이 MQTT keepAlive(60초)보다 짧다 — 콜백이 연결을 끊을 만큼 막히지 않는다")
+    void 실패_확정이_keepAlive보다_짧다() {
+        runner().run(context -> {
+            var props = context.getBean(ProducerFactory.class).getConfigurationProperties();
+            long delivery = Long.parseLong(String.valueOf(props.get(ProducerConfig.DELIVERY_TIMEOUT_MS_CONFIG)));
+            long request = Long.parseLong(String.valueOf(props.get(ProducerConfig.REQUEST_TIMEOUT_MS_CONFIG)));
+            long maxBlock = Long.parseLong(String.valueOf(props.get(ProducerConfig.MAX_BLOCK_MS_CONFIG)));
+            long keepAliveMs = 60_000; // MqttConfig.setKeepAliveInterval(60)
+
+            // 한 메시지가 콜백을 막는 최악은 max.block(send 호출 자체) + delivery(완료 대기)다.
+            assertThat(maxBlock + delivery).isLessThan(keepAliveMs);
+            // Kafka 클라이언트 제약 — 어기면 프로듀서 생성이 실패한다(linger.ms 기본 0 가정).
+            assertThat(delivery).isGreaterThanOrEqualTo(request);
+        });
+    }
 }

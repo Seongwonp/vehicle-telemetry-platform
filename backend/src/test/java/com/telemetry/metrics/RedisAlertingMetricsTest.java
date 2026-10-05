@@ -103,6 +103,12 @@ class RedisAlertingMetricsTest {
         String yaml = Files.readString(rules, StandardCharsets.UTF_8);
         assertThat(exprOf(yaml, "RedisUnavailableRejections")).contains("telemetry_redis_unavailable_all_total");
         assertThat(exprOf(yaml, "RateLimitFailingOpen")).contains("telemetry_ratelimit_failopen_all_total");
+        // 수신 정지 알림이 코드가 실제로 내보내는 이름을 본다(MqttMessageHandler의 telemetry.mqtt.messages.received).
+        // 여러 줄 expr(`>`)이라 exprOf의 첫 줄 대신 알림 블록 전체에서 찾는다.
+        String ingest = yaml.substring(yaml.indexOf("- alert: MqttIngestStopped"));
+        ingest = ingest.substring(0, ingest.indexOf("annotations:"));
+        assertThat(ingest).contains("telemetry_mqtt_broker_messages_received")
+            .contains("telemetry_mqtt_messages_received_total[2m])) == 0");
     }
 
     private static String exprOf(String yaml, String alert) {
