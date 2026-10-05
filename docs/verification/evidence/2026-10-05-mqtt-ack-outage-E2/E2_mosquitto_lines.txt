@@ -1,0 +1,10 @@
+1791204981: New connection from 172.18.0.8:58624 on port 1883.
+1791204981: New client connected from 172.18.0.8:58624 as telemetry-backend (p2, c0, k60).
+1791204981: New connection from 172.18.0.8:58638 on port 1883.
+1791204981: New client connected from 172.18.0.8:58638 as telemetry-backend-sys (p2, c0, k60).
+1791205016: New connection from 172.18.0.9:55960 on port 1883.
+1791205016: New client connected from 172.18.0.9:55960 as auto-753C8E6E-9586-7ACB-B0A2-FB4DC73BB7CE (p2, c1, k60).
+1791205162: Client telemetry-backend closed its connection.
+1791205163: New connection from 172.18.0.8:46512 on port 1883.
+1791205164: New client connected from 172.18.0.8:46512 as telemetry-backend (p2, c0, k60).
+1791205280: Client auto-753C8E6E-9586-7ACB-B0A2-FB4DC73BB7CE disconnected.

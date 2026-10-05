@@ -1,0 +1,10 @@
+start_utc=2026-10-05T12:56:46Z
+git_head=c41ff49d2c0f681a1871a1eb5e29093e1d292980
+git_status_porcelain=?? docs/verification/evidence/2026-10-05-mqtt-ack-outage-E2/ 
+docker=29.7.2
+backend_image_id=sha256:8e0b82d3df1101a77414d524341b7bda7f467ad38c90fa4d7b958a1e242d0091
+backend_image_created=2026-10-05T12:54:22.09933906Z
+image_check=확인함: jar의 MqttMessageHandler.class에 onConnectionLost·MqttConnectionFailedEvent 존재(python zipfile) -> HEAD c41ff49 코드; 소스 grep: MqttMessageHandler.java:163
+compose_override=저장소 밖 scratchpad dbg-e2.yml (DEBUG만; 종료 후 삭제)
+ready_utc=2026-10-05T12:56:52Z
+E2_end_utc=2026-10-05T13:03:16Z

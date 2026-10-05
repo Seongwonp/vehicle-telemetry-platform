@@ -1,0 +1,12 @@
+telemetry_mqtt_ack_callback_missing_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_messages_invalid_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_broker_messages_dropped{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_broker_messages_received{application="vehicle-telemetry-backend",} 720.0
+telemetry_mqtt_broker_clients_connected{application="vehicle-telemetry-backend",} 2.0
+telemetry_spool_scan_seconds_max{application="vehicle-telemetry-backend",} 0.005495144
+telemetry_spool_scan_seconds_count{application="vehicle-telemetry-backend",} 62.0
+telemetry_spool_scan_seconds_sum{application="vehicle-telemetry-backend",} 0.019124141
+telemetry_spool_drained_total{application="vehicle-telemetry-backend",} 491.0
+telemetry_spool_pending{application="vehicle-telemetry-backend",} 0.0
+telemetry_spool_corrupt_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 721.0
