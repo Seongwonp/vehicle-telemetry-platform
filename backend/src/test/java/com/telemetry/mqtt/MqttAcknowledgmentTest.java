@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class MqttAcknowledgmentTest {
@@ -60,6 +61,61 @@ class MqttAcknowledgmentTest {
         doThrow(new IllegalStateException("DLQ unavailable")).when(dlq).publish(any(), any(), any());
         assertThatThrownBy(() -> handler.handle(message("{bad", ack))).isInstanceOf(IllegalStateException.class);
         verifyNoInteractions(ack);
+    }
+
+    @Test void unsendableTelemetryIsQuarantinedThenAcked_notLeftToRedeliverForever() {
+        // 직렬화 실패는 다시 보내도 같다. ACK 없이 던지면 브로커가 재접속마다 맨 앞에서 재전달해 구독이 막힌다.
+        var producer = mock(TelemetryProducer.class);
+        when(producer.send(any())).thenReturn(CompletableFuture.failedFuture(
+            new TelemetryProducer.UnsendableTelemetryException(new RuntimeException("boom"))));
+        var dlq = mock(MqttInvalidMessagePublisher.class);
+        var ack = mock(SimpleAcknowledgment.class);
+
+        handler(producer, dlq).handle(message(PAYLOAD, ack));
+
+        var order = inOrder(dlq, ack);
+        order.verify(dlq).publish(eq("vehicle/telemetry/ACK-001"), eq(PAYLOAD), eq("SERIALIZATION_FAILED"));
+        order.verify(ack).acknowledge();
+    }
+
+    @Test void unsendableTelemetryWithDlqFailureIsNotAcked() {
+        var producer = mock(TelemetryProducer.class);
+        when(producer.send(any())).thenReturn(CompletableFuture.failedFuture(
+            new TelemetryProducer.UnsendableTelemetryException(new RuntimeException("boom"))));
+        var dlq = mock(MqttInvalidMessagePublisher.class);
+        doThrow(new IllegalStateException("DLQ unavailable")).when(dlq).publish(any(), any(), any());
+        var ack = mock(SimpleAcknowledgment.class);
+
+        assertThatThrownBy(() -> handler(producer, dlq).handle(message(PAYLOAD, ack)))
+            .isInstanceOf(IllegalStateException.class);
+        verifyNoInteractions(ack);
+    }
+
+    @Test void nonContractDecodeFailureIsQuarantinedThenAcked() {
+        var decoder = mock(com.telemetry.domain.TelemetryDecoder.class);
+        when(decoder.decode(any())).thenThrow(new IllegalArgumentException("validator bug"));
+        var dlq = mock(MqttInvalidMessagePublisher.class);
+        var ack = mock(SimpleAcknowledgment.class);
+        var handler = new MqttMessageHandler(mock(TelemetryProducer.class), decoder, new SimpleMeterRegistry(), dlq);
+
+        handler.handle(message(PAYLOAD, ack));
+
+        var order = inOrder(dlq, ack);
+        order.verify(dlq).publish(any(), any(), eq("DECODE_FAILED"));
+        order.verify(ack).acknowledge();
+    }
+
+    @Test void missingAckCallbackIsCounted_soAManualAckRegressionIsVisible() {
+        var producer = mock(TelemetryProducer.class);
+        when(producer.send(any())).thenReturn(CompletableFuture.completedFuture(null));
+        var registry = new SimpleMeterRegistry();
+        var handler = new MqttMessageHandler(producer, TestDecoders.telemetryDecoder(), registry,
+            mock(MqttInvalidMessagePublisher.class));
+
+        handler.handle(MessageBuilder.withPayload(PAYLOAD)
+            .setHeader("mqtt_receivedTopic", "vehicle/telemetry/ACK-001").build());
+
+        assertThat(registry.counter("telemetry.mqtt.ack.callback.missing").count()).isEqualTo(1.0);
     }
 
     private static org.springframework.messaging.Message<String> message(String payload, SimpleAcknowledgment ack) {

@@ -107,8 +107,8 @@ public class TelemetryProducer {
      * <p>spool의 목적은 <i>Kafka 브로커 장애 시 유실 방지</i>인데, Kafka 프로듀서 자체가
      * 내부 버퍼와 재시도(acks=all, retries=3)를 갖고 있다. 그래서 전송에 실패했을 때만
      * spool에 적는다. 반환 future는 Kafka 또는 spool 기록 성공 뒤 완료된다.
-     * MQTT 입구는 이 완료를 기다려 ACK한다. 프로세스 종료 시 미확인 메시지는
-     * 살아 있는 브로커의 동일 세션에서 재전달한다(ADR-029).
+     * MQTT 입구는 이 완료를 기다려 ACK한다(ADR-029). 직렬화 실패는 다시 보내도 같으므로
+     * {@link UnsendableTelemetryException}으로 구분한다 — 입구가 DLQ로 격리한 뒤 ACK한다.
      */
     public CompletableFuture<Void> send(VehicleTelemetry telemetry) {
         String payload;
@@ -122,7 +122,7 @@ public class TelemetryProducer {
                 telemetry.getSpeed(),
                 telemetry.getRpm(),
                 e);
-            return CompletableFuture.failedFuture(e);
+            return CompletableFuture.failedFuture(new UnsendableTelemetryException(e));
         }
 
         // 이미 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 그래야 retryPending()이
@@ -284,6 +284,16 @@ public class TelemetryProducer {
             log.error("[Kafka] 전송 실패 후 spool 저장까지 실패 — MQTT ACK 금지 vehicle={} ts={}",
                 vehicleId, ts, spoolFailure);
             return CompletableFuture.failedFuture(spoolFailure);
+        }
+    }
+
+    /**
+     * 재시도해도 결과가 같은 실패(직렬화 실패). 일시 실패(Kafka·spool)와 구분해야 MQTT 입구가
+     * 이 메시지를 ACK 없이 두지 않는다 — 두면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다.
+     */
+    public static class UnsendableTelemetryException extends RuntimeException {
+        public UnsendableTelemetryException(Throwable cause) {
+            super("telemetry를 Kafka payload로 만들 수 없다", cause);
         }
     }
 }

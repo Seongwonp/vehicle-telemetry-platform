@@ -33,6 +33,7 @@ public class MqttMessageHandler {
     private final Counter receivedCounter;
     private final Counter invalidCounter;
     private final MqttInvalidMessagePublisher invalidMessagePublisher;
+    private final Counter missingAckCallbackCounter;
 
     public MqttMessageHandler(
         TelemetryProducer telemetryProducer,
@@ -46,6 +47,8 @@ public class MqttMessageHandler {
         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
         this.invalidMessagePublisher = invalidMessagePublisher;
+        // 0이 아니면 manualAcks가 꺼진 것이다 — ACK가 저장 확인을 기다리지 않는다(ADR-029 보장 소실).
+        this.missingAckCallbackCounter = meterRegistry.counter("telemetry.mqtt.ack.callback.missing");
     }
 
     // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
@@ -64,6 +67,12 @@ public class MqttMessageHandler {
             telemetry = telemetryDecoder.decode(payload);
         } catch (TelemetryContractException e) {
             reject(topic, payload, e.getReason(), null);
+            acknowledge(message, CompletableFuture.completedFuture(null));
+            return;
+        } catch (RuntimeException e) {
+            // 계약 예외가 아닌 decode 실패도 같은 payload면 매번 같다. ACK 없이 던지면 브로커가 재접속마다
+            // 맨 앞에서 재전달해 구독 전체가 막힌다(poison 루프). 격리하고 ACK한다 — DLQ 실패면 ACK하지 않는다.
+            reject(topic, payload, "DECODE_FAILED", null);
             acknowledge(message, CompletableFuture.completedFuture(null));
             return;
         }
@@ -89,24 +98,40 @@ public class MqttMessageHandler {
             telemetry.getEngineTemp(),
             telemetry.getBatteryVoltage());
 
-        acknowledge(message, telemetryProducer.send(telemetry));
+        CompletableFuture<Void> receipt = telemetryProducer.send(telemetry)
+            .exceptionallyCompose(e -> {
+                Throwable cause = e instanceof java.util.concurrent.CompletionException && e.getCause() != null
+                    ? e.getCause() : e;
+                if (!(cause instanceof TelemetryProducer.UnsendableTelemetryException)) {
+                    return CompletableFuture.failedFuture(cause); // 일시 실패 — ACK하지 않고 재전달을 기다린다
+                }
+                // 재시도해도 같은 실패 — 격리 뒤 ACK. DLQ 발행 실패는 그대로 실패로 남아 ACK하지 않는다.
+                reject(topic, payload, "SERIALIZATION_FAILED", telemetry);
+                return CompletableFuture.completedFuture(null);
+            });
+        acknowledge(message, receipt);
     }
 
     private void acknowledge(Message<?> message, CompletableFuture<Void> receipt) {
         var acknowledgment = message.getHeaders().get(
             IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, SimpleAcknowledgment.class);
-        // Header-free calls are used by the legacy comparison and decoder unit tests.
-        if (acknowledgment == null) return;
+        // 헤더가 없으면 어댑터가 자동 ACK다(manualAcks 꺼짐) — 기다려도 ACK 시점을 바꿀 수 없다.
+        // 자동 ACK 대조 실험과 decoder 단위 테스트가 이 경로를 쓴다. 운영에서 0이 아니면 설정 회귀다.
+        if (acknowledgment == null) {
+            missingAckCallbackCounter.increment();
+            return;
+        }
         try {
-            // Stay on Paho's single callback thread: ordered ACKs, no old async callback after reconnect.
-            // This deliberately trades concurrency for a small, auditable boundary (ADR-029).
+            // Paho 단일 콜백 스레드에서 기다린다 — ACK가 수신 순서로 나가고 Kafka 완료 스레드가 ACK하지 않는다.
+            // 동시성을 내주고 작고 검토 가능한 경계를 샀다(ADR-029).
             receipt.get(150, TimeUnit.SECONDS);
             acknowledgment.acknowledge();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException("MQTT 저장 확인 중단 — ACK하지 않음", e);
         } catch (Exception e) {
-            // Propagate through DirectChannel to Paho; disconnect/reconnect permits redelivery.
+            // DirectChannel로 Paho까지 던진다 — 연결이 끊기고 재접속 뒤 재전달되는 것을 기대한다
+            // (실제 브로커에서의 재전달은 ADR-029 검증 범위 참고).
             throw new IllegalStateException("MQTT 저장 확인 실패 — ACK하지 않음", e);
         }
     }

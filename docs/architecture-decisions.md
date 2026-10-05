@@ -1318,18 +1318,23 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 자동 ACK에서는 handler가 Kafka 비동기 전송을 시작하고 반환하면 브로커가 메시지를 처리 완료로 본다. 그 뒤 Kafka 완료 전 백엔드가 종료되면 인메모리 메시지를 복구하지 못한다. 기존 ADR-019에 공개된 한계다.
 
 보호 대상은 **MQTT 브로커가 살아 있고 동일 client ID·세션 및 로컬 spool 볼륨을 유지한 백엔드 프로세스 종료**다. 브로커 강제 종료·큐 포화·호스트 전원 차단·디스크 손실까지 보장하지 않는다.
+이 보호의 근거는 **Kafka 완료를 테스트용 pending future로 통제한 별도 JVM 강제 종료 3회(Windows `destroyForcibly`)**다 — 실제 Kafka·전체 Boot JVM·Linux SIGKILL이 아니다(검증 문서 실험 A).
 
 ### 결정
 
 - telemetry 어댑터만 manualAcks=true. SYS 메트릭 어댑터는 기존 QoS 0을 유지한다.
 - TelemetryProducer.send는 Kafka 성공 또는 실패분 spool 저장 성공 뒤 완료되는 future를 반환한다. 직렬화·spool 실패는 exceptional completion이다.
-- 첫 구현은 **Paho 단일 수신 콜백에서 완료를 기다린 뒤 ACK**한다. 비동기 Kafka 완료 스레드가 ACK하지 않으므로 수신 순서가 유지되고, 재접속 뒤 호출될 ACK 콜백을 별도 작업 큐에 남기지 않는다.
-- 대기는 최대 150초. 인터럽트·실패·timeout은 ACK하지 않고 DirectChannel/Paho로 예외를 전달한다. 나중에 Kafka 성공해도 그 future가 ACK를 호출하지 않는다. 재전달 중복은 가능하다.
+- 첫 구현은 **Paho 단일 수신 콜백에서 완료를 기다린 뒤 ACK**한다. 비동기 Kafka 완료 스레드가 ACK하지 않으므로 수신 순서가 유지되고, ACK 콜백이 별도 작업 큐에 남지 않는다. 다만 연결이 끊긴 사이 대기를 마친 콜백이 옛 메시지를 ACK할 수는 있다 — 재접속 경계는 검증 문서 실험 D.
+- 대기는 최대 150초. 인터럽트·실패·timeout은 ACK하지 않고 DirectChannel/Paho로 예외를 전달한다. 나중에 Kafka 성공해도 그 future가 ACK를 호출하지 않는다. 재전달 중복은 가능하다. **예외 전파 뒤 실제 브로커가 연결을 끊고 재전달하는지는 실측하지 않았다**(`errorChannel`을 설정하면 예외가 삼켜져 ACK 없는 메시지가 남으니 설정하지 않는다).
+- **재시도해도 결과가 같은 실패는 격리 뒤 ACK한다(2026-10-05 리뷰 후속).** 직렬화 실패(`UnsendableTelemetryException`)와 계약 예외가 아닌 decode 실패는 ACK 없이 던지면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다(poison 루프). MQTT DLQ에 `SERIALIZATION_FAILED`·`DECODE_FAILED`로 발행 성공 뒤 ACK, DLQ 실패면 ACK하지 않는다.
+- ACK 콜백 헤더가 없으면(어댑터가 manualAcks가 아님) `telemetry.mqtt.ack.callback.missing`을 올린다 — 운영에서 0이 아니면 설정 회귀다.
 - 잘못된 입력은 기존 MQTT DLQ 발행 성공 뒤 ACK. DLQ 실패 시 ACK하지 않는다.
 - spool은 기존 force + rename 성공이 확인 경계다. 디렉터리 fsync·호스트 전원 차단 보장이 아니다. 디스크 실패 때 ACK를 보류하므로 브로커 유한 큐와 운영 복구가 필요하다.
 
 ### 대가
 
 한 MQTT 수집 인스턴스의 처리 동시성이 줄어든다. broker inflight=20이어도 handler는 한 번에 한 건의 Kafka/spool 완료를 기다린다. RTT·디스크 지연에 민감하고 기존 비동기 경로의 처리량 수치를 이 구현에 재사용하면 안 된다. 처리량 요구를 충족하지 못하면 연결 세대와 순서를 관리하는 bounded 비동기 ACK 설계를 별도 검증해야 한다.
+
+**남은 위험(추정, 미검증)**: 운영 producer는 `max.block.ms`·`delivery.timeout.ms`를 명시하지 않아 기본값(60·120초)이다. Kafka가 죽으면 첫 메시지가 spool로 가기까지 콜백 스레드가 최대 약 120초 막히는데, keepAlive는 60초다. Paho 수신 큐가 차면 PINGRESP를 못 읽어 연결이 끊길 수 있다 — 끊기면 재전달로 이어져 유실은 아니지만, 실제 Kafka 장애에서 확인하기 전에는 timeout 값을 바꾸지 않는다.
 
 브로커 autosave/inflight 값을 무작정 늘리지 않는다. 2.0.22 기본값과 한계는 [보안 문서](security-report.md)에 기록했다. [실험 기록](verification/2026-10-01-mqtt-ack-boundary.md)의 검증 범위를 따른다.

@@ -29,6 +29,9 @@ class MqttMessageHandlerTest {
     @BeforeEach
     void setUp() {
         telemetryProducer = mock(TelemetryProducer.class);
+        // 실제 send()는 null을 돌려주지 않는다 — Kafka 또는 spool 기록 완료 future(ADR-029).
+        org.mockito.Mockito.when(telemetryProducer.send(org.mockito.ArgumentMatchers.any()))
+            .thenReturn(java.util.concurrent.CompletableFuture.completedFuture(null));
         invalidMessagePublisher = mock(MqttInvalidMessagePublisher.class);
         meterRegistry = new SimpleMeterRegistry();
         handler = new MqttMessageHandler(

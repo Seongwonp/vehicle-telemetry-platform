@@ -75,6 +75,8 @@ class BothEntrancesSameContractTest {
         TelemetryDecoder decoder = TestDecoders.telemetryDecoder();
 
         telemetryProducer = mock(TelemetryProducer.class);
+        org.mockito.Mockito.when(telemetryProducer.send(org.mockito.ArgumentMatchers.any()))
+            .thenReturn(java.util.concurrent.CompletableFuture.completedFuture(null));
         invalidPublisher = mock(MqttInvalidMessagePublisher.class);
         mqttHandler = new MqttMessageHandler(
             telemetryProducer, decoder, new SimpleMeterRegistry(), invalidPublisher);
