@@ -55,3 +55,8 @@ load-test/**/_result*.txt
 
 # 스케일 프로파일이 만드는 동적 스크레이프 대상 (scripts/scale-storage.sh)
 monitoring/prometheus/targets/*.json
+
+# obd-bridge 로컬 venv와 실행 시 spool(미전송 메시지)
+obd-bridge/.venv/
+obd-bridge/spool/
+obd-bridge/elm.log*
