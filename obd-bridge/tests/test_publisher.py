@@ -1,8 +1,10 @@
 """PUBACK 뒤에만 지우고, 재연결 시 timestamp 순서로 다시 보낸다."""
 import pytest
+from paho.mqtt.packettypes import PacketTypes
+from paho.mqtt.reasoncodes import ReasonCode
 
 from conftest import ClientFactory, FakeClock
-from obd_bridge.publisher import SpoolPublisher, TlsConfig
+from obd_bridge.publisher import SpoolPublisher, TlsConfig, _is_failure, paho_log
 from obd_bridge.spool import Spool
 
 
@@ -77,7 +79,8 @@ def test_unacked_resent_after_reconnect_and_only_acked_removed(tmp_path):
     first.fire_disconnect()                     # m1, m2는 PUBACK 없이 끊김
     pub.pump()
     assert [r.payload for r in spool.pending()] == ["m1", "m2"]
-    assert first.stopped  # 옛 클라이언트는 버렸다(paho 자체 재전송에 맡기지 않는다)
+    # 옛 클라이언트는 버렸다(paho 자체 재전송에 맡기지 않는다). disconnect가 먼저다.
+    assert first.calls[0] == "disconnect"
 
     clock.t += 1.0  # backoff
     connect(pub, factory)
@@ -158,3 +161,59 @@ def test_broker_rejection_in_puback_is_not_an_ack(tmp_path):
     assert len(spool) == 1 and pub.stats.rejected_by_broker == 1
     pub.pump()
     assert payloads(factory.last) == ["A"]  # 이번 세션에선 재전송하지 않는다
+
+
+# ── 세대·연결 실패·reason code ─────────────────────────────────
+def test_second_disconnect_event_does_not_double_teardown(tmp_path):
+    """같은 클라이언트의 disconnect가 두 번 와도(폐기 중 paho가 한 번 더 알림) 폐기·백오프는 한 번만."""
+    spool, pub, factory, clock = make(tmp_path)
+    spool.append("t", "A", "a", 1)
+    connect(pub, factory)
+    first = factory.last
+    first.fire_disconnect()
+    first.fire_disconnect()
+    pub.pump()
+    assert first.calls.count("disconnect") == 1
+    clock.t += 1.0  # reconnect_min_s — 이중 폐기였다면 2.0을 기다려야 한다
+    pub.pump()
+    assert len(factory.clients) == 2
+
+
+def test_connect_fail_tears_down_and_uses_own_backoff(tmp_path):
+    """TCP/TLS 연결 실패(on_connect_fail)는 paho 재시도에 맡기지 않고 폐기 → 우리 백오프로 새 클라이언트."""
+    spool, pub, factory, clock = make(tmp_path)
+    spool.append("t", "A", "a", 1)
+    pub.pump()
+    first = factory.last
+    first.fire_connect_fail()
+    pub.pump()
+    assert pub.stats.connect_failures == 1 and not pub.connected
+    assert first.calls[0] == "disconnect"
+    clock.t += 1.0
+    pub.pump()
+    assert len(factory.clients) == 2 and len(spool) == 1
+
+
+def test_client_configured_for_logging_and_no_early_paho_retry(tmp_path):
+    _, pub, factory, _ = make(tmp_path, reconnect_max_s=30.0)
+    pub.pump()
+    assert factory.last.logger is paho_log
+    assert factory.last.reconnect_delay == (30, 30)
+    assert factory.last.on_connect_fail is not None
+
+
+@pytest.mark.parametrize("value,failed", [(0x00, False), (0x10, False), (0x80, True), (0x87, True)])
+def test_is_failure_uses_0x80_boundary_with_real_reason_code(value, failed):
+    rc = ReasonCode(PacketTypes.PUBACK, identifier=value)
+    assert _is_failure(rc) is failed
+    assert _is_failure(value) is failed  # int fallback도 같은 기준
+
+
+def test_v5_no_matching_subscribers_puback_is_an_ack(tmp_path):
+    """0x10 No matching subscribers는 브로커가 받은 것이다 — 지운다."""
+    spool, pub, factory, _ = make(tmp_path)
+    spool.append("t", "A", "a", 1)
+    connect(pub, factory)
+    factory.last.fire_puback(1, rc=ReasonCode(PacketTypes.PUBACK, identifier=0x10))
+    pub.pump()
+    assert len(spool) == 0 and pub.stats.acked == 1 and pub.stats.rejected_by_broker == 0

@@ -3,9 +3,18 @@
 불변식 — 지우면 안 되는 이유:
 - ``publish()``의 반환 성공은 "paho 송신 큐에 넣었다"일 뿐이다. **PUBACK(on_publish)만이**
   브로커가 받았다는 증거다(simulator `PublishStats`와 같은 구분).
-- on_publish는 paho 네트워크 스레드에서 **paho 내부 mutex를 쥔 채** 불린다. 여기서 우리 lock을
-  잡으면 publish()를 부르는 메인 스레드와 교착할 수 있어, 콜백은 큐에 넣기만 하고
-  메인 스레드 ``pump()``가 처리한다.
+- on_publish(PUBACK)는 paho 네트워크 스레드에서 **paho의 ``_out_message_mutex``를 쥔 채**
+  불린다(paho-mqtt 2.1.0 ``_handle_pubackcomp`` → ``_do_on_publish``). ``publish()``도 같은
+  mutex를 잡는다. 콜백에서 우리 lock을 잡으면, 우리 lock을 쥐고 publish()를 부르는 스레드와
+  교착할 수 있어 콜백은 큐에 넣기만 하고 폴링 스레드의 ``pump()``가 처리한다.
+- 클라이언트를 버릴 때 **``disconnect()``를 먼저, ``loop_stop()``(join)은 폴링 스레드 밖에서** 한다.
+  paho 2.1.0의 ``loop_forever``는 terminate 요청을 받아도 ``_out_messages``(미확인 QoS 1)가
+  빌 때까지 돌고 ``loop_stop``은 timeout 없이 join한다 — PUBACK이 안 오는데 TCP는 살아 있으면
+  폴링 스레드가 무기한 멈춘다. ``disconnect()``가 DISCONNECT를 쓰면 paho가 소켓을 닫고 루프가
+  끝난다. 쓰지 못하는 경우(송신 버퍼가 막힘)에도 상태가 DISCONNECTING이라 keepalive 경과 시
+  소켓을 닫는다. 어느 쪽이든 폴링 스레드는 기다리지 않는다.
+- paho 자체 재접속은 쓰지 않는다(``reconnect_on_failure=False`` + ``on_connect_fail`` → 폐기).
+  재시도 간격은 이 클래스의 백오프만 정한다.
 - 연결이 끊기면 그 클라이언트는 **버린다**. paho는 미확인 QoS 1을 자체 큐에 들고 있다가
   재연결 때 다시 보내는데, 우리도 spool에서 다시 보내면 순서와 중복을 둘 다 통제할 수 없다.
   새 클라이언트로 spool을 timestamp 순서대로 다시 보낸다. 재전송이므로 at-least-once —
@@ -17,6 +26,7 @@ from __future__ import annotations
 
 import logging
 import queue
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
@@ -24,6 +34,7 @@ from typing import Any, Callable, Optional
 from .spool import Spool
 
 log = logging.getLogger("obd_bridge.publisher")
+paho_log = logging.getLogger("obd_bridge.paho")
 
 MQTT_ERR_SUCCESS = 0
 
@@ -43,12 +54,14 @@ class PublisherStats:
     rejected_by_broker: int = 0  # MQTT v5 PUBACK 실패 reason code
     reconnects: int = 0
     ack_timeouts: int = 0
+    connect_failures: int = 0    # TCP/TLS 연결 실패(on_connect_fail) — paho가 조용히 재시도하지 않는다
 
 
 def make_paho_client(client_id: str, protocol: int):
     import paho.mqtt.client as mqtt
+    # reconnect_on_failure=False — 끊긴 뒤 paho가 같은 클라이언트로 재접속하지 않는다(모듈 docstring).
     return mqtt.Client(callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
-                       client_id=client_id, protocol=protocol,
+                       client_id=client_id, protocol=protocol, reconnect_on_failure=False,
                        **({"clean_session": True} if protocol != mqtt.MQTTv5 else {}))
 
 
@@ -88,9 +101,13 @@ class SpoolPublisher:
         def on_publish(c, userdata, mid, reason_code=None, properties=None):
             self._events.put(("puback", gen, (mid, _is_failure(reason_code))))
 
+        def on_connect_fail(c, userdata):
+            self._events.put(("connect_fail", gen, None))
+
         client.on_connect = on_connect
         client.on_disconnect = on_disconnect
         client.on_publish = on_publish
+        client.on_connect_fail = on_connect_fail
 
     # ── 메인 스레드 ─────────────────────────────────────
     @property
@@ -110,19 +127,39 @@ class SpoolPublisher:
             import ssl
             client.tls_set(ca_certs=self.tls.ca_cert, certfile=self.tls.client_cert,
                            keyfile=self.tls.client_key, tls_version=ssl.PROTOCOL_TLSv1_2)
+        client.enable_logger(paho_log)
+        # 첫 연결 재시도(loop_forever(retry_first_connection=True))는 reconnect_on_failure와 무관하다.
+        # on_connect_fail로 곧바로 폐기하지만, 그 전에 paho가 먼저 재시도하지 않도록 대기를 최대로 둔다.
+        delay = max(1, int(self._backoff_max))
+        client.reconnect_delay_set(min_delay=delay, max_delay=delay)
         self._client = client
         client.connect_async(self.host, self.port, keepalive=30)
         client.loop_start()
 
+    def _discard(self, client: Any) -> threading.Thread:
+        """폴링 스레드를 막지 않고 클라이언트를 버린다. 반환한 reaper 스레드가 join을 맡는다."""
+        try:
+            client.disconnect()  # 먼저 — 이것이 paho 루프를 끝낸다(모듈 docstring)
+        except Exception:  # 이미 끊긴 소켓 정리 실패는 무시한다
+            pass
+
+        def reap():
+            try:
+                client.loop_stop()  # timeout 없는 join — 그래서 폴링 스레드에서 부르지 않는다
+            except Exception:
+                pass
+
+        t = threading.Thread(target=reap, name="obd-bridge-mqtt-reaper", daemon=True)
+        t.start()
+        return t
+
     def _teardown(self, reason: str) -> None:
+        # 세대를 올린다 — 버린 클라이언트가 뒤늦게 보내는 disconnect 등이 두 번째 폐기·백오프를 일으키지 않게.
+        self._gen += 1
         if self._client is not None:
             log.warning("MQTT 클라이언트 폐기(%s) — 미확인 %d건은 spool에 남아 재전송된다",
                         reason, len(self._inflight))
-            try:
-                self._client.loop_stop()
-                self._client.disconnect()
-            except Exception:  # 이미 끊긴 소켓 정리 실패는 무시한다
-                pass
+            self._discard(self._client)
         self._client = None
         self._connected = False
         self._inflight.clear()
@@ -146,6 +183,9 @@ class SpoolPublisher:
                     self.stats.reconnects += 1
             elif kind == "disconnect":
                 self._teardown("연결 끊김")
+            elif kind == "connect_fail":
+                self.stats.connect_failures += 1
+                self._teardown("연결 실패(TCP/TLS)")
             elif kind == "puback":
                 mid, failed = data
                 entry = self._inflight.pop(mid, None)
@@ -201,13 +241,16 @@ class SpoolPublisher:
             self._inflight[info.mid] = (rec.seq, now)
             self.stats.published += 1
 
-    def close(self) -> None:
+    def close(self, timeout_s: float = 2.0) -> None:
+        """종료. DISCONNECT를 보낼 시간을 최대 ``timeout_s`` 주고, 넘으면 기다리지 않는다
+        (paho 스레드는 daemon이다). 미확인분은 spool에 남는다."""
+        self._gen += 1
         if self._client is not None:
-            try:
-                self._client.loop_stop()
-                self._client.disconnect()
-            except Exception:
-                pass
+            reaper = self._discard(self._client)
+            reaper.join(timeout_s)
+            if reaper.is_alive():
+                log.warning("MQTT 네트워크 스레드가 %.1fs 안에 끝나지 않았다 — 기다리지 않고 종료한다",
+                            timeout_s)
         self._client = None
         self._connected = False
 
@@ -218,6 +261,7 @@ def _is_failure(reason_code: Any) -> bool:
     if hasattr(reason_code, "is_failure"):
         return bool(reason_code.is_failure)
     try:
-        return int(reason_code) != 0
+        # ReasonCode.is_failure와 같은 기준. v5 0x10(no matching subscribers)은 성공이다.
+        return int(reason_code) >= 0x80
     except (TypeError, ValueError):
         return False

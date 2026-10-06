@@ -65,10 +65,9 @@ def test_every_expressible_pid_value_passes_contract(contract):
         a, b = raw >> 8, raw & 0xFF
         r = build_payload(readings_from_bytes(a, b), VID, TS)
         assert r.ok, (raw, r)
-        if raw % 97 == 0 or raw in (0, 65535):  # 계약 검증은 표본(전체는 느리다), 범위 판정은 전수
-            contract.validate(json.dumps(r.payload))
-            checked += 1
-    assert checked > 600
+        contract.validate(json.dumps(r.payload))  # 전수 — 표본이 아니다(65536회 약 0.7초)
+        checked += 1
+    assert checked == 65536
 
 
 def test_values_keep_obd_resolution(contract):

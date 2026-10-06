@@ -64,7 +64,10 @@ class FakeMqttClient:
     """paho Client의 쓰는 부분만. 콜백은 테스트가 직접 부른다(브로커 역할)."""
 
     def __init__(self):
-        self.on_connect = self.on_disconnect = self.on_publish = None
+        self.on_connect = self.on_disconnect = self.on_publish = self.on_connect_fail = None
+        self.calls = []  # 폐기 순서 확인용: "disconnect", "loop_stop"
+        self.logger = None
+        self.reconnect_delay = None
         self.published = []  # (mid, topic, payload)
         self.tls = None
         self.started = False
@@ -82,10 +85,17 @@ class FakeMqttClient:
         self.started = True
 
     def loop_stop(self):
+        self.calls.append("loop_stop")
         self.stopped = True
 
     def disconnect(self):
-        pass
+        self.calls.append("disconnect")
+
+    def enable_logger(self, logger=None):
+        self.logger = logger
+
+    def reconnect_delay_set(self, min_delay=1, max_delay=120):
+        self.reconnect_delay = (min_delay, max_delay)
 
     def publish(self, topic, payload, qos=0):
         assert qos == 1
@@ -97,6 +107,9 @@ class FakeMqttClient:
     # 브로커 흉내
     def fire_connect(self, rc=0):
         self.on_connect(self, None, None, rc, None)
+
+    def fire_connect_fail(self):
+        self.on_connect_fail(self, None)
 
     def fire_disconnect(self):
         self.on_disconnect(self, None, None, 0, None)

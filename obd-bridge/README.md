@@ -33,7 +33,8 @@ ELM327 계열 OBD-II 어댑터에서 PID 6개를 읽어 **기존 입력 계약 �
 - topic은 `{MQTT_TOPIC_PREFIX}/{vehicle_id}`. 백엔드는 topic 끝과 payload `vehicle_id`가 다르면
   `TOPIC_VEHICLE_MISMATCH`로 거부하고, 운영 broker ACL은 `vehicle/telemetry/%u`(인증서 CN)에만 쓰기를 허용한다.
   즉 **`VEHICLE_ID`는 클라이언트 인증서 CN과 같아야 한다.**
-- python-OBD가 표현할 수 있는 2바이트 전 범위(0..65535)를 decoder에 넣어 **전부 계약 범위 안**임을 테스트로 확인했다.
+- python-OBD가 표현할 수 있는 2바이트 전 범위(0..65535)를 decoder에 넣어 만든 payload **65,536개 전부**를
+  `contract.validate`에 통과시킨다(표본이 아니라 전수, 약 0.7초). 1바이트 PID는 상위 바이트로 함께 돈다.
 
 ### 미지원·null PID — 0으로 채우지 않는다
 
@@ -52,12 +53,23 @@ ELM327 계열 OBD-II 어댑터에서 PID 6개를 읽어 **기존 입력 계약 �
 | 1 | 주기마다 payload를 만들면 **먼저** `records.log`에 추가: write → flush → `os.fsync`. 새 파일이면 디렉터리도 fsync |
 | 2 | spool의 미전송분을 `(timestamp, seq)` 순서로 `publish(qos=1)`. inflight 창 기본 20 |
 | 3 | `on_publish`(= PUBACK)가 온 것만 `acks.log`에 seq 추가 + fsync → 메모리에서 제거 |
-| 4 | 끊김·CONNACK 실패·`publish` rc 오류·PUBACK 30초 무응답 → 그 paho 클라이언트를 **버리고** 백오프 뒤 새 클라이언트로 2부터 |
+| 4 | 끊김·CONNACK 실패·**TCP/TLS 연결 실패(`on_connect_fail`)**·`publish` rc 오류·PUBACK 30초 무응답 → 그 paho 클라이언트를 **버리고** 이 브리지의 백오프(1→30초) 뒤 새 클라이언트로 2부터 |
 | 5 | ack가 1000건 쌓이면 compaction: 미전송분을 임시 파일에 쓰고 fsync → `os.replace` → 디렉터리 fsync → 그 뒤 `acks.log` 비움 |
 
 - 마지막 줄이 잘린 경우(쓰는 중 크래시)는 그 줄만 잘라낸다. **중간 줄 손상은 조용히 버리지 않고 기동을 멈춘다.**
 - paho의 자체 재전송에 맡기지 않는 이유: paho는 미확인 QoS 1을 자기 큐에 들고 있다가 재연결 때 다시 보내므로,
   spool 재전송과 겹치면 순서·중복을 통제할 수 없다. 옛 클라이언트의 늦은 PUBACK은 세대 번호로 무시한다.
+  폐기할 때도 세대를 올려, 같은 클라이언트의 두 번째 끊김 알림이 폐기·백오프를 두 번 일으키지 않는다.
+- **paho 자체 재접속은 끈다**(`reconnect_on_failure=False`). 첫 연결 재시도는 그 설정과 무관하게 paho가
+  1→120초 백오프로 조용히 반복하므로, `on_connect_fail`을 받아 곧바로 폐기한다(`connect_failures` 카운터).
+  만료 인증서 같은 TLS 실패도 이 경로로 보이고, paho 로그는 `obd_bridge.paho` logger로 나온다.
+- **폐기 순서: `disconnect()` 먼저, `loop_stop()`(timeout 없는 join)은 폴링 스레드 밖(reaper 스레드)에서.**
+  paho 2.1.0의 `loop_forever`는 종료 요청을 받아도 미확인 QoS 1(`_out_messages`)이 빌 때까지 돈다. 그래서
+  PUBACK은 안 오고 TCP는 살아 있으면 `loop_stop()`을 먼저 부른 폴링 스레드가 **무기한** 멈췄다(수정 전,
+  실제 paho + stub 브로커 테스트로 재현 — 15초 안에 돌아오지 않음). `disconnect()`가 DISCONNECT를 쓰면
+  paho가 소켓을 닫고 루프가 끝난다. 송신 버퍼가 막혀 못 쓰는 경우엔 keepalive(30초) 경과 시 paho가 닫는다
+  — 그래서 join을 폴링 스레드에서 하지 않는다. 종료(`close`)는 DISCONNECT에 최대 2초를 준다.
+- 폴링이 밀려 건너뛴 예정 주기는 `skipped_overrun`으로 세고 경고 로그를 남긴다(따라잡기 연사는 안 한다).
 - **at-least-once다.** PUBACK이 유실되면 같은 메시지가 다시 간다. InfluxDB는 같은 `vehicle_id`+timestamp를 덮어쓰고,
   감지기 알림은 `event_id`로 중복을 막는다(기존 설계). exactly-once가 아니다.
 
@@ -91,17 +103,20 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 
 ## 테스트 (하드웨어 없음)
 
-`.\.venv\Scripts\python -m pytest -q` → **70 passed, skip 0** (2026-10-06, Windows 11, Python 3.11.9).
+`.\.venv\Scripts\python -m pytest -q` → **82 passed, skip 0** (2026-10-06, Windows 11, Python 3.11.9).
 
 | 파일 | 무엇 |
 | --- | --- |
-| `tests/test_mapping_contract.py` | 매핑 범위 == `contract._NUMERIC`, python-OBD **실제 decoder**에 원시 바이트(2바이트 전 범위)를 넣어 만든 payload가 `contract.validate` 통과, 0.25 rpm·0.001 V 보존, gps/dtc 키 없음, 단위 변환, vehicle_id·timestamp 형식, 범위 밖 미전송 |
+| `tests/test_mapping_contract.py` | 매핑 범위 == `contract._NUMERIC`, python-OBD **실제 decoder**에 원시 바이트(2바이트 전 범위)를 넣어 만든 payload 65,536개 전부 `contract.validate` 통과, 0.25 rpm·0.001 V 보존, gps/dtc 키 없음, 단위 변환, vehicle_id·timestamp 형식, 범위 밖 미전송 |
 | `tests/test_unsupported_null.py` | 6개 필드 각각 미지원/null → None(0 아님) → 그 주기 spool 0건, None 조합 63가지 전부 payload 없음, 실제 0은 0으로 보냄 |
 | `tests/test_spool.py` | fsync 순서(파일 → 디렉터리, 내용이 다 쓰인 뒤 fsync), compaction 순서(records 확정 → acks 비움), 재시작 후 보존, timestamp 순서, 잘린 꼬리 복구, 중간 손상 예외, compaction 중 크래시 후 seq 재사용 방지 |
-| `tests/test_publisher.py` | PUBACK 전 미삭제(메모리·디스크), 끊김 중 쌓인 것 timestamp 순 재전송, 일부만 ack된 뒤 끊기면 나머지만 새 클라이언트로 재전송, 옛 클라이언트 늦은 PUBACK 무시, backlog 뒤에 새 메시지, rc 오류·PUBACK timeout 재연결, v5 PUBACK 실패 코드는 ack 아님, mTLS 없으면 거부 |
+| `tests/test_publisher.py` | PUBACK 전 미삭제(메모리·디스크), 끊김 중 쌓인 것 timestamp 순 재전송, 일부만 ack된 뒤 끊기면 나머지만 새 클라이언트로 재전송, 옛 클라이언트 늦은 PUBACK 무시, backlog 뒤에 새 메시지, rc 오류·PUBACK timeout 재연결, v5 PUBACK 실패 코드는 ack 아님(경계 0x80, 0x10은 ack — 실제 `ReasonCode`), 두 번째 끊김 알림에 이중 폐기 없음, `on_connect_fail` → 폐기·자체 백오프, mTLS 없으면 거부 |
+| `tests/test_publisher_real_paho.py` | **실제 paho 2.1.0** + 순수 Python stub 브로커(CONNACK·PINGRESP만, PUBACK 없음): PUBACK timeout 폐기가 5초 안에 끝나고 3건이 spool(메모리·디스크)에 남음, paho 스레드 종료·DISCONNECT 수신, 미확인분 있는 `close()`도 5초 안. 닫힌 포트: 연결 실패마다 우리 쪽 새 클라이언트, 옛 paho 스레드 잔존 없음, paho 로그가 `obd_bridge.paho`로 |
+| `tests/test_bridge_overrun.py` | pump가 0.55초 멈추면(주기 0.1초) 건너뛴 예정 주기를 `skipped_overrun`으로 셈 |
 
-**테스트가 실제로 막는지 변이로 확인했다**(1회, 되돌림): reader가 None 대신 0.0을 넣게 바꾸면 18건 실패,
-`publish()` 직후 spool에서 지우게 바꾸면 6건 실패. `quantity_to_float`만 0을 돌려주게 바꾼 변이는
+**테스트가 실제로 막는지 변이로 확인했다**(각 1회, 되돌림, **출력 원본 미보존** — 70건 시점의 테스트 세트 기준):
+reader가 None 대신 0.0을 넣게 바꾸면 18건 실패, `publish()` 직후 spool에서 지우게 바꾸면 6건 실패.
+폐기 순서 테스트는 수정 전 순서(`loop_stop` → `disconnect`)를 끼워 넣어 실패(15초 안에 pump 미반환)하는 것을 1회 확인했다(원본 미보존). `quantity_to_float`만 0을 돌려주게 바꾼 변이는
 **실패 0** — reader가 그 앞에서 null을 걸러내서 도달하지 않는 경로였다(방어가 두 겹이라 한 겹만 바꾼 변이는 안 잡힌다).
 
 ## 폴링 주기 측정 — **실차 아님 — ELM327-emulator**
@@ -180,3 +195,8 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 7. **timestamp 출처** — 주기 시작 시각(호스트 시계)이다. PID 6개는 그 뒤 순차로 읽히므로 실제 측정 시각은
    주기 길이만큼 퍼진다. 차량 내 장치의 시계 동기화(NTP/RTC)는 미정이고, 시계가 뒤로 가면 같은 timestamp가
    생겨 InfluxDB에서 덮어써질 수 있다(밀리초 정밀도 — 기존 유실 사례와 같은 메커니즘).
+8. **긴 장애 뒤 backlog 배출 비용** — `spool.pending()`은 pump마다(50ms) spool 전체를 정렬하고, `ack()`는 메시지마다
+   폴링 스레드에서 fsync한다. 장애가 길어 수만 건이 쌓이면 배출 중 폴링이 굶을 수 있다(측정 안 함 — 폴링이 밀리면
+   `skipped_overrun`에 보인다). 선택지: 힙/한 번만 정렬, ack fsync 묶음 처리, spool I/O 전용 스레드.
+9. **시계 타당성** — RTC 없는 호스트는 부팅 직후 1970년이나 오래된 시각을 낼 수 있고, 계약은 timestamp **형식만**
+   보므로 그대로 통과한다. 선택지: 시계가 그럴듯해질 때(NTP 동기화 확인 또는 하한 시각)까지 spool에 쓰지 않는다.

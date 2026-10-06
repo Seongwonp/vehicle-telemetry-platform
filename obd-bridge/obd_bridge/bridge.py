@@ -26,6 +26,7 @@ class CycleStats:
     spooled: int = 0
     skipped_missing: int = 0       # 필수 PID가 None — 보내지 않았다
     skipped_out_of_range: int = 0  # 계약 범위 밖 — 보내지 않았다
+    skipped_overrun: int = 0       # 주기가 밀려 건너뛴 예정 주기 수(따라잡기 연사 안 함) — 읽지도 않았다
     missing_by_field: dict = field(default_factory=dict)
 
 
@@ -81,8 +82,15 @@ class Bridge:
                     break
                 stop.wait(min(pump_every_s, remaining))
                 self.publisher.pump()
-            if time.monotonic() - next_at > interval_s:
-                next_at = time.monotonic()  # 밀렸으면 따라잡으려 연사하지 않는다
+            lag = time.monotonic() - next_at
+            if lag > interval_s:
+                # 밀렸으면 따라잡으려 연사하지 않는다. 대신 건너뛴 예정 주기를 센다 — 조용히 버리지 않는다.
+                # next_at, next_at+interval, … 중 지금까지 도래한 것은 floor(lag/interval)+1개이고 그중 하나만 돈다.
+                skipped = int(lag // interval_s)
+                self.stats.skipped_overrun += skipped
+                log.warning("폴링 주기가 %.3fs 밀렸다 — 예정 주기 %d개를 건너뛴다(누적 %d)",
+                            lag, skipped, self.stats.skipped_overrun)
+                next_at = time.monotonic()
 
 
 def _env(name: str, default: Optional[str] = None) -> Optional[str]:
