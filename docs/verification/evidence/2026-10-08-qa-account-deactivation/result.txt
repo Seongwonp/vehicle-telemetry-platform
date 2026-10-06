@@ -1,0 +1,30 @@
+== 1. 비활성화 전 로그인(토큰 확보)
+qa-admin login_before access_token_issued=yes refresh_token_issued=yes
+qa-admin GET /api/auth/me (before) -> 200
+qa-user login_before access_token_issued=yes refresh_token_issued=yes
+qa-user GET /api/auth/me (before) -> 200
+== 2. DB 비활성화
+qa-admin|ADMIN|f
+qa-user|USER|f
+UPDATE 2
+== 3. Redis refresh token 폐기(사용자 값이 일치하는 refresh_token:* 키)
+deleted key for qa-admin
+deleted key for qa-user
+deleted key for qa-user
+deleted key for qa-admin
+deleted key for qa-admin
+deleted key for qa-user
+removed=6
+remaining_qa_refresh_keys=0
+== 4. 확인
+qa-admin GET /api/auth/me (old access token) -> 401
+qa-admin POST /api/auth/refresh (old refresh token) -> 401
+qa-admin POST /api/auth/login -> 401
+qa-user GET /api/auth/me (old access token) -> 401
+qa-user POST /api/auth/refresh (old refresh token) -> 401
+qa-user POST /api/auth/login -> 401
+admin|ADMIN|t
+e2e-pw-0929183104|USER|t
+qa-admin|ADMIN|f
+qa-user|USER|f
+SIM-002|qa-user|t
