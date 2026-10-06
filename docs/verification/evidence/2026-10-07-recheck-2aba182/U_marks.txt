@@ -1,0 +1,19 @@
+idle_start=2026-10-06T04:03:38.393Z
+publish_start=2026-10-06T04:10:59.281Z
+t0_send=2026-10-06T04:13:19.675Z
+t0_done=2026-10-06T04:13:29.199Z
+stale_pending_seen=2026-10-06T04:15:50.397Z
+stale_firing_seen=2026-10-06T04:18:58.054Z
+t2_send=2026-10-06T04:19:29.353Z
+t2_done=2026-10-06T04:19:39.286Z
+t3_send=2026-10-06T04:24:51.528Z
+t3_done=2026-10-06T04:25:00.084Z
+ingest_pending_seen=2026-10-06T04:25:31.938Z
+stale_cleared_seen=2026-10-06T04:25:31.984Z
+ingest_firing_seen=2026-10-06T04:27:37.200Z
+t4_send=2026-10-06T04:28:08.554Z
+t4_done=2026-10-06T04:28:17.575Z
+alerts_cleared_seen=2026-10-06T04:28:49.438Z
+publisher_stopped=2026-10-06T04:29:25.577Z
+sent=3006 puback_rc0=3006
+end=2026-10-06T04:29:29.677Z

@@ -1,0 +1,7 @@
+before: telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 0.0
+after: telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 5.0
+puback_rc0=5
+subscribe_errors=0
+backend_client_lines:
+1791261072: New client connected from 172.18.0.10:48600 as telemetry-backend (p2, c0, k60).
+1791261072: New client connected from 172.18.0.10:48610 as telemetry-backend-sys (p2, c0, k60).

@@ -1,0 +1,1299 @@
+2026-10-06T04:01:05.056615446Z 04:01:05 [9abfecef] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [9abfecef] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.8
+2026-10-06T04:01:20.060583696Z 04:01:20 [808a6385] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [808a6385] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8
+2026-10-06T04:01:22.224645892Z 04:01:22 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Node -1 disconnected.
+2026-10-06T04:01:24.116342077Z 04:01:24 [0783c3b4] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [0783c3b4] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.1
+2026-10-06T04:01:31.350097921Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:28.333Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.351301723Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:28.333Z partition=0 offset=1828
+2026-10-06T04:01:31.351740337Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:28.666Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.352651500Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:28.666Z partition=0 offset=1829
+2026-10-06T04:01:31.352940143Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:28.999Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.354275606Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:28.999Z partition=0 offset=1830
+2026-10-06T04:01:31.354529727Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:29.332Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.355088640Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:29.332Z partition=0 offset=1831
+2026-10-06T04:01:31.355558417Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:29.665Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.355919843Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:29.665Z partition=0 offset=1832
+2026-10-06T04:01:31.356135115Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:29.998Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.356656389Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:29.998Z partition=0 offset=1833
+2026-10-06T04:01:31.356905488Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:30.331Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.357528938Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:30.331Z partition=0 offset=1834
+2026-10-06T04:01:31.357840947Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:30.664Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.358570101Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:30.664Z partition=0 offset=1835
+2026-10-06T04:01:31.358851142Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:30.997Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.359382692Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:30.997Z partition=0 offset=1836
+2026-10-06T04:01:31.561488529Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:31.619822823Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:31.664648371Z 04:01:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:31.330Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:31.667323750Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:31.330Z partition=0 offset=1837
+2026-10-06T04:01:31.677955275Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 7건 중 7건 저장
+2026-10-06T04:01:31.736389367Z 04:01:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:32.041695266Z 04:01:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:31.663Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:32.043543499Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:31.663Z partition=0 offset=1838
+2026-10-06T04:01:32.103019450Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:32.411989792Z 04:01:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:31.996Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:32.413078986Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:31.996Z partition=0 offset=1839
+2026-10-06T04:01:32.523527034Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:32.774451428Z 04:01:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:32.329Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:32.775857748Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:32.329Z partition=0 offset=1840
+2026-10-06T04:01:32.847438833Z 04:01:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:33.149152026Z 04:01:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:32.662Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:33.150742529Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:32.662Z partition=0 offset=1841
+2026-10-06T04:01:33.220298125Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:33.522890564Z 04:01:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:32.995Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:33.524103770Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:32.995Z partition=0 offset=1842
+2026-10-06T04:01:33.586864103Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:33.881096353Z 04:01:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:33.328Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:33.882156227Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:33.328Z partition=0 offset=1843
+2026-10-06T04:01:33.945225078Z 04:01:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:34.239423003Z 04:01:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:33.661Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:34.241348359Z 04:01:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:33.661Z partition=0 offset=1844
+2026-10-06T04:01:34.305836206Z 04:01:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:34.597942414Z 04:01:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:33.994Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:34.599493347Z 04:01:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:33.994Z partition=0 offset=1845
+2026-10-06T04:01:34.677608516Z 04:01:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:34.957290592Z 04:01:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:34.327Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:34.959058342Z 04:01:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:34.327Z partition=0 offset=1846
+2026-10-06T04:01:35.023014540Z 04:01:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:35.056047532Z 04:01:35 [611d51dd] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [611d51dd] GET /actuator/prometheus → 200 (8ms) ip=172.18.0.8
+2026-10-06T04:01:35.319681524Z 04:01:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:34.660Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:35.321242736Z 04:01:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:34.660Z partition=0 offset=1847
+2026-10-06T04:01:35.387441546Z 04:01:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:35.691017003Z 04:01:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:34.993Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:35.692112803Z 04:01:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:34.993Z partition=0 offset=1848
+2026-10-06T04:01:35.798812569Z 04:01:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:36.051411871Z 04:01:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:35.326Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:36.052471921Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:35.326Z partition=0 offset=1849
+2026-10-06T04:01:36.124071267Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:36.411180686Z 04:01:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:35.659Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:36.412233739Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:35.659Z partition=0 offset=1850
+2026-10-06T04:01:36.482908590Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:36.783881941Z 04:01:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:35.992Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:36.790518978Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:35.992Z partition=0 offset=1851
+2026-10-06T04:01:36.866261253Z 04:01:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:37.159702336Z 04:01:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:36.325Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:37.163347268Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:36.325Z partition=0 offset=1852
+2026-10-06T04:01:37.224522494Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:37.533375116Z 04:01:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:36.658Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:37.534416176Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:36.658Z partition=0 offset=1853
+2026-10-06T04:01:37.591640022Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:37.894310141Z 04:01:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:36.991Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:37.895577388Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:36.991Z partition=0 offset=1854
+2026-10-06T04:01:37.966588190Z 04:01:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:38.255758997Z 04:01:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:37.324Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:38.258116198Z 04:01:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:37.324Z partition=0 offset=1855
+2026-10-06T04:01:38.316974422Z 04:01:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:38.628199818Z 04:01:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:37.657Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:38.630326944Z 04:01:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:37.657Z partition=0 offset=1856
+2026-10-06T04:01:38.692336827Z 04:01:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:38.984625764Z 04:01:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:37.990Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:38.985775154Z 04:01:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:37.990Z partition=0 offset=1857
+2026-10-06T04:01:39.042375840Z 04:01:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:39.344716733Z 04:01:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:38.323Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:39.346155166Z 04:01:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:38.323Z partition=0 offset=1858
+2026-10-06T04:01:39.409365416Z 04:01:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:39.719809399Z 04:01:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:38.656Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:39.721317547Z 04:01:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:38.656Z partition=0 offset=1859
+2026-10-06T04:01:39.792600897Z 04:01:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:40.091505738Z 04:01:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:38.989Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:40.093470628Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:38.989Z partition=0 offset=1860
+2026-10-06T04:01:40.171343085Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:40.465164603Z 04:01:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:39.322Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:40.466400313Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:39.322Z partition=0 offset=1861
+2026-10-06T04:01:40.532948456Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:40.837565215Z 04:01:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:39.655Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:40.839535511Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:39.655Z partition=0 offset=1862
+2026-10-06T04:01:40.896568206Z 04:01:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:41.210868531Z 04:01:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:39.988Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:41.212169264Z 04:01:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:39.988Z partition=0 offset=1863
+2026-10-06T04:01:41.271496740Z 04:01:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:41.573686764Z 04:01:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:40.321Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:41.574971234Z 04:01:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:40.321Z partition=0 offset=1864
+2026-10-06T04:01:41.647418362Z 04:01:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:41.943302936Z 04:01:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:40.654Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:41.944308148Z 04:01:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:40.654Z partition=0 offset=1865
+2026-10-06T04:01:42.014085982Z 04:01:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:42.304099296Z 04:01:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:40.987Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:42.305745491Z 04:01:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:40.987Z partition=0 offset=1866
+2026-10-06T04:01:42.372002768Z 04:01:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:42.678485842Z 04:01:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:41.320Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:42.681679455Z 04:01:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:41.320Z partition=0 offset=1867
+2026-10-06T04:01:42.747889640Z 04:01:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:43.048818394Z 04:01:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:41.653Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:43.054719828Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:41.653Z partition=0 offset=1868
+2026-10-06T04:01:43.130874420Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:43.428200833Z 04:01:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:41.986Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:43.431368680Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:41.986Z partition=0 offset=1869
+2026-10-06T04:01:43.505307243Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:43.803437763Z 04:01:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:42.319Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:43.804873383Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:42.319Z partition=0 offset=1870
+2026-10-06T04:01:43.862455317Z 04:01:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:44.161736161Z 04:01:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:42.652Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:44.163060135Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:42.652Z partition=0 offset=1871
+2026-10-06T04:01:44.221106289Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:44.521521801Z 04:01:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:42.985Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:44.522639227Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:42.985Z partition=0 offset=1872
+2026-10-06T04:01:44.579604350Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:44.885908804Z 04:01:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:43.318Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:44.887090328Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:43.318Z partition=0 offset=1873
+2026-10-06T04:01:44.955554883Z 04:01:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:45.252270614Z 04:01:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:43.651Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:45.253321834Z 04:01:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:43.651Z partition=0 offset=1874
+2026-10-06T04:01:45.313832946Z 04:01:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:45.613598839Z 04:01:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:43.984Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:45.614615937Z 04:01:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:43.984Z partition=0 offset=1875
+2026-10-06T04:01:45.672365608Z 04:01:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:45.986629572Z 04:01:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:44.317Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:45.988063781Z 04:01:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:44.317Z partition=0 offset=1876
+2026-10-06T04:01:46.047810427Z 04:01:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:46.347879581Z 04:01:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:44.650Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:46.350106828Z 04:01:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:44.650Z partition=0 offset=1877
+2026-10-06T04:01:46.448067535Z 04:01:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:46.728124116Z 04:01:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:44.983Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:46.732076253Z 04:01:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:44.983Z partition=0 offset=1878
+2026-10-06T04:01:46.790140298Z 04:01:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:47.095062689Z 04:01:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:45.316Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:47.096076389Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:45.316Z partition=0 offset=1879
+2026-10-06T04:01:47.157036287Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:47.454946689Z 04:01:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:45.649Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:47.456187539Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:45.649Z partition=0 offset=1880
+2026-10-06T04:01:47.522939719Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:47.813903056Z 04:01:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:45.982Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:47.815345621Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:45.982Z partition=0 offset=1881
+2026-10-06T04:01:47.873178521Z 04:01:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:48.185915915Z 04:01:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:46.315Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:48.186889138Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:46.315Z partition=0 offset=1882
+2026-10-06T04:01:48.248789749Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:48.547915880Z 04:01:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:46.648Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:48.551246973Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:46.648Z partition=0 offset=1883
+2026-10-06T04:01:48.615040184Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:48.917818289Z 04:01:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:46.981Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:48.919894178Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:46.981Z partition=0 offset=1884
+2026-10-06T04:01:48.982023074Z 04:01:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:49.284666529Z 04:01:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:47.314Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:49.286775383Z 04:01:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:47.314Z partition=0 offset=1885
+2026-10-06T04:01:49.349601915Z 04:01:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:49.674330252Z 04:01:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:47.647Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:49.676254530Z 04:01:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:47.647Z partition=0 offset=1886
+2026-10-06T04:01:49.823844323Z 04:01:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:50.043366230Z 04:01:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:47.980Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:01:50.044544216Z 04:01:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:47.980Z partition=0 offset=1887
+2026-10-06T04:01:50.061643088Z 04:01:50 [5346b9fa] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [5346b9fa] GET /actuator/prometheus → 200 (16ms) ip=172.18.0.8
+2026-10-06T04:01:50.107035906Z 04:01:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:01:58.844450274Z 04:01:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:48.313Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:02:05.053829291Z 04:02:05 [3c94d603] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [3c94d603] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.8
+2026-10-06T04:02:06.227471558Z 2026-10-06 04:02:06
+2026-10-06T04:02:06.227499704Z Full thread dump OpenJDK 64-Bit Server VM (17.0.20.1+1 mixed mode, sharing):
+2026-10-06T04:02:06.227502677Z 
+2026-10-06T04:02:06.227504793Z Threads class SMR info:
+2026-10-06T04:02:06.227506725Z _java_thread_list=0x0000711cf81e1100, length=75, elements={
+2026-10-06T04:02:06.227508680Z 0x0000711d901a5180, 0x0000711d901a6560, 0x0000711d901aba00, 0x0000711d901acdb0,
+2026-10-06T04:02:06.227510648Z 0x0000711d901ae1c0, 0x0000711d901afbf0, 0x0000711d901b1120, 0x0000711d901b2590,
+2026-10-06T04:02:06.227512586Z 0x0000711d901b8e20, 0x0000711d901bbbe0, 0x0000711d9023cdf0, 0x0000711d91c34a40,
+2026-10-06T04:02:06.227514394Z 0x0000711c80001290, 0x0000711d91c13ed0, 0x0000711d91cf64f0, 0x0000711d91cf7c80,
+2026-10-06T04:02:06.227516309Z 0x0000711d92bee190, 0x0000711d92c9d3a0, 0x0000711d92655d00, 0x0000711d91a37620,
+2026-10-06T04:02:06.227518147Z 0x0000711d91a38220, 0x0000711d91a38fb0, 0x0000711d91a39d40, 0x0000711d91a30f10,
+2026-10-06T04:02:06.227529686Z 0x0000711d91a31fd0, 0x0000711d91a33100, 0x0000711d91a34230, 0x0000711d91a35220,
+2026-10-06T04:02:06.227531206Z 0x0000711d917a4410, 0x0000711d917a59b0, 0x0000711d917a6cf0, 0x0000711d91a1c0a0,
+2026-10-06T04:02:06.227532548Z 0x0000711d908c8430, 0x0000711d908c9c50, 0x0000711d908ca8a0, 0x0000711d908cb860,
+2026-10-06T04:02:06.227533923Z 0x0000711d908d24e0, 0x0000711c1000a9f0, 0x0000711c0c004e30, 0x0000711d908d6850,
+2026-10-06T04:02:06.227535567Z 0x0000711d908d7890, 0x0000711d908d8720, 0x0000711be8004e90, 0x0000711d908dcc60,
+2026-10-06T04:02:06.227536908Z 0x0000711d908ddca0, 0x0000711d908dec90, 0x0000711bdc0013b0, 0x0000711d908e31b0,
+2026-10-06T04:02:06.227538323Z 0x0000711d908e41b0, 0x0000711d908e5420, 0x0000711bcc0013b0, 0x0000711d908e9830,
+2026-10-06T04:02:06.227539697Z 0x0000711d908ea760, 0x0000711d908eb610, 0x0000711d908ecf60, 0x0000711bbc001c80,
+2026-10-06T04:02:06.227541145Z 0x0000711c5005ef20, 0x0000711d900295b0, 0x0000711ba01e0910, 0x0000711ccc3610b0,
+2026-10-06T04:02:06.227542529Z 0x0000711ccc443690, 0x0000711c0c04ff00, 0x0000711c640fc270, 0x0000711ccc018c30,
+2026-10-06T04:02:06.227544108Z 0x0000711ccc40a310, 0x0000711ccc40a880, 0x0000711cc4d68d60, 0x0000711c5c009650,
+2026-10-06T04:02:06.227545688Z 0x0000711c5c009bc0, 0x0000711c5c00a130, 0x0000711c88048380, 0x0000711c10025f50,
+2026-10-06T04:02:06.227547042Z 0x0000711cf8018790, 0x0000711cf8019250, 0x0000711cf81e06b0
+2026-10-06T04:02:06.227548436Z }
+2026-10-06T04:02:06.227549774Z 
+2026-10-06T04:02:06.227551173Z "Reference Handler" #2 daemon prio=10 os_prio=0 cpu=11.21ms elapsed=629.02s tid=0x0000711d901a5180 nid=0xe waiting on condition  [0x0000711d69523000]
+2026-10-06T04:02:06.227552937Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227554289Z 	at java.lang.ref.Reference.waitForReferencePendingList(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227557741Z 	at java.lang.ref.Reference.processPendingReferences(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227559248Z 	at java.lang.ref.Reference$ReferenceHandler.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227560738Z 
+2026-10-06T04:02:06.227561978Z "Finalizer" #3 daemon prio=8 os_prio=0 cpu=0.36ms elapsed=629.02s tid=0x0000711d901a6560 nid=0xf in Object.wait()  [0x0000711d69423000]
+2026-10-06T04:02:06.227568648Z    java.lang.Thread.State: WAITING (on object monitor)
+2026-10-06T04:02:06.227570046Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227571326Z 	- waiting on <0x0000000708a00af8> (a java.lang.ref.ReferenceQueue$Lock)
+2026-10-06T04:02:06.227572906Z 	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227574260Z 	- locked <0x0000000708a00af8> (a java.lang.ref.ReferenceQueue$Lock)
+2026-10-06T04:02:06.227575705Z 	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227578820Z 	at java.lang.ref.Finalizer$FinalizerThread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227580225Z 
+2026-10-06T04:02:06.227581378Z "Signal Dispatcher" #4 daemon prio=9 os_prio=0 cpu=0.51ms elapsed=628.90s tid=0x0000711d901aba00 nid=0x10 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.227582793Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227584020Z 
+2026-10-06T04:02:06.227585172Z "Service Thread" #5 daemon prio=9 os_prio=0 cpu=83.37ms elapsed=628.90s tid=0x0000711d901acdb0 nid=0x11 runnable  [0x0000000000000000]
+2026-10-06T04:02:06.227586601Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227587807Z 
+2026-10-06T04:02:06.227588947Z "Monitor Deflation Thread" #6 daemon prio=9 os_prio=0 cpu=73.16ms elapsed=628.90s tid=0x0000711d901ae1c0 nid=0x12 runnable  [0x0000000000000000]
+2026-10-06T04:02:06.227590382Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227591598Z 
+2026-10-06T04:02:06.227592771Z "C2 CompilerThread0" #7 daemon prio=9 os_prio=0 cpu=10785.67ms elapsed=628.90s tid=0x0000711d901afbf0 nid=0x13 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.227594201Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227595434Z    No compile task
+2026-10-06T04:02:06.227596624Z 
+2026-10-06T04:02:06.227597739Z "C1 CompilerThread0" #15 daemon prio=9 os_prio=0 cpu=1779.82ms elapsed=628.90s tid=0x0000711d901b1120 nid=0x14 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.227599140Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227600381Z    No compile task
+2026-10-06T04:02:06.227601548Z 
+2026-10-06T04:02:06.227602673Z "Sweeper thread" #19 daemon prio=9 os_prio=0 cpu=211.29ms elapsed=628.90s tid=0x0000711d901b2590 nid=0x15 runnable  [0x0000000000000000]
+2026-10-06T04:02:06.227604068Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227605268Z 
+2026-10-06T04:02:06.227606377Z "Notification Thread" #20 daemon prio=9 os_prio=0 cpu=16.15ms elapsed=628.90s tid=0x0000711d901b8e20 nid=0x16 runnable  [0x0000000000000000]
+2026-10-06T04:02:06.227607839Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.227609083Z 
+2026-10-06T04:02:06.227610561Z "Common-Cleaner" #21 daemon prio=8 os_prio=0 cpu=3.22ms elapsed=628.82s tid=0x0000711d901bbbe0 nid=0x18 in Object.wait()  [0x0000711d68839000]
+2026-10-06T04:02:06.227612014Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.227613326Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227614658Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.227615970Z 	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227617323Z 	- locked <0x0000000708a00d08> (a java.lang.ref.ReferenceQueue$Lock)
+2026-10-06T04:02:06.227620150Z 	at jdk.internal.ref.CleanerImpl.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227691037Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227704756Z 	at jdk.internal.misc.InnocuousThread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227706953Z 
+2026-10-06T04:02:06.227708463Z "Cleaner-0" #22 daemon prio=8 os_prio=0 cpu=10.47ms elapsed=628.43s tid=0x0000711d9023cdf0 nid=0x1a in Object.wait()  [0x0000711d68639000]
+2026-10-06T04:02:06.227710147Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.227711449Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227712738Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.227714260Z 	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227715772Z 	- locked <0x0000000708a01480> (a java.lang.ref.ReferenceQueue$Lock)
+2026-10-06T04:02:06.227717168Z 	at jdk.internal.ref.CleanerImpl.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227718558Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227719862Z 	at jdk.internal.misc.InnocuousThread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227721162Z 
+2026-10-06T04:02:06.227722334Z "Catalina-utility-1" #27 prio=1 os_prio=0 cpu=66.94ms elapsed=622.96s tid=0x0000711d91c34a40 nid=0x3a waiting on condition  [0x0000711d11dc7000]
+2026-10-06T04:02:06.227723823Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.227725111Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227726478Z 	- parking to wait for  <0x00000007089fe208> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.227727975Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227729297Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227730718Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227732077Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227733486Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227734875Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227736286Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227741821Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227743703Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227753798Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227755275Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.227756600Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227758048Z 
+2026-10-06T04:02:06.227759220Z "Catalina-utility-2" #28 prio=1 os_prio=0 cpu=62.31ms elapsed=622.96s tid=0x0000711c80001290 nid=0x3b waiting on condition  [0x0000711d11cc7000]
+2026-10-06T04:02:06.227760686Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.227761947Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227763260Z 	- parking to wait for  <0x00000007089fe208> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.227764708Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227766019Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227767386Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227768703Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227770054Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227771373Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227772712Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227775045Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.227776350Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227777687Z 
+2026-10-06T04:02:06.227778851Z "container-0" #29 prio=5 os_prio=0 cpu=2.25ms elapsed=622.95s tid=0x0000711d91c13ed0 nid=0x3c waiting on condition  [0x0000711d11bc7000]
+2026-10-06T04:02:06.227780337Z    java.lang.Thread.State: TIMED_WAITING (sleeping)
+2026-10-06T04:02:06.227781641Z 	at java.lang.Thread.sleep(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227947067Z 	at org.apache.catalina.core.StandardServer.await(StandardServer.java:564)
+2026-10-06T04:02:06.227957894Z 	at org.springframework.boot.web.embedded.tomcat.TomcatWebServer$1.run(TomcatWebServer.java:217)
+2026-10-06T04:02:06.227960197Z 
+2026-10-06T04:02:06.227961683Z "PostgreSQL-JDBC-Cleaner" #30 daemon prio=5 os_prio=0 cpu=1.70ms elapsed=622.69s tid=0x0000711d91cf64f0 nid=0x3d in Object.wait()  [0x0000711d11ec7000]
+2026-10-06T04:02:06.227963431Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.227971882Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227977949Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.227979553Z 	at java.lang.ref.ReferenceQueue.remove(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227980901Z 	- locked <0x00000007095b5ed8> (a java.lang.ref.ReferenceQueue$Lock)
+2026-10-06T04:02:06.227982265Z 	at org.postgresql.util.LazyCleaner$1.run(LazyCleaner.java:128)
+2026-10-06T04:02:06.227983656Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227984960Z 
+2026-10-06T04:02:06.227986348Z "HikariPool-1 housekeeper" #31 daemon prio=5 os_prio=0 cpu=3.68ms elapsed=622.65s tid=0x0000711d91cf7c80 nid=0x3e waiting on condition  [0x0000711d11ac7000]
+2026-10-06T04:02:06.227987908Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.227989205Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.227990520Z 	- parking to wait for  <0x00000007095b3770> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.227992048Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227993385Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227994783Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227996221Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227997560Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.227998913Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228000220Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228001593Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228002848Z 
+2026-10-06T04:02:06.228004683Z "HttpClient-1-SelectorManager" #33 daemon prio=5 os_prio=0 cpu=14.46ms elapsed=619.74s tid=0x0000711d92bee190 nid=0x47 runnable  [0x0000711d117c7000]
+2026-10-06T04:02:06.228006266Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.228007500Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228008849Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228010140Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228011450Z 	- locked <0x000000070a0cd6f8> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.228012895Z 	- locked <0x000000070a0cd6a8> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.228016778Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228018178Z 	at jdk.internal.net.http.HttpClientImpl$SelectorManager.run(java.net.http@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228019547Z 
+2026-10-06T04:02:06.228020686Z "lettuce-timer-3-1" #34 daemon prio=5 os_prio=0 cpu=308.20ms elapsed=619.58s tid=0x0000711d92c9d3a0 nid=0x48 waiting on condition  [0x0000711d116c7000]
+2026-10-06T04:02:06.228022144Z    java.lang.Thread.State: TIMED_WAITING (sleeping)
+2026-10-06T04:02:06.228023419Z 	at java.lang.Thread.sleep(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228024678Z 	at io.netty.util.HashedWheelTimer$Worker.waitForNextTick(HashedWheelTimer.java:591)
+2026-10-06T04:02:06.228029396Z 	at io.netty.util.HashedWheelTimer$Worker.run(HashedWheelTimer.java:487)
+2026-10-06T04:02:06.228115972Z 	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+2026-10-06T04:02:06.228139223Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228141526Z 
+2026-10-06T04:02:06.228142908Z "MessageBroker-1" #35 prio=5 os_prio=0 cpu=4.70ms elapsed=617.63s tid=0x0000711d92655d00 nid=0x49 waiting on condition  [0x0000711d118c7000]
+2026-10-06T04:02:06.228144590Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.228146051Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228147419Z 	- parking to wait for  <0x000000070a962400> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228148905Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228150211Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228151538Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228152869Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228154218Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228155535Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228156894Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228158205Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228159533Z 
+2026-10-06T04:02:06.228160717Z "http-nio-8080-exec-1" #47 daemon prio=5 os_prio=0 cpu=309.86ms elapsed=616.62s tid=0x0000711d91a37620 nid=0x55 waiting on condition  [0x0000711d114c7000]
+2026-10-06T04:02:06.228162613Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228163890Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228171841Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228173517Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228175332Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228176673Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228178564Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228179895Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228181292Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228182597Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228183884Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228257082Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228262002Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228263552Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228264942Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228266280Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228267690Z 
+2026-10-06T04:02:06.228269836Z "http-nio-8080-exec-2" #48 daemon prio=5 os_prio=0 cpu=123.90ms elapsed=616.62s tid=0x0000711d91a38220 nid=0x56 waiting on condition  [0x0000711d113c7000]
+2026-10-06T04:02:06.228271571Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228272944Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228274296Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228275852Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228277160Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228278552Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228279879Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228281191Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228282534Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228289689Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228291104Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228292447Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228293832Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228295172Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228296512Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228298032Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228299416Z 
+2026-10-06T04:02:06.228301301Z "http-nio-8080-exec-3" #49 daemon prio=5 os_prio=0 cpu=69.16ms elapsed=616.62s tid=0x0000711d91a38fb0 nid=0x57 waiting on condition  [0x0000711d112c7000]
+2026-10-06T04:02:06.228302797Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228304097Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228305559Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228306999Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228308368Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228309665Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228310934Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228312307Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228313684Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228314993Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228316605Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228318406Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228320579Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228322797Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228324781Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228326966Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228331201Z 
+2026-10-06T04:02:06.228333050Z "http-nio-8080-exec-4" #50 daemon prio=5 os_prio=0 cpu=39.28ms elapsed=616.62s tid=0x0000711d91a39d40 nid=0x58 waiting on condition  [0x0000711d111c7000]
+2026-10-06T04:02:06.228335237Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228337179Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228339138Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228341742Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228343928Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228350863Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228352359Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228353699Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228355135Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228356461Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228357704Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228358971Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228360232Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228361582Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228362924Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228364228Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228365529Z 
+2026-10-06T04:02:06.228366698Z "http-nio-8080-exec-5" #51 daemon prio=5 os_prio=0 cpu=72.90ms elapsed=616.62s tid=0x0000711d91a30f10 nid=0x59 waiting on condition  [0x0000711d110c7000]
+2026-10-06T04:02:06.228368119Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228369326Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228370634Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228372099Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228373419Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228374758Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228377914Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228379303Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228380715Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228382021Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228383299Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228385275Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228386568Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228387850Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228389179Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228390464Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228391728Z 
+2026-10-06T04:02:06.228392869Z "http-nio-8080-exec-6" #52 daemon prio=5 os_prio=0 cpu=48.52ms elapsed=616.62s tid=0x0000711d91a31fd0 nid=0x5a waiting on condition  [0x0000711d10fc7000]
+2026-10-06T04:02:06.228394361Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228395597Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228396858Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228398260Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228399636Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228400996Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228402251Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228404617Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228406041Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228407316Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228408625Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228409959Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228411264Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228412567Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228415359Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228416759Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228418107Z 
+2026-10-06T04:02:06.228419809Z "http-nio-8080-exec-7" #53 daemon prio=5 os_prio=0 cpu=79.61ms elapsed=616.62s tid=0x0000711d91a33100 nid=0x5b waiting on condition  [0x0000711d10ec7000]
+2026-10-06T04:02:06.228421270Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228422565Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228423901Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228425340Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228426624Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228428008Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228429321Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228430612Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228431949Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228433210Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228434471Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228435791Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228437089Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228438391Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228439675Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228440952Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228442243Z 
+2026-10-06T04:02:06.228443396Z "http-nio-8080-exec-8" #54 daemon prio=5 os_prio=0 cpu=85.23ms elapsed=616.62s tid=0x0000711d91a34230 nid=0x5c waiting on condition  [0x0000711d10dc7000]
+2026-10-06T04:02:06.228444825Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228446104Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228447428Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228448996Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228451755Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228453604Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228455064Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228456369Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228457700Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228459003Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228460327Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228461615Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228462913Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228464237Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228465539Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228466864Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228468210Z 
+2026-10-06T04:02:06.228469423Z "http-nio-8080-exec-9" #55 daemon prio=5 os_prio=0 cpu=60.04ms elapsed=616.62s tid=0x0000711d91a35220 nid=0x5d waiting on condition  [0x0000711d10cc7000]
+2026-10-06T04:02:06.228470842Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228472095Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228473394Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228474760Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228476119Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228477443Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228478705Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228480079Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228485530Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228489633Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228494015Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228503708Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228508346Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228512807Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228517089Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228521228Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228525263Z 
+2026-10-06T04:02:06.228528894Z "http-nio-8080-exec-10" #56 daemon prio=5 os_prio=0 cpu=73.98ms elapsed=616.62s tid=0x0000711d917a4410 nid=0x5e waiting on condition  [0x0000711d10bc7000]
+2026-10-06T04:02:06.228533703Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.228537707Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228541906Z 	- parking to wait for  <0x000000070b27d898> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.228546603Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228551114Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228568152Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228572514Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228576664Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228581094Z 	at java.util.concurrent.LinkedBlockingQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228585236Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:117)
+2026-10-06T04:02:06.228589376Z 	at org.apache.tomcat.util.threads.TaskQueue.take(TaskQueue.java:33)
+2026-10-06T04:02:06.228593791Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1114)
+2026-10-06T04:02:06.228598557Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1176)
+2026-10-06T04:02:06.228602915Z 	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:659)
+2026-10-06T04:02:06.228609469Z 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:63)
+2026-10-06T04:02:06.228613974Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228618213Z 
+2026-10-06T04:02:06.228697919Z "http-nio-8080-Poller" #57 daemon prio=5 os_prio=0 cpu=47.28ms elapsed=616.62s tid=0x0000711d917a59b0 nid=0x5f runnable  [0x0000711d10ac7000]
+2026-10-06T04:02:06.228704211Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.228713217Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.228717716Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228722096Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228726297Z 	- locked <0x000000070b27dd78> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.228730848Z 	- locked <0x000000070b27dd28> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.228750320Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228757173Z 	at org.apache.tomcat.util.net.NioEndpoint$Poller.run(NioEndpoint.java:750)
+2026-10-06T04:02:06.228763279Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.228770720Z 
+2026-10-06T04:02:06.228879953Z "http-nio-8080-Acceptor" #58 daemon prio=5 os_prio=0 cpu=7.65ms elapsed=616.62s tid=0x0000711d917a6cf0 nid=0x60 runnable  [0x0000711d109c7000]
+2026-10-06T04:02:06.229185547Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.229200543Z 	at sun.nio.ch.Net.accept(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229207542Z 	at sun.nio.ch.ServerSocketChannelImpl.implAccept(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229218696Z 	at sun.nio.ch.ServerSocketChannelImpl.accept(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229225098Z 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:513)
+2026-10-06T04:02:06.229231195Z 	at org.apache.tomcat.util.net.NioEndpoint.serverSocketAccept(NioEndpoint.java:71)
+2026-10-06T04:02:06.229237524Z 	at org.apache.tomcat.util.net.Acceptor.run(Acceptor.java:128)
+2026-10-06T04:02:06.229243574Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229250081Z 
+2026-10-06T04:02:06.229265719Z "micrometer-kafka-metrics" #59 daemon prio=5 os_prio=0 cpu=5.92ms elapsed=616.51s tid=0x0000711d91a1c0a0 nid=0x62 waiting on condition  [0x0000711d107c7000]
+2026-10-06T04:02:06.229272664Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.229279019Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229284878Z 	- parking to wait for  <0x000000070b28ac70> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.229290677Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229296668Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229303029Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229308546Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229340051Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229345930Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229351169Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229357452Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229363037Z 
+2026-10-06T04:02:06.229368368Z "ThreadPoolTaskScheduler-1" #60 prio=5 os_prio=0 cpu=2.67ms elapsed=616.51s tid=0x0000711d908c8430 nid=0x63 waiting on condition  [0x0000711d106c7000]
+2026-10-06T04:02:06.229375195Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.229381014Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229386806Z 	- parking to wait for  <0x000000070b284350> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.229393089Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229399142Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229405370Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229411532Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229420605Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229426790Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229433296Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229439434Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229444885Z 
+2026-10-06T04:02:06.229450428Z "org.springframework.kafka.KafkaListenerEndpointContainer#0-0-C-1" #61 prio=5 os_prio=0 cpu=1435.00ms elapsed=616.50s tid=0x0000711d908c9c50 nid=0x65 runnable  [0x0000711d104c7000]
+2026-10-06T04:02:06.229457400Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.229463442Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229469179Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229475232Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229481252Z 	- locked <0x000000070b28af10> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.229487878Z 	- locked <0x000000070b28aec0> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.229493776Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229506745Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.229512718Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.229518288Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.229524642Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.229530961Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.229536883Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.229542726Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.229548825Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.229555038Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.229734507Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.229747019Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.229755159Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.229760415Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229765718Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229771600Z 
+2026-10-06T04:02:06.229776141Z "micrometer-kafka-metrics" #62 daemon prio=5 os_prio=0 cpu=4.68ms elapsed=616.49s tid=0x0000711d908ca8a0 nid=0x66 waiting on condition  [0x0000711d103c7000]
+2026-10-06T04:02:06.229783149Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.229788462Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229794219Z 	- parking to wait for  <0x000000070b2845a8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.229800064Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229808741Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229814422Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229818935Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229824354Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229840115Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229845116Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229850691Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229856355Z 
+2026-10-06T04:02:06.229861112Z "ThreadPoolTaskScheduler-1" #63 prio=5 os_prio=0 cpu=2.71ms elapsed=616.49s tid=0x0000711d908cb860 nid=0x67 waiting on condition  [0x0000711d102c7000]
+2026-10-06T04:02:06.229867066Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.229871471Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.229876054Z 	- parking to wait for  <0x000000070b27df98> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.229881461Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229886367Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229893571Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229899429Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229904887Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229910347Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229915720Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229920594Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.229926353Z 
+2026-10-06T04:02:06.230043813Z "org.springframework.kafka.KafkaListenerEndpointContainer#0-1-C-1" #64 prio=5 os_prio=0 cpu=579.80ms elapsed=616.49s tid=0x0000711d908d24e0 nid=0x68 runnable  [0x0000711d101c7000]
+2026-10-06T04:02:06.230068536Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.230073693Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230077797Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230081606Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230085284Z 	- locked <0x000000070b284848> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.230090558Z 	- locked <0x000000070b2847f8> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.230096390Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230101574Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.230107108Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.230133555Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.230139484Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.230144480Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.230148087Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.230151672Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.230155099Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.230159268Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.230163130Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.230166854Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.230170532Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.230174189Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230177709Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230181083Z 
+2026-10-06T04:02:06.230186068Z "kafka-coordinator-heartbeat-thread | telemetry-storage-group" #65 daemon prio=5 os_prio=0 cpu=268.06ms elapsed=616.49s tid=0x0000711c1000a9f0 nid=0x6a waiting on condition  [0x0000711c07efe000]
+2026-10-06T04:02:06.230192386Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.230195846Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230199382Z 	- parking to wait for  <0x000000070b27e408> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.230203261Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230206720Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230352211Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230384288Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230391890Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230398033Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.230403041Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.230429506Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.230435363Z 	- locked <0x000000070b27e620> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.230441315Z 
+2026-10-06T04:02:06.230446571Z "kafka-coordinator-heartbeat-thread | telemetry-storage-group" #66 daemon prio=5 os_prio=0 cpu=197.76ms elapsed=616.48s tid=0x0000711c0c004e30 nid=0x6b waiting on condition  [0x0000711c07dfe000]
+2026-10-06T04:02:06.230454538Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.230459742Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230465646Z 	- parking to wait for  <0x000000070b2975c0> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.230472062Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230477919Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230483551Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230489143Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230495368Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230501305Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.230507125Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.230512994Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.230519531Z 	- locked <0x000000070b297698> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.230525923Z 
+2026-10-06T04:02:06.230534185Z "micrometer-kafka-metrics" #67 daemon prio=5 os_prio=0 cpu=5.56ms elapsed=616.48s tid=0x0000711d908d6850 nid=0x6c waiting on condition  [0x0000711c07cfe000]
+2026-10-06T04:02:06.230540693Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.230546120Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230551477Z 	- parking to wait for  <0x000000070b29dd70> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.230557130Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230562822Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230567658Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230581368Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230587476Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230593620Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230599039Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230604100Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230608988Z 
+2026-10-06T04:02:06.230613582Z "ThreadPoolTaskScheduler-1" #68 prio=5 os_prio=0 cpu=1.96ms elapsed=616.48s tid=0x0000711d908d7890 nid=0x6d waiting on condition  [0x0000711c07bfe000]
+2026-10-06T04:02:06.230619149Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.230624695Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230630679Z 	- parking to wait for  <0x000000070b29dfc0> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.230636694Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230642106Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230647672Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230652280Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230659224Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230663905Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230668142Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230672647Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230677476Z 
+2026-10-06T04:02:06.230681981Z "org.springframework.kafka.KafkaListenerEndpointContainer#0-2-C-1" #69 prio=5 os_prio=0 cpu=778.72ms elapsed=616.48s tid=0x0000711d908d8720 nid=0x6e runnable  [0x0000711c07afe000]
+2026-10-06T04:02:06.230687445Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.230692180Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230697825Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230702894Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230708549Z 	- locked <0x000000070b297988> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.230713930Z 	- locked <0x000000070b297938> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.230747801Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230753088Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.230757796Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.230762390Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.230767730Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.230773377Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.230778972Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.230783933Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.230788940Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.230794006Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.230799451Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.230805289Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.230812987Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.230921904Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230952002Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230959300Z 
+2026-10-06T04:02:06.230965193Z "kafka-coordinator-heartbeat-thread | telemetry-storage-group" #70 daemon prio=5 os_prio=0 cpu=182.72ms elapsed=616.47s tid=0x0000711be8004e90 nid=0x70 waiting on condition  [0x0000711c078fe000]
+2026-10-06T04:02:06.230973851Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.230979623Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.230985481Z 	- parking to wait for  <0x000000070b29e2a8> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.230991653Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.230997196Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231002845Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231008651Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231039301Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231044806Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.231050413Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.231058266Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.231064370Z 	- locked <0x000000070b29e338> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.231071610Z 
+2026-10-06T04:02:06.231076980Z "micrometer-kafka-metrics" #71 daemon prio=5 os_prio=0 cpu=5.30ms elapsed=616.46s tid=0x0000711d908dcc60 nid=0x71 waiting on condition  [0x0000711c077fe000]
+2026-10-06T04:02:06.231083418Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.231088794Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231094419Z 	- parking to wait for  <0x000000070b29e568> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.231101480Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231110680Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231117788Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231124370Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231130967Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231138202Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231144244Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231150309Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231157606Z 
+2026-10-06T04:02:06.231163019Z "ThreadPoolTaskScheduler-1" #72 prio=5 os_prio=0 cpu=1.88ms elapsed=616.46s tid=0x0000711d908ddca0 nid=0x72 waiting on condition  [0x0000711c076fe000]
+2026-10-06T04:02:06.231169869Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.231176705Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231183224Z 	- parking to wait for  <0x000000070b2a45b0> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.231190646Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231197277Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231212265Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231219159Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231230496Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231237508Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231243125Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231249742Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231256411Z 
+2026-10-06T04:02:06.231268050Z "org.springframework.kafka.KafkaListenerEndpointContainer#1-0-C-1" #73 prio=5 os_prio=0 cpu=465.56ms elapsed=616.46s tid=0x0000711d908dec90 nid=0x73 runnable  [0x0000711c075fe000]
+2026-10-06T04:02:06.231274828Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.231279738Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231285294Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231291005Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231296662Z 	- locked <0x000000070b29e808> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.231302477Z 	- locked <0x000000070b29e7b8> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.231308476Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231314024Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.231319386Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.231324856Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.231331111Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.231336635Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.231342434Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.231348036Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.231352741Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.231358655Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.231364764Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.231375810Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.231382106Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.231387624Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231393030Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231398489Z 
+2026-10-06T04:02:06.231491933Z "kafka-coordinator-heartbeat-thread | anomaly-storage-group" #74 daemon prio=5 os_prio=0 cpu=176.90ms elapsed=616.45s tid=0x0000711bdc0013b0 nid=0x74 waiting on condition  [0x0000711c074fe000]
+2026-10-06T04:02:06.231516385Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.231521817Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231525741Z 	- parking to wait for  <0x000000070b2a4898> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.231529980Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231533571Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231537105Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231540546Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231543995Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231547349Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.231550841Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.231554393Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.231557929Z 	- locked <0x000000070b2a4970> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.231561831Z 
+2026-10-06T04:02:06.231565023Z "micrometer-kafka-metrics" #75 daemon prio=5 os_prio=0 cpu=4.77ms elapsed=616.45s tid=0x0000711d908e31b0 nid=0x75 waiting on condition  [0x0000711c073fe000]
+2026-10-06T04:02:06.231568824Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.231572208Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231575607Z 	- parking to wait for  <0x000000070b2731e0> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.231579455Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231582913Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231604620Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231611099Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231615076Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231618597Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231622416Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231625975Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231629456Z 
+2026-10-06T04:02:06.231632995Z "ThreadPoolTaskScheduler-1" #76 prio=5 os_prio=0 cpu=2.03ms elapsed=616.45s tid=0x0000711d908e41b0 nid=0x76 waiting on condition  [0x0000711c072fe000]
+2026-10-06T04:02:06.231637061Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.231640298Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231643683Z 	- parking to wait for  <0x000000070b2aadf0> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.231647381Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231650755Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231654231Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231657719Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231661335Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231664752Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231668200Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231671855Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231675215Z 
+2026-10-06T04:02:06.231683029Z "org.springframework.kafka.KafkaListenerEndpointContainer#1-1-C-1" #77 prio=5 os_prio=0 cpu=462.26ms elapsed=616.45s tid=0x0000711d908e5420 nid=0x77 runnable  [0x0000711c071fe000]
+2026-10-06T04:02:06.231687044Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.231690327Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.231693704Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.231697137Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232010798Z 	- locked <0x000000070b2a4bf0> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.232055332Z 	- locked <0x000000070b2a4ba0> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.232063462Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232069928Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.232075157Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.232080483Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.232085432Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.232090756Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.232095594Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.232100319Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.232105585Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.232111318Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.232117570Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.232122638Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.232127861Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.232139328Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232144273Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232149296Z 
+2026-10-06T04:02:06.232154140Z "kafka-coordinator-heartbeat-thread | anomaly-storage-group" #78 daemon prio=5 os_prio=0 cpu=182.76ms elapsed=616.44s tid=0x0000711bcc0013b0 nid=0x78 waiting on condition  [0x0000711c070fe000]
+2026-10-06T04:02:06.232160520Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.232165014Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232169468Z 	- parking to wait for  <0x000000070b2734c0> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.232188190Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232193843Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232199281Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232225127Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232229379Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232232863Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.232236366Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.232239931Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.232243490Z 	- locked <0x000000070b273598> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.232247144Z 
+2026-10-06T04:02:06.232250160Z "micrometer-kafka-metrics" #79 daemon prio=5 os_prio=0 cpu=4.19ms elapsed=616.43s tid=0x0000711d908e9830 nid=0x79 waiting on condition  [0x0000711c06ffe000]
+2026-10-06T04:02:06.232254191Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.232257502Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232261361Z 	- parking to wait for  <0x000000070b2b1630> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.232265395Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232268853Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232272389Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232275838Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232279332Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232282952Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232286500Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232290094Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232293573Z 
+2026-10-06T04:02:06.232303395Z "ThreadPoolTaskScheduler-1" #80 prio=5 os_prio=0 cpu=2.46ms elapsed=616.43s tid=0x0000711d908ea760 nid=0x7a waiting on condition  [0x0000711c06efe000]
+2026-10-06T04:02:06.232307463Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.232310812Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232314115Z 	- parking to wait for  <0x000000070b2b1880> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.232317902Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232325676Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232329327Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232332968Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232336686Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232340339Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232343970Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232347591Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232351120Z 
+2026-10-06T04:02:06.232354273Z "org.springframework.kafka.KafkaListenerEndpointContainer#1-2-C-1" #81 prio=5 os_prio=0 cpu=438.96ms elapsed=616.43s tid=0x0000711d908eb610 nid=0x7b runnable  [0x0000711c06dfe000]
+2026-10-06T04:02:06.232358222Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.232361590Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232365878Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232369373Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232372536Z 	- locked <0x000000070b2ab098> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.232375682Z 	- locked <0x000000070b2ab048> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.232378944Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232382040Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.232385092Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.232388101Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.232391263Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:280)
+2026-10-06T04:02:06.232395827Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:251)
+2026-10-06T04:02:06.232399032Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.pollForFetches(KafkaConsumer.java:1255)
+2026-10-06T04:02:06.232402089Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1186)
+2026-10-06T04:02:06.232405125Z 	at org.apache.kafka.clients.consumer.KafkaConsumer.poll(KafkaConsumer.java:1159)
+2026-10-06T04:02:06.232408198Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollConsumer(KafkaMessageListenerContainer.java:1666)
+2026-10-06T04:02:06.232416595Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.doPoll(KafkaMessageListenerContainer.java:1641)
+2026-10-06T04:02:06.232420114Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.pollAndInvoke(KafkaMessageListenerContainer.java:1439)
+2026-10-06T04:02:06.232423465Z 	at org.springframework.kafka.listener.KafkaMessageListenerContainer$ListenerConsumer.run(KafkaMessageListenerContainer.java:1330)
+2026-10-06T04:02:06.232426691Z 	at java.util.concurrent.CompletableFuture$AsyncRun.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232429917Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232432921Z 
+2026-10-06T04:02:06.232435591Z "scheduling-1" #82 prio=5 os_prio=0 cpu=79.82ms elapsed=616.41s tid=0x0000711d908ecf60 nid=0x7c waiting on condition  [0x0000711c06cfe000]
+2026-10-06T04:02:06.232439100Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.232442166Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232445235Z 	- parking to wait for  <0x000000070b04da00> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.232448611Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232517407Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232619030Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232642913Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232647484Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232650862Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232654023Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232657280Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232660864Z 
+2026-10-06T04:02:06.232663836Z "kafka-coordinator-heartbeat-thread | anomaly-storage-group" #83 daemon prio=5 os_prio=0 cpu=179.62ms elapsed=616.40s tid=0x0000711bbc001c80 nid=0x7d waiting on condition  [0x0000711c06bfe000]
+2026-10-06T04:02:06.232667742Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.232670837Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232674024Z 	- parking to wait for  <0x000000070b2b1d28> (a java.util.concurrent.locks.ReentrantLock$FairSync)
+2026-10-06T04:02:06.232677709Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232681122Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232701487Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquire(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232704913Z 	at java.util.concurrent.locks.ReentrantLock$Sync.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232708106Z 	at java.util.concurrent.locks.ReentrantLock.lock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232711350Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.poll(ConsumerNetworkClient.java:264)
+2026-10-06T04:02:06.232714602Z 	at org.apache.kafka.clients.consumer.internals.ConsumerNetworkClient.pollNoWakeup(ConsumerNetworkClient.java:321)
+2026-10-06T04:02:06.232717754Z 	at org.apache.kafka.clients.consumer.internals.AbstractCoordinator$HeartbeatThread.run(AbstractCoordinator.java:1460)
+2026-10-06T04:02:06.232720899Z 	- locked <0x000000070b2b1db8> (a org.apache.kafka.clients.consumer.internals.ConsumerCoordinator)
+2026-10-06T04:02:06.232724366Z 
+2026-10-06T04:02:06.232727258Z "boundedElastic-evictor-1" #84 daemon prio=5 os_prio=0 cpu=1.92ms elapsed=616.39s tid=0x0000711c5005ef20 nid=0x7f waiting on condition  [0x0000711c069fe000]
+2026-10-06T04:02:06.232732311Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.232735521Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232738639Z 	- parking to wait for  <0x000000070b2b1fe8> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.232742849Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232747140Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232750501Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232753665Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232756847Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232759959Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232763055Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232766497Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232769764Z 
+2026-10-06T04:02:06.232795709Z "DestroyJavaVM" #86 prio=5 os_prio=0 cpu=8813.57ms elapsed=616.07s tid=0x0000711d900295b0 nid=0x7 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.232799630Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.232803034Z 
+2026-10-06T04:02:06.232805840Z "lettuce-nioEventLoop-4-1" #87 daemon prio=5 os_prio=0 cpu=62.26ms elapsed=616.04s tid=0x0000711ba01e0910 nid=0x81 runnable  [0x0000711c067fe000]
+2026-10-06T04:02:06.232813260Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.232816389Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.232819565Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232822659Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232825722Z 	- locked <0x0000000708005068> (a io.netty.channel.nio.SelectedSelectionKeySet)
+2026-10-06T04:02:06.232829187Z 	- locked <0x0000000708005018> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.232832366Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232835478Z 	at io.netty.channel.nio.SelectedSelectionKeySetSelector.select(SelectedSelectionKeySetSelector.java:68)
+2026-10-06T04:02:06.232838595Z 	at io.netty.channel.nio.NioEventLoop.select(NioEventLoop.java:879)
+2026-10-06T04:02:06.232841689Z 	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:526)
+2026-10-06T04:02:06.232977075Z 	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+2026-10-06T04:02:06.232988077Z 	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+2026-10-06T04:02:06.232991765Z 	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+2026-10-06T04:02:06.232995159Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.232998416Z 
+2026-10-06T04:02:06.233001271Z "kafka-producer-network-thread | producer-1" #88 daemon prio=5 os_prio=0 cpu=552.47ms elapsed=586.74s tid=0x0000711ccc3610b0 nid=0x88 runnable  [0x0000711d68539000]
+2026-10-06T04:02:06.233004869Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.233007916Z 	at sun.nio.ch.EPoll.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233011076Z 	at sun.nio.ch.EPollSelectorImpl.doSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233014245Z 	at sun.nio.ch.SelectorImpl.lockAndDoSelect(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233017307Z 	- locked <0x0000000708002a28> (a sun.nio.ch.Util$2)
+2026-10-06T04:02:06.233020526Z 	- locked <0x00000007080029d8> (a sun.nio.ch.EPollSelectorImpl)
+2026-10-06T04:02:06.233023731Z 	at sun.nio.ch.SelectorImpl.select(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233026871Z 	at org.apache.kafka.common.network.Selector.select(Selector.java:874)
+2026-10-06T04:02:06.233029828Z 	at org.apache.kafka.common.network.Selector.poll(Selector.java:465)
+2026-10-06T04:02:06.233032952Z 	at org.apache.kafka.clients.NetworkClient.poll(NetworkClient.java:571)
+2026-10-06T04:02:06.233035996Z 	at org.apache.kafka.clients.producer.internals.Sender.runOnce(Sender.java:344)
+2026-10-06T04:02:06.233039135Z 	at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:247)
+2026-10-06T04:02:06.233050630Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233054274Z 
+2026-10-06T04:02:06.233057139Z "micrometer-kafka-metrics" #89 daemon prio=5 os_prio=0 cpu=8.35ms elapsed=586.73s tid=0x0000711ccc443690 nid=0x8c waiting on condition  [0x0000711c07ffe000]
+2026-10-06T04:02:06.233060692Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.233063687Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233066919Z 	- parking to wait for  <0x0000000708008a98> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.233070280Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233073509Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.awaitNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233078053Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233081356Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233084625Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233088117Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233091269Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233094463Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233097514Z 
+2026-10-06T04:02:06.233101566Z "OkHttp TaskRunner" #90 daemon prio=5 os_prio=0 cpu=49.08ms elapsed=586.54s tid=0x0000711c0c04ff00 nid=0x8d in Object.wait()  [0x0000711c079fe000]
+2026-10-06T04:02:06.233105212Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.233108274Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233111332Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.233114494Z 	at java.lang.Object.wait(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233117546Z 	at okhttp3.internal.concurrent.TaskRunner$RealBackend.coordinatorWait(TaskRunner.kt:294)
+2026-10-06T04:02:06.233120816Z 	at okhttp3.internal.concurrent.TaskRunner.awaitTaskToRun(TaskRunner.kt:218)
+2026-10-06T04:02:06.233246643Z 	at okhttp3.internal.concurrent.TaskRunner$runnable$1.run(TaskRunner.kt:59)
+2026-10-06T04:02:06.233274670Z 	- locked <0x000000070a136200> (a okhttp3.internal.concurrent.TaskRunner)
+2026-10-06T04:02:06.233281963Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233287640Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233313574Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233318747Z 
+2026-10-06T04:02:06.233323031Z "MessageBroker-2" #92 prio=5 os_prio=0 cpu=0.15ms elapsed=557.63s tid=0x0000711c640fc270 nid=0x96 waiting on condition  [0x0000711d68439000]
+2026-10-06T04:02:06.233329036Z    java.lang.Thread.State: WAITING (parking)
+2026-10-06T04:02:06.233333716Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233338848Z 	- parking to wait for  <0x000000070a962400> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.233344418Z 	at java.util.concurrent.locks.LockSupport.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233349896Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionNode.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233355301Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233360297Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233365385Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233369969Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233374749Z 	at java.util.concurrent.ScheduledThreadPoolExecutor$DelayedWorkQueue.take(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233379587Z 	at java.util.concurrent.ThreadPoolExecutor.getTask(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233383820Z 	at java.util.concurrent.ThreadPoolExecutor.runWorker(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233389010Z 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233394096Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233398897Z 
+2026-10-06T04:02:06.233403142Z "MQTT Rec: telemetry-backend-sys" #120 prio=5 os_prio=0 cpu=24.07ms elapsed=177.54s tid=0x0000711ccc018c30 nid=0xd8 runnable  [0x0000711d68139000]
+2026-10-06T04:02:06.233408533Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.233415037Z 	at sun.nio.ch.Net.poll(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233419641Z 	at sun.nio.ch.NioSocketImpl.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233424183Z 	at sun.nio.ch.NioSocketImpl.timedRead(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233428876Z 	at sun.nio.ch.NioSocketImpl.implRead(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233432699Z 	at sun.nio.ch.NioSocketImpl.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233437069Z 	at sun.nio.ch.NioSocketImpl$1.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233441622Z 	at java.net.Socket$SocketInputStream.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233454683Z 	at java.net.Socket$SocketInputStream.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233517923Z 	at java.io.DataInputStream.readUnsignedByte(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233527119Z 	at java.io.DataInputStream.readByte(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233530967Z 	at org.eclipse.paho.client.mqttv3.internal.wire.MqttInputStream.readMqttWireMessage(MqttInputStream.java:92)
+2026-10-06T04:02:06.233534465Z 	at org.eclipse.paho.client.mqttv3.internal.CommsReceiver.run(CommsReceiver.java:137)
+2026-10-06T04:02:06.233537722Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233541029Z 
+2026-10-06T04:02:06.233543919Z "MQTT Snd: telemetry-backend-sys" #121 prio=5 os_prio=0 cpu=1.18ms elapsed=177.44s tid=0x0000711ccc40a310 nid=0xd9 in Object.wait()  [0x0000711d105c7000]
+2026-10-06T04:02:06.233547418Z    java.lang.Thread.State: WAITING (on object monitor)
+2026-10-06T04:02:06.233550528Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233553581Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.233556720Z 	at java.lang.Object.wait(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233559892Z 	at org.eclipse.paho.client.mqttv3.internal.ClientState.get(ClientState.java:833)
+2026-10-06T04:02:06.233563014Z 	- locked <0x000000070b27d5f0> (a java.lang.Object)
+2026-10-06T04:02:06.233566378Z 	at org.eclipse.paho.client.mqttv3.internal.CommsSender.run(CommsSender.java:129)
+2026-10-06T04:02:06.233569587Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233572606Z 
+2026-10-06T04:02:06.233575384Z "MQTT Call: telemetry-backend-sys" #122 prio=5 os_prio=0 cpu=3.60ms elapsed=177.34s tid=0x0000711ccc40a880 nid=0xda in Object.wait()  [0x0000711d12ad0000]
+2026-10-06T04:02:06.233578975Z    java.lang.Thread.State: WAITING (on object monitor)
+2026-10-06T04:02:06.233585364Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233588593Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.233591788Z 	at java.lang.Object.wait(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233595263Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:181)
+2026-10-06T04:02:06.233598441Z 	- locked <0x000000070b276e48> (a java.lang.Object)
+2026-10-06T04:02:06.233601509Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233604551Z 
+2026-10-06T04:02:06.233607274Z "MQTT Ping: telemetry-backend-sys" #123 prio=5 os_prio=0 cpu=0.80ms elapsed=177.24s tid=0x0000711cc4d68d60 nid=0xdb in Object.wait()  [0x0000711d68339000]
+2026-10-06T04:02:06.233610630Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.233621142Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233624544Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.233628001Z 	at java.util.TimerThread.mainLoop(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233632960Z 	- locked <0x000000070de17e38> (a java.util.TaskQueue)
+2026-10-06T04:02:06.233636580Z 	at java.util.TimerThread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233639705Z 
+2026-10-06T04:02:06.233642435Z "MQTT Rec: telemetry-backend" #126 prio=5 os_prio=0 cpu=45.19ms elapsed=164.63s tid=0x0000711c5c009650 nid=0xde runnable  [0x0000711d128d0000]
+2026-10-06T04:02:06.233645786Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.233648762Z 	at sun.nio.ch.Net.poll(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233651850Z 	at sun.nio.ch.NioSocketImpl.park(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233655210Z 	at sun.nio.ch.NioSocketImpl.timedRead(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233658499Z 	at sun.nio.ch.NioSocketImpl.implRead(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233661523Z 	at sun.nio.ch.NioSocketImpl.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233664535Z 	at sun.nio.ch.NioSocketImpl$1.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233667516Z 	at java.net.Socket$SocketInputStream.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233670544Z 	at java.net.Socket$SocketInputStream.read(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233673564Z 	at java.io.DataInputStream.readUnsignedByte(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233676581Z 	at java.io.DataInputStream.readByte(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233679727Z 	at org.eclipse.paho.client.mqttv3.internal.wire.MqttInputStream.readMqttWireMessage(MqttInputStream.java:92)
+2026-10-06T04:02:06.233682879Z 	at org.eclipse.paho.client.mqttv3.internal.CommsReceiver.run(CommsReceiver.java:137)
+2026-10-06T04:02:06.233685951Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233688986Z 
+2026-10-06T04:02:06.233691742Z "MQTT Snd: telemetry-backend" #127 prio=5 os_prio=0 cpu=28.29ms elapsed=164.53s tid=0x0000711c5c009bc0 nid=0xdf in Object.wait()  [0x0000711d68739000]
+2026-10-06T04:02:06.233695118Z    java.lang.Thread.State: WAITING (on object monitor)
+2026-10-06T04:02:06.233698150Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.233701323Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.233706762Z 	at java.lang.Object.wait(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233709829Z 	at org.eclipse.paho.client.mqttv3.internal.ClientState.get(ClientState.java:833)
+2026-10-06T04:02:06.233712977Z 	- locked <0x000000070b270410> (a java.lang.Object)
+2026-10-06T04:02:06.233719439Z 	at org.eclipse.paho.client.mqttv3.internal.CommsSender.run(CommsSender.java:129)
+2026-10-06T04:02:06.233723542Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.233726858Z 
+2026-10-06T04:02:06.233995979Z "MQTT Call: telemetry-backend" #128 prio=5 os_prio=0 cpu=175.52ms elapsed=164.43s tid=0x0000711c5c00a130 nid=0xe0 waiting on condition  [0x0000711d129cf000]
+2026-10-06T04:02:06.234018359Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.234022912Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.234026635Z 	- parking to wait for  <0x0000000711e84868> (a java.util.concurrent.CompletableFuture$Signaller)
+2026-10-06T04:02:06.234030300Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234033663Z 	at java.util.concurrent.CompletableFuture$Signaller.block(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234036889Z 	at java.util.concurrent.ForkJoinPool.unmanagedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234040122Z 	at java.util.concurrent.ForkJoinPool.managedBlock(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234043255Z 	at java.util.concurrent.CompletableFuture.timedGet(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234046340Z 	at java.util.concurrent.CompletableFuture.get(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234049581Z 	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:91)
+2026-10-06T04:02:06.234052674Z 	at jdk.internal.reflect.GeneratedMethodAccessor41.invoke(Unknown Source)
+2026-10-06T04:02:06.234055784Z 	at jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234058918Z 	at java.lang.reflect.Method.invoke(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234061998Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:169)
+2026-10-06T04:02:06.234065335Z 	at org.springframework.integration.handler.support.IntegrationInvocableHandlerMethod.doInvoke(IntegrationInvocableHandlerMethod.java:45)
+2026-10-06T04:02:06.234068681Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+2026-10-06T04:02:06.234071935Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.invoke(MessagingMethodInvokerHelper.java:1086)
+2026-10-06T04:02:06.234075342Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.invokeHandlerMethod(MessagingMethodInvokerHelper.java:569)
+2026-10-06T04:02:06.234078665Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.processInternal(MessagingMethodInvokerHelper.java:482)
+2026-10-06T04:02:06.234090097Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.process(MessagingMethodInvokerHelper.java:360)
+2026-10-06T04:02:06.234109378Z 	at org.springframework.integration.handler.MethodInvokingMessageProcessor.processMessage(MethodInvokingMessageProcessor.java:114)
+2026-10-06T04:02:06.234113931Z 	at org.springframework.integration.handler.ServiceActivatingHandler.handleRequestMessage(ServiceActivatingHandler.java:95)
+2026-10-06T04:02:06.234117590Z 	at org.springframework.integration.handler.AbstractReplyProducingMessageHandler.handleMessageInternal(AbstractReplyProducingMessageHandler.java:145)
+2026-10-06T04:02:06.234121335Z 	at org.springframework.integration.handler.AbstractMessageHandler.doHandleMessage(AbstractMessageHandler.java:105)
+2026-10-06T04:02:06.234124874Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleWithMetrics(AbstractMessageHandler.java:90)
+2026-10-06T04:02:06.234128316Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleMessage(AbstractMessageHandler.java:70)
+2026-10-06T04:02:06.234131801Z 	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+2026-10-06T04:02:06.234135138Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+2026-10-06T04:02:06.234138310Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+2026-10-06T04:02:06.234141507Z 	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+2026-10-06T04:02:06.234144695Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+2026-10-06T04:02:06.234147825Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendWithMetrics(AbstractMessageChannel.java:349)
+2026-10-06T04:02:06.234151086Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:329)
+2026-10-06T04:02:06.234154341Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+2026-10-06T04:02:06.234157464Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+2026-10-06T04:02:06.234160617Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+2026-10-06T04:02:06.234168226Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+2026-10-06T04:02:06.234171697Z 	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+2026-10-06T04:02:06.234175188Z 	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+2026-10-06T04:02:06.234178434Z 	at org.springframework.integration.endpoint.MessageProducerSupport$$Lambda$2653/0x0000711d18f07400.run(Unknown Source)
+2026-10-06T04:02:06.234181805Z 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-10-06T04:02:06.234185145Z 	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+2026-10-06T04:02:06.234192105Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+2026-10-06T04:02:06.234195710Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter$$Lambda$2627/0x0000711d18ee5d10.messageArrived(Unknown Source)
+2026-10-06T04:02:06.234199079Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+2026-10-06T04:02:06.234202279Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+2026-10-06T04:02:06.234206327Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+2026-10-06T04:02:06.234209620Z 	at java.lang.Thread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234212773Z 
+2026-10-06T04:02:06.234215714Z "MQTT Ping: telemetry-backend" #129 prio=5 os_prio=0 cpu=0.91ms elapsed=164.33s tid=0x0000711c88048380 nid=0xe1 in Object.wait()  [0x0000711d115c7000]
+2026-10-06T04:02:06.234219192Z    java.lang.Thread.State: TIMED_WAITING (on object monitor)
+2026-10-06T04:02:06.234222270Z 	at java.lang.Object.wait(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.234225373Z 	- waiting on <no object reference available>
+2026-10-06T04:02:06.234228642Z 	at java.util.TimerThread.mainLoop(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234231769Z 	- locked <0x000000070de0a708> (a java.util.TaskQueue)
+2026-10-06T04:02:06.234235073Z 	at java.util.TimerThread.run(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234238165Z 
+2026-10-06T04:02:06.234241000Z "Okio Watchdog" #130 daemon prio=5 os_prio=0 cpu=2.75ms elapsed=34.88s tid=0x0000711c10025f50 nid=0xec waiting on condition  [0x0000711c06afe000]
+2026-10-06T04:02:06.234244723Z    java.lang.Thread.State: TIMED_WAITING (parking)
+2026-10-06T04:02:06.234247796Z 	at jdk.internal.misc.Unsafe.park(java.base@17.0.20.1/Native Method)
+2026-10-06T04:02:06.234253044Z 	- parking to wait for  <0x0000000708007720> (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+2026-10-06T04:02:06.234256635Z 	at java.util.concurrent.locks.LockSupport.parkNanos(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234259944Z 	at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(java.base@17.0.20.1/Unknown Source)
+2026-10-06T04:02:06.234459838Z 	at okio.AsyncTimeout$Companion.awaitTimeout(AsyncTimeout.kt:358)
+2026-10-06T04:02:06.234480794Z 	at okio.AsyncTimeout$Watchdog.run(AsyncTimeout.kt:211)
+2026-10-06T04:02:06.234555537Z 
+2026-10-06T04:02:06.234560703Z "C1 CompilerThread1" #16 daemon prio=9 os_prio=0 cpu=1.72ms elapsed=1.31s tid=0x0000711cf8018790 nid=0xf1 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.234565972Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.234607348Z    No compile task
+2026-10-06T04:02:06.234610995Z 
+2026-10-06T04:02:06.234613818Z "C1 CompilerThread2" #17 daemon prio=9 os_prio=0 cpu=2.02ms elapsed=1.31s tid=0x0000711cf8019250 nid=0xf2 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.234617252Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.234620506Z    No compile task
+2026-10-06T04:02:06.234623266Z 
+2026-10-06T04:02:06.234625933Z "C1 CompilerThread3" #18 daemon prio=9 os_prio=0 cpu=2.28ms elapsed=1.31s tid=0x0000711cf81e06b0 nid=0xf3 waiting on condition  [0x0000000000000000]
+2026-10-06T04:02:06.234629069Z    java.lang.Thread.State: RUNNABLE
+2026-10-06T04:02:06.234631777Z    No compile task
+2026-10-06T04:02:06.234634408Z 
+2026-10-06T04:02:06.234637137Z "GC Thread#12" os_prio=0 cpu=37.53ms elapsed=625.34s tid=0x0000711d5c017450 nid=0x36 runnable  
+2026-10-06T04:02:06.234640439Z 
+2026-10-06T04:02:06.234643037Z "GC Thread#11" os_prio=0 cpu=36.89ms elapsed=625.34s tid=0x0000711d5c012f10 nid=0x35 runnable  
+2026-10-06T04:02:06.234646096Z 
+2026-10-06T04:02:06.234648832Z "G1 Conc#2" os_prio=0 cpu=97.28ms elapsed=625.53s tid=0x0000711d70001650 nid=0x34 runnable  
+2026-10-06T04:02:06.234651951Z 
+2026-10-06T04:02:06.234654413Z "G1 Conc#1" os_prio=0 cpu=95.45ms elapsed=625.53s tid=0x0000711d70000eb0 nid=0x33 runnable  
+2026-10-06T04:02:06.234658076Z 
+2026-10-06T04:02:06.234661001Z "GC Thread#10" os_prio=0 cpu=52.57ms elapsed=625.59s tid=0x0000711d5c014a90 nid=0x32 runnable  
+2026-10-06T04:02:06.234664288Z 
+2026-10-06T04:02:06.234666878Z "GC Thread#9" os_prio=0 cpu=52.80ms elapsed=625.59s tid=0x0000711d5c014080 nid=0x31 runnable  
+2026-10-06T04:02:06.234670319Z 
+2026-10-06T04:02:06.234681420Z "GC Thread#8" os_prio=0 cpu=56.25ms elapsed=625.59s tid=0x0000711d5c013670 nid=0x30 runnable  
+2026-10-06T04:02:06.234685064Z 
+2026-10-06T04:02:06.234687748Z "GC Thread#7" os_prio=0 cpu=52.86ms elapsed=625.59s tid=0x0000711d5c00ef60 nid=0x2f runnable  
+2026-10-06T04:02:06.234690884Z 
+2026-10-06T04:02:06.234693408Z "GC Thread#6" os_prio=0 cpu=48.23ms elapsed=625.59s tid=0x0000711d5c00ea10 nid=0x2e runnable  
+2026-10-06T04:02:06.234696581Z 
+2026-10-06T04:02:06.234699007Z "GC Thread#5" os_prio=0 cpu=53.91ms elapsed=628.15s tid=0x0000711d5c0094e0 nid=0x24 runnable  
+2026-10-06T04:02:06.234702536Z 
+2026-10-06T04:02:06.234704990Z "GC Thread#4" os_prio=0 cpu=51.79ms elapsed=628.15s tid=0x0000711d5c008ad0 nid=0x23 runnable  
+2026-10-06T04:02:06.234708220Z 
+2026-10-06T04:02:06.234711053Z "GC Thread#3" os_prio=0 cpu=55.94ms elapsed=628.15s tid=0x0000711d5c0080c0 nid=0x22 runnable  
+2026-10-06T04:02:06.234713978Z 
+2026-10-06T04:02:06.234716604Z "GC Thread#2" os_prio=0 cpu=67.62ms elapsed=628.15s tid=0x0000711d5c0076b0 nid=0x21 runnable  
+2026-10-06T04:02:06.234723541Z 
+2026-10-06T04:02:06.234726344Z "GC Thread#1" os_prio=0 cpu=65.85ms elapsed=628.15s tid=0x0000711d5c006ce0 nid=0x20 runnable  
+2026-10-06T04:02:06.234729391Z 
+2026-10-06T04:02:06.234731933Z "VM Periodic Task Thread" os_prio=0 cpu=370.95ms elapsed=628.83s tid=0x0000711d901ba760 nid=0x17 waiting on condition  
+2026-10-06T04:02:06.234735486Z 
+2026-10-06T04:02:06.234738053Z "VM Thread" os_prio=0 cpu=113.37ms elapsed=629.02s tid=0x0000711d901a11b0 nid=0xd runnable  
+2026-10-06T04:02:06.234741056Z 
+2026-10-06T04:02:06.234743498Z "G1 Service" os_prio=0 cpu=110.30ms elapsed=629.38s tid=0x0000711d90172310 nid=0xc runnable  
+2026-10-06T04:02:06.234746577Z 
+2026-10-06T04:02:06.234751055Z "G1 Refine#0" os_prio=0 cpu=0.10ms elapsed=629.38s tid=0x0000711d90171410 nid=0xb runnable  
+2026-10-06T04:02:06.234754195Z 
+2026-10-06T04:02:06.234756744Z "G1 Conc#0" os_prio=0 cpu=100.77ms elapsed=629.38s tid=0x0000711d900a70a0 nid=0xa runnable  
+2026-10-06T04:02:06.234759726Z 
+2026-10-06T04:02:06.234762223Z "G1 Main Marker" os_prio=0 cpu=2.61ms elapsed=629.38s tid=0x0000711d900a6130 nid=0x9 runnable  
+2026-10-06T04:02:06.234765342Z 
+2026-10-06T04:02:06.234860051Z "GC Thread#0" os_prio=0 cpu=55.68ms elapsed=629.38s tid=0x0000711d900952f0 nid=0x8 runnable  
+2026-10-06T04:02:06.234874785Z 
+2026-10-06T04:02:06.235291746Z JNI global refs: 42, weak refs: 0
+2026-10-06T04:02:06.235298765Z 
+2026-10-06T04:02:06.235596397Z Heap
+2026-10-06T04:02:06.235615857Z  garbage-first heap   total 239616K, used 136567K [0x0000000707e00000, 0x0000000800000000)
+2026-10-06T04:02:06.235619753Z   region size 2048K, 37 young (75776K), 1 survivors (2048K)
+2026-10-06T04:02:06.235622726Z  Metaspace       used 127007K, committed 127744K, reserved 1179648K
+2026-10-06T04:02:06.235625652Z   class space    used 16878K, committed 17216K, reserved 1048576K
+2026-10-06T04:02:06.235628524Z 
+2026-10-06T04:02:08.855608560Z 04:02:08 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Disconnecting from node 1 due to request timeout.
+2026-10-06T04:02:08.855888054Z 04:02:08 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Cancelled in-flight PRODUCE request with correlation id 683 due to node 1 being disconnected (elapsed time since creation: 10010ms, elapsed time since send: 10010ms, request timeout: 10000ms)
+2026-10-06T04:02:08.856130700Z 04:02:08 [-] [-] WARN  o.a.k.c.p.i.Sender - [Producer clientId=producer-1] Got error produce response with correlation id 683 on topic-partition vehicle-telemetry-0, retrying (2 attempts left). Error: REQUEST_TIMED_OUT. Error Message: Disconnected from node 1 due to timeout
+2026-10-06T04:02:11.278973166Z 04:02:11 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T04:02:11.278995620Z 04:02:11 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T04:02:11.279067626Z 04:02:11 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 연결 끊김 — 저장 확인 대기 중단, ACK 없이 재전달 대기
+2026-10-06T04:02:11.280309765Z 04:02:11 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Unhandled exception for GenericMessage [payload={"vehicle_id": "RECON-D2C", "timestamp": "2026-10-06T04:01:48.313Z", "speed": 60.5, "rpm": 2000.25, "engine_temp": 90.0, "throttle_position": 20.0, "fuel_level": 50.0, "battery_voltage": 12.6, "gps": {"lat": 37.5, "lng": 127.0}, "dtc_codes": []}, headers={mqtt_receivedRetained=false, acknowledgmentCallback=org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter$AcknowledgmentImpl@3d200646, mqtt_id=63201, mqtt_duplicate=false, id=1549dd99-ace5-a798-6181-093a8e47f42e, mqtt_receivedTopic=vehicle/telemetry/RECON-D2C, mqtt_receivedQos=1, timestamp=1791259318843}]
+2026-10-06T04:02:11.280332780Z org.springframework.messaging.MessageHandlingException: error occurred during processing message in 'MethodInvokingMessageProcessor' [org.springframework.integration.handler.MethodInvokingMessageProcessor@732d0d35]
+2026-10-06T04:02:11.280334582Z 	at org.springframework.integration.support.utils.IntegrationUtils.wrapInHandlingExceptionIfNecessary(IntegrationUtils.java:191)
+2026-10-06T04:02:11.280335865Z 	at org.springframework.integration.handler.MethodInvokingMessageProcessor.processMessage(MethodInvokingMessageProcessor.java:117)
+2026-10-06T04:02:11.280336881Z 	at org.springframework.integration.handler.ServiceActivatingHandler.handleRequestMessage(ServiceActivatingHandler.java:95)
+2026-10-06T04:02:11.280338465Z 	at org.springframework.integration.handler.AbstractReplyProducingMessageHandler.handleMessageInternal(AbstractReplyProducingMessageHandler.java:145)
+2026-10-06T04:02:11.280339509Z 	at org.springframework.integration.handler.AbstractMessageHandler.doHandleMessage(AbstractMessageHandler.java:105)
+2026-10-06T04:02:11.280340456Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleWithMetrics(AbstractMessageHandler.java:90)
+2026-10-06T04:02:11.280341425Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleMessage(AbstractMessageHandler.java:70)
+2026-10-06T04:02:11.280342364Z 	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+2026-10-06T04:02:11.280343318Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+2026-10-06T04:02:11.280344675Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+2026-10-06T04:02:11.280345629Z 	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+2026-10-06T04:02:11.280346561Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+2026-10-06T04:02:11.280347502Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendWithMetrics(AbstractMessageChannel.java:349)
+2026-10-06T04:02:11.280348429Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:329)
+2026-10-06T04:02:11.280355953Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+2026-10-06T04:02:11.280356965Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+2026-10-06T04:02:11.280357912Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+2026-10-06T04:02:11.280358839Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+2026-10-06T04:02:11.280359773Z 	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+2026-10-06T04:02:11.280360727Z 	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+2026-10-06T04:02:11.280361693Z 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-10-06T04:02:11.280362600Z 	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+2026-10-06T04:02:11.280363609Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+2026-10-06T04:02:11.280364586Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+2026-10-06T04:02:11.280365510Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+2026-10-06T04:02:11.280366449Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+2026-10-06T04:02:11.280367386Z 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-10-06T04:02:11.280368267Z Caused by: java.lang.InterruptedException: null
+2026-10-06T04:02:11.280369149Z 	at java.base/java.util.concurrent.CompletableFuture.reportGet(Unknown Source)
+2026-10-06T04:02:11.280370313Z 	at java.base/java.util.concurrent.CompletableFuture.get(Unknown Source)
+2026-10-06T04:02:11.280371231Z 	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:91)
+2026-10-06T04:02:11.280372138Z 	at jdk.internal.reflect.GeneratedMethodAccessor41.invoke(Unknown Source)
+2026-10-06T04:02:11.280373030Z 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+2026-10-06T04:02:11.280373947Z 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+2026-10-06T04:02:11.280374857Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:169)
+2026-10-06T04:02:11.280375811Z 	at org.springframework.integration.handler.support.IntegrationInvocableHandlerMethod.doInvoke(IntegrationInvocableHandlerMethod.java:45)
+2026-10-06T04:02:11.280376831Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+2026-10-06T04:02:11.280377773Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.invoke(MessagingMethodInvokerHelper.java:1086)
+2026-10-06T04:02:11.280380030Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.invokeHandlerMethod(MessagingMethodInvokerHelper.java:569)
+2026-10-06T04:02:11.280381175Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.processInternal(MessagingMethodInvokerHelper.java:482)
+2026-10-06T04:02:11.280382196Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.process(MessagingMethodInvokerHelper.java:360)
+2026-10-06T04:02:11.280383143Z 	at org.springframework.integration.handler.MethodInvokingMessageProcessor.processMessage(MethodInvokingMessageProcessor.java:114)
+2026-10-06T04:02:11.280384128Z 	... 25 common frames omitted
+2026-10-06T04:02:12.586997574Z 04:02:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:48.313Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:02:20.058716646Z 04:02:20 [530f2177] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [530f2177] GET /actuator/prometheus → 200 (13ms) ip=172.18.0.8
+2026-10-06T04:02:21.250766384Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:48.313Z partition=0 offset=1888
+2026-10-06T04:02:21.251437531Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:48.313Z partition=0 offset=1889
+2026-10-06T04:02:21.252210046Z 04:02:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:48.646Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:02:21.253430404Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:48.646Z partition=0 offset=1890
+2026-10-06T04:02:21.253930461Z 04:02:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2C ts=2026-10-06T04:01:48.979Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T04:02:21.255150994Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2C ts=2026-10-06T04:01:48.979Z partition=0 offset=1891
+2026-10-06T04:02:21.378325059Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:02:21.512487270Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T04:02:21.645681542Z 04:02:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 2건 중 2건 저장
+2026-10-06T04:02:35.051280692Z 04:02:35 [fc7b697a] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [fc7b697a] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.8
+2026-10-06T04:02:41.752767240Z 04:02:41 [c7e16a5e] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [c7e16a5e] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.1

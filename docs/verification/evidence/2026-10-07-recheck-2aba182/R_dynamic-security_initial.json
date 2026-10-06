@@ -1,0 +1,14 @@
+{
+  "defaultACLAccess": {"publishClientSend": true, "publishClientReceive": true, "subscribe": true, "unsubscribe": true},
+  "clients": [],
+  "groups": [{"groupname": "anon-g", "roles": [{"rolename": "revocable", "priority": 1}, {"rolename": "ctrl", "priority": 1}]}],
+  "anonymousGroup": "anon-g",
+  "roles": [
+    {"rolename": "revocable", "acls": []},
+    {"rolename": "ctrl", "acls": [
+      {"acltype": "publishClientSend", "topic": "$CONTROL/dynamic-security/#", "priority": 0, "allow": true},
+      {"acltype": "publishClientReceive", "topic": "$CONTROL/dynamic-security/#", "priority": 0, "allow": true},
+      {"acltype": "subscribePattern", "topic": "$CONTROL/dynamic-security/#", "priority": 0, "allow": true}
+    ]}
+  ]
+}

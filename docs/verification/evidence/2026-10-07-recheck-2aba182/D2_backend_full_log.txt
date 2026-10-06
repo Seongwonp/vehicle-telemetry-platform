@@ -1,0 +1,1191 @@
+2026-10-06T03:52:05.088933574Z 03:52:05 [6001d4c8] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [6001d4c8] GET /actuator/prometheus → 200 (15ms) ip=172.18.0.8
+2026-10-06T03:52:08.198187961Z 03:52:08 [f112132b] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [f112132b] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.1
+2026-10-06T03:52:16.316604669Z 03:52:16 [4f12fb7f] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [4f12fb7f] GET /actuator/prometheus → 200 (9ms) ip=172.18.0.1
+2026-10-06T03:52:19.485914094Z 03:52:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-PRB ts=2026-10-06T03:52:16.001Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:19.499359826Z 03:52:19 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+2026-10-06T03:52:19.499383897Z 	acks = -1
+2026-10-06T03:52:19.499386054Z 	auto.include.jmx.reporter = true
+2026-10-06T03:52:19.499387404Z 	batch.size = 16384
+2026-10-06T03:52:19.499388572Z 	bootstrap.servers = [kafka:29092]
+2026-10-06T03:52:19.499389887Z 	buffer.memory = 33554432
+2026-10-06T03:52:19.499391058Z 	client.dns.lookup = use_all_dns_ips
+2026-10-06T03:52:19.499402422Z 	client.id = producer-1
+2026-10-06T03:52:19.499403342Z 	compression.type = none
+2026-10-06T03:52:19.499404249Z 	connections.max.idle.ms = 540000
+2026-10-06T03:52:19.499405148Z 	delivery.timeout.ms = 30000
+2026-10-06T03:52:19.499405989Z 	enable.idempotence = true
+2026-10-06T03:52:19.499406837Z 	interceptor.classes = []
+2026-10-06T03:52:19.499407726Z 	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+2026-10-06T03:52:19.499408689Z 	linger.ms = 0
+2026-10-06T03:52:19.499409614Z 	max.block.ms = 10000
+2026-10-06T03:52:19.499410482Z 	max.in.flight.requests.per.connection = 5
+2026-10-06T03:52:19.499411344Z 	max.request.size = 1048576
+2026-10-06T03:52:19.499412345Z 	metadata.max.age.ms = 300000
+2026-10-06T03:52:19.499413252Z 	metadata.max.idle.ms = 300000
+2026-10-06T03:52:19.499414125Z 	metric.reporters = []
+2026-10-06T03:52:19.499414970Z 	metrics.num.samples = 2
+2026-10-06T03:52:19.499415875Z 	metrics.recording.level = INFO
+2026-10-06T03:52:19.499416767Z 	metrics.sample.window.ms = 30000
+2026-10-06T03:52:19.499417631Z 	partitioner.adaptive.partitioning.enable = true
+2026-10-06T03:52:19.499418514Z 	partitioner.availability.timeout.ms = 0
+2026-10-06T03:52:19.499419371Z 	partitioner.class = null
+2026-10-06T03:52:19.499420202Z 	partitioner.ignore.keys = false
+2026-10-06T03:52:19.499421039Z 	receive.buffer.bytes = 32768
+2026-10-06T03:52:19.499421891Z 	reconnect.backoff.max.ms = 1000
+2026-10-06T03:52:19.499422719Z 	reconnect.backoff.ms = 50
+2026-10-06T03:52:19.499423546Z 	request.timeout.ms = 10000
+2026-10-06T03:52:19.499424402Z 	retries = 3
+2026-10-06T03:52:19.499427212Z 	retry.backoff.ms = 100
+2026-10-06T03:52:19.499428134Z 	sasl.client.callback.handler.class = null
+2026-10-06T03:52:19.499429737Z 	sasl.jaas.config = null
+2026-10-06T03:52:19.499430617Z 	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+2026-10-06T03:52:19.499431486Z 	sasl.kerberos.min.time.before.relogin = 60000
+2026-10-06T03:52:19.499432366Z 	sasl.kerberos.service.name = null
+2026-10-06T03:52:19.499433228Z 	sasl.kerberos.ticket.renew.jitter = 0.05
+2026-10-06T03:52:19.499434102Z 	sasl.kerberos.ticket.renew.window.factor = 0.8
+2026-10-06T03:52:19.499434947Z 	sasl.login.callback.handler.class = null
+2026-10-06T03:52:19.499435798Z 	sasl.login.class = null
+2026-10-06T03:52:19.499436617Z 	sasl.login.connect.timeout.ms = null
+2026-10-06T03:52:19.499437478Z 	sasl.login.read.timeout.ms = null
+2026-10-06T03:52:19.499439691Z 	sasl.login.refresh.buffer.seconds = 300
+2026-10-06T03:52:19.499440598Z 	sasl.login.refresh.min.period.seconds = 60
+2026-10-06T03:52:19.499441467Z 	sasl.login.refresh.window.factor = 0.8
+2026-10-06T03:52:19.499442327Z 	sasl.login.refresh.window.jitter = 0.05
+2026-10-06T03:52:19.499443194Z 	sasl.login.retry.backoff.max.ms = 10000
+2026-10-06T03:52:19.499444067Z 	sasl.login.retry.backoff.ms = 100
+2026-10-06T03:52:19.499444919Z 	sasl.mechanism = GSSAPI
+2026-10-06T03:52:19.499445763Z 	sasl.oauthbearer.clock.skew.seconds = 30
+2026-10-06T03:52:19.499446617Z 	sasl.oauthbearer.expected.audience = null
+2026-10-06T03:52:19.499447490Z 	sasl.oauthbearer.expected.issuer = null
+2026-10-06T03:52:19.499448378Z 	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+2026-10-06T03:52:19.499449232Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+2026-10-06T03:52:19.499450820Z 	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+2026-10-06T03:52:19.499451722Z 	sasl.oauthbearer.jwks.endpoint.url = null
+2026-10-06T03:52:19.499452618Z 	sasl.oauthbearer.scope.claim.name = scope
+2026-10-06T03:52:19.499453490Z 	sasl.oauthbearer.sub.claim.name = sub
+2026-10-06T03:52:19.499454373Z 	sasl.oauthbearer.token.endpoint.url = null
+2026-10-06T03:52:19.499455242Z 	security.protocol = PLAINTEXT
+2026-10-06T03:52:19.499456094Z 	security.providers = null
+2026-10-06T03:52:19.499456960Z 	send.buffer.bytes = 131072
+2026-10-06T03:52:19.499457817Z 	socket.connection.setup.timeout.max.ms = 30000
+2026-10-06T03:52:19.499458677Z 	socket.connection.setup.timeout.ms = 10000
+2026-10-06T03:52:19.499459530Z 	ssl.cipher.suites = null
+2026-10-06T03:52:19.499460399Z 	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+2026-10-06T03:52:19.499461238Z 	ssl.endpoint.identification.algorithm = https
+2026-10-06T03:52:19.499462103Z 	ssl.engine.factory.class = null
+2026-10-06T03:52:19.499462938Z 	ssl.key.password = null
+2026-10-06T03:52:19.499463777Z 	ssl.keymanager.algorithm = SunX509
+2026-10-06T03:52:19.499464629Z 	ssl.keystore.certificate.chain = null
+2026-10-06T03:52:19.499465491Z 	ssl.keystore.key = null
+2026-10-06T03:52:19.499466317Z 	ssl.keystore.location = null
+2026-10-06T03:52:19.499467186Z 	ssl.keystore.password = null
+2026-10-06T03:52:19.499468022Z 	ssl.keystore.type = JKS
+2026-10-06T03:52:19.499468870Z 	ssl.protocol = TLSv1.3
+2026-10-06T03:52:19.499469706Z 	ssl.provider = null
+2026-10-06T03:52:19.499470553Z 	ssl.secure.random.implementation = null
+2026-10-06T03:52:19.499471406Z 	ssl.trustmanager.algorithm = PKIX
+2026-10-06T03:52:19.499473122Z 	ssl.truststore.certificates = null
+2026-10-06T03:52:19.499474016Z 	ssl.truststore.location = null
+2026-10-06T03:52:19.499474886Z 	ssl.truststore.password = null
+2026-10-06T03:52:19.499475739Z 	ssl.truststore.type = JKS
+2026-10-06T03:52:19.499476562Z 	transaction.timeout.ms = 60000
+2026-10-06T03:52:19.499477401Z 	transactional.id = null
+2026-10-06T03:52:19.499478278Z 	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+2026-10-06T03:52:19.499479246Z 
+2026-10-06T03:52:19.508054742Z 03:52:19 [-] [-] INFO  o.a.k.c.p.KafkaProducer - [Producer clientId=producer-1] Instantiated an idempotent producer.
+2026-10-06T03:52:19.519674179Z 03:52:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka version: 3.6.2
+2026-10-06T03:52:19.519694544Z 03:52:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka commitId: c4deed513057c94e
+2026-10-06T03:52:19.519696447Z 03:52:19 [-] [-] INFO  o.a.k.c.u.AppInfoParser - Kafka startTimeMs: 1791258739519
+2026-10-06T03:52:19.524622205Z 03:52:19 [-] [-] INFO  o.a.k.clients.Metadata - [Producer clientId=producer-1] Cluster ID: vDv_T0oWTCSOlDKgFl7AAQ
+2026-10-06T03:52:19.631282822Z 03:52:19 [-] [-] INFO  o.a.k.c.p.i.TransactionManager - [Producer clientId=producer-1] ProducerId set to 22000 with epoch 0
+2026-10-06T03:52:19.656310114Z 03:52:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-PRB ts=2026-10-06T03:52:16.001Z partition=1 offset=43451
+2026-10-06T03:52:20.082841823Z 03:52:20 [55c43ff7] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [55c43ff7] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+2026-10-06T03:52:21.037845124Z 03:52:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:23.789669192Z 03:52:23 [2f0dc0d3] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [2f0dc0d3] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.1
+2026-10-06T03:52:28.471621811Z 03:52:28 [2d5b0d27] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [2d5b0d27] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.1
+2026-10-06T03:52:35.080938113Z 03:52:35 [49f8ed82] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [49f8ed82] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+2026-10-06T03:52:36.683632506Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:33.333Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.686562852Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:33.333Z partition=0 offset=1465
+2026-10-06T03:52:36.688794181Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:33.666Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.691884324Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:33.666Z partition=0 offset=1466
+2026-10-06T03:52:36.694599918Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:33.999Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.698045378Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:33.999Z partition=0 offset=1467
+2026-10-06T03:52:36.699871925Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:34.332Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.702284523Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:34.332Z partition=0 offset=1468
+2026-10-06T03:52:36.704156107Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:34.665Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.706433898Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:34.665Z partition=0 offset=1469
+2026-10-06T03:52:36.708101491Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:34.998Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.710758482Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:34.998Z partition=0 offset=1470
+2026-10-06T03:52:36.712952649Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:35.331Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.715502804Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:35.331Z partition=0 offset=1471
+2026-10-06T03:52:36.717176531Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:35.664Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.719008623Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:35.664Z partition=0 offset=1472
+2026-10-06T03:52:36.720423724Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:35.997Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.723034520Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:35.997Z partition=0 offset=1473
+2026-10-06T03:52:36.761589733Z 03:52:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:36.330Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:36.764979532Z 03:52:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:36.330Z partition=0 offset=1474
+2026-10-06T03:52:37.013555672Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:37.080242959Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:37.136341134Z 03:52:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:36.663Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:37.138585845Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:36.663Z partition=0 offset=1475
+2026-10-06T03:52:37.155480913Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 8건 중 8건 저장
+2026-10-06T03:52:37.222249668Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:37.511750359Z 03:52:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:36.996Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:37.516224095Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:36.996Z partition=0 offset=1476
+2026-10-06T03:52:37.594311597Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:37.888853312Z 03:52:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:37.329Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:37.897617843Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:37.329Z partition=0 offset=1477
+2026-10-06T03:52:37.977313836Z 03:52:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:38.277240021Z 03:52:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:37.662Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:38.279605711Z 03:52:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:37.662Z partition=0 offset=1478
+2026-10-06T03:52:38.352360864Z 03:52:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:38.649627070Z 03:52:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:37.995Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:38.657267718Z 03:52:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:37.995Z partition=0 offset=1479
+2026-10-06T03:52:38.793608114Z 03:52:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:39.018937383Z 03:52:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:38.328Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:39.029015215Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:38.328Z partition=0 offset=1480
+2026-10-06T03:52:39.299558338Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:39.408212442Z 03:52:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:38.661Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:39.417430078Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:38.661Z partition=0 offset=1481
+2026-10-06T03:52:39.610133692Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:39.795710599Z 03:52:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:38.994Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:39.797971611Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:38.994Z partition=0 offset=1482
+2026-10-06T03:52:39.935957658Z 03:52:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:40.168799393Z 03:52:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:39.327Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:40.171026603Z 03:52:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:39.327Z partition=0 offset=1483
+2026-10-06T03:52:40.269206339Z 03:52:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:40.546623332Z 03:52:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:39.660Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:40.548854062Z 03:52:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:39.660Z partition=0 offset=1484
+2026-10-06T03:52:40.702827164Z 03:52:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:40.919056106Z 03:52:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:39.993Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:40.923957929Z 03:52:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:39.993Z partition=0 offset=1485
+2026-10-06T03:52:41.086127358Z 03:52:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:41.302961776Z 03:52:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:40.326Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:41.306274011Z 03:52:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:40.326Z partition=0 offset=1486
+2026-10-06T03:52:41.415994440Z 03:52:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:41.676978982Z 03:52:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:40.659Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:41.679046380Z 03:52:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:40.659Z partition=0 offset=1487
+2026-10-06T03:52:41.752880628Z 03:52:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:42.048591605Z 03:52:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:40.992Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:42.052932148Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:40.992Z partition=0 offset=1488
+2026-10-06T03:52:42.327975595Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:42.422107737Z 03:52:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:41.325Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:42.427874599Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:41.325Z partition=0 offset=1489
+2026-10-06T03:52:42.661625120Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:42.801986258Z 03:52:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:41.658Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:42.809906725Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:41.658Z partition=0 offset=1490
+2026-10-06T03:52:42.957450820Z 03:52:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:43.187918888Z 03:52:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:41.991Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:43.190103631Z 03:52:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:41.991Z partition=0 offset=1491
+2026-10-06T03:52:43.411231207Z 03:52:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:43.561031628Z 03:52:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:42.324Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:43.563739879Z 03:52:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:42.324Z partition=0 offset=1492
+2026-10-06T03:52:43.785124023Z 03:52:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:43.934223031Z 03:52:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:42.657Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:43.937226896Z 03:52:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:42.657Z partition=0 offset=1493
+2026-10-06T03:52:44.303401125Z 03:52:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:44.307655982Z 03:52:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:42.990Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:44.310260471Z 03:52:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:42.990Z partition=0 offset=1494
+2026-10-06T03:52:44.586600470Z 03:52:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:44.681304799Z 03:52:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:43.323Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:44.684010297Z 03:52:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:43.323Z partition=0 offset=1495
+2026-10-06T03:52:44.837319441Z 03:52:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:45.041269764Z 03:52:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:43.656Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:45.047322718Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:43.656Z partition=0 offset=1496
+2026-10-06T03:52:45.282729440Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:45.416089578Z 03:52:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:43.989Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:45.418237950Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:43.989Z partition=0 offset=1497
+2026-10-06T03:52:45.545125857Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:45.776642793Z 03:52:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:44.322Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:45.779160793Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:44.322Z partition=0 offset=1498
+2026-10-06T03:52:45.912066648Z 03:52:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:46.134070697Z 03:52:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:44.655Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:46.136611060Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:44.655Z partition=0 offset=1499
+2026-10-06T03:52:46.195191225Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:46.506279380Z 03:52:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:44.988Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:46.508309610Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:44.988Z partition=0 offset=1500
+2026-10-06T03:52:46.581387142Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:46.879070564Z 03:52:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:45.321Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:46.881047458Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:45.321Z partition=0 offset=1501
+2026-10-06T03:52:46.970012513Z 03:52:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:47.240889838Z 03:52:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:45.654Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:47.243602831Z 03:52:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:45.654Z partition=0 offset=1502
+2026-10-06T03:52:47.303616916Z 03:52:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:47.600091716Z 03:52:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:45.987Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:47.602433986Z 03:52:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:45.987Z partition=0 offset=1503
+2026-10-06T03:52:47.691633910Z 03:52:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:47.960497058Z 03:52:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:46.320Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:47.963217652Z 03:52:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:46.320Z partition=0 offset=1504
+2026-10-06T03:52:48.040796490Z 03:52:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:48.320068651Z 03:52:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:46.653Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:48.324218559Z 03:52:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:46.653Z partition=0 offset=1505
+2026-10-06T03:52:48.399134692Z 03:52:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:48.629434771Z 03:52:48 [-] [-] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2026-10-06T03:52:48.696530295Z 03:52:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:46.986Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:48.698895663Z 03:52:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:46.986Z partition=0 offset=1506
+2026-10-06T03:52:48.766020412Z 03:52:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:49.056578881Z 03:52:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:47.319Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:49.058649400Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:47.319Z partition=0 offset=1507
+2026-10-06T03:52:49.124699025Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:49.416991494Z 03:52:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:47.652Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:49.419173268Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:47.652Z partition=0 offset=1508
+2026-10-06T03:52:49.491802978Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:49.777622615Z 03:52:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:47.985Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:49.779999732Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:47.985Z partition=0 offset=1509
+2026-10-06T03:52:49.850067523Z 03:52:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:50.085236304Z 03:52:50 [1cfbd4d3] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [1cfbd4d3] GET /actuator/prometheus → 200 (14ms) ip=172.18.0.8
+2026-10-06T03:52:50.134328017Z 03:52:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:48.318Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:50.136206359Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:48.318Z partition=0 offset=1510
+2026-10-06T03:52:50.292737256Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:50.494748346Z 03:52:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:48.651Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:50.496588052Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:48.651Z partition=0 offset=1511
+2026-10-06T03:52:50.566805453Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:50.852566052Z 03:52:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:48.984Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:50.855344480Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:48.984Z partition=0 offset=1512
+2026-10-06T03:52:50.917500472Z 03:52:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:51.227927075Z 03:52:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:49.317Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:51.230227289Z 03:52:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:49.317Z partition=0 offset=1513
+2026-10-06T03:52:51.292281011Z 03:52:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:51.587836560Z 03:52:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:49.650Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:51.590083118Z 03:52:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:49.650Z partition=0 offset=1514
+2026-10-06T03:52:51.650560346Z 03:52:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:51.948440192Z 03:52:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:49.983Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:51.950852397Z 03:52:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:49.983Z partition=0 offset=1515
+2026-10-06T03:52:52.017484844Z 03:52:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:52.307477861Z 03:52:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:50.316Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:52.309342526Z 03:52:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:50.316Z partition=0 offset=1516
+2026-10-06T03:52:52.409264309Z 03:52:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:52.678198072Z 03:52:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:50.649Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:52.680454371Z 03:52:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:50.649Z partition=0 offset=1517
+2026-10-06T03:52:52.742919426Z 03:52:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:53.039868318Z 03:52:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:50.982Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:53.042431646Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:50.982Z partition=0 offset=1518
+2026-10-06T03:52:53.110009325Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:53.401041720Z 03:52:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:51.315Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:53.405480348Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:51.315Z partition=0 offset=1519
+2026-10-06T03:52:53.468333635Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:53.781371951Z 03:52:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:51.648Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:53.788074864Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:51.648Z partition=0 offset=1520
+2026-10-06T03:52:53.851884470Z 03:52:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:54.167168199Z 03:52:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:51.981Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:54.169058427Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:51.981Z partition=0 offset=1521
+2026-10-06T03:52:54.260487933Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:54.527529726Z 03:52:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:52.314Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:54.529450098Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:52.314Z partition=0 offset=1522
+2026-10-06T03:52:54.602355908Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:54.887015601Z 03:52:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:52.647Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:54.888990155Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:52.647Z partition=0 offset=1523
+2026-10-06T03:52:54.952490753Z 03:52:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:55.244555968Z 03:52:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:52.980Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:55.246579085Z 03:52:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:52.980Z partition=0 offset=1524
+2026-10-06T03:52:55.320720814Z 03:52:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:55.602490473Z 03:52:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:53.313Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:55.605741164Z 03:52:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:53.313Z partition=0 offset=1525
+2026-10-06T03:52:55.670749180Z 03:52:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:56.001993277Z 03:52:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:53.646Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:56.004133724Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:53.646Z partition=0 offset=1526
+2026-10-06T03:52:56.092377512Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:56.335311644Z 03:52:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:53.979Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:56.338781529Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:53.979Z partition=0 offset=1527
+2026-10-06T03:52:56.426338242Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:56.706904254Z 03:52:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:54.312Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:56.709374732Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:54.312Z partition=0 offset=1528
+2026-10-06T03:52:56.854433915Z 03:52:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:57.068697476Z 03:52:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:54.645Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:57.070965727Z 03:52:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:54.645Z partition=0 offset=1529
+2026-10-06T03:52:57.212641750Z 03:52:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:57.443137837Z 03:52:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:54.978Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:57.445183894Z 03:52:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:54.978Z partition=0 offset=1530
+2026-10-06T03:52:57.554336339Z 03:52:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:57.816657371Z 03:52:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:55.311Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:57.818538058Z 03:52:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:55.311Z partition=0 offset=1531
+2026-10-06T03:52:58.004458876Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:58.177116959Z 03:52:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:55.644Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:58.179041733Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:55.644Z partition=0 offset=1532
+2026-10-06T03:52:58.343026202Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:58.535735008Z 03:52:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:55.977Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:58.537700643Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:55.977Z partition=0 offset=1533
+2026-10-06T03:52:58.605637972Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:58.895001391Z 03:52:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:56.310Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:58.897076676Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:56.310Z partition=0 offset=1534
+2026-10-06T03:52:58.972824263Z 03:52:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:59.270822296Z 03:52:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:56.643Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:59.272976168Z 03:52:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:56.643Z partition=0 offset=1535
+2026-10-06T03:52:59.339365741Z 03:52:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:59.634068410Z 03:52:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:56.976Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:59.636016670Z 03:52:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:56.976Z partition=0 offset=1536
+2026-10-06T03:52:59.706529917Z 03:52:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:52:59.995340218Z 03:52:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:57.309Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:52:59.998291958Z 03:52:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:57.309Z partition=0 offset=1537
+2026-10-06T03:53:00.073345814Z 03:53:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:00.366800405Z 03:53:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:57.642Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:00.369442007Z 03:53:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:57.642Z partition=0 offset=1538
+2026-10-06T03:53:00.430245648Z 03:53:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:00.733911172Z 03:53:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:57.975Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:00.736227169Z 03:53:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:57.975Z partition=0 offset=1539
+2026-10-06T03:53:00.796947151Z 03:53:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:01.099886334Z 03:53:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:58.308Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:01.103883377Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:58.308Z partition=0 offset=1540
+2026-10-06T03:53:01.188682238Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:01.463169161Z 03:53:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:58.641Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:01.465064662Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:58.641Z partition=0 offset=1541
+2026-10-06T03:53:01.647050483Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:01.821806449Z 03:53:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:58.974Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:01.823807545Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:58.974Z partition=0 offset=1542
+2026-10-06T03:53:01.909213184Z 03:53:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:02.185213806Z 03:53:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:59.307Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:02.187872765Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:59.307Z partition=0 offset=1543
+2026-10-06T03:53:02.255552205Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:02.543778039Z 03:53:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:59.640Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:02.545525513Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:59.640Z partition=0 offset=1544
+2026-10-06T03:53:02.618662303Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:02.904264366Z 03:53:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:52:59.973Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:02.906082078Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:52:59.973Z partition=0 offset=1545
+2026-10-06T03:53:02.985401073Z 03:53:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:03.264269536Z 03:53:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:00.306Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:03.266469101Z 03:53:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:00.306Z partition=0 offset=1546
+2026-10-06T03:53:03.335609996Z 03:53:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:03.623878633Z 03:53:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:00.639Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:03.626225175Z 03:53:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:00.639Z partition=0 offset=1547
+2026-10-06T03:53:03.727491384Z 03:53:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:03.980577713Z 03:53:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:00.972Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:05.089599685Z 03:53:05 [2f32b161] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [2f32b161] GET /actuator/prometheus → 200 (19ms) ip=172.18.0.8
+2026-10-06T03:53:13.991867425Z 03:53:13 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Disconnecting from node 1 due to request timeout.
+2026-10-06T03:53:13.992839994Z 03:53:13 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Cancelled in-flight PRODUCE request with correlation id 90 due to node 1 being disconnected (elapsed time since creation: 10011ms, elapsed time since send: 10011ms, request timeout: 10000ms)
+2026-10-06T03:53:13.993260924Z 03:53:13 [-] [-] WARN  o.a.k.c.p.i.Sender - [Producer clientId=producer-1] Got error produce response with correlation id 90 on topic-partition vehicle-telemetry-0, retrying (2 attempts left). Error: REQUEST_TIMED_OUT. Error Message: Disconnected from node 1 due to timeout
+2026-10-06T03:53:15.833686617Z 03:53:15 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T03:53:20.086170069Z 03:53:20 [f78eb43a] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [f78eb43a] GET /actuator/prometheus → 200 (15ms) ip=172.18.0.8
+2026-10-06T03:53:24.101443888Z 03:53:24 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Disconnecting from node 1 due to request timeout.
+2026-10-06T03:53:24.101486831Z 03:53:24 [-] [-] INFO  o.a.k.c.NetworkClient - [Producer clientId=producer-1] Cancelled in-flight API_VERSIONS request with correlation id 91 due to node 1 being disconnected (elapsed time since creation: 10056ms, elapsed time since send: 10056ms, request timeout: 10000ms)
+2026-10-06T03:53:26.036747111Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:00.972Z partition=0 offset=1548
+2026-10-06T03:53:26.040267219Z 03:53:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:01.305Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:26.043135638Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:01.305Z partition=0 offset=1549
+2026-10-06T03:53:26.044091342Z 03:53:26 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T03:53:26.044109177Z 03:53:26 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 연결 끊김 — 저장 확인 대기 중단, ACK 없이 재전달 대기
+2026-10-06T03:53:26.044208819Z 03:53:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:01.638Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:26.046302739Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:01.638Z partition=0 offset=1550
+2026-10-06T03:53:26.054028766Z 03:53:26 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Unhandled exception for GenericMessage [payload={"vehicle_id": "RECON-D2", "timestamp": "2026-10-06T03:53:01.638Z", "speed": 60.5, "rpm": 2000.25, "engine_temp": 90.0, "throttle_position": 20.0, "fuel_level": 50.0, "battery_voltage": 12.6, "gps": {"lat": 37.5, "lng": 127.0}, "dtc_codes": []}, headers={mqtt_receivedRetained=false, acknowledgmentCallback=org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter$AcknowledgmentImpl@79dfebef, mqtt_id=62626, mqtt_duplicate=false, id=587cd353-ca8f-2463-b0ac-b3979453ae8e, mqtt_receivedTopic=vehicle/telemetry/RECON-D2, mqtt_receivedQos=1, timestamp=1791258806043}]
+2026-10-06T03:53:26.054059276Z org.springframework.messaging.MessageHandlingException: error occurred during processing message in 'MethodInvokingMessageProcessor' [org.springframework.integration.handler.MethodInvokingMessageProcessor@732d0d35]
+2026-10-06T03:53:26.054061900Z 	at org.springframework.integration.support.utils.IntegrationUtils.wrapInHandlingExceptionIfNecessary(IntegrationUtils.java:191)
+2026-10-06T03:53:26.054063859Z 	at org.springframework.integration.handler.MethodInvokingMessageProcessor.processMessage(MethodInvokingMessageProcessor.java:117)
+2026-10-06T03:53:26.054065306Z 	at org.springframework.integration.handler.ServiceActivatingHandler.handleRequestMessage(ServiceActivatingHandler.java:95)
+2026-10-06T03:53:26.054066802Z 	at org.springframework.integration.handler.AbstractReplyProducingMessageHandler.handleMessageInternal(AbstractReplyProducingMessageHandler.java:145)
+2026-10-06T03:53:26.054068146Z 	at org.springframework.integration.handler.AbstractMessageHandler.doHandleMessage(AbstractMessageHandler.java:105)
+2026-10-06T03:53:26.054069433Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleWithMetrics(AbstractMessageHandler.java:90)
+2026-10-06T03:53:26.054070704Z 	at org.springframework.integration.handler.AbstractMessageHandler.handleMessage(AbstractMessageHandler.java:70)
+2026-10-06T03:53:26.054083821Z 	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+2026-10-06T03:53:26.054085492Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+2026-10-06T03:53:26.054088306Z 	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+2026-10-06T03:53:26.054089885Z 	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+2026-10-06T03:53:26.054091404Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+2026-10-06T03:53:26.054092868Z 	at org.springframework.integration.channel.AbstractMessageChannel.sendWithMetrics(AbstractMessageChannel.java:349)
+2026-10-06T03:53:26.054094343Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:329)
+2026-10-06T03:53:26.054095873Z 	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+2026-10-06T03:53:26.054097456Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+2026-10-06T03:53:26.054098942Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+2026-10-06T03:53:26.054100497Z 	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+2026-10-06T03:53:26.054101988Z 	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+2026-10-06T03:53:26.054103533Z 	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+2026-10-06T03:53:26.054104935Z 	at io.micrometer.observation.Observation.observe(Observation.java:499)
+2026-10-06T03:53:26.054106460Z 	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+2026-10-06T03:53:26.054107983Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+2026-10-06T03:53:26.054109516Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+2026-10-06T03:53:26.054111383Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+2026-10-06T03:53:26.054113008Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+2026-10-06T03:53:26.054114456Z 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-10-06T03:53:26.054115806Z Caused by: java.lang.InterruptedException: null
+2026-10-06T03:53:26.054117290Z 	at java.base/java.util.concurrent.CompletableFuture.reportGet(Unknown Source)
+2026-10-06T03:53:26.054119184Z 	at java.base/java.util.concurrent.CompletableFuture.get(Unknown Source)
+2026-10-06T03:53:26.054120669Z 	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:91)
+2026-10-06T03:53:26.054128419Z 	at jdk.internal.reflect.GeneratedMethodAccessor41.invoke(Unknown Source)
+2026-10-06T03:53:26.054130645Z 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+2026-10-06T03:53:26.054131971Z 	at java.base/java.lang.reflect.Method.invoke(Unknown Source)
+2026-10-06T03:53:26.054133281Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:169)
+2026-10-06T03:53:26.054134720Z 	at org.springframework.integration.handler.support.IntegrationInvocableHandlerMethod.doInvoke(IntegrationInvocableHandlerMethod.java:45)
+2026-10-06T03:53:26.054136176Z 	at org.springframework.messaging.handler.invocation.InvocableHandlerMethod.invoke(InvocableHandlerMethod.java:119)
+2026-10-06T03:53:26.054137637Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper$HandlerMethod.invoke(MessagingMethodInvokerHelper.java:1086)
+2026-10-06T03:53:26.054139105Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.invokeHandlerMethod(MessagingMethodInvokerHelper.java:569)
+2026-10-06T03:53:26.054140595Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.processInternal(MessagingMethodInvokerHelper.java:482)
+2026-10-06T03:53:26.054142196Z 	at org.springframework.integration.handler.support.MessagingMethodInvokerHelper.process(MessagingMethodInvokerHelper.java:360)
+2026-10-06T03:53:26.054143795Z 	at org.springframework.integration.handler.MethodInvokingMessageProcessor.processMessage(MethodInvokingMessageProcessor.java:114)
+2026-10-06T03:53:26.054145243Z 	... 25 common frames omitted
+2026-10-06T03:53:26.167522108Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:26.292670577Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:26.418398049Z 03:53:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:32.349909809Z 03:53:32 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Error subscribing to [vehicle/telemetry/#]
+2026-10-06T03:53:32.349936009Z org.eclipse.paho.client.mqttv3.MqttException: Timed out waiting for a response from the server
+2026-10-06T03:53:32.349937803Z 	at org.eclipse.paho.client.mqttv3.internal.Token.waitForCompletion(Token.java:112)
+2026-10-06T03:53:32.349939367Z 	at org.eclipse.paho.client.mqttv3.MqttToken.waitForCompletion(MqttToken.java:67)
+2026-10-06T03:53:32.349940688Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.subscribe(MqttPahoMessageDrivenChannelAdapter.java:302)
+2026-10-06T03:53:32.349942025Z 	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.connectComplete(MqttPahoMessageDrivenChannelAdapter.java:425)
+2026-10-06T03:53:32.349943331Z 	at org.eclipse.paho.client.mqttv3.internal.ConnectActionListener.onSuccess(ConnectActionListener.java:104)
+2026-10-06T03:53:32.349952921Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.fireActionEvent(CommsCallback.java:333)
+2026-10-06T03:53:32.349953944Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleActionComplete(CommsCallback.java:272)
+2026-10-06T03:53:32.349954910Z 	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:198)
+2026-10-06T03:53:32.349955927Z 	at java.base/java.lang.Thread.run(Unknown Source)
+2026-10-06T03:53:32.350571720Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:00.972Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.352511936Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:00.972Z partition=0 offset=1551
+2026-10-06T03:53:32.353421027Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:01.305Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.355155803Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:01.305Z partition=0 offset=1552
+2026-10-06T03:53:32.355797844Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:01.638Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.356939514Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:01.638Z partition=0 offset=1553
+2026-10-06T03:53:32.357460822Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:01.971Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.358454758Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:01.971Z partition=0 offset=1554
+2026-10-06T03:53:32.358956209Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:02.304Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.360473634Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:02.304Z partition=0 offset=1555
+2026-10-06T03:53:32.361477048Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:02.637Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.363143665Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:02.637Z partition=0 offset=1556
+2026-10-06T03:53:32.363734189Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:02.970Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.364828045Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:02.970Z partition=0 offset=1557
+2026-10-06T03:53:32.365399330Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:03.303Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.366490640Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:03.303Z partition=0 offset=1558
+2026-10-06T03:53:32.367079270Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:03.636Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.368093477Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:03.636Z partition=0 offset=1559
+2026-10-06T03:53:32.368619186Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:03.969Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.370348218Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:03.969Z partition=0 offset=1560
+2026-10-06T03:53:32.371548796Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:04.302Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.373928076Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:04.302Z partition=0 offset=1561
+2026-10-06T03:53:32.374807647Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:04.635Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.376341710Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:04.635Z partition=0 offset=1562
+2026-10-06T03:53:32.377072420Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:04.968Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.378419989Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:04.968Z partition=0 offset=1563
+2026-10-06T03:53:32.379225013Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:05.301Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.381088615Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:05.301Z partition=0 offset=1564
+2026-10-06T03:53:32.381802235Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:05.634Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.383312922Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:05.634Z partition=0 offset=1565
+2026-10-06T03:53:32.383996719Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:05.967Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.385520361Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:05.967Z partition=0 offset=1566
+2026-10-06T03:53:32.386640911Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:06.300Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.388327643Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:06.300Z partition=0 offset=1567
+2026-10-06T03:53:32.389200520Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:06.633Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.391129503Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:06.633Z partition=0 offset=1568
+2026-10-06T03:53:32.392012254Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:06.966Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.393831465Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:06.966Z partition=0 offset=1569
+2026-10-06T03:53:32.394701180Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:07.299Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.396242842Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:07.299Z partition=0 offset=1570
+2026-10-06T03:53:32.396871622Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:07.632Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.398082345Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:07.632Z partition=0 offset=1571
+2026-10-06T03:53:32.398731684Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:07.965Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.400474203Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:07.965Z partition=0 offset=1572
+2026-10-06T03:53:32.401458739Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:08.298Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.402860373Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:08.298Z partition=0 offset=1573
+2026-10-06T03:53:32.403654028Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:08.631Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.404835577Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:08.631Z partition=0 offset=1574
+2026-10-06T03:53:32.406487125Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:08.964Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.407690568Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:08.964Z partition=0 offset=1575
+2026-10-06T03:53:32.408541751Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:09.297Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.410020910Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:09.297Z partition=0 offset=1576
+2026-10-06T03:53:32.411213848Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:09.630Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.413105008Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:09.630Z partition=0 offset=1577
+2026-10-06T03:53:32.413991570Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:09.963Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.415498950Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:09.963Z partition=0 offset=1578
+2026-10-06T03:53:32.416370480Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:10.296Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.417828842Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:10.296Z partition=0 offset=1579
+2026-10-06T03:53:32.418748823Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:10.629Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.420872353Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:10.629Z partition=0 offset=1580
+2026-10-06T03:53:32.422107387Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:10.962Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.423854240Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:10.962Z partition=0 offset=1581
+2026-10-06T03:53:32.424630584Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:11.295Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.426094425Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:11.295Z partition=0 offset=1582
+2026-10-06T03:53:32.427102963Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:11.628Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.428780097Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:11.628Z partition=0 offset=1583
+2026-10-06T03:53:32.429805606Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:11.961Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.431567748Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:11.961Z partition=0 offset=1584
+2026-10-06T03:53:32.432423536Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:12.294Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.434318580Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:12.294Z partition=0 offset=1585
+2026-10-06T03:53:32.435025180Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:12.627Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.436374998Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:12.627Z partition=0 offset=1586
+2026-10-06T03:53:32.437191727Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:12.960Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.439026188Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:12.960Z partition=0 offset=1587
+2026-10-06T03:53:32.440149304Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:13.293Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.442302347Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:13.293Z partition=0 offset=1588
+2026-10-06T03:53:32.443055154Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:13.626Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.444452560Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:13.626Z partition=0 offset=1589
+2026-10-06T03:53:32.445054663Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:13.959Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.447433095Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:13.959Z partition=0 offset=1590
+2026-10-06T03:53:32.448062861Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:14.292Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.451559303Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:14.292Z partition=0 offset=1591
+2026-10-06T03:53:32.452424039Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:14.625Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.453742520Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:14.625Z partition=0 offset=1592
+2026-10-06T03:53:32.454405833Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:14.958Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.455458978Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:14.958Z partition=0 offset=1593
+2026-10-06T03:53:32.455969520Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:15.291Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.456780380Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:15.291Z partition=0 offset=1594
+2026-10-06T03:53:32.457185810Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:15.624Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.458057009Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:15.624Z partition=0 offset=1595
+2026-10-06T03:53:32.458671313Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:15.957Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.460018748Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:15.957Z partition=0 offset=1596
+2026-10-06T03:53:32.461005643Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:16.290Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.462831171Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:16.290Z partition=0 offset=1597
+2026-10-06T03:53:32.463534668Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:16.623Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.465044344Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:16.623Z partition=0 offset=1598
+2026-10-06T03:53:32.465777918Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:16.956Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.467249717Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:16.956Z partition=0 offset=1599
+2026-10-06T03:53:32.468000217Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:17.289Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.469576777Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:17.289Z partition=0 offset=1600
+2026-10-06T03:53:32.470349111Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:17.622Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.472125981Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:17.622Z partition=0 offset=1601
+2026-10-06T03:53:32.473047229Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:17.955Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.474565340Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:17.955Z partition=0 offset=1602
+2026-10-06T03:53:32.475251275Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:18.288Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.476787719Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:18.288Z partition=0 offset=1603
+2026-10-06T03:53:32.477345832Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:18.621Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.478618308Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:18.621Z partition=0 offset=1604
+2026-10-06T03:53:32.479411169Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:18.954Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.481143074Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:18.954Z partition=0 offset=1605
+2026-10-06T03:53:32.481899827Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:19.287Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.483598744Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:19.287Z partition=0 offset=1606
+2026-10-06T03:53:32.484436882Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:19.620Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.485792356Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:19.620Z partition=0 offset=1607
+2026-10-06T03:53:32.486450685Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:19.953Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.487621797Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:19.953Z partition=0 offset=1608
+2026-10-06T03:53:32.488163229Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:20.286Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.489175801Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:20.286Z partition=0 offset=1609
+2026-10-06T03:53:32.490082920Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:20.619Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.492533784Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:20.619Z partition=0 offset=1610
+2026-10-06T03:53:32.493265770Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:20.952Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.494534535Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:20.952Z partition=0 offset=1611
+2026-10-06T03:53:32.495061533Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:21.285Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.496308418Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:21.285Z partition=0 offset=1612
+2026-10-06T03:53:32.496797325Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:21.618Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.497821811Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:21.618Z partition=0 offset=1613
+2026-10-06T03:53:32.498462361Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:21.951Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.499432771Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:21.951Z partition=0 offset=1614
+2026-10-06T03:53:32.500155043Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:22.284Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.501568418Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:22.284Z partition=0 offset=1615
+2026-10-06T03:53:32.502417184Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:22.617Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.503517614Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:22.617Z partition=0 offset=1616
+2026-10-06T03:53:32.504007170Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:22.950Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.504854819Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:22.950Z partition=0 offset=1617
+2026-10-06T03:53:32.505282951Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:23.283Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.506029953Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:23.283Z partition=0 offset=1618
+2026-10-06T03:53:32.506655666Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:23.616Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.508154547Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:23.616Z partition=0 offset=1619
+2026-10-06T03:53:32.508839579Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:23.949Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.509647596Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:32.510997994Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:23.949Z partition=0 offset=1620
+2026-10-06T03:53:32.511629279Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:24.282Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.513034368Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:24.282Z partition=0 offset=1621
+2026-10-06T03:53:32.513990721Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:24.615Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.515423601Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:24.615Z partition=0 offset=1622
+2026-10-06T03:53:32.516142883Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:24.948Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.517730759Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:24.948Z partition=0 offset=1623
+2026-10-06T03:53:32.518552409Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:25.281Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.520319611Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:25.281Z partition=0 offset=1624
+2026-10-06T03:53:32.521184781Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:25.614Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.522769709Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:25.614Z partition=0 offset=1625
+2026-10-06T03:53:32.523549639Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:25.947Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.525034578Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:25.947Z partition=0 offset=1626
+2026-10-06T03:53:32.525611471Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:26.280Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.527076788Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:26.280Z partition=0 offset=1627
+2026-10-06T03:53:32.527664359Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:26.613Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.530618607Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:26.613Z partition=0 offset=1628
+2026-10-06T03:53:32.531714859Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:26.946Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.533438064Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:26.946Z partition=0 offset=1629
+2026-10-06T03:53:32.701411076Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:32.824419840Z 03:53:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:27.279Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:32.826788354Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:27.279Z partition=0 offset=1630
+2026-10-06T03:53:32.966999405Z 03:53:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 69건 중 69건 저장
+2026-10-06T03:53:33.084268989Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 8건 중 8건 저장
+2026-10-06T03:53:33.181413439Z 03:53:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:27.612Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:33.183220704Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:27.612Z partition=0 offset=1631
+2026-10-06T03:53:33.293281800Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:33.418440132Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:33.540828692Z 03:53:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:27.945Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:33.542760774Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:27.945Z partition=0 offset=1632
+2026-10-06T03:53:33.710390580Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:33.913441977Z 03:53:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:28.278Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:33.915284064Z 03:53:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:28.278Z partition=0 offset=1633
+2026-10-06T03:53:34.260223527Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:34.275474397Z 03:53:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:28.611Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:34.277188744Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:28.611Z partition=0 offset=1634
+2026-10-06T03:53:34.427773285Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:34.636975549Z 03:53:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:28.944Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:34.638659974Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:28.944Z partition=0 offset=1635
+2026-10-06T03:53:34.776969983Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:34.993074218Z 03:53:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:29.277Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:34.994773401Z 03:53:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:29.277Z partition=0 offset=1636
+2026-10-06T03:53:35.051948397Z 03:53:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:35.082475375Z 03:53:35 [321b4cf7] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [321b4cf7] GET /actuator/prometheus → 200 (16ms) ip=172.18.0.8
+2026-10-06T03:53:35.351954586Z 03:53:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:29.610Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:35.353785678Z 03:53:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:29.610Z partition=0 offset=1637
+2026-10-06T03:53:35.560726453Z 03:53:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:35.711871068Z 03:53:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:29.943Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:35.713640705Z 03:53:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:29.943Z partition=0 offset=1638
+2026-10-06T03:53:35.882155088Z 03:53:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:36.069682181Z 03:53:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:30.276Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:36.071960600Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:30.276Z partition=0 offset=1639
+2026-10-06T03:53:36.212683278Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:36.428608029Z 03:53:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:30.609Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:36.430588537Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:30.609Z partition=0 offset=1640
+2026-10-06T03:53:36.619484275Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:36.789035548Z 03:53:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:30.942Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:36.790815948Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:30.942Z partition=0 offset=1641
+2026-10-06T03:53:36.956314486Z 03:53:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:37.147203188Z 03:53:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:31.275Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:37.149224475Z 03:53:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:31.275Z partition=0 offset=1642
+2026-10-06T03:53:37.302643541Z 03:53:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:37.505686989Z 03:53:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:31.608Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:37.507341754Z 03:53:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:31.608Z partition=0 offset=1643
+2026-10-06T03:53:37.652137946Z 03:53:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:37.864205809Z 03:53:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:31.941Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:37.865937455Z 03:53:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:31.941Z partition=0 offset=1644
+2026-10-06T03:53:38.027453200Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:38.225068488Z 03:53:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:32.274Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:38.226714168Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:32.274Z partition=0 offset=1645
+2026-10-06T03:53:38.346096016Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:38.585191537Z 03:53:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:32.607Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:38.586943762Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:32.607Z partition=0 offset=1646
+2026-10-06T03:53:38.678145953Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:38.957349796Z 03:53:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:32.940Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:38.959454017Z 03:53:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:32.940Z partition=0 offset=1647
+2026-10-06T03:53:39.048435683Z 03:53:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:39.316452581Z 03:53:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:33.273Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:39.573417264Z 03:53:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:33.273Z partition=0 offset=1648
+2026-10-06T03:53:39.678436257Z 03:53:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:33.606Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:39.680285569Z 03:53:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:33.606Z partition=0 offset=1649
+2026-10-06T03:53:40.031521913Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:40.038956883Z 03:53:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:33.939Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:40.040620612Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:33.939Z partition=0 offset=1650
+2026-10-06T03:53:40.161686991Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:40.320113189Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:40.399230230Z 03:53:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:34.272Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:40.401140082Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:34.272Z partition=0 offset=1651
+2026-10-06T03:53:40.494898762Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:40.756272803Z 03:53:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:34.605Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:40.757894762Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:34.605Z partition=0 offset=1652
+2026-10-06T03:53:40.829351254Z 03:53:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:41.113895418Z 03:53:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:34.938Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:41.116019514Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:34.938Z partition=0 offset=1653
+2026-10-06T03:53:41.181200868Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:41.485075915Z 03:53:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:35.271Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:41.486801314Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:35.271Z partition=0 offset=1654
+2026-10-06T03:53:41.557088021Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:41.854360940Z 03:53:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:35.604Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:41.856118612Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:35.604Z partition=0 offset=1655
+2026-10-06T03:53:41.991403578Z 03:53:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:42.214855523Z 03:53:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:35.937Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:42.216706005Z 03:53:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:35.937Z partition=0 offset=1656
+2026-10-06T03:53:42.392057705Z 03:53:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:42.576006338Z 03:53:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:36.270Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:42.577512201Z 03:53:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:36.270Z partition=0 offset=1657
+2026-10-06T03:53:42.870622008Z 03:53:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:42.935664558Z 03:53:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:36.603Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:42.937455942Z 03:53:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:36.603Z partition=0 offset=1658
+2026-10-06T03:53:43.294540967Z 03:53:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:36.936Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:43.296171834Z 03:53:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:36.936Z partition=0 offset=1659
+2026-10-06T03:53:43.628652734Z 03:53:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:43.652782595Z 03:53:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:37.269Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:43.654351350Z 03:53:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:37.269Z partition=0 offset=1660
+2026-10-06T03:53:43.869826661Z 03:53:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:43.978042328Z 03:53:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:44.010911184Z 03:53:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:37.602Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:44.012515864Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:37.602Z partition=0 offset=1661
+2026-10-06T03:53:44.097806348Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:44.369945568Z 03:53:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:37.935Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:44.371728239Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:37.935Z partition=0 offset=1662
+2026-10-06T03:53:44.578979715Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:44.729473925Z 03:53:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:38.268Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:44.731873897Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:38.268Z partition=0 offset=1663
+2026-10-06T03:53:44.836960269Z 03:53:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:45.102576684Z 03:53:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:38.601Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:45.104204604Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:38.601Z partition=0 offset=1664
+2026-10-06T03:53:45.362391502Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:45.463270342Z 03:53:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:38.934Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:45.464965426Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:38.934Z partition=0 offset=1665
+2026-10-06T03:53:45.773999021Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:45.824279349Z 03:53:45 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:39.267Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:45.825799423Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:39.267Z partition=0 offset=1666
+2026-10-06T03:53:45.929547248Z 03:53:45 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:46.186600724Z 03:53:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:39.600Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:46.188009919Z 03:53:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:39.600Z partition=0 offset=1667
+2026-10-06T03:53:46.377899539Z 03:53:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:46.544944101Z 03:53:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:39.933Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:46.546879392Z 03:53:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:39.933Z partition=0 offset=1668
+2026-10-06T03:53:46.664897534Z 03:53:46 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:46.900679101Z 03:53:46 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:40.266Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:46.902320651Z 03:53:46 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:40.266Z partition=0 offset=1669
+2026-10-06T03:53:47.096008033Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:47.261663231Z 03:53:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:40.599Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:47.263460667Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:40.599Z partition=0 offset=1670
+2026-10-06T03:53:47.420933986Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:47.624204789Z 03:53:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:40.932Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:47.625815543Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:40.932Z partition=0 offset=1671
+2026-10-06T03:53:47.771552980Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:47.985989235Z 03:53:47 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:41.265Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:47.987602880Z 03:53:47 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:41.265Z partition=0 offset=1672
+2026-10-06T03:53:48.129887701Z 03:53:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:48.347404221Z 03:53:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:41.598Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:48.349348493Z 03:53:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:41.598Z partition=0 offset=1673
+2026-10-06T03:53:48.422298699Z 03:53:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:48.705261906Z 03:53:48 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:41.931Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:48.706862468Z 03:53:48 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:41.931Z partition=0 offset=1674
+2026-10-06T03:53:48.805002703Z 03:53:48 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:49.065416974Z 03:53:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:42.264Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:49.067842926Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:42.264Z partition=0 offset=1675
+2026-10-06T03:53:49.188088736Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:49.423699974Z 03:53:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:42.597Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:49.425439515Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:42.597Z partition=0 offset=1676
+2026-10-06T03:53:49.621469497Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:49.783903720Z 03:53:49 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:42.930Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:49.785829419Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:42.930Z partition=0 offset=1677
+2026-10-06T03:53:49.940671190Z 03:53:49 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:50.079964394Z 03:53:50 [2f230cbc] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [2f230cbc] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8
+2026-10-06T03:53:50.141855527Z 03:53:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:43.263Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:50.143499426Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:43.263Z partition=0 offset=1678
+2026-10-06T03:53:50.322065359Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:50.501180786Z 03:53:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:43.596Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:50.503296272Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:43.596Z partition=0 offset=1679
+2026-10-06T03:53:50.629440351Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:50.862302406Z 03:53:50 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:43.929Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:50.863857865Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:43.929Z partition=0 offset=1680
+2026-10-06T03:53:50.981755253Z 03:53:50 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:51.222062382Z 03:53:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:44.262Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:51.223713260Z 03:53:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:44.262Z partition=0 offset=1681
+2026-10-06T03:53:51.379727226Z 03:53:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:51.581384874Z 03:53:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:44.595Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:51.582921410Z 03:53:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:44.595Z partition=0 offset=1682
+2026-10-06T03:53:51.731831365Z 03:53:51 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:51.954613341Z 03:53:51 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:44.928Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:51.956351363Z 03:53:51 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:44.928Z partition=0 offset=1683
+2026-10-06T03:53:52.104624444Z 03:53:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:52.313565941Z 03:53:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:45.261Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:52.315218238Z 03:53:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:45.261Z partition=0 offset=1684
+2026-10-06T03:53:52.438178517Z 03:53:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:52.672584314Z 03:53:52 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:45.594Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:52.674167239Z 03:53:52 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:45.594Z partition=0 offset=1685
+2026-10-06T03:53:52.760959455Z 03:53:52 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:53.029912009Z 03:53:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:45.927Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:53.032456912Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:45.927Z partition=0 offset=1686
+2026-10-06T03:53:53.128087962Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:53.403059158Z 03:53:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:46.260Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:53.404677593Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:46.260Z partition=0 offset=1687
+2026-10-06T03:53:53.575984668Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:53.761338222Z 03:53:53 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:46.593Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:53.763102098Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:46.593Z partition=0 offset=1688
+2026-10-06T03:53:53.947039514Z 03:53:53 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:54.124432960Z 03:53:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:46.926Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:54.126200894Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:46.926Z partition=0 offset=1689
+2026-10-06T03:53:54.415756292Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:54.482474555Z 03:53:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:47.259Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:54.484066390Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:47.259Z partition=0 offset=1690
+2026-10-06T03:53:54.630142990Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:54.838579120Z 03:53:54 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:47.592Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:54.840280551Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:47.592Z partition=0 offset=1691
+2026-10-06T03:53:54.997165871Z 03:53:54 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:55.212955505Z 03:53:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:47.925Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:55.214677340Z 03:53:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:47.925Z partition=0 offset=1692
+2026-10-06T03:53:55.377514772Z 03:53:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:55.570463133Z 03:53:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:48.258Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:55.572699102Z 03:53:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:48.258Z partition=0 offset=1693
+2026-10-06T03:53:55.696854093Z 03:53:55 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:55.948757661Z 03:53:55 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:48.591Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:55.952866732Z 03:53:55 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:48.591Z partition=0 offset=1694
+2026-10-06T03:53:56.088823997Z 03:53:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:56.323343275Z 03:53:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:48.924Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:56.324936523Z 03:53:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:48.924Z partition=0 offset=1695
+2026-10-06T03:53:56.518413911Z 03:53:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:56.682234549Z 03:53:56 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:49.257Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:56.683766312Z 03:53:56 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:49.257Z partition=0 offset=1696
+2026-10-06T03:53:56.830811424Z 03:53:56 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:57.041861536Z 03:53:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:49.590Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:57.043651167Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:49.590Z partition=0 offset=1697
+2026-10-06T03:53:57.230626454Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:57.415548262Z 03:53:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:49.923Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:57.417736622Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:49.923Z partition=0 offset=1698
+2026-10-06T03:53:57.516582540Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:57.774312892Z 03:53:57 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:50.256Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:57.775924180Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:50.256Z partition=0 offset=1699
+2026-10-06T03:53:57.974831808Z 03:53:57 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:58.132836716Z 03:53:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:50.589Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:58.134414125Z 03:53:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:50.589Z partition=0 offset=1700
+2026-10-06T03:53:58.208456006Z 03:53:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:58.490918814Z 03:53:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:50.922Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:58.494697321Z 03:53:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:50.922Z partition=0 offset=1701
+2026-10-06T03:53:58.576334758Z 03:53:58 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:58.862513248Z 03:53:58 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:51.255Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:58.864717620Z 03:53:58 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:51.255Z partition=0 offset=1702
+2026-10-06T03:53:59.014500737Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:59.222052628Z 03:53:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:51.588Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:59.223716866Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:51.588Z partition=0 offset=1703
+2026-10-06T03:53:59.306213568Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:59.593107056Z 03:53:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:51.921Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:59.594781153Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:51.921Z partition=0 offset=1704
+2026-10-06T03:53:59.747627325Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:53:59.952768610Z 03:53:59 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:52.254Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:53:59.954369268Z 03:53:59 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:52.254Z partition=0 offset=1705
+2026-10-06T03:54:00.097755600Z 03:54:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:00.311806541Z 03:54:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:52.587Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:00.313296148Z 03:54:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:52.587Z partition=0 offset=1706
+2026-10-06T03:54:00.568128759Z 03:54:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:00.670450618Z 03:54:00 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:52.920Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:00.672473348Z 03:54:00 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:52.920Z partition=0 offset=1707
+2026-10-06T03:54:00.798074072Z 03:54:00 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:01.028547445Z 03:54:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:53.253Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:01.032702576Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:53.253Z partition=0 offset=1708
+2026-10-06T03:54:01.123967104Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:01.403649530Z 03:54:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:53.586Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:01.405784266Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:53.586Z partition=0 offset=1709
+2026-10-06T03:54:01.525059026Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:01.776176869Z 03:54:01 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:53.919Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:01.777678152Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:53.919Z partition=0 offset=1710
+2026-10-06T03:54:01.965068299Z 03:54:01 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:02.135812852Z 03:54:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:54.252Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:02.137341010Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:54.252Z partition=0 offset=1711
+2026-10-06T03:54:02.320079885Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:02.495889276Z 03:54:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:54.585Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:02.498003299Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:54.585Z partition=0 offset=1712
+2026-10-06T03:54:02.645275808Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:02.872431085Z 03:54:02 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:54.918Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:02.874070141Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:54.918Z partition=0 offset=1713
+2026-10-06T03:54:02.946153698Z 03:54:02 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:03.234710898Z 03:54:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:55.251Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:03.237167319Z 03:54:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:55.251Z partition=0 offset=1714
+2026-10-06T03:54:03.339023158Z 03:54:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:03.604565826Z 03:54:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:55.584Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:03.606490022Z 03:54:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:55.584Z partition=0 offset=1715
+2026-10-06T03:54:03.665218171Z 03:54:03 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:03.978280610Z 03:54:03 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:55.917Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:03.980167054Z 03:54:03 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:55.917Z partition=0 offset=1716
+2026-10-06T03:54:04.048631356Z 03:54:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:04.353636089Z 03:54:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:56.250Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:04.355173948Z 03:54:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:56.250Z partition=0 offset=1717
+2026-10-06T03:54:04.433296491Z 03:54:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:04.713540169Z 03:54:04 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:56.583Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:04.715590879Z 03:54:04 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:56.583Z partition=0 offset=1718
+2026-10-06T03:54:04.956247594Z 03:54:04 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:05.077286735Z 03:54:05 [d15cac71] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [d15cac71] GET /actuator/prometheus → 200 (11ms) ip=172.18.0.8
+2026-10-06T03:54:05.086536723Z 03:54:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:56.916Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:05.088390523Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:56.916Z partition=0 offset=1719
+2026-10-06T03:54:05.176578968Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:05.446873070Z 03:54:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:57.249Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:05.452670614Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:57.249Z partition=0 offset=1720
+2026-10-06T03:54:05.569970366Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:05.819048179Z 03:54:05 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:57.582Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:05.822374169Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:57.582Z partition=0 offset=1721
+2026-10-06T03:54:05.924535240Z 03:54:05 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:06.193359309Z 03:54:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:57.915Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:06.195354137Z 03:54:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:57.915Z partition=0 offset=1722
+2026-10-06T03:54:06.341225361Z 03:54:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:06.567755681Z 03:54:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:58.248Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:06.569536837Z 03:54:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:58.248Z partition=0 offset=1723
+2026-10-06T03:54:06.857715390Z 03:54:06 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:06.925898394Z 03:54:06 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:58.581Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:06.927801132Z 03:54:06 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:58.581Z partition=0 offset=1724
+2026-10-06T03:54:07.066893508Z 03:54:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:07.286566382Z 03:54:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:58.914Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:07.288124109Z 03:54:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:58.914Z partition=0 offset=1725
+2026-10-06T03:54:07.499856644Z 03:54:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:07.661857240Z 03:54:07 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:59.247Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:07.664834487Z 03:54:07 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:59.247Z partition=0 offset=1726
+2026-10-06T03:54:07.858935802Z 03:54:07 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:08.033172213Z 03:54:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:59.580Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:08.074375008Z 03:54:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:59.580Z partition=0 offset=1727
+2026-10-06T03:54:08.259448163Z 03:54:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:08.394148801Z 03:54:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:53:59.913Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:08.396135389Z 03:54:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:53:59.913Z partition=0 offset=1728
+2026-10-06T03:54:08.602164284Z 03:54:08 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:08.765857704Z 03:54:08 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:00.246Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:08.767267074Z 03:54:08 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:00.246Z partition=0 offset=1729
+2026-10-06T03:54:09.038504028Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:09.121964395Z 03:54:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:00.579Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:09.123732872Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:00.579Z partition=0 offset=1730
+2026-10-06T03:54:09.483720446Z 03:54:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:00.912Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:09.489932044Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:00.912Z partition=0 offset=1731
+2026-10-06T03:54:09.501801741Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:09.761634869Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:09.867584048Z 03:54:09 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:01.245Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:09.869101774Z 03:54:09 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:01.245Z partition=0 offset=1732
+2026-10-06T03:54:10.063517754Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:10.240656909Z 03:54:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:01.578Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:10.242429627Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:01.578Z partition=0 offset=1733
+2026-10-06T03:54:10.358782249Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:10.603329212Z 03:54:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:01.911Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:10.608243377Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:01.911Z partition=0 offset=1734
+2026-10-06T03:54:10.785288880Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:10.974705194Z 03:54:10 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:02.244Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:10.976288227Z 03:54:10 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:02.244Z partition=0 offset=1735
+2026-10-06T03:54:11.166969568Z 03:54:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:11.333342761Z 03:54:11 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:02.577Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:11.334728466Z 03:54:11 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:02.577Z partition=0 offset=1736
+2026-10-06T03:54:11.541805519Z 03:54:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:11.691261415Z 03:54:11 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:02.910Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:11.692637205Z 03:54:11 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:02.910Z partition=0 offset=1737
+2026-10-06T03:54:11.975633492Z 03:54:11 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:12.046593166Z 03:54:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:03.243Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:12.048396372Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:03.243Z partition=0 offset=1738
+2026-10-06T03:54:12.134234242Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:12.406573525Z 03:54:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:03.576Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:12.409772627Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:03.576Z partition=0 offset=1739
+2026-10-06T03:54:12.475561557Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:12.778814237Z 03:54:12 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:03.909Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:12.781037601Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:03.909Z partition=0 offset=1740
+2026-10-06T03:54:12.854626823Z 03:54:12 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:13.155252102Z 03:54:13 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:04.242Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:13.156785329Z 03:54:13 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:04.242Z partition=0 offset=1741
+2026-10-06T03:54:13.230236171Z 03:54:13 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:13.333722833Z 03:54:13 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T03:54:13.333738912Z 03:54:13 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+2026-10-06T03:54:14.637953166Z 03:54:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:04.575Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:14.639910213Z 03:54:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:04.575Z partition=0 offset=1742
+2026-10-06T03:54:14.640796594Z 03:54:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:04.908Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:14.642674118Z 03:54:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:04.908Z partition=0 offset=1743
+2026-10-06T03:54:14.643384883Z 03:54:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:05.241Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:14.644819694Z 03:54:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:05.241Z partition=0 offset=1744
+2026-10-06T03:54:14.645596001Z 03:54:14 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:05.574Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:14.647047245Z 03:54:14 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:05.574Z partition=0 offset=1745
+2026-10-06T03:54:14.817612450Z 03:54:14 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:15.014297471Z 03:54:15 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:05.907Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:15.015979455Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:05.907Z partition=0 offset=1746
+2026-10-06T03:54:15.025908421Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:15.167639282Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 2건 중 2건 저장
+2026-10-06T03:54:15.374146606Z 03:54:15 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:06.240Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:15.375663275Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:06.240Z partition=0 offset=1747
+2026-10-06T03:54:15.400975215Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:15.601039574Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:15.747328145Z 03:54:15 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:06.573Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:15.748854073Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:06.573Z partition=0 offset=1748
+2026-10-06T03:54:15.834430357Z 03:54:15 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:16.118737877Z 03:54:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:06.906Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:16.120675321Z 03:54:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:06.906Z partition=0 offset=1749
+2026-10-06T03:54:16.182941938Z 03:54:16 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:16.492927859Z 03:54:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:07.239Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:16.494727300Z 03:54:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:07.239Z partition=0 offset=1750
+2026-10-06T03:54:16.617887397Z 03:54:16 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:16.871584546Z 03:54:16 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:07.572Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:16.873141702Z 03:54:16 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:07.572Z partition=0 offset=1751
+2026-10-06T03:54:17.068305757Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:17.246309273Z 03:54:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:07.905Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:17.247931686Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:07.905Z partition=0 offset=1752
+2026-10-06T03:54:17.623487247Z 03:54:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:08.238Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:17.624887509Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:08.238Z partition=0 offset=1753
+2026-10-06T03:54:17.659605423Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:17.868055297Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:17.983931217Z 03:54:17 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:08.571Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:17.985285182Z 03:54:17 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:08.571Z partition=0 offset=1754
+2026-10-06T03:54:18.093098732Z 03:54:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:18.346523355Z 03:54:18 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:08.904Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:18.348165633Z 03:54:18 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:08.904Z partition=0 offset=1755
+2026-10-06T03:54:18.510537019Z 03:54:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:18.704823035Z 03:54:18 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:09.237Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:18.706649516Z 03:54:18 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:09.237Z partition=0 offset=1756
+2026-10-06T03:54:18.932340483Z 03:54:18 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:19.077770929Z 03:54:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:09.570Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:19.080328265Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:09.570Z partition=0 offset=1757
+2026-10-06T03:54:19.143569952Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:19.466541575Z 03:54:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:09.903Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:19.468727703Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:09.903Z partition=0 offset=1758
+2026-10-06T03:54:19.535149128Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:19.826340087Z 03:54:19 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:10.236Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:19.827757620Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:10.236Z partition=0 offset=1759
+2026-10-06T03:54:19.891587250Z 03:54:19 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:20.078426868Z 03:54:20 [d7b607d2] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [d7b607d2] GET /actuator/prometheus → 200 (13ms) ip=172.18.0.8
+2026-10-06T03:54:20.184466222Z 03:54:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:10.569Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:20.185896153Z 03:54:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:10.569Z partition=0 offset=1760
+2026-10-06T03:54:20.317746364Z 03:54:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:20.541346621Z 03:54:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:10.902Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:20.542724428Z 03:54:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:10.902Z partition=0 offset=1761
+2026-10-06T03:54:20.641717507Z 03:54:20 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:20.897633285Z 03:54:20 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:11.235Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:20.899342472Z 03:54:20 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:11.235Z partition=0 offset=1762
+2026-10-06T03:54:21.033863116Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:21.259079683Z 03:54:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:11.568Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:21.260662794Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:11.568Z partition=0 offset=1763
+2026-10-06T03:54:21.600974473Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:21.630375112Z 03:54:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:11.901Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:21.631747189Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:11.901Z partition=0 offset=1764
+2026-10-06T03:54:21.842659396Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:21.990002032Z 03:54:21 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:12.234Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:21.991466273Z 03:54:21 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:12.234Z partition=0 offset=1765
+2026-10-06T03:54:22.092833512Z 03:54:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:22.350230552Z 03:54:22 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:12.567Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:22.351680714Z 03:54:22 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:12.567Z partition=0 offset=1766
+2026-10-06T03:54:22.517281676Z 03:54:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:22.711832970Z 03:54:22 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:12.900Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:22.713615376Z 03:54:22 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:12.900Z partition=0 offset=1767
+2026-10-06T03:54:22.819327163Z 03:54:22 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:23.087345717Z 03:54:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:13.233Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:23.089864336Z 03:54:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:13.233Z partition=0 offset=1768
+2026-10-06T03:54:23.359536794Z 03:54:23 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:23.555230006Z 03:54:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:13.566Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:23.557289298Z 03:54:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:13.566Z partition=0 offset=1769
+2026-10-06T03:54:23.692996192Z 03:54:23 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:23.917238773Z 03:54:23 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:13.899Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:23.920003959Z 03:54:23 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:13.899Z partition=0 offset=1770
+2026-10-06T03:54:24.164449846Z 03:54:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:24.287787379Z 03:54:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:14.232Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:24.289728751Z 03:54:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:14.232Z partition=0 offset=1771
+2026-10-06T03:54:24.484916648Z 03:54:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:24.645398469Z 03:54:24 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:14.565Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:24.646929415Z 03:54:24 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:14.565Z partition=0 offset=1772
+2026-10-06T03:54:24.818547294Z 03:54:24 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:25.019533242Z 03:54:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:14.898Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:25.021312990Z 03:54:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:14.898Z partition=0 offset=1773
+2026-10-06T03:54:25.243319223Z 03:54:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:25.380089033Z 03:54:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:15.231Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:25.381583526Z 03:54:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:15.231Z partition=0 offset=1774
+2026-10-06T03:54:25.584834297Z 03:54:25 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:25.738880595Z 03:54:25 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:15.564Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:25.740671635Z 03:54:25 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:15.564Z partition=0 offset=1775
+2026-10-06T03:54:26.030299645Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:26.098286418Z 03:54:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:15.897Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:26.100489897Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:15.897Z partition=0 offset=1776
+2026-10-06T03:54:26.318188524Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:26.457689260Z 03:54:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:16.230Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:26.459298272Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:16.230Z partition=0 offset=1777
+2026-10-06T03:54:26.654092681Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:26.818112813Z 03:54:26 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:16.563Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:26.819901454Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:16.563Z partition=0 offset=1778
+2026-10-06T03:54:26.920944331Z 03:54:26 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:27.177145871Z 03:54:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:16.896Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:27.179919487Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:16.896Z partition=0 offset=1779
+2026-10-06T03:54:27.255398640Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:27.554254901Z 03:54:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:17.229Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:27.556049186Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:17.229Z partition=0 offset=1780
+2026-10-06T03:54:27.631222831Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:27.923990937Z 03:54:27 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:17.562Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:27.925412901Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:17.562Z partition=0 offset=1781
+2026-10-06T03:54:27.998676591Z 03:54:27 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:28.286209188Z 03:54:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:17.895Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:28.287536633Z 03:54:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:17.895Z partition=0 offset=1782
+2026-10-06T03:54:28.357277043Z 03:54:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:28.646249636Z 03:54:28 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:18.228Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:28.648396028Z 03:54:28 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:18.228Z partition=0 offset=1783
+2026-10-06T03:54:28.749562681Z 03:54:28 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:29.005794178Z 03:54:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:18.561Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:29.007417477Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:18.561Z partition=0 offset=1784
+2026-10-06T03:54:29.074873401Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:29.365977648Z 03:54:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:18.894Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:29.367508688Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:18.894Z partition=0 offset=1785
+2026-10-06T03:54:29.433682130Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:29.736706229Z 03:54:29 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:19.227Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:29.738170432Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:19.227Z partition=0 offset=1786
+2026-10-06T03:54:29.816018582Z 03:54:29 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:30.096483774Z 03:54:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:19.560Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:30.097871361Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:19.560Z partition=0 offset=1787
+2026-10-06T03:54:30.199474781Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:30.456279191Z 03:54:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:19.893Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:30.457705350Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:19.893Z partition=0 offset=1788
+2026-10-06T03:54:30.552659321Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:30.816826837Z 03:54:30 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:20.226Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:30.818319418Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:20.226Z partition=0 offset=1789
+2026-10-06T03:54:30.885578060Z 03:54:30 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:31.174691385Z 03:54:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:20.559Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:31.176142783Z 03:54:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:20.559Z partition=0 offset=1790
+2026-10-06T03:54:31.236024125Z 03:54:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:31.534101491Z 03:54:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:20.892Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:31.535437274Z 03:54:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:20.892Z partition=0 offset=1791
+2026-10-06T03:54:31.627461547Z 03:54:31 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:31.891347726Z 03:54:31 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:21.225Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:31.893186244Z 03:54:31 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:21.225Z partition=0 offset=1792
+2026-10-06T03:54:32.036168352Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:32.265101996Z 03:54:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:21.558Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:32.266709740Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:21.558Z partition=0 offset=1793
+2026-10-06T03:54:32.486074202Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:32.626376120Z 03:54:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:21.891Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:32.628302457Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:21.891Z partition=0 offset=1794
+2026-10-06T03:54:32.755558610Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:32.986401515Z 03:54:32 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:22.224Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:32.987833131Z 03:54:32 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:22.224Z partition=0 offset=1795
+2026-10-06T03:54:33.253084513Z 03:54:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:33.348326473Z 03:54:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:22.557Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:33.349898243Z 03:54:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:22.557Z partition=0 offset=1796
+2026-10-06T03:54:33.436401283Z 03:54:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:33.706963941Z 03:54:33 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:22.890Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:33.708473473Z 03:54:33 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:22.890Z partition=0 offset=1797
+2026-10-06T03:54:33.836323203Z 03:54:33 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:34.068998541Z 03:54:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:23.223Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:34.070415198Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:23.223Z partition=0 offset=1798
+2026-10-06T03:54:34.208314076Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:34.430206615Z 03:54:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:23.556Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:34.431649210Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:23.556Z partition=0 offset=1799
+2026-10-06T03:54:34.492500852Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:34.787498660Z 03:54:34 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:23.889Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:34.789572604Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:23.889Z partition=0 offset=1800
+2026-10-06T03:54:34.878513371Z 03:54:34 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:35.079255103Z 03:54:35 [379e4d09] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [379e4d09] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8
+2026-10-06T03:54:35.161410387Z 03:54:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:24.222Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:35.162862302Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:24.222Z partition=0 offset=1801
+2026-10-06T03:54:35.264077398Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:35.520937249Z 03:54:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:24.555Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:35.522373411Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:24.555Z partition=0 offset=1802
+2026-10-06T03:54:35.586032238Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:35.879763211Z 03:54:35 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:24.888Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:35.881889918Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:24.888Z partition=0 offset=1803
+2026-10-06T03:54:35.944455111Z 03:54:35 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:36.240315786Z 03:54:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:25.221Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:36.242004449Z 03:54:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:25.221Z partition=0 offset=1804
+2026-10-06T03:54:36.312314042Z 03:54:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:36.612707295Z 03:54:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:25.554Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:36.614157573Z 03:54:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:25.554Z partition=0 offset=1805
+2026-10-06T03:54:36.729092816Z 03:54:36 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:36.971394777Z 03:54:36 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:25.887Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:36.972950067Z 03:54:36 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:25.887Z partition=0 offset=1806
+2026-10-06T03:54:37.129575603Z 03:54:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:37.331348332Z 03:54:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:26.220Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:37.332766303Z 03:54:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:26.220Z partition=0 offset=1807
+2026-10-06T03:54:37.422138655Z 03:54:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:37.690571420Z 03:54:37 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:26.553Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:37.692305558Z 03:54:37 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:26.553Z partition=0 offset=1808
+2026-10-06T03:54:37.764126172Z 03:54:37 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:38.066329478Z 03:54:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:26.886Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:38.067746840Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:26.886Z partition=0 offset=1809
+2026-10-06T03:54:38.139218240Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:38.428285455Z 03:54:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:27.219Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:38.430352625Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:27.219Z partition=0 offset=1810
+2026-10-06T03:54:38.495899137Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:38.798886233Z 03:54:38 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:27.552Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:38.802232595Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:27.552Z partition=0 offset=1811
+2026-10-06T03:54:38.874008742Z 03:54:38 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:39.161263475Z 03:54:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:27.885Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:39.162619117Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:27.885Z partition=0 offset=1812
+2026-10-06T03:54:39.274233511Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:39.519930987Z 03:54:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:28.218Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:39.521583602Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:28.218Z partition=0 offset=1813
+2026-10-06T03:54:39.691140232Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:39.880221629Z 03:54:39 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:28.551Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:39.881616588Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:28.551Z partition=0 offset=1814
+2026-10-06T03:54:39.941315818Z 03:54:39 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:40.255692213Z 03:54:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:28.884Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:40.257068580Z 03:54:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:28.884Z partition=0 offset=1815
+2026-10-06T03:54:40.316967107Z 03:54:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:40.612781484Z 03:54:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:29.217Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:40.614138974Z 03:54:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:29.217Z partition=0 offset=1816
+2026-10-06T03:54:40.675575576Z 03:54:40 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:40.970952027Z 03:54:40 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:29.550Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:40.972328532Z 03:54:40 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:29.550Z partition=0 offset=1817
+2026-10-06T03:54:41.034054602Z 03:54:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:41.330286830Z 03:54:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:29.883Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:41.331587283Z 03:54:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:29.883Z partition=0 offset=1818
+2026-10-06T03:54:41.392580739Z 03:54:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:41.687519936Z 03:54:41 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:30.216Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:41.689465119Z 03:54:41 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:30.216Z partition=0 offset=1819
+2026-10-06T03:54:41.751234557Z 03:54:41 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:42.047674339Z 03:54:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:30.549Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:42.049608437Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:30.549Z partition=0 offset=1820
+2026-10-06T03:54:42.159756022Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:42.423534550Z 03:54:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:30.882Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:42.425511371Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:30.882Z partition=0 offset=1821
+2026-10-06T03:54:42.563595942Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:42.796645696Z 03:54:42 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:31.215Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:42.798270384Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:31.215Z partition=0 offset=1822
+2026-10-06T03:54:42.895016238Z 03:54:42 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:43.153407489Z 03:54:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:31.548Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:43.154897201Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:31.548Z partition=0 offset=1823
+2026-10-06T03:54:43.230383556Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:43.528538269Z 03:54:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:31.881Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:43.530518265Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:31.881Z partition=0 offset=1824
+2026-10-06T03:54:43.604965801Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:43.884725194Z 03:54:43 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:32.214Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:43.885970435Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:32.214Z partition=0 offset=1825
+2026-10-06T03:54:43.954915354Z 03:54:43 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:44.257490118Z 03:54:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:32.547Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:44.258992753Z 03:54:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:32.547Z partition=0 offset=1826
+2026-10-06T03:54:44.330083335Z 03:54:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:44.615267914Z 03:54:44 [-] [-] DEBUG c.t.m.MqttMessageHandler - [MQTT→Kafka] vehicle=RECON-D2 ts=2026-10-06T03:54:32.880Z speed=60.5 engine_temp=90.0 battery_voltage=12.6
+2026-10-06T03:54:44.616647065Z 03:54:44 [-] [-] DEBUG c.t.k.TelemetryProducer - [Kafka] 전송 완료 — vehicle=RECON-D2 ts=2026-10-06T03:54:32.880Z partition=0 offset=1827
+2026-10-06T03:54:44.680137380Z 03:54:44 [-] [-] DEBUG c.t.k.TelemetryConsumer - [Kafka→InfluxDB] 배치 저장 완료 — 수신 1건 중 1건 저장
+2026-10-06T03:54:50.077972975Z 03:54:50 [116551a6] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [116551a6] GET /actuator/prometheus → 200 (13ms) ip=172.18.0.8
+2026-10-06T03:55:05.073068491Z 03:55:05 [0ca6ed1a] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [0ca6ed1a] GET /actuator/prometheus → 200 (10ms) ip=172.18.0.8
+2026-10-06T03:55:08.646752649Z 03:55:08 [5661cc3a] [172.18.0.1] INFO  c.t.s.RequestLoggingFilter - [5661cc3a] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.1
+2026-10-06T03:55:20.076748659Z 03:55:20 [a210e0ce] [172.18.0.8] INFO  c.t.s.RequestLoggingFilter - [a210e0ce] GET /actuator/prometheus → 200 (12ms) ip=172.18.0.8

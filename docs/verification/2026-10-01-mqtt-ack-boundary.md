@@ -463,8 +463,9 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - **Kafka 장기 정지 중 MQTT 연결 유지: 1회 관찰 완료(2026-10-05, 실험 E)** — 연결은 유지되지 않았고(keepalive 타임아웃, 약 120초 지점), 유실 0·중복 1(spool 보관 뒤 재전달). 반복·다른 정지 길이·고부하·복수 차량은 미검증. 재접속이 약 90초 늦은 원인은 미확정. **실험 E2(수정 후 재실행, 1회)에서는 끊김 약 2초 뒤 재접속됐고 `<unknown>` 타임아웃이 없었다 — 수정 효과인지는 단정 못 함, 원인은 여전히 미확정.**
 - **재시작 직후 구독 timeout: 재현됨(실험 F, 1회)** — 백로그가 있는 재접속에서 연결 5초 뒤 발생하고 구독은 유지됐다. 세션 소실 경로에서의 구독 상실 여부, 구독 실패 이벤트 감지 수단 부재는 미검증/결함 후보.
 - **producer timeout 30초(46937e7): E3 1회 관찰 완료(2026-10-06)** — 150초 정지에서 keepAlive 끊김 0, 첫 spool 보관 stop +30초, 유실 0·중복 0. **"30초 미만 정지는 버퍼가 흡수"는 1회 관찰(실험 P, 2026-10-06, 20초 `docker pause`, 실제 불가 20.7초): spool 0·끊김 0·유실 0·중복 0.** S의 20초 `docker stop`은 Kafka 복구 지연으로 실제 불가가 80초 넘어 spool 226건을 썼다. 30초 경계 부근·네트워크 분리·반복·고부하·복수 차량·spool 용량 한계는 미검증.
-- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다(결함 후보). 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
-- 네트워크 단절·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
+- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다 — **실험 U(1회)에서 실제로 침묵했고(`$SYS`·수신 둘 다 막은 5분 21초 동안 pending 없음), 그 구간을 `MqttBrokerMetricsStale`이 덮었다(마지막 갱신 + 5분 8초 firing, 원복 뒤 해제).** **새 결함 후보: `MqttBrokerMetricsStale`이 유휴 스택에서 오탐한다(실험 U0, 1회)** — 발행이 없으면 추적 `$SYS` 값이 갱신되지 않아 마지막 갱신 + 5분 8초에 firing. 고치지 않았다. 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
+- **`2aba182` 인터럽트 가드 실스택 재검증: 각 1회 관찰(실험 D2·D2b·D2c, 2026-10-06)** — 백엔드가 끊김을 안 순간 대기 중단은 매번 정확했고(같은 ms), 누수 증상·유실 0(중복 3·3·1). **수신 큐가 차지 않으면(D2c) 끊김 0.5ms 뒤 중단·1.3초 뒤 재접속**이지만, **메시지가 계속 들어와 Paho 수신 큐가 차면(D2·D2b) receiver 스레드가 큐 대기에 묶여 끊김 인지 자체가 저장 완료(Kafka unpause)까지 늦었다 — 재접속 11.5초·14.2초.** 이 조건에서 가드는 재접속을 앞당기지 못한다(결함 후보, 대기 상한은 producer timeout). 30초 넘는 정지와 겹친 끊김, 반쯤 열린 연결·네트워크 분리·TLS, 반복은 미검증.
+- 네트워크 분리(반쯤 열린 연결)·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
 - 브로커 강제 종료/호스트 전원 차단은 이번 보호 범위 밖이다.
 - ELM327 실측은 연결 가능한 장비·차량 정보가 없어 미실행. [절차](../runbook/elm327-measurement.md)만 준비했다.
@@ -497,3 +498,106 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - 이벤트는 어댑터가 연결 끊김을 알아챈 뒤에야 온다. 감지 전의 지연은 줄이지 못한다.
 - 인터럽트 직후 레이스(저장 확인이 완료된 직후 이벤트 도착)는 중복 재전달로만 귀결되도록 설계했으나 부하에서 재현 시험은 하지 않았다.
 - 실제 Kafka 지연·고부하와 겹친 경우는 미검증.
+
+## 실험 D2 — 실스택 재접속 중 저장 확인 대기 중단 (`2aba182` 재검증, 2026-10-06 실행)
+
+상태: **각 1회 관찰 완료(결과는 아래 결과 절). 가설·기준은 실행 전에 적었다.** 원본: [`evidence/2026-10-07-recheck-2aba182/`](evidence/2026-10-07-recheck-2aba182/)(`D2_*`, `00_metadata.txt`).
+
+**질문**: `2aba182`가 연결 끊김 인터럽트를 잠금(`waitLock`)으로 대기 구간 안에만 보내고 구간을 닫을 때 지우도록 바꿨다. 실험 D는 TCP 중계기와 통제된 future로 본 것이다. 실제 Spring Boot 백엔드·실제 Kafka·Mosquitto에서, 콜백이 저장 확인을 기다리는 중 MQTT 연결이 끊기면 (1) 대기가 끊김 직후 중단되고 재접속이 빠르며 (2) 유실이 없고 (3) 끊긴 뒤의 메시지들이 인터럽트 누수 없이 정상 ACK되는가.
+**대기를 만드는 방법**: 실험 P와 같이 `docker pause telemetry-kafka`. producer `delivery.timeout.ms` 30초이므로 pause 뒤 첫 메시지의 `get`이 최대 약 30초 대기한다. 그 안(pause +약 8초)에 끊고, 끊고 약 5초 뒤 unpause한다(30초 전이라 spool 경로가 섞이지 않게).
+**끊는 방법과 이유**: 실험 T의 dynamic-security 브로커(저장소 밖 설정 마운트)에서, 익명 그룹 role에 **아무것도 막지 않는** ACL(`publishClientReceive` allow `d2/noop`)을 `addRoleACL`로 추가한다. Mosquitto dynamic-security는 role이 바뀌면 그 role을 쓰는 클라이언트를 `disconnected by administrative action`으로 끊는다(실험 T에서 관찰). 브로커가 소켓을 닫는 깨끗한 단절이라 실험 D의 중계기 종료(양쪽 소켓 종료)와 백엔드 입장에서 같은 종류(EOF → `connectionLost`)다. `docker network disconnect`는 반쯤 열린 연결(keepalive 만료까지 감지 못 함)이 되어 D와 다른 상황이라 쓰지 않는다. **부수 효과**: 발행기(mosquitto_pub)와 `-sys` 클라이언트도 같이 끊긴다 — 발행 수는 발행기 PUBACK으로 센다. 대조로, Kafka가 정상인 상태에서 같은 방법으로 한 번 더 끊는다(대기 중이 아닐 가능성이 큰 시점 — 인터럽트 로그가 없어야 정상).
+**발행**: 차량 `RECON-D2`, 고유 밀리초 timestamp 360건, 호스트 `sleep 0.333` 루프(약 2.7건/초), `mosquitto_pub -q 1 -l`. 시뮬레이터·감지기 없음. 백엔드 client ID 기본값(`telemetry-backend`), DEBUG 로그는 저장소 밖 override.
+**가설(실행 전)**: 끊김 직후(1초 안) `[MQTT] 연결 끊김 — 저장 확인 대기 중단` WARN 1건, 그 메시지는 `MQTT 저장 확인 중단 — ACK하지 않음`으로 빠져나오고, 브로커가 몇 초 안에(실험 E2 약 2초) 재접속을 본다. 대기 중이던 메시지는 Kafka에 이미 넘겨졌으므로 unpause 뒤 기록되고 재전달분이 한 번 더 기록되어 **중복 ≥ 1**이 생긴다. 이후 메시지는 정상 ACK된다.
+**성공 기준(실행 전)**: (1) 브로커 로그 기준 admin 끊김 → 백엔드 재접속(`New client connected … as telemetry-backend`) **5초 이내**. (2) 대기 중단 WARN이 끊김 시각 1초 안에 1건. (3) 발행자 PUBACK(RC:0) = N, Kafka 고유 timestamp = N, InfluxDB 고유 시점 = N(유실 0). 중복은 허용하고 센다. (4) 인터럽트 누수 증상 없음: 끊김 이후 `MQTT 저장 확인 중단` ISE는 중단된 그 메시지 1건뿐(재접속 뒤 다른 메시지에 없음), `저장 확인 실패` 0, 백엔드 `InterruptedException` 스택이 그 1건 외에 없음, 재접속 뒤 메시지가 계속 `[Kafka] 전송 완료`로 처리됨, 두 번째 끊김(Kafka 정상) 뒤에도 같음. (5) DLQ 증가 0, `ack.callback.missing` 0, `decode.failed` 0. **실패 기준**: 재접속 > 30초(수정 전 증상), 고유 수 < N, 끊김 뒤 메시지에서 중단/실패 ISE 반복, 수신 미재개.
+
+### 추가 진단 D2b·D2c — 실행 전 기준 (D2 결과를 본 뒤 추가)
+
+D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 10초 늦었고 Kafka unpause와 겹쳤다(결과는 아래 D2 결과 절). 가설: 콜백 스레드가 막힌 동안 Paho 수신 큐(10건)가 차서 receiver 스레드가 `messageArrived`에서 대기하고, 그래서 소켓 EOF를 읽지 못해 `connectionLost`(→ 이벤트 → 인터럽트)가 저장 완료(=unpause) 뒤에야 온다. 이를 가르는 두 실행을 각 1회 추가한다.
+- **D2b(큐 포화, unpause 지연)**: D2와 같은 발행(`RECON-D2B`, 약 2.7건/초)에서 pause +8초에 끊고, 끊고 3초 뒤 `docker kill --signal=QUIT telemetry-backend`(JVM 스레드 덤프, 프로세스 종료 아님)로 스레드 위치를 남긴 뒤, unpause를 끊고 약 15초 뒤로 늦춘다(pause +약 25초, delivery timeout 30초 전). **예측**: 가설이 맞으면 덤프에서 `MQTT Rec`가 `CommsCallback.messageArrived`(큐 대기), `MQTT Call`이 `MqttMessageHandler.handle`의 `get`에 있고, 백엔드의 끊김 인지·재접속은 unpause 직후다. 가설이 틀리면(고정 약 10초 타이머 등) 끊김 약 10초 뒤 재접속이 unpause보다 먼저 온다.
+- **D2c(큐 비포화)**: 발행을 먼저 끝내고(`RECON-D2C` 60건) Kafka pause → 3건만 발행 → 5초 뒤 스레드 덤프 → 끊음 → 5초 뒤 unpause. **예측**: 큐가 차지 않으므로 끊김 인지·대기 중단 WARN이 브로커 끊김 1초 안, 재접속 수 초 안(실험 D와 같은 조건이 실스택에서 재현).
+- 두 실행 모두 성공 기준 (3)~(5)(유실 0, 누수 증상 없음, DLQ 0)를 D2와 같게 적용한다. D2b의 재접속 시간은 "판정"이 아니라 가설 확인용 관찰이다.
+
+### 결과 — D2·D2b·D2c (각 1회 관찰)
+
+환경: HEAD `609e8f6`(백엔드 `src/main`은 `2aba182`와 차이 없음 — `git diff --stat 2aba182 HEAD -- backend/src/main` 빈 결과). 이 실행에서 `docker compose build backend` → 이미지 `sha256:84e0432c…`. 이미지 jar의 클래스에 `interruptedByConnectionLoss`·`telemetry.mqtt.broker.last.update.seconds`·`telemetry.mqtt.decode.failed` 문자열이 있음을 확인했다. dev(평문 1883) + 저장소 밖 dynamic-security 브로커 설정(`R_*` 사본) + DEBUG override. 기존 볼륨 유지. 실행 시각은 2026-10-06 03:52~04:03 UTC(폴더 이름의 날짜와 다르다).
+
+| 항목 | D2 (큐 포화, 끊고 약 10초 뒤 unpause) | D2b (큐 포화, 끊고 약 13초 뒤 unpause) | D2c (큐 비포화, 3건만 대기) |
+| --- | --- | --- | --- |
+| 브로커 admin 끊김 (UTC) | 03:53:15.828 | 03:59:07.695 | 04:02:11.279 |
+| 같은 순간 `-sys` 클라이언트 재접속 | +1.3초 | +1.3초 | +1.3초 |
+| 끊김 시점 스레드 덤프 | — | +0.29초: `MQTT Rec`가 `CommsCallback.messageArrived`(364행)에서 TIMED_WAITING, `MQTT Call`이 `MqttMessageHandler.handle`(91행 `get`) | 끊기 5초 전: `MQTT Rec`는 소켓 read(RUNNABLE), `MQTT Call`은 `handle` 91행 |
+| 백엔드가 끊김을 안 시각 = 대기 중단 WARN | **+10.2초**(03:53:26.044) — unpause 호출 03:53:25.805 직후 | **+12.9초**(03:59:20.606) — unpause 호출 03:59:20.450 직후 | **+0.5ms**(04:02:11.279) — Kafka는 아직 pause |
+| 백엔드 재접속(브로커 로그) | **+11.5초** | **+14.2초** | **+1.3초** |
+| 발행 / PUBACK(RC:0) | 360 / 360 | 240 / 240 | 63 / 63 |
+| Kafka 레코드 / 고유 / 중복 | 363 / **360** / 3 | 243 / **240** / 3 | 64 / **63** / 1 |
+| InfluxDB 고유 시점 | **360** | **240** | **63** |
+| `messages.received` 증가 | 363 | 243 | 64 |
+| `InterruptedException` 스택 / `Unhandled exception` | 1 / 1 | 1 / 1 | 1 / 1 |
+| spool 보관 / DLQ(`-dlq`, `-mqtt-dlq`) 증가 / `ack.callback.missing` / `decode.failed` | 0 / 0·0 / 0 / 0 | 0 / 0·0 / 0 / 0 | 0 / 0·0 / 0 / 0 |
+
+**D2 판정**: 성공 기준 (1) 재접속 5초 이내 — **미충족(11.5초)**. (2) 끊김 1초 안 WARN — **미충족(브로커 끊김 기준 10.2초)**. 다만 WARN은 백엔드가 끊김을 안 바로 그 순간(`Lost connection`과 같은 ms)에 나왔다. (3) 유실 0 — **충족**(PUBACK 360 = Kafka 고유 360 = InfluxDB 360, 중복 3). (4) 누수 증상 없음 — **충족**: 인터럽트된 메시지 1건 외에 `InterruptedException`·`저장 확인 실패` 없음, 재접속 뒤 남은 메시지 전부 `[Kafka] 전송 완료`, Kafka 정상 상태의 두 번째 끊김(03:54:13.333)은 재접속 1.3초·대기 중단 WARN 0·예외 0. (5) DLQ 0 등 — **충족**. 실패 기준(재접속 > 30초, 고유 수 < N, ISE 반복, 수신 미재개)은 해당 없음.
+
+**읽은 것**
+- **`2aba182`의 가드는 백엔드가 끊김을 알아챈 순간에는 정확히 동작했다**(세 실행 모두 `Lost connection`과 같은 ms에 WARN, 인터럽트 1건, 구간 밖 누수 증상 없음). D2c(실험 D와 같은 조건 — 대기 메시지 몇 건)에서는 실험 D와 같이 끊김 0.5ms 뒤 대기 중단, 1.3초 뒤 재접속이 **Kafka가 아직 멈춘 상태에서** 일어났다.
+- **그러나 메시지가 계속 들어오는 조건(D2·D2b)에서는 끊김 인지 자체가 저장 완료까지 늦었다.** D2b 스레드 덤프에서 receiver 스레드가 수신 큐 대기(`CommsCallback.messageArrived`)에 있었고, 그래서 브로커가 닫은 소켓의 EOF를 읽지 못했다. Kafka가 풀려 콜백이 큐를 비우기 시작한 뒤에야 `connectionLost` → 이벤트 → 인터럽트가 왔다. D2는 unpause를 끊김 10초 뒤, D2b는 13초 뒤에 했고 인지 시각이 각각 그 직후였다 — **고정 타이머가 아니라 저장 완료에 묶여 있다**(1회씩, 두 점). 실험 E의 추정("수신 큐 포화 → receiver 정지")을 스레드 덤프로 1회 직접 본 것이다. 이 조건에서 가드는 재접속을 앞당기지 못했고, 대기의 상한은 기존 producer 상한(`delivery.timeout.ms` 30초 등)이다. Paho 소스의 큐 루프는 읽지 않았다(덤프의 프레임·행 번호만 근거).
+- 중복 3건(D2·D2b)의 내역(D2, 백엔드 로그): 대기 중이던 메시지(`…00.972Z`)와 큐의 다음 메시지(`…01.305Z`)는 unpause 뒤 저장이 완료되어 **이미 끊긴 연결에** ACK를 시도했고, 세 번째(`…01.638Z`)는 처리 중 인터럽트됐다(그 Kafka 전송은 2ms 뒤 완료). 셋 다 재전달되어 한 번 더 기록됐다. ADR-029가 적은 "끊긴 사이 대기를 마친 콜백의 옛 연결 ACK"가 여기서도 중복으로만 귀결됐다. 저장소가 `(vehicle_id, ms)`로 흡수했다.
+- 로그 문구: 예외 메시지 `MQTT 저장 확인 중단 — ACK하지 않음`은 로그에 **나오지 않았다** — 어댑터의 `Unhandled exception` 로그가 `MessageHandlingException` 바로 아래 원인으로 `InterruptedException`(91행)을 찍는다. Spring이 감싼 예외를 어떻게 펼치는지는 확인하지 않았다. 그래서 기준 (4)는 `InterruptedException`·`Unhandled exception` 수(각 1)로 셌다.
+- 재접속 5초 뒤 `Error subscribing … Timed out`이 D2·D2b에서 1회씩 다시 나왔다(실험 F와 같은 현상, 백로그 있는 재접속). 구독은 유지되어 이후 메시지가 들어왔다.
+
+**한계**: 각 1회, 단일 차량, 약 2.7건/초, Kafka `pause`(프로세스 정지)만. 끊는 방법이 브로커가 닫는 깨끗한 단절(dynamic-security role 변경의 부수 효과, `-sys`·발행기도 같이 끊김)이며 반쯤 열린 연결·네트워크 분리·TLS는 보지 않았다. 30초를 넘는 pause(spool 경로와 겹치는 끊김)는 보지 않았다. 스레드 덤프는 D2b·D2c 각 한 순간이다.
+
+## 실험 U — `$SYS` 갱신 멈춤과 `MqttBrokerMetricsStale` (`2aba182` 재검증, 2026-10-06 실행)
+
+상태: **각 1회 관찰 완료(결과는 아래 결과 절). 가설·기준은 실행 전에 적었다.** 원본: 위와 같은 폴더(`U_*`).
+
+**질문**: 백엔드는 살아 있고 스크레이프되는데 `$SYS` 갱신만 멈추면 `MqttBrokerMetricsStale`(`time() - max(telemetry_mqtt_broker_last_update_seconds) > 120`, `for: 3m`)이 규칙 예상 시간에 pending → firing 되는가. 그동안 `MqttIngestStopped`는 어떻게 되는가.
+**멈추는 방법과 이유**: 같은 dynamic-security 브로커에서 익명 role에 `publishClientReceive` deny `$SYS/#`를 `addRoleACL`로 추가한다. 백엔드 프로세스·스크레이프·텔레메트리 수신은 그대로 두고 `-sys` 클라이언트로의 전달만 막는다(이 스택에서 `$SYS`를 구독하는 것은 백엔드 `-sys` 클라이언트뿐). `docker pause backend`는 스크레이프가 실패해 `up == 0`이 되어 다른 알림의 영역이고, `$SYS` 어댑터만 멈추는 운영 수단은 없다. 부수 효과는 D2와 같다(role 변경 시 클라이언트 끊김 → 재접속). **위험 요인**: mosquitto가 `$SYS` 전달에 플러그인 ACL을 적용하지 않으면 갱신이 멈추지 않는다 — 그 경우 실패로 기록하고 멈춘다.
+**사전 확인(U0)**: mosquitto는 `$SYS` 값을 바뀔 때만 발행할 수 있다(추정, 소스 미확인). 그렇다면 발행이 없는 유휴 스택에서 게이지가 스스로 멈춰 이 알림이 오탐한다. 발행 없이 약 3분 동안 게이지 나이를 본다. **실행 직전 갱신**: D2c가 끝나고 유휴 상태에서 게이지 나이가 이미 60초인 것을 보고, U0를 약 7분으로 늘렸다 — 유휴 오탐이 firing까지 가는지 보려고. 예측: 마지막 갱신 + 약 2분에 pending, + 약 5분에 firing.
+**조작**: 발행기(`OUTAGE-U`, 약 2.7건/초)를 돌리며 2분 정상 확인 → **t0**: `$SYS/#` deny 추가 → firing 확인 뒤 **t2**: `vehicle/telemetry/#` 수신 deny 추가(백엔드 수신도 멈춤, 실험 T와 같은 조작) → 약 5분 관찰 → **t3**: `$SYS/#` deny 제거(텔레메트리 deny는 유지) → `MqttIngestStopped`가 살아나는지 관찰 → **t4**: 텔레메트리 deny 제거 → 해제 확인. 15초 폴링(`ALERTS`, 게이지 나이, 백엔드·브로커 수신률, `up`) + 끝난 뒤 범위 질의.
+**가설(실행 전)**: (1) t0 뒤 `last_update` 게이지가 멈추고 텔레메트리 수신은 계속된다. (2) pending = 마지막 갱신 + 120초 + 0~15초(평가 간격), firing = pending + 3분 → **마지막 갱신에서 약 5분~5분 30초**. (3) t0~t2: 백엔드 수신이 있으므로 `MqttIngestStopped` 없음. (4) **t2~t3: 백엔드 수신이 0이 되어도 브로커 게이지 rate가 0이라 `MqttIngestStopped`는 뜨지 않는다**(이 알림이 메우려는 결함). (5) t3 뒤 브로커 게이지가 다시 오르면 `MqttIngestStopped`가 pending(약 30초~1분 안) → 2분 뒤 firing, Stale은 해제. (6) t4 뒤 모두 해제. `up`=1 유지, `TelemetryBackendDown`·`MqttBrokerMetricsMissing` 없음. 텔레메트리 deny 구간 발행분은 실험 T처럼 복구되지 않을 것이다(유실 — 알림 실험의 대가로 미리 적는다).
+**성공 기준(실행 전)**: (1) t0 뒤 게이지 정지. (2) Stale pending·firing이 범위 질의에 나타나고 마지막 갱신 → firing이 **4분 30초~6분 30초**면 "규칙 예상과 일치". (3) 원복(t3) 뒤 Stale 해제. (4) t2~t3 `MqttIngestStopped` 동작 기록(가설 (4)대로면 침묵). **실패 기준**: t0 뒤 게이지가 계속 갱신됨, 또는 마지막 갱신 후 10분 안에 firing 없음.
+
+### 결과 — U0·U (각 1회 관찰)
+
+환경은 D2와 같다(같은 이미지·브로커 설정, 이어서 실행). 시각은 UTC, 알림 시각은 범위 질의(`U_alerts_range.json`, 15초 간격)의 첫·마지막 샘플, 게이지 값은 `U_last_update_range.json`. 브로커 끊김 시각은 `U_mosquitto_log.txt`.
+
+**U0 — 유휴 오탐(예상 밖, 1회 관찰)**
+
+| 시각 | 사건 |
+| --- | --- |
+| 04:02:22 | D2c 트래픽이 끝난 뒤 마지막 `$SYS` 갱신(`last_update` 게이지 값). 이후 발행 없음, 백엔드·브로커·스크레이프 정상(`up`=1), 브로커 수신 게이지 669에서 불변 |
+| **04:04:30** | `MqttBrokerMetricsStale` **pending** 첫 샘플 — 마지막 갱신 + 2분 8초 |
+| **04:07:30** | **firing** 첫 샘플 — 마지막 갱신 + 5분 8초. Alertmanager `startsAt` 04:07:27.957, receiver `default` |
+| 04:11:10 → 04:11:30 | 발행 재개로 게이지 갱신 → firing 마지막 샘플 04:11:15, 04:11:30부터 없음 |
+
+**아무것도 고장 나지 않은 유휴 스택에서 이 알림이 firing했다.** 백엔드가 추적하는 세 `$SYS` 토픽(`publish/messages/received`·`dropped`·`clients/connected`)은 이 실행에서 트래픽·접속 변화가 없으면 백엔드에 다시 오지 않았다 — mosquitto가 값이 바뀔 때만 발행하는 것으로 보인다(관찰과 일치하는 추정, mosquitto 소스는 읽지 않았다). 게이지 주석과 규칙 주석의 "mosquitto는 `$SYS`를 10초마다 발행" 전제는 이 스택에서 **유휴 상태에는 성립하지 않았다.** 차량 수신이 없는 시간대가 있는 배치라면 이 알림은 그때마다 뜬다. **고치지 않았다**(이번 범위는 재검증) — 결함 후보로 남긴다.
+
+**U — `$SYS`만 막기(t0) → 수신도 막기(t2) → `$SYS` 원복(t3) → 수신 원복(t4)**
+
+| 시각 | 사건 |
+| --- | --- |
+| 04:10:59 ~ 04:13:04 | 발행(`OUTAGE-U`, 약 2.7건/초) 정상 수신, 백엔드·브로커 수신률 약 2.7/s |
+| 04:13:22 | 마지막 `$SYS` 갱신 |
+| **04:13:24.14** | **t0** — `$SYS/#` 수신 deny 추가, 브로커가 백엔드 두 클라이언트(와 발행기)를 admin 끊음 → 재접속. 이후 게이지 정지, **텔레메트리 수신은 계속**(백엔드 `rate[2m]` 2.7 유지) |
+| **04:15:30** | Stale **pending** 첫 샘플 — 마지막 갱신 + 2분 8초 |
+| **04:18:30** | Stale **firing** 첫 샘플 — 마지막 갱신 + **5분 8초**(Alertmanager `startsAt` 04:18:27.957, receiver `default`) |
+| t0 ~ t2 | `MqttIngestStopped` 없음(백엔드 수신 중) |
+| **04:19:34.46** | **t2** — `vehicle/telemetry/#` 수신 deny 추가. 백엔드 마지막 수신 04:19:34.21, 백엔드 `rate[2m]` 04:21:28부터 0 |
+| t2 ~ t3 (5분 21초) | **`MqttIngestStopped`는 pending조차 없었다** — 브로커 게이지가 멈춰 그 rate가 0이라 식의 앞 절(`> 0.1`)이 거짓. 백엔드 수신 0이 약 3분 30초 이어졌지만 침묵했고, 그동안 Stale만 firing |
+| **04:24:55.35** | **t3** — `$SYS/#` deny 제거(수신 deny 유지). 게이지 04:24:56 갱신 |
+| 04:25:00 → 04:25:15 | Stale firing 마지막 샘플 04:25:00, 04:25:15부터 없음(해제) |
+| **04:25:15** | `MqttIngestStopped` **pending** 첫 샘플(t3 + 20초) |
+| **04:27:15** | `MqttIngestStopped` **firing** 첫 샘플(t3 + 2분 20초, Alertmanager `startsAt` 04:27:12.957) |
+| **04:28:12.50** | **t4** — 수신 deny 제거. 백엔드 첫 수신 04:28:13.82. `MqttIngestStopped` firing 마지막 샘플 04:28:15, 04:28:30부터 없음 |
+
+- 발행 3006 / PUBACK 3006. 백엔드 수신·Kafka(p0 1892 → 3484, 고유 1592·중복 0)·InfluxDB 고유 시점(`OUTAGE-U`) 모두 **1592**. 수신 deny 구간(t2~t4, 약 518초)에 발행된 **1414건은 전달되지 않았고 복구되지 않았다**(실행 전에 적은 대로, 실험 T와 같은 방향). DLQ 증가 0. `up`은 계속 1이었고 범위 질의에 `TelemetryBackendDown`·`MqttBrokerMetricsMissing`은 없다.
+- t3 직후 브로커 수신률이 약 18~20/s로 2분간 튀었다 — 멈춰 있던 게이지가 1058 → 2948로 한 번에 오른 것을 `rate()`가 2분 창에 나눈 값이다(실제 유입은 약 2.7/s). 알림 판정에는 영향이 없었다.
+- 네 번의 admin 끊김(Kafka 정상) 모두 백엔드 대기 중단 WARN 0·예외 0 — D2의 두 번째 끊김과 같다.
+
+**판정**: 성공 기준 (1) t0 뒤 게이지 정지 — 충족. (2) 마지막 갱신 → firing 5분 8초(판정 구간 4분 30초~6분 30초) — **규칙 예상과 일치**. (3) t3 뒤 Stale 해제(다음 평가) — 충족. (4) t2~t3 `MqttIngestStopped` **침묵**을 관찰(가설 (4)와 일치) — 이 침묵을 Stale이 메우는 것을 1회 확인했다. 실패 기준 해당 없음. 가설 (5)(t3 뒤 30초~1분 안 pending)는 20초로 조금 빨랐다.
+
+**`MqttIngestStopped` 재측정(선택 항목)에 대해**: 실험 T 절차 그대로의 재실행은 하지 않았다. 대신 t3~t4가 재빌드 이미지에서 "백엔드 수신 0 + 브로커 게이지 회복"의 pending → firing(2분)과 해제를 1회 보여준다. 정상 수신이 갑자기 멈춘 경우의 탐지 시간(T의 약 4분)과는 조건이 다르다(여기서는 백엔드 수신률이 이미 0인 상태에서 앞 절이 참이 됐다).
+
+**한계**: 각 1회, 단일 차량, 약 2.7건/초. 멈추는 방법이 dynamic-security role 변경이라 매 단계 클라이언트 끊김·재접속을 동반했다. dev 익명 접속이라 deny가 익명 전체에 적용된다(`$SYS`·텔레메트리를 구독하는 것은 백엔드뿐). U0의 유휴 구간은 약 9분 한 번이며, `$SYS`가 바뀔 때만 발행된다는 해석은 mosquitto 소스·설정(`sys_interval`)을 확인하지 않은 추정이다. 남긴 데이터: InfluxDB `RECON-PRB` 1·`RECON-D2` 360·`RECON-D2B` 240·`RECON-D2C` 63·`OUTAGE-U` 1592·`RECON-ZR` 5행, Kafka 같은 키 레코드(retention 1시간). 삭제하지 않았다.
+
+**원복**: 브로커를 원래 `mosquitto-dev.conf`·`acl` 마운트로 재생성(`Z_restore_mosquitto_mounts.txt`), 백엔드를 DEBUG override 없이 재생성(client ID 기본값), 5건 발행으로 수신 5·PUBACK 5·구독 오류 0 확인(`Z_restore_result.txt`). 그 뒤 `docker compose stop`(볼륨 유지, `down -v` 없음).

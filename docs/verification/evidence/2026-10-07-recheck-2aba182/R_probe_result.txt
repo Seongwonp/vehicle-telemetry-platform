@@ -1,0 +1,3 @@
+before: telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 0.0
+after: telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 1.0
+1

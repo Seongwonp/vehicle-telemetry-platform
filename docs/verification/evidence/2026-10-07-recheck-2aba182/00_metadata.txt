@@ -1,0 +1,17 @@
+purpose=2aba182 실스택 재검증: 인터럽트 가드(실험 D2·D2b·D2c), MqttBrokerMetricsStale(실험 U, U0 포함)
+git_head=609e8f694343522a37d89c99b39aa92f6fe14881
+backend_src_main_diff_vs_2aba182=없음 (git diff --stat 2aba182 HEAD -- backend/src/main 빈 결과)
+backend_image=sha256:84e0432ccabb7aaf488678e1f2b6664f5f3696889449248ae9682fdd97aac038 created 2026-10-06T03:50:06Z (이 실행에서 docker compose build backend)
+image_jar_check=MqttMessageHandler.class에 interruptedByConnectionLoss·telemetry.mqtt.decode.failed, MqttBrokerMetricsHandler.class에 telemetry.mqtt.broker.last.update.seconds 문자열 확인
+docker=29.7.2 compose=5.4.0 mosquitto=eclipse-mosquitto:2.0 prometheus=v2.51.0(scrape/eval 15s) alertmanager=v0.27.0
+alertmanager_receivers=default 하나뿐, 외부 발송 설정 없음(monitoring/alertmanager/alertmanager.yml 확인)
+compose=docker-compose.yml + docker-compose.dev.yml + 저장소 밖 debug-override(R_debug-override.yml 사본) + 저장소 밖 override-r(R_override-r.yml 사본: mosquitto 설정·dynsec 디렉터리 마운트)
+broker_config=R_mosquitto-r.conf (dev 설정 + log_type subscribe + dynamic-security 플러그인), R_dynamic-security_initial.json(실험 T 두 번째 시도와 같은 파일, 키 publishClientSend), R_probe_defaultacl.txt(getDefaultACLAccess 확인), R_probe_*(전달 프로브 1건)
+run_time_utc=2026-10-06 03:52 ~ (폴더 이름 날짜는 요청 이름을 따른 것, 실제 실행일은 2026-10-06)
+clients=백엔드 client ID 기본값 telemetry-backend / telemetry-backend-sys, 익명 접속(dev)
+volumes kept; no down -v; 실험 영속 세션(telemetry-backend-g1·-g2·-h2·-h2-sys)·InfluxDB 실험 행 삭제하지 않음
+scripts=expD2.sh, expD2bc.sh(b|c), expU.sh, ctl.sh(dynsec 명령), offsets.sh, kafka_unique.sh, influx_count.sh, genpaced.py
+publishers=mosquitto_pub -q 1 -l (docker run), 호스트 sleep 0.333 루프
+log_timestamps=백엔드·브로커 로그는 docker logs -t (UTC). 브로커 줄의 숫자 접두는 epoch 초
+threaddumps=D2b·D2c는 docker kill --signal=QUIT(JVM 스레드 덤프, 종료 아님) — 덤프는 각 *_backend_full_log.txt 안
+test_vehicles=RECON-PRB(1), RECON-D2(360), RECON-D2B(240), RECON-D2C(63), OUTAGE-U

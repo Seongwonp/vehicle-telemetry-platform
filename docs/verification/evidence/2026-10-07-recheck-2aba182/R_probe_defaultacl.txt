@@ -1,0 +1,2 @@
+{"responses":[{"command":"getDefaultACLAccess","data":{"acls":[{"acltype":"publishClientSend","allow":true},{"acltype":"publishClientReceive","allow":true},{"acltype":"subscribe","allow":true},{"acltype":"unsubscribe","allow":true}]}}]}
+Timed out

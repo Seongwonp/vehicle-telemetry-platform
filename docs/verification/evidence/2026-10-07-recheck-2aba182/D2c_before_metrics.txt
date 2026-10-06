@@ -1,0 +1,6 @@
+telemetry_spool_pending{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_messages_invalid_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 607.0
+telemetry_spool_drained_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_ack_callback_missing_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_mqtt_decode_failed_total{application="vehicle-telemetry-backend",} 0.0
