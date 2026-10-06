@@ -1,0 +1,10 @@
+03:49:46.8036596Z MqttKafkaAckContractTest > compareNormalDeliveryAndRecoverKafkaOutageThroughSpool() FAILED
+03:49:46.8037761Z     Too many publishes in progress (32202)
+03:49:46.8038789Z         at app//org.eclipse.paho.client.mqttv3.internal.ClientState.send(ClientState.java:527)
+03:49:46.8041666Z         at app//org.eclipse.paho.client.mqttv3.internal.ClientComms.internalSend(ClientComms.java:163)
+03:49:46.8043248Z         at app//org.eclipse.paho.client.mqttv3.internal.ClientComms.sendNoWait(ClientComms.java:193)
+03:49:46.8048862Z         at app//org.eclipse.paho.client.mqttv3.MqttAsyncClient.publish(MqttAsyncClient.java:1375)
+03:49:46.8050634Z         at app//org.eclipse.paho.client.mqttv3.MqttAsyncClient.publish(MqttAsyncClient.java:1324)
+03:49:46.8052137Z         at app//org.eclipse.paho.client.mqttv3.MqttAsyncClient.publish(MqttAsyncClient.java:1336)
+03:49:46.8055097Z         at app//com.telemetry.contract.MqttKafkaAckContractTest.compareNormalDeliveryAndRecoverKafkaOutageThroughSpool(MqttKafkaAckContractTest.java:90)
+03:50:10.6074204Z 

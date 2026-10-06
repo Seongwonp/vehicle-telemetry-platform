@@ -1,0 +1,45 @@
+package com.telemetry.probe;
+
+import org.eclipse.paho.client.mqttv3.*;
+import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.images.builder.Transferable;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+// 임시 프로브 — 커밋하지 않는다. 콜백 스레드가 밀리면 순차 publish+waitForCompletion에서도 32202가 나는지.
+@Testcontainers
+class PahoInflightProbeTest {
+    @Container static final GenericContainer<?> BROKER = new GenericContainer<>("eclipse-mosquitto:2.0")
+        .withExposedPorts(1883).withCopyToContainer(Transferable.of("listener 1883\nallow_anonymous true\n"),
+            "/mosquitto/config/mosquitto.conf").waitingFor(Wait.forListeningPort());
+
+    String run(int maxInflight) throws Exception {
+        String uri = "tcp://" + BROKER.getHost() + ":" + BROKER.getMappedPort(1883);
+        try (var c = new MqttAsyncClient(uri, "probe-" + maxInflight, new MemoryPersistence())) {
+            var o = new MqttConnectOptions(); o.setMaxInflight(maxInflight);
+            c.connect(o).waitForCompletion(10000);
+            IMqttActionListener slow = new IMqttActionListener() {
+                public void onSuccess(IMqttToken t) { try { Thread.sleep(200); } catch (InterruptedException e) { } }
+                public void onFailure(IMqttToken t, Throwable e) { }
+            };
+            for (int i = 0; i < 30; i++) {
+                try {
+                    c.publish("t/probe", ("m" + i).getBytes(), 1, false, null, slow).waitForCompletion(10000);
+                } catch (MqttException e) {
+                    c.disconnectForcibly(1000);
+                    return "maxInflight=" + maxInflight + " failed at #" + i + " code=" + e.getReasonCode();
+                }
+            }
+            c.disconnect().waitForCompletion(10000);
+            return "maxInflight=" + maxInflight + " 30/30 ok";
+        }
+    }
+
+    @Test void probe() throws Exception {
+        System.out.println("PROBE " + run(10));
+        System.out.println("PROBE " + run(1000));
+    }
+}

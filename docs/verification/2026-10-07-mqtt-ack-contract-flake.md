@@ -1,6 +1,6 @@
 # MqttKafkaAckContractTest CI flaky — 2026-10-07
 
-상태: **코드로 확인한 대기 결함은 고쳤다 / CI 실패 원인은 증명하지 못했다.** 로컬 재현 0회.
+상태: **CI 실패 원인을 찾아 테스트에서 닫았다(아래 "추가").** 처음 판단(32202 불가)은 틀렸다. 구독 대기 결함도 별도로 고쳤다. 운영 코드 변경 없음.
 
 - 기준 커밋: `bc3751ee6dc961ff38d395f83c65aa04be2261a4` (수정은 이 위의 미커밋 작업 트리)
 - 환경: Windows 11 Pro 10.0.26200, Docker Desktop(Engine 29.7.2, WSL2 커널 6.18.33.2), JDK 17, Gradle 8.7
@@ -46,7 +46,7 @@ await().atMost(10s).until(() -> BROKER.getLogs().contains("Received SUBSCRIBE fr
 - 발행자(`pub-normal`)의 PUBACK은 QoS 1에서 **브로커가** 보낸다. 구독자가 구독 전이든,
   접속 전이든 상관없다. 세션이 살아 있으므로 메시지는 `normal-ack` 큐에 쌓였다가 전달된다.
 - 발행자 옵션은 Paho 기본값이다(maxInflight 10, keepAlive 60초). 발행은 한 건씩
-  `waitForCompletion`으로 순차 대기하므로 inflight는 최대 1이다. `32202`(inflight 초과)는 나올 수 없다.
+  `waitForCompletion`으로 순차 대기하므로 inflight는 최대 1이다. `32202`(inflight 초과)는 나올 수 없다. **← 틀렸다. 아래 "추가" 참고.**
 - `mosquitto.conf`의 `max_inflight_messages 20`은 브로커→구독자 방향이다. 발행자 PUBACK과 관계없다.
 - 남는 후보: `32000`(10초 안에 PUBACK 없음) 또는 `32109`(연결 끊김). 이는 호스트 부하나 Docker
   포트 프록시 쪽 원인과 맞지만 **증거가 없다.**
@@ -101,12 +101,29 @@ CI의 90행 예외를 일으켰다는 경로는 찾지 못했다.** 이 문서�
 
 원본: [evidence/2026-10-07-mqtt-ack-contract-flake/](evidence/2026-10-07-mqtt-ack-contract-flake/)
 
+## 추가 — 사유 코드 확인과 실제 원인 (같은 날)
+
+`609e8f6`(위 수정 + `testLogging exceptionFormat 'full'` + 실패 시 XML 업로드)이 CI에서 **다시 같은 90행에서 실패했다**(run 37410296363).
+이번엔 사유가 남았다: **`Too many publishes in progress (32202)`**, `ClientState.send` ← `MqttAsyncClient.publish`(`ci-37410296363-failure.txt`).
+→ 구독 대기 수정은 이 실패와 무관했다. 위 3절의 "32202는 나올 수 없다"가 틀렸다.
+
+**원인(Paho 1.2.5 바이트코드 확인)**: QoS 1 PUBACK을 받으면 수신 스레드의 `ClientState.notifyResult`가 `Token.markComplete`·`notifyComplete`로
+**대기자를 먼저 깨우고**, in-flight 감소(`decrementInFlight`)·message id 해제는 `CommsCallback.asyncOperationComplete`로 넘겨
+**콜백 스레드의 `handleActionComplete` → `ClientState.notifyComplete`에서 나중에** 한다. 그래서 `waitForCompletion`이 돌아와도 슬롯은
+아직 차 있을 수 있고, 콜백 스레드가 밀리는 러너에서는 순차 발행에서도 기본 한도 10이 찬다.
+
+**재현(프로브, 1회)**: 액션 콜백에서 200ms 자도록 해 콜백 스레드를 일부러 늦추고 순차 `publish + waitForCompletion(10000)` 30건 —
+`maxInflight=10`은 **#11에서 32202**, `maxInflight=1000`은 **30/30 통과**(`paho-inflight-probe-output.txt`, 소스 `PahoInflightProbeTest.java.txt` — 저장소 테스트로는 남기지 않았다).
+CI에서 무엇이 콜백 스레드를 늦췄는지는 모른다(러너 부하로 추정).
+
+**수정(테스트만)**: 발행기 `MqttConnectOptions.setMaxInflight(1000)` — 이 테스트의 대상은 구독 쪽 ACK이지 발행기 한도가 아니다.
+운영 백엔드는 MQTT로 발행하지 않는다(DLQ는 Kafka). 수정 뒤 전체 `./gradlew test` 382, 실패 0, skip 0, 계약 8(로컬 1회). CI 결과는 커밋 뒤 확인.
+
+**교훈**: 사유 코드 없이 "불가능한 코드"를 지운 것이 틀렸다 — 실패 로그에 사유를 남기는 수정이 원인 확정의 열쇠였다.
+
 ## 한계
 
-- **CI 실패의 원인은 증명되지 않았다.** reason code가 없고 로컬에서 재현되지 않았다.
-  이번 수정은 코드로 확인한 대기 결함을 닫은 것이지 CI 실패를 고쳤다는 증거가 아니다.
-- 같은 실패가 다시 나도 지금 CI 설정으로는 reason code를 볼 수 없다. 테스트 실패 시
-  test-results XML을 artifact로 올리거나 `testLogging.exceptionFormat = 'full'`로 바꾸는 것은
-  이번 범위 밖이다(파일을 건드리지 않았다).
+- CI 실패 원인은 사유 코드 + 바이트코드 + 프로브(1회)로 좁혔다. CI에서 콜백 스레드가 밀린 직접 원인은 모른다. 수정 뒤 CI 반복 통과는 아직 쌓이지 않았다.
+- ~~reason code를 볼 수 없다~~ → `609e8f6`에서 `exceptionFormat 'full'`과 실패 시 XML 업로드를 넣었고, 그 덕에 32202를 읽었다.
 - 로컬은 Windows + Docker Desktop(WSL2) 한 대다. GitHub 러너(Linux, 2 vCPU 수준)의 부하·타이밍과 다르다.
 - 수정 전 10회, 수정 후 5회는 "이 환경에서 드물다"는 것 이상을 말하지 못한다.

@@ -79,7 +79,11 @@ class MqttKafkaAckContractTest {
                  "value.deserializer", StringDeserializer.class));
              var publisher = new MqttAsyncClient(uri, "pub-normal", new MemoryPersistence())) {
             consumer.subscribe(List.of("vehicle-telemetry"));
-            publisher.connect().waitForCompletion(10000);
+            // Paho 1.2.5는 PUBACK 수신 스레드에서 token을 먼저 깨우고 in-flight 슬롯은 콜백 스레드에서 나중에 푼다
+            // (ClientState.notifyResult → CommsCallback.handleActionComplete). 순차 발행·waitForCompletion이어도
+            // 콜백이 밀리면 기본 한도 10이 차 32202가 난다(2026-10-06 CI). 발행기 한도는 이 테스트의 대상이 아니다.
+            var publisherOptions = new MqttConnectOptions(); publisherOptions.setMaxInflight(1000);
+            publisher.connect(publisherOptions).waitForCompletion(10000);
             // Alternate modes: small local comparison, not a maximum-throughput benchmark.
             int sequence = 0;
             for (boolean manual : new boolean[]{false, true, true, false}) {
