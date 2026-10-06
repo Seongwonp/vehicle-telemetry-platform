@@ -1,0 +1,62 @@
+# collected (host local / UTC): 2026-10-06 23:40:27 +0900 / 2026-10-06 14:40:27
+# read-only, no consumer group: kafka-get-offsets (earliest=-2, latest=-1) and kafka-configs --describe
+## time=-2 (topic:partition:offset)
+itc-220850-alerts:0:0
+itc-220850-dlq:0:2
+itc-220850-telemetry:0:6
+itc-t1-alerts:0:0
+itc-t1-dlq:0:1
+itc-t1-telemetry:0:3
+vehicle-anomaly-alerts:0:1
+vehicle-anomaly-alerts:1:894
+vehicle-anomaly-alerts:2:407
+vehicle-anomaly-alerts-dlq:0:0
+vehicle-telemetry:0:3484
+vehicle-telemetry:1:45788
+vehicle-telemetry:2:23099
+vehicle-telemetry-anomaly-dlq:0:16
+vehicle-telemetry-dlq:0:19
+vehicle-telemetry-mqtt-dlq:0:16
+## time=-1 (topic:partition:offset)
+itc-220850-alerts:0:0
+itc-220850-dlq:0:2
+itc-220850-telemetry:0:6
+itc-t1-alerts:0:0
+itc-t1-dlq:0:1
+itc-t1-telemetry:0:3
+vehicle-anomaly-alerts:0:1
+vehicle-anomaly-alerts:1:894
+vehicle-anomaly-alerts:2:407
+vehicle-anomaly-alerts-dlq:0:0
+vehicle-telemetry:0:3484
+vehicle-telemetry:1:45788
+vehicle-telemetry:2:23099
+vehicle-telemetry-anomaly-dlq:0:16
+vehicle-telemetry-dlq:0:19
+vehicle-telemetry-mqtt-dlq:0:16
+## topic configs (non-default dynamic) + broker default retention
+-- vehicle-telemetry
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- vehicle-telemetry-dlq
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- vehicle-telemetry-mqtt-dlq
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- vehicle-telemetry-anomaly-dlq
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- vehicle-anomaly-alerts
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- vehicle-anomaly-alerts-dlq
+  retention.ms=3600000 sensitive=false synonyms={DYNAMIC_TOPIC_CONFIG:retention.ms=3600000}
+-- itc-220850-telemetry
+-- itc-220850-dlq
+-- itc-220850-alerts
+-- itc-t1-telemetry
+-- itc-t1-dlq
+-- itc-t1-alerts
+-- broker env (retention-related names and values; no secrets)
+KAFKA_AUTO_CREATE_TOPICS_ENABLE=false
+  log.retention.check.interval.ms=300000 sensitive=false synonyms={DEFAULT_CONFIG:log.retention.check.interval.ms=300000}
+  log.retention.hours=168 sensitive=false synonyms={DEFAULT_CONFIG:log.retention.hours=168}
+  log.retention.ms=null sensitive=false synonyms={}
+  offsets.retention.check.interval.ms=600000 sensitive=false synonyms={DEFAULT_CONFIG:offsets.retention.check.interval.ms=600000}
+  offsets.retention.minutes=10080 sensitive=false synonyms={DEFAULT_CONFIG:offsets.retention.minutes=10080}

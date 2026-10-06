@@ -1,0 +1,42 @@
+# collected (host local / UTC): 2026-10-06 23:41:04 +0900 / 2026-10-06 14:41:04
+# read-only: kafka-consumer-groups --list / --describe --all-groups / --describe --all-groups --state
+dlq-replay-trace-20260929
+anomaly-storage-group
+anomaly-detector-group
+telemetry-storage-group
+## --describe --all-groups --state
+
+GROUP                     COORDINATOR (ID)          ASSIGNMENT-STRATEGY  STATE           #MEMBERS
+anomaly-detector-group    localhost:9092 (1)        range                Stable          3
+
+GROUP                     COORDINATOR (ID)          ASSIGNMENT-STRATEGY  STATE           #MEMBERS
+anomaly-storage-group     localhost:9092 (1)        range                Stable          3
+
+Consumer group 'dlq-replay-trace-20260929' has no active members.
+
+GROUP                     COORDINATOR (ID)          ASSIGNMENT-STRATEGY  STATE           #MEMBERS
+dlq-replay-trace-20260929 localhost:9092 (1)                             Empty           0
+
+GROUP                     COORDINATOR (ID)          ASSIGNMENT-STRATEGY  STATE           #MEMBERS
+telemetry-storage-group   localhost:9092 (1)        range                Stable          3
+## --describe --all-groups (offsets)
+
+GROUP                  TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                             HOST            CLIENT-ID
+anomaly-detector-group vehicle-telemetry 1          45788           45788           0               kafka-python-3.0.9-a7fbae51-4b21-48b6-a788-c80f510e9046 /172.18.0.14    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 0          3484            3484            0               kafka-python-3.0.9-554c31fc-a278-46cc-83c9-2c6704aa189b /172.18.0.12    kafka-python-3.0.9
+anomaly-detector-group vehicle-telemetry 2          23099           23099           0               kafka-python-3.0.9-eed544e4-cf7e-4168-8276-2a88dfdefc66 /172.18.0.13    kafka-python-3.0.9
+
+GROUP                 TOPIC                  PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+anomaly-storage-group vehicle-anomaly-alerts 2          407             407             0               telemetry-backend-consumer-2-54cf82b4-9128-4705-b270-73284cdadba4 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-2
+anomaly-storage-group vehicle-anomaly-alerts 0          1               1               0               telemetry-backend-consumer-0-296a5ccc-8aff-48c5-bdbd-4f4e6e0232b2 /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-0
+anomaly-storage-group vehicle-anomaly-alerts 1          894             894             0               telemetry-backend-consumer-1-ce4e9d09-4bc0-4c78-adf5-c77bb6e88bde /172.18.0.9     consumer-anomaly-storage-group-telemetry-backend-consumer-1
+
+Consumer group 'dlq-replay-trace-20260929' has no active members.
+
+GROUP                     TOPIC                 PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID     HOST            CLIENT-ID
+dlq-replay-trace-20260929 vehicle-telemetry-dlq 0          19              19              0               -               -               -
+
+GROUP                   TOPIC             PARTITION  CURRENT-OFFSET  LOG-END-OFFSET  LAG             CONSUMER-ID                                                       HOST            CLIENT-ID
+telemetry-storage-group vehicle-telemetry 1          45788           45788           0               telemetry-backend-consumer-1-1ff09afa-5363-423d-a490-59d351ac6143 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-1
+telemetry-storage-group vehicle-telemetry 0          3484            3484            0               telemetry-backend-consumer-0-6a84774f-c84d-4c30-88f2-71b1250f7526 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-0
+telemetry-storage-group vehicle-telemetry 2          23099           23099           0               telemetry-backend-consumer-2-59b55860-d9c1-41e8-bdd9-2fd8ac6f6367 /172.18.0.9     consumer-telemetry-storage-group-telemetry-backend-consumer-2

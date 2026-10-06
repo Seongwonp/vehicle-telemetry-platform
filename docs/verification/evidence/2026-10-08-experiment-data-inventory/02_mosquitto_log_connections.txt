@@ -1,0 +1,13 @@
+# docker logs telemetry-mosquitto | grep 'New client connected' (container log since last create)
+1791261072: New client connected from 172.18.0.10:48600 as telemetry-backend (p2, c0, k60).
+1791261072: New client connected from 172.18.0.10:48610 as telemetry-backend-sys (p2, c0, k60).
+1791261092: New client connected from 172.18.0.11:46998 as auto-993668F8-F8E0-12DB-8653-AED496F58B4F (p2, c1, k60).
+1791262140: New client connected from 172.18.0.11:40778 as telemetry-backend (p2, c0, k60).
+1791262140: New client connected from 172.18.0.11:40794 as telemetry-backend-sys (p2, c0, k60).
+1791262629: New client connected from 172.18.0.11:51887 as simulator-SIM-001 (p2, c1, k60).
+1791262629: New client connected from 172.18.0.11:37015 as simulator-SIM-002 (p2, c1, k60).
+1791262629: New client connected from 172.18.0.11:52465 as simulator-SIM-003 (p2, c1, k60).
+1791262638: New client connected from 172.18.0.15:34814 as telemetry-backend (p2, c0, k60).
+1791262639: New client connected from 172.18.0.15:34820 as telemetry-backend-sys (p2, c0, k60).
+1791297231: New client connected from 172.18.0.11:55048 as telemetry-backend (p2, c0, k60).
+1791297232: New client connected from 172.18.0.11:55058 as telemetry-backend-sys (p2, c0, k60).

@@ -1,0 +1,59 @@
+# collected (host local / UTC): 2026-10-06 23:37:41 +0900 / 2026-10-06 14:37:41
+# read-only: docker exec telemetry-mosquitto ls/strings on /mosquitto/data/mosquitto.db (file is the last on-disk snapshot, NOT live in-memory state)
+total 4172
+drwxr-xr-x    2 mosquitto mosquitto      4096 2026-10-06 05:16:46 +0000 .
+drwxr-xr-x    1 mosquitto mosquitto      4096 2026-10-06 04:31:01 +0000 ..
+-rw-------    1 mosquitto mosquitto   4258086 2026-10-06 05:16:45 +0000 mosquitto.db
+
+## A. telemetry-backend* strings (session/subscription records; high counts = per-client queued-message references)
+   9899 telemetry-backend-g1
+   8999 telemetry-backend-g2
+      1 telemetry-backendvehicle/telemetry/#
+      1 telemetry-backend-sys$SYS/broker/uptime
+      1 telemetry-backend-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-sys$SYS/broker/clients/connected
+      1 telemetry-backend-sys
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-h2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-h2-sys
+      1 telemetry-backend-h2
+      1 telemetry-backend-g2vehicle/telemetry/#
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g2-sys
+      1 telemetry-backend-g1vehicle/telemetry/#
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g1-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g1-sys
+      1 telemetry-backend
+
+## B. stored message bodies grouped by topic vehicle id: count, min payload timestamp, max payload timestamp
+OUTAGE-E3 720 2026-10-05T21:47:03.333Z 2026-10-05T21:51:02.760Z
+OUTAGE-P 720 2026-10-05T22:44:28.333Z 2026-10-05T22:48:27.760Z
+OUTAGE-R 300 2026-10-05T22:17:19.333Z 2026-10-05T22:18:58.900Z
+OUTAGE-S 720 2026-10-05T21:53:13.333Z 2026-10-05T21:57:12.760Z
+OUTAGE-T 767 2026-10-05T22:58:37.333Z 2026-10-05T23:08:00.103Z
+OUTAGE-TR 5 2026-10-05T23:11:01.333Z 2026-10-05T23:11:02.665Z
+OUTAGE-U 1592 2026-10-06T04:10:59.333Z 2026-10-06T04:27:41.663Z
+RECON-D2 360 2026-10-06T03:52:33.333Z 2026-10-06T03:54:32.880Z
+RECON-D2B 240 2026-10-06T03:58:25.333Z 2026-10-06T03:59:44.920Z
+RECON-D2C 63 2026-10-06T04:01:28.333Z 2026-10-06T04:01:48.979Z
+RECON-PRB 1 2026-10-06T03:52:16.001Z 2026-10-06T03:52:16.001Z
+RECON-ZR 5 2026-10-06T04:31:29.333Z 2026-10-06T04:31:30.665Z
+SESSLOSS-G2 900 2026-10-05T13:08:05.734Z 2026-10-05T13:09:38.261Z
+SIM-001 1168 2026-10-06T04:57:09.751Z 2026-10-06T05:16:37.369Z
+SIM-002 1168 2026-10-06T04:57:09.848Z 2026-10-06T05:16:37.451Z
+SIM-003 1168 2026-10-06T04:57:09.948Z 2026-10-06T05:16:37.561Z
+
+## C. source (publisher) client-id prefixes of stored messages
+   6394 auto-*
+   1168 simulator-SIM-001
+   1168 simulator-SIM-002
+   1168 simulator-SIM-003
+      1 telemetry-backend
+      1 telemetry-backend-g1
+      1 telemetry-backend-g2
