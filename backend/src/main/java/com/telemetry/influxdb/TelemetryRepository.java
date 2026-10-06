@@ -99,8 +99,6 @@ public class TelemetryRepository {
             .addField("rpm", finite("rpm", telemetry.getRpm()))
             .addField("engine_temp", finite("engine_temp", telemetry.getEngineTemp()))
             .addField("throttle_position", finite("throttle_position", telemetry.getThrottlePosition()))
-            .addField("fuel_level", finite("fuel_level", telemetry.getFuelLevel()))
-            .addField("battery_voltage", finite("battery_voltage", telemetry.getBatteryVoltage()))
             // timestamp는 시뮬레이터가 보낸 ISO-8601 문자열을 파싱한다.
             // 형식이 맞지 않으면 Instant.parse()에서 DateTimeParseException이 발생한다.
             // WritePrecision.S(초 단위)였을 때는 PUBLISH_INTERVAL이 1초 미만이면 같은 차량의
@@ -121,6 +119,19 @@ public class TelemetryRepository {
             // 차량당 속도를 올려야 한다면 시퀀스 태그가 아니라 WritePrecision.US로 가라 —
             // 태그는 포인트마다 시리즈를 하나씩 만들어 인덱스를 무너뜨린다.
             .time(Instant.parse(telemetry.getTimestamp()), WritePrecision.MS);
+
+        // ── 선택 필드(ADR-030): 값이 없으면 **필드를 아예 쓰지 않는다.** ──────────────
+        // 0으로 쓰면 "누락이 그럴듯한 0으로 저장되던" 결함(결정표 2절 1·2번)이 그대로 돌아온다 —
+        // 연료 0%·전압 0V는 실재할 수 있는 값이라 나중에 진짜와 구분할 수 없다.
+        // 예전처럼 addField(..., finite(..., getX()))로 두면 null 언박싱에서 NPE가 나서 그 레코드가
+        // DLQ로 간다(계약은 통과했는데 저장만 실패). 둘 다 막는 것이 이 분기다.
+        // 읽는 쪽(pivot)에서는 그 열이 비어 null이 된다 — TelemetryQueryService.getDouble.
+        if (telemetry.getFuelLevel() != null) {
+            point.addField("fuel_level", finite("fuel_level", telemetry.getFuelLevel()));
+        }
+        if (telemetry.getBatteryVoltage() != null) {
+            point.addField("battery_voltage", finite("battery_voltage", telemetry.getBatteryVoltage()));
+        }
 
         if (telemetry.getGps() != null) {
             point.addField("lat", finite("lat", telemetry.getGps().getLat()))

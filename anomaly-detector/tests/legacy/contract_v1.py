@@ -1,4 +1,20 @@
-"""텔레메트리 입력 계약 — **저장 경로와 같은 계약**을 감지 경로에도 적용한다 (P0-2a).
+"""**동결본 — 계약 v1(숫자 6개 전부 필수). 고치지 마라.** (ADR-030, 2026-10-06)
+
+`anomaly-detector/contract.py`를 연료량(`fuel_level`)·제어 모듈 전압(`battery_voltage`)
+선택화 **직전 그대로** 복사한 것이다. 운영 코드는 이 파일을 쓰지 않는다.
+
+## 왜 남기나
+
+혼합 버전 테스트가 "**구버전 수신자는 새 payload(두 필드 없음)를 거부한다**"를 고정하는 데 쓴다.
+그게 배포 순서(감지기 → 백엔드 → 브리지)가 필요한 이유다. 새 계약을 고친 뒤 그 사실을
+현재 코드로는 재현할 수 없으므로 **당시 규칙을 얼려 둔다.** 이 파일을 새 계약에 맞춰 고치면
+혼합 버전 테스트가 아무것도 지키지 않게 된다.
+
+쓰는 곳: `anomaly-detector/tests/test_mixed_version.py`, `obd-bridge/tests/test_unsupported_null.py`.
+
+---- 아래는 v1 원문 docstring ----
+
+텔레메트리 입력 계약 — **저장 경로와 같은 계약**을 감지 경로에도 적용한다 (P0-2a).
 
 ## 왜 있는가
 
@@ -14,11 +30,6 @@
 
 - **신선도(freshness)가 아니다.** `timestamp`는 **형식만** 본다. 과거 데이터를 임의로
   거부하면 DLQ 재처리와 백필이 불가능해진다. 신선도가 필요하면 별도 정책으로 만든다.
-- **`fuel_level`(PID 2F)·`battery_voltage`(PID 42)는 선택 필드다**(ADR-030, 2026-10-06).
-  차종에 따라 지원하지 않을 수 있는 PID라서(어느 차가 그런지는 실차 미확인), 없거나 `null`이면 **"값 없음"으로 통과**시킨다 —
-  0으로 바꾸지 않는다. 있으면 범위·타입은 그대로 본다. 빈 문자열은 "없음"이 아니라 거부다
-  (Java는 빈 문자열을 null로 바꾸므로 decoder가 따로 막는다 — 양쪽이 같게).
-  `speed`·`rpm`·`engine_temp`·`throttle_position`은 **여전히 필수**다.
 - **`dtc_codes`는 선택 필드다.** 없어도 되고 비어도 된다. 다만 있으면 원소가 형식을 지켜야
   한다 — 저장 계약과 같다.
 - **숫자 문자열은 허용한다.** `{"speed": "87.3"}`은 통과한다. Jackson의 강제 변환을
@@ -88,9 +99,6 @@ _NUMERIC = {
     "fuel_level": (0.0, 100.0),         # PID 2F, 백분율
     "battery_voltage": (0.0, 65.535),   # PID 42, 제어 모듈 전압
 }
-# 없거나 null이면 통과하는 숫자 필드 — ADR-030. **VehicleTelemetry.java에서 @NotNull이 빠진
-# 필드와 정확히 같아야 한다.** 나머지 넷은 필수다. 이 집합을 늘리려면 실차 PID 지원 확인이 먼저다.
-OPTIONAL_NUMERIC = frozenset({"fuel_level", "battery_voltage"})
 _GPS_RANGE = {"lat": (-90.0, 90.0), "lng": (-180.0, 180.0)}
 
 _VEHICLE_ID = re.compile(r"^[A-Z0-9-]{4,20}$")
@@ -201,16 +209,9 @@ def validate(payload: str) -> dict:
     # ── 4) 타입 ────────────────────────────────────────────────
     # 필드를 **이름순으로** 훑는다 — dict 순서(= 문서 순서)로 돌면 또 순서 의존이 된다.
     numbers: dict[str, float] = {}
-    # 선택 필드의 빈 문자열 — "없음"이 아니라 계약 위반이다. 5단계에서 다른 위반과 **함께 정렬**해
-    # 보고한다(Java는 바인딩 뒤 검증 단계에서 잡으므로, 여기서 바로 던지면 사유 순서가 갈린다).
-    blank_optional: list[str] = []
     for field in sorted(_NUMERIC):
         if field in root and root[field] is not None:
-            value = root[field]
-            if field in OPTIONAL_NUMERIC and isinstance(value, str) and value.strip() == "":
-                blank_optional.append(field)
-                continue
-            numbers[field] = _as_number(field, value)
+            numbers[field] = _as_number(field, root[field])
 
     gps = root.get("gps")
     gps_numbers: dict[str, float] = {}
@@ -256,11 +257,7 @@ def validate(payload: str) -> dict:
     for field in sorted(_NUMERIC):
         low, high = _NUMERIC[field]
         if field not in numbers:
-            if field in blank_optional:
-                violations.append(f"{field} must not be blank")
-            elif field not in OPTIONAL_NUMERIC:
-                violations.append(f"{field} must not be null")
-            # 선택 필드가 없거나 null이면 위반이 아니다 — 값을 지어내지 않고 그대로 둔다.
+            violations.append(f"{field} must not be null")
             continue
         v = numbers[field]
         if math.isnan(v) or math.isinf(v):

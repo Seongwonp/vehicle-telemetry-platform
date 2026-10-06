@@ -45,6 +45,14 @@ def test_pid_specs_match_contract_ranges(contract):
     assert {s.field: (s.low, s.high) for s in PID_SPECS} == contract._NUMERIC
 
 
+def test_optional_fields_match_contract(contract):
+    """선택 PID 목록이 계약 모듈의 OPTIONAL_NUMERIC과 같다(ADR-030). 어긋나면 한쪽이 필수를 생략하거나
+    선택을 필수처럼 버린다."""
+    from obd_bridge.mapping import OPTIONAL_FIELDS, REQUIRED_FIELDS
+    assert set(OPTIONAL_FIELDS) == contract.OPTIONAL_NUMERIC
+    assert set(REQUIRED_FIELDS) == set(contract._NUMERIC) - contract.OPTIONAL_NUMERIC
+
+
 def test_pid_commands_are_the_requested_pids():
     for s in PID_SPECS:
         assert obd.commands[s.command].command == s.pid.encode()

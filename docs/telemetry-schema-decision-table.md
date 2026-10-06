@@ -99,8 +99,8 @@ Kafka에 직접 넣으면 **Bean Validation을 통째로 우회한다.** 부하 
 | `rpm` | **거부** | **`0 ~ 16383.75`** | PID 0C는 2바이트를 4로 나눈다 → **0.25 단위**. 소수가 유효하다 |
 | `engine_temp` | **거부** | **`-40 ~ 215`** °C | **냉각수 온도**(PID 05)로 정의한다. 1바이트에서 40을 뺀 값 |
 | `throttle_position` | **거부** | `0 ~ 100` % | PID 11, 정의상 백분율 |
-| `fuel_level` | **거부** | `0 ~ 100` % | PID 2F, 정의상 백분율 |
-| `battery_voltage` | **거부** | **`0 ~ 65.535`** V | **제어 모듈 전압**(PID 42)으로 정의한다. 2바이트를 1000으로 나눈다 |
+| `fuel_level` | ~~거부~~ → **통과(선택, 값 없음)** — 2026-10-06 ADR-030, 3-B절 | `0 ~ 100` % (있으면 검사) | PID 2F, 정의상 백분율 |
+| `battery_voltage` | ~~거부~~ → **통과(선택, 값 없음)** — 2026-10-06 ADR-030, 3-B절 | **`0 ~ 65.535`** V (있으면 검사) | **제어 모듈 전압**(PID 42)으로 정의한다. 2바이트를 1000으로 나눈다 |
 | `gps` | 통과(선택) | — | 실내·터널에서 없을 수 있다 |
 | `gps.lat` / `.lng` | **gps가 있으면 거부** | `-90~90` / `-180~180` | 있는데 한쪽만 없는 것은 계약 위반 |
 | `dtc_codes` | 통과(선택) | 원소 `^[PBCU][0-9]{4}$` | null 원소와 쉼표 충돌이 여기서 막힌다 |
@@ -268,7 +268,7 @@ ID 길이 때문에** 거부되고 있었다. 통과한 칸까지 못 믿는 상
   `TelemetryContractException`으로 실린다(사유 코드는 메시지 앞부분).
   `dlq-tools`에 `permanent`로 추가했다 — **안 넣으면 `unknown`으로 빠진다**
   (2026-09-06에 같은 실수를 한 적이 있다).
-- **최소 payload가 더는 통과하지 않는다.** 숫자 6개가 전부 필수다.
+- **최소 payload가 더는 통과하지 않는다.** 숫자 6개가 전부 필수다(2026-10-06부터는 4개 — 연료량·전압은 선택, 3-B절).
   실제 producer(시뮬레이터·`produce_backlog.py`·`trace.py`·`inject_poison.py`)는
   전부 온전한 payload를 보내는 것을 **확인하고** 바꿨다. 깨진 것은 최소 stub 테스트뿐이다.
 
@@ -318,6 +318,43 @@ Java가 받고 Python이 거부하며, 오프셋 없는 값과 공백 구분자�
 같은 오류 조합인데 **필드 순서만 바꾸면 다른 사유**가 나왔다. 잘린 JSON이
 `UNKNOWN_FIELD`로 보고되기도 했다 — 운영자가 없는 필드명을 고치러 간다.
 `docs/anomaly-path-contract.md` 5-6절에 순서와 근거가 있다.
+
+## 3-B. 선택 필드 — 연료량·제어 모듈 전압 (2026-10-06, ADR-030)
+
+**바뀐 것은 두 필드의 "누락/null" 칸뿐이다.** `speed`·`rpm`·`engine_temp`·`throttle_position`은 그대로 필수다.
+왜 이 둘만인지, 배포 순서, 결과는 [ADR-030](architecture-decisions.md)에 있다.
+
+| 입력 | 판정 | 저장(InfluxDB) | 감지기 | 앱 |
+| --- | --- | --- | --- | --- |
+| `fuel_level` 키 없음 | **통과** | 필드를 **쓰지 않는다**(0 아님) | 룰 영향 없음, **ML 건너뜀** | "미수신" |
+| `"fuel_level": null` | **통과** | 같음 | 같음 | 같음 |
+| `battery_voltage` 키 없음 | **통과** | 필드를 쓰지 않는다 | **전압 룰 평가 안 함**(저전압 오탐 없음), ML 건너뜀 | "미수신", 기준 판정 안 함 |
+| `"battery_voltage": null` | **통과** | 같음 | 같음 | 같음 |
+| 둘 다 없음 | **통과** | 둘 다 안 씀 | 다른 룰은 그대로 | 둘 다 "미수신" |
+| 범위 밖(`fuel_level: 100.5`, `battery_voltage: 70`, `-0.1`) | 거부 `PAYLOAD_VALIDATION_FAILED` | — | DLQ | — |
+| 빈 문자열 `""` | 거부 `PAYLOAD_VALIDATION_FAILED` | — | DLQ | — |
+| `"low"`·`true` | 거부 `TYPE_MISMATCH` | — | DLQ | — |
+| `NaN` 리터럴 | 거부 `MALFORMED_JSON` | — | DLQ | — |
+| `1e309` | 거부 `PAYLOAD_VALIDATION_FAILED` | — | DLQ | — |
+| 숫자 문자열 `"55.5"` | 통과(55.5) | 55.5 | — | — |
+| 실제 `0`(0%·0V) | 통과 | **0을 쓴다** — "없음"과 다르다 | 0V면 저전압 알림 | 0 |
+
+**NaN·Infinity·타입·빈 문자열 처리는 바뀌지 않았다** — 선택은 "없어도 된다"이지 "검사를 안 한다"가 아니다.
+
+**빈 문자열이 함정이었다.** Jackson은 `""`를 null로 바꾸므로, 그냥 `@NotNull`만 빼면 Java는 `"fuel_level": ""`를
+"없음"으로 **통과**시키고 Python은 거부한다 — 두 경로가 갈린다. 필수 필드에서는 그 null을 `@NotNull`이 잡아서 안 보였다.
+`TelemetryDecoder`가 원본 트리에서 빈 문자열을 따로 보고 거부한다(`fuel_level_empty_string` fixture).
+
+**검증(단위·계약 수준)**: 공유 fixture에 19칸을 더해 **80칸 Java·Python 같은 판정**(`SharedFixtureContractTest`·
+`test_shared_fixtures.py`), detector 칸의 알림 여부를 실제 룰로 실행해 대조, 실제 InfluxDB 2.7에서 필드 미기록·조회 null·
+fleet 최신값에 옛 값이 섞이지 않음(`InfluxDbContractTest`), 구 계약 동결본이 새 payload를 거부함(`MixedVersionContractTest`·
+`test_mixed_version.py`). **실스택 E2E(MQTT→Kafka→InfluxDB·감지기·앱)는 이번에 돌리지 않았다.**
+
+**재직렬화**: 두 필드에 `@JsonInclude(NON_NULL)`을 걸었다. `"fuel_level": null`로 들어온 메시지도 Kafka value에서는 **키가 없다** —
+"없음"을 한 모양으로 정규화한다.
+
+**저장 데이터 읽기**: 이 변경 이후 InfluxDB에서 두 필드가 **없는** 행은 "그 메시지에 값이 없었다"이고, `0`인 행은 장치가 0을 보낸 것이다.
+P0-2 이전("누락이 0으로 저장되던" 시기, 2절) 데이터의 0은 여전히 진짜와 누락을 구분할 수 없다 — 4절과 같다.
 
 ## 4. 아직 안 정한 것
 

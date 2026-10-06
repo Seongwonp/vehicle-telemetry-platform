@@ -1,6 +1,5 @@
-package com.telemetry.domain;
+package com.telemetry.domain.legacy;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -8,10 +7,20 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
-import lombok.Data;
 
 import java.util.List;
 
+/**
+ * <b>동결본 — 입력 계약 v1(숫자 6개 전부 {@code @NotNull}). 고치지 마라.</b> (ADR-030, 2026-10-06)
+ *
+ * <p>{@code VehicleTelemetry}를 연료량·제어 모듈 전압 선택화 <b>직전 그대로</b> 복사했다(테스트 전용).
+ * {@code MixedVersionContractTest}가 "구 백엔드는 새 payload(두 필드 없음)를 거부한다"를 고정하는 데 쓴다 —
+ * 그게 배포 순서(감지기 → 백엔드 → 브리지)의 근거다. 이 클래스를 새 계약에 맞춰 고치면 그 테스트는
+ * 아무것도 지키지 않는다. Python 쪽 동결본은 {@code anomaly-detector/tests/legacy/contract_v1.py}.
+ *
+ * <p>아래는 v1 원문이다. 단 하나만 바꿨다 — 테스트 모듈에 Lombok이 없어 {@code @Data}를 빼고
+ * 필드를 {@code public}으로 열었다(Jackson·Validator가 필드를 직접 본다). 애너테이션은 원문 그대로다.
+ */
 /**
  * 차량 텔레메트리 입력 계약.
  *
@@ -37,24 +46,14 @@ import java.util.List;
  * primitive였을 때는 <b>필드가 없거나 null이면 0이 됐고 검증도 통과했다.</b>
  * "시속 0으로 주행 중"이 정상 데이터로 저장된다. wrapper + {@code @NotNull}이라야
  * 누락이 거부된다. 다만 이 변경은 <b>두 입구가 모두 검증을 거친다는 전제</b>에서만 안전하다
- * ({@link TelemetryDecoder}).
- *
- * <h2>선택 숫자 필드 — 연료량·제어 모듈 전압 (ADR-030)</h2>
- *
- * {@code fuelLevel}(PID 2F)과 {@code batteryVoltage}(PID 42)만 {@code @NotNull}이 없다.
- * 차종에 따라 지원하지 않을 수 있는 PID라서(어느 차가 그런지는 실차 미확인), 필수로 두면 그런 차량은 <b>아무것도 보낼 수 없었다</b>
- * ({@code obd-bridge/README.md}). 없거나 null이면 <b>null 그대로</b> 통과하고, 저장
- * ({@code TelemetryRepository.toPoint})은 그 필드를 <b>쓰지 않는다</b> — 0으로 쓰면 위에 적은
- * "누락이 0으로 저장되던" 결함이 그대로 돌아온다. 있으면 범위는 그대로 본다.
- * 목록은 {@code anomaly-detector/contract.py}의 {@code OPTIONAL_NUMERIC}과 같아야 한다.
+ * ({@code TelemetryDecoder}).
  */
-@Data
-public class VehicleTelemetry {
+public class VehicleTelemetryV1 {
 
     @JsonProperty("vehicle_id")
     @NotBlank
     @Pattern(regexp = "^[A-Z0-9-]{4,20}$")
-    private String vehicleId;
+    public String vehicleId;
 
     /**
      * ISO-8601 순간 표기. <b>오프셋(<code>Z</code> 또는 <code>±hh:mm</code>)이 필수</b>다.
@@ -67,7 +66,7 @@ public class VehicleTelemetry {
      * <h3>정규식만으로는 부족하다</h3>
      *
      * 이 패턴은 <b>모양</b>만 본다. {@code 2026-13-45T99:00:00Z}는 정규식을 통과하지만
-     * 달력에 없는 날짜다. 실제 파싱은 {@link TelemetryDecoder}가 한 번 더 한다 —
+     * 달력에 없는 날짜다. 실제 파싱은 {@code TelemetryDecoder}가 한 번 더 한다 —
      * {@code @Pattern}으로는 "그런 날이 있는가"를 표현할 수 없다.
      *
      * <h3>왜 Java·Python 어느 한쪽 라이브러리도 기준이 될 수 없나</h3>
@@ -80,7 +79,7 @@ public class VehicleTelemetry {
      */
     @NotBlank
     @Pattern(regexp = TIMESTAMP_PATTERN)
-    private String timestamp;
+    public String timestamp;
 
     /** {@code anomaly-detector/contract.py}의 {@code _TIMESTAMP}와 <b>같아야 한다.</b> */
     public static final String TIMESTAMP_PATTERN =
@@ -90,7 +89,7 @@ public class VehicleTelemetry {
     @NotNull
     @DecimalMin("0")
     @DecimalMax("255")
-    private Double speed;
+    public Double speed;
 
     /**
      * PID 0C는 2바이트를 4로 나눈다 → <b>0.25 단위이므로 소수가 유효하다.</b>
@@ -103,52 +102,44 @@ public class VehicleTelemetry {
     @NotNull
     @DecimalMin("0")
     @DecimalMax("16383.75")
-    private Double rpm;
+    public Double rpm;
 
     /** <b>냉각수 온도</b>(PID 05)로 정의한다. 1바이트에서 40을 뺀 범위다. */
     @JsonProperty("engine_temp")
     @NotNull
     @DecimalMin("-40")
     @DecimalMax("215")
-    private Double engineTemp;
+    public Double engineTemp;
 
     /** PID 11, 정의상 백분율. */
     @JsonProperty("throttle_position")
     @NotNull
     @DecimalMin("0")
     @DecimalMax("100")
-    private Double throttlePosition;
+    public Double throttlePosition;
 
-    /**
-     * PID 2F, 정의상 백분율. <b>선택</b>(ADR-030) — 없으면 null이고 0으로 바꾸지 않는다.
-     *
-     * <p>{@code NON_NULL}: Kafka로 재직렬화할 때 null이면 <b>키를 싣지 않는다.</b>
-     * 원본에 없던 값을 {@code "fuel_level": null}로 만들어 내보내지 않기 위해서다(없음은 없음으로).
-     */
+    /** PID 2F, 정의상 백분율. */
     @JsonProperty("fuel_level")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NotNull
     @DecimalMin("0")
     @DecimalMax("100")
-    private Double fuelLevel;
+    public Double fuelLevel;
 
     /**
      * <b>제어 모듈 전압</b>(PID 42)으로 정의한다. 동글이 자체 측정하는 전압과는 다른 값이다.
      *
      * <p>이상 감지 룰 {@code 11.5~15V}는 <b>12V 계통을 전제로 한 정책</b>이다.
      * 24V·48V 계통에는 그대로 적용할 수 없다.
-     *
-     * <p><b>선택</b>(ADR-030) — 없으면 null이다. 감지기는 값이 없으면 전압 룰을 <b>평가하지 않는다</b>
-     * (0으로 보면 매 메시지가 "저전압"이 된다). 재직렬화 규칙은 {@link #fuelLevel}과 같다.
      */
     @JsonProperty("battery_voltage")
-    @JsonInclude(JsonInclude.Include.NON_NULL)
+    @NotNull
     @DecimalMin("0")
     @DecimalMax("65.535")
-    private Double batteryVoltage;
+    public Double batteryVoltage;
 
     /** 실내·터널에서 없을 수 있으므로 <b>선택 필드</b>다. 다만 있으면 안이 완전해야 한다. */
     @Valid
-    private GpsLocation gps;
+    public GpsLocation gps;
 
     /**
      * 선택 필드다. 다만 <b>원소는 형식을 지켜야 한다.</b>
@@ -159,19 +150,18 @@ public class VehicleTelemetry {
      * 쉼표가 든 코드(저장 후 코드 2개와 구분 불가)가 둘 다 막힌다.
      */
     @JsonProperty("dtc_codes")
-    private List<@NotNull @Pattern(regexp = "^[PBCU][0-9]{4}$") String> dtcCodes;
+    public List<@NotNull @Pattern(regexp = "^[PBCU][0-9]{4}$") String> dtcCodes;
 
-    @Data
     public static class GpsLocation {
         /** gps 객체가 있는데 한쪽이 없는 것은 계약 위반이다 — 예전에는 0.0이 됐다. */
         @NotNull
         @DecimalMin("-90.0")
         @DecimalMax("90.0")
-        private Double lat;
+        public Double lat;
 
         @NotNull
         @DecimalMin("-180.0")
         @DecimalMax("180.0")
-        private Double lng;
+        public Double lng;
     }
 }

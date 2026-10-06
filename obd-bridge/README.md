@@ -22,8 +22,8 @@ ELM327 계열 OBD-II 어댑터에서 PID 6개를 읽어 **기존 입력 계약 �
 | `rpm` | 010C | `RPM` | rpm | 0 ~ 16383.75 | O | (256A+B)/4 — **0.25 단위 그대로**, 반올림 안 함 |
 | `engine_temp` | 0105 | `COOLANT_TEMP` | degC | -40 ~ 215 | O | A−40, 냉각수 온도 |
 | `throttle_position` | 0111 | `THROTTLE_POS` | percent | 0 ~ 100 | O | 100A/255 |
-| `fuel_level` | 012F | `FUEL_LEVEL` | percent | 0 ~ 100 | O | 100A/255 |
-| `battery_voltage` | 0142 | `CONTROL_MODULE_VOLTAGE` | volt | 0 ~ 65.535 | O | (256A+B)/1000 — **제어 모듈 전압**. 동글 자체 측정(`ELM_VOLTAGE`)이 아니다(결정표 3절) |
+| `fuel_level` | 012F | `FUEL_LEVEL` | percent | 0 ~ 100 | **X**(ADR-030) | 100A/255. 미지원·null이면 **키 생략** |
+| `battery_voltage` | 0142 | `CONTROL_MODULE_VOLTAGE` | volt | 0 ~ 65.535 | **X**(ADR-030) | 미지원·null이면 **키 생략**. (256A+B)/1000 — **제어 모듈 전압**. 동글 자체 측정(`ELM_VOLTAGE`)이 아니다(결정표 3절) |
 | `vehicle_id` | — | 설정값 | — | `^[A-Z0-9-]{4,20}$` | O | 시작 시 검사, 위반이면 기동 거부 |
 | `timestamp` | — | 주기 시작 시각 | — | ISO-8601 UTC 밀리초 `Z` (시뮬레이터와 같은 형식) | O | 브리지 호스트 시계 |
 | `gps` | — | — | — | 선택 | X | **보내지 않는다(키 생략)** |
@@ -38,9 +38,16 @@ ELM327 계열 OBD-II 어댑터에서 PID 6개를 읽어 **기존 입력 계약 �
 
 ### 미지원·null PID — 0으로 채우지 않는다
 
-계약은 숫자 6개를 **전부 필수**로 요구한다(누락/null → `PAYLOAD_VALIDATION_FAILED`).
-그래서 한 PID라도 미지원(`supports()` 거짓)이거나 응답이 null이면 **그 주기는 payload를 만들지 않고 보내지 않는다.**
-`skipped_missing`과 필드별 카운터를 올리고 경고 로그를 남긴다. 0.0으로 채우면 "시속 0으로 주행 중"처럼
+2026-10-06부터(ADR-030) 필수와 선택이 갈린다.
+
+| 구분 | PID | 미지원(`supports()` 거짓)이거나 응답이 null이면 |
+| --- | --- | --- |
+| **필수** | 010D·010C·0105·0111 (속도·RPM·냉각수·스로틀) | **그 주기는 payload를 만들지 않고 보내지 않는다.** `skipped_missing`·`missing_by_field`를 올리고 경고 로그 |
+| **선택** | 012F·0142 (연료량·제어 모듈 전압) | **그 키를 생략하고 보낸다** — 0도 `null`도 넣지 않는다. `omitted_by_field`를 올린다(매 주기 로그는 남기지 않고, 미지원은 기동 시 한 번 경고) |
+
+선택 PID라도 **값이 오면** 범위 검사는 그대로다(범위 밖이면 그 주기 미전송). 필수 하나와 선택이 함께 없으면 필수 규칙이 이긴다(미전송).
+**배포 순서**: 키를 생략한 payload는 구 계약이 거부하므로 감지기 → 백엔드 → **브리지 마지막**
+(`tests/test_unsupported_null.py`가 구 계약 동결본으로 그 거부를 고정한다). 0.0으로 채우면 "시속 0으로 주행 중"처럼
 그럴듯한 값이 되어 눈에 띄지 않는다 — 결정표 2절 1·2·10·14번이 바로 그 사례다.
 반대로 차량이 **실제로 0을 보고하면 0을 보낸다**(금지하는 것은 0이 아니라 지어내는 것).
 
@@ -107,8 +114,8 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 
 | 파일 | 무엇 |
 | --- | --- |
-| `tests/test_mapping_contract.py` | 매핑 범위 == `contract._NUMERIC`, python-OBD **실제 decoder**에 원시 바이트(2바이트 전 범위)를 넣어 만든 payload 65,536개 전부 `contract.validate` 통과, 0.25 rpm·0.001 V 보존, gps/dtc 키 없음, 단위 변환, vehicle_id·timestamp 형식, 범위 밖 미전송 |
-| `tests/test_unsupported_null.py` | 6개 필드 각각 미지원/null → None(0 아님) → 그 주기 spool 0건, None 조합 63가지 전부 payload 없음, 실제 0은 0으로 보냄 |
+| `tests/test_mapping_contract.py` | 매핑 범위 == `contract._NUMERIC`, 선택 PID == `contract.OPTIONAL_NUMERIC`, python-OBD **실제 decoder**에 원시 바이트(2바이트 전 범위)를 넣어 만든 payload 65,536개 전부 `contract.validate` 통과, 0.25 rpm·0.001 V 보존, gps/dtc 키 없음, 단위 변환, vehicle_id·timestamp 형식, 범위 밖 미전송 |
+| `tests/test_unsupported_null.py` | 6개 필드 각각 미지원/null → None(0 아님). 필수 넷은 그 주기 spool 0건, 선택 둘(012F·0142)은 키 생략 payload가 새 계약 통과·**구 계약(동결본) 거부**. None 조합 63가지 전부 — 필수가 빠지면 payload 없음, 선택만 빠지면 그 키만 없음(0·null 없음). 실제 0은 0으로 보냄 |
 | `tests/test_spool.py` | fsync 순서(파일 → 디렉터리, 내용이 다 쓰인 뒤 fsync), compaction 순서(records 확정 → acks 비움), 재시작 후 보존, timestamp 순서, 잘린 꼬리 복구, 중간 손상 예외, compaction 중 크래시 후 seq 재사용 방지 |
 | `tests/test_publisher.py` | PUBACK 전 미삭제(메모리·디스크), 끊김 중 쌓인 것 timestamp 순 재전송, 일부만 ack된 뒤 끊기면 나머지만 새 클라이언트로 재전송, 옛 클라이언트 늦은 PUBACK 무시, backlog 뒤에 새 메시지, rc 오류·PUBACK timeout 재연결, v5 PUBACK 실패 코드는 ack 아님(경계 0x80, 0x10은 ack — 실제 `ReasonCode`), 두 번째 끊김 알림에 이중 폐기 없음, `on_connect_fail` → 폐기·자체 백오프, mTLS 없으면 거부 |
 | `tests/test_publisher_real_paho.py` | **실제 paho 2.1.0** + 순수 Python stub 브로커(CONNACK·PINGRESP만, PUBACK 없음): PUBACK timeout 폐기가 5초 안에 끝나고 3건이 spool(메모리·디스크)에 남음, paho 스레드 종료·DISCONNECT 수신, 미확인분 있는 `close()`도 5초 안. 닫힌 포트: 연결 실패마다 우리 쪽 새 클라이언트, 옛 paho 스레드 잔존 없음, paho 로그가 `obd_bridge.paho`로 |
@@ -178,10 +185,12 @@ reader가 None 대신 0.0을 넣게 바꾸면 18건 실패, `publish()` 직후 s
 
 ## 결정 대기
 
-1. **필수 PID 미지원 차량 — 가장 큰 공백.** 계약은 6개 필드를 전부 필수로 요구한다. 그런데 `012F`(연료량)와
-   `0142`(제어 모듈 전압)는 차종에 따라 지원하지 않는 경우가 있다고 알려져 있다(이 저장소에서 확인하지 않았다).
-   그런 차량에서 이 브리지는 **아무것도 보내지 않는다.** 선택지: (a) 지금처럼 미전송 유지, (b) 계약에서 해당 필드를
-   선택으로 바꾼다(Java·Python 계약, 감지 룰, 저장 경로를 같이 바꾸는 큰 변경). **0 채우기는 선택지가 아니다.**
+1. ~~**필수 PID 미지원 차량 — 가장 큰 공백.**~~ — **해결(2026-10-06, ADR-030): (b)를 연료량·전압 두 필드에만 적용했다.**
+   `012F`·`0142`는 계약상 선택이 되어, 미지원·null이면 키를 생략하고 보낸다(위 "미지원·null PID"). 저장은 그 필드를
+   쓰지 않고(0 아님), 감지기는 전압이 없으면 전압 룰을 평가하지 않으며 ML은 그 레코드를 건너뛴다.
+   **속도·RPM·냉각수·스로틀은 여전히 필수**라 그중 하나라도 미지원인 차량에서는 여전히 아무것도 보내지 않는다.
+   어느 PID가 실제 차량에서 흔히 미지원인지는 **실차로 확인하지 않았다**(SAE J1979의 PID 지원 비트맵으로 확인할 수 있다 —
+   python-OBD는 연결 시 이 비트맵으로 `supports()`를 채운다). 실차에서 다른 PID 미지원이 관찰되면 그때 범위를 다시 정한다.
 2. **범위 밖 값** — 지금은 브리지에서 버리고 카운트만 한다. 보내서 DLQ로 격리해 서버 쪽에서 보이게 할지 미정.
 3. **MQTT 3.1.1의 ACL 거부** — mosquitto는 3.1.1에서 권한 없는 publish에도 PUBACK을 돌려주고 메시지를 버린다고
    알려져 있다(이 저장소에서 측정 안 함). 그러면 브리지는 받았다고 보고 spool에서 지운다 → **조용한 유실.**

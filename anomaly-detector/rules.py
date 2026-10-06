@@ -32,6 +32,9 @@ def detect(data: dict) -> list[AnomalyEvent]:
 
     for field, condition, anomaly_type, threshold, severity in _RULES:
         value = data.get(field)
+        # **값이 없으면 그 룰은 평가하지 않는다.** 필수 필드는 계약(contract.py)이 이미 거부하므로
+        # 여기서 None일 수 있는 것은 선택 필드(battery_voltage, ADR-030)뿐이다. 0으로 보고 평가하면
+        # 전압 룰이 "0 < 11.5"로 매 메시지 저전압 알림을 낸다 — 지원하지 않는 차량 전체가 오탐이 된다.
         if value is not None and condition(float(value)):
             anomalies.append(AnomalyEvent(
                 vehicle_id=data["vehicle_id"],

@@ -24,6 +24,20 @@ def contract():
     return mod
 
 
+@pytest.fixture(scope="session")
+def contract_v1():
+    """**구** 계약(숫자 6개 전부 필수)의 동결본 — 혼합 버전 테스트 전용(ADR-030).
+
+    브리지가 키를 생략한 payload를 구 백엔드가 거부한다는 것, 즉 **브리지를 마지막에** 올려야 하는
+    이유를 고정한다. 원본은 `anomaly-detector/tests/legacy/contract_v1.py` 하나뿐이다(사본을 또 두지 않는다).
+    """
+    path = os.path.join(REPO, "anomaly-detector", "tests", "legacy", "contract_v1.py")
+    spec = importlib.util.spec_from_file_location("telemetry_contract_v1_frozen", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 # ── 가짜 OBD ─────────────────────────────────────────────
 class FakeResponse:
     def __init__(self, value):

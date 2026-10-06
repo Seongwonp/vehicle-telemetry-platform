@@ -438,3 +438,74 @@ class TestScoreThreshold:
         probes = [make_normal_data(seed=300 + i) for i in range(20)]
 
         assert all(detector.update_batch(probes))
+
+
+# ── 선택 필드(ADR-030) — 피처가 빠진 레코드는 ML을 건너뛴다(0으로 채우지 않는다) ─────
+
+class TestMissingFeatures:
+
+    @staticmethod
+    def _without(data: dict, *fields) -> dict:
+        data = dict(data)
+        for f in fields:
+            data.pop(f, None)
+        return data
+
+    def _trained(self) -> MLAnomalyDetector:
+        detector = MLAnomalyDetector(min_samples=200, window_size=200)
+        detector.update_batch([make_normal_data(seed=i) for i in range(200)])
+        assert detector.is_trained
+        return detector
+
+    def test_missing_features는_없는_것과_null을_모두_센다(self):
+        d = make_normal_data(seed=1)
+        assert ml_detector.missing_features(d) == []
+        assert ml_detector.missing_features(self._without(d, "fuel_level")) == ["fuel_level"]
+        assert ml_detector.missing_features(dict(d, battery_voltage=None)) == ["battery_voltage"]
+
+    def test_예전처럼_0을_채웠다면_이상으로_찍혔다(self):
+        # "건너뛰기"를 고른 근거 — 없는 전압·연료를 0으로 채운 레코드는 정상 분포에서 멀어서
+        # 이상으로 찍힌다. 즉 0 채우기는 지원하지 않는 차량 전체를 ML 오탐으로 만든다.
+        detector = self._trained()
+        zero_filled = dict(make_normal_data(seed=999), battery_voltage=0.0, fuel_level=0.0)
+        assert detector.update_batch([zero_filled]) == [True]
+
+    def test_피처가_빠지면_판정_False_점수_nan_버퍼_제외(self):
+        detector = self._trained()
+        before = len(detector._buffer)
+        flags, scores = detector.update_batch_with_scores(
+            [self._without(make_normal_data(seed=500), "battery_voltage")])
+        assert flags == [False]
+        assert scores[0] != scores[0]  # nan — "채점 안 함". 0.0과 구분된다
+        assert len(detector._buffer) == before  # 학습 분포를 오염시키지 않는다
+        assert detector.skipped_missing == 1
+
+    def test_섞인_배치는_입력_순서대로_결과를_돌려준다(self):
+        detector = self._trained()
+        full = make_normal_data(seed=600)
+        batch = [full, self._without(full, "fuel_level"), full]
+        flags, scores = detector.update_batch_with_scores(batch)
+        assert len(flags) == len(scores) == 3
+        assert flags[1] is False and scores[1] != scores[1]
+        # 온전한 두 레코드는 같은 피처라 같은 점수다(nan이 아니다)
+        assert scores[0] == scores[2] == scores[0]
+        assert detector.skipped_missing == 1
+
+    def test_단건_경로도_건너뛴다(self):
+        detector = self._trained()
+        before = len(detector._buffer)
+        assert detector.update(self._without(make_normal_data(seed=700), "fuel_level")) is False
+        assert len(detector._buffer) == before
+        assert detector.skipped_missing == 1
+
+    def test_학습_전에는_빠진_레코드가_학습_표본으로_세지지_않는다(self):
+        detector = MLAnomalyDetector(min_samples=10, window_size=10)
+        partial = [self._without(make_normal_data(seed=i), "battery_voltage") for i in range(20)]
+        assert detector.update_batch(partial) == [False] * 20
+        assert detector.is_trained is False
+        assert len(detector._buffer) == 0
+
+    def test_extract는_빠진_값을_채우지_않고_터진다(self):
+        # 방어선 — missing_features를 거치지 않는 새 호출부가 생겨도 0이 조용히 들어가지 않게.
+        with pytest.raises(ValueError):
+            MLAnomalyDetector()._extract(self._without(make_normal_data(seed=1), "fuel_level"))

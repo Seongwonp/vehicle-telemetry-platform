@@ -188,3 +188,23 @@ def test_잘린_json은_MALFORMED_JSON이다():
     with pytest.raises(contract.ContractViolation) as ei:
         contract.validate(case["payload"])
     assert ei.value.reason == contract.MALFORMED_JSON
+
+
+# ── 6) detector 칸의 alert/no_alert를 실제 룰로 확인한다 (ADR-030에서 추가) ─────
+@pytest.mark.parametrize(
+    "case",
+    [c for c in CASES if c["detector"]["verdict"] in ("alert", "no_alert")],
+    ids=[c["id"] for c in CASES if c["detector"]["verdict"] in ("alert", "no_alert")])
+def test_detector_칸의_알림_여부가_룰과_같다(case):
+    """`detector` 칸은 지금까지 **사람이 적은 기대값**이었고 이 파일은 storage 칸만 실행했다.
+
+    선택 필드(ADR-030)를 넣으면서 "전압이 없으면 저전압 룰이 안 돈다(오탐 없음)"를 주장하므로,
+    그 주장을 칸 단위로 실행해 고정한다 — 계약 통과 → `rules.detect` → 알림 유무.
+    ML 판정은 여기 포함하지 않는다(학습 상태에 좌우되므로 `test_ml_detector.py`가 따로 본다).
+    """
+    import rules
+
+    data = contract.validate(case["payload"])
+    alerted = bool(rules.detect(data))
+    assert alerted == (case["detector"]["verdict"] == "alert"), (
+        f"[{case['id']}] detector 칸({case['detector']['verdict']})과 실제 룰 판정이 다르다")

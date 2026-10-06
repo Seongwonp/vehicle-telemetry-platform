@@ -110,6 +110,29 @@ class TelemetryConsumerTest {
     }
 
     @Test
+    @DisplayName("연료량·전압이 없는 레코드는 DLQ가 아니라 저장으로 간다 — 값은 null 그대로 (ADR-030)")
+    void consumeForStorage_선택필드_없음_저장() {
+        given(telemetryRepository.toPoint(any())).willReturn(DUMMY_POINT);
+        String noOptional = VALID_TELEMETRY_JSON
+            .replace(",\"fuel_level\":50.0", "")
+            .replace(",\"battery_voltage\":13.5", "");
+        String nullOptional = VALID_TELEMETRY_JSON
+            .replace("\"fuel_level\":50.0", "\"fuel_level\":null");
+
+        telemetryConsumer.consumeForStorage(
+            List.of(telemetryRecord(0L, noOptional), telemetryRecord(1L, nullOptional)), acknowledgment);
+
+        ArgumentCaptor<VehicleTelemetry> decoded = ArgumentCaptor.forClass(VehicleTelemetry.class);
+        verify(telemetryRepository, org.mockito.Mockito.times(2)).toPoint(decoded.capture());
+        assertThat(decoded.getAllValues().get(0).getFuelLevel()).isNull();
+        assertThat(decoded.getAllValues().get(0).getBatteryVoltage()).isNull();
+        assertThat(decoded.getAllValues().get(1).getFuelLevel()).isNull();
+        assertThat(decoded.getAllValues().get(1).getBatteryVoltage()).isEqualTo(13.5);
+        verify(kafkaTemplate, never()).send(any(ProducerRecord.class));
+        verify(acknowledgment).acknowledge();
+    }
+
+    @Test
     @DisplayName("배치 안의 역직렬화 실패 1건만 DLQ로 가고 나머지는 정상 저장된다")
     void consumeForStorage_혼합배치_실패건만_DLQ이동() {
         givenDlqSendSucceeds();

@@ -147,6 +147,80 @@ class TelemetryContractTest {
     }
 
     @Nested
+    @DisplayName("선택 숫자 필드 — 연료량·제어 모듈 전압만 (ADR-030)")
+    class 선택필드 {
+
+        @Test
+        @DisplayName("없거나 null이면 통과하고 값은 null이다 — 0으로 바꾸지 않는다")
+        void 없음과_null() {
+            VehicleTelemetry noFuel = decoder.decode(base().replace("\"fuel_level\":67.0,", ""));
+            assertThat(noFuel.getFuelLevel()).isNull();
+            assertThat(noFuel.getBatteryVoltage()).isEqualTo(13.8);
+
+            VehicleTelemetry noBattery = decoder.decode(base().replace("\"battery_voltage\":13.8,", ""));
+            assertThat(noBattery.getBatteryVoltage()).isNull();
+
+            VehicleTelemetry nulls = decoder.decode(base()
+                .replace("\"fuel_level\":67.0", "\"fuel_level\":null")
+                .replace("\"battery_voltage\":13.8", "\"battery_voltage\":null"));
+            assertThat(nulls.getFuelLevel()).isNull();
+            assertThat(nulls.getBatteryVoltage()).isNull();
+        }
+
+        @Test
+        @DisplayName("있으면 범위·타입은 그대로 본다")
+        void 있으면_검사한다() {
+            assertRejected(base().replace("\"fuel_level\":67.0", "\"fuel_level\":100.5"),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            assertRejected(base().replace("\"battery_voltage\":13.8", "\"battery_voltage\":65.536"),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            assertRejected(base().replace("\"battery_voltage\":13.8", "\"battery_voltage\":-0.1"),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            assertRejected(base().replace("\"fuel_level\":67.0", "\"fuel_level\":1e309"),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            assertRejected(base().replace("\"battery_voltage\":13.8", "\"battery_voltage\":NaN"),
+                TelemetryContractException.MALFORMED_JSON);
+            assertRejected(base().replace("\"fuel_level\":67.0", "\"fuel_level\":true"),
+                TelemetryContractException.TYPE_MISMATCH);
+            assertRejected(base().replace("\"fuel_level\":67.0", "\"fuel_level\":\"low\""),
+                TelemetryContractException.TYPE_MISMATCH);
+            // 경계값은 계약 안이다 — 실제 0V·0%는 "없음"과 다르게 그대로 남는다.
+            assertThat(decoder.decode(base().replace("\"battery_voltage\":13.8", "\"battery_voltage\":0")).getBatteryVoltage())
+                .isEqualTo(0.0);
+            assertThat(decoder.decode(base().replace("\"fuel_level\":67.0", "\"fuel_level\":0")).getFuelLevel())
+                .isEqualTo(0.0);
+        }
+
+        @Test
+        @DisplayName("빈 문자열은 '없음'이 아니라 거부다 — Jackson은 null로 바꾸므로 decoder가 원본 트리에서 막는다")
+        void 빈문자열은_거부() {
+            assertRejected(base().replace("\"fuel_level\":67.0", "\"fuel_level\":\"\""),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            assertRejected(base().replace("\"battery_voltage\":13.8", "\"battery_voltage\":\"\""),
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+        }
+
+        @Test
+        @DisplayName("나머지 넷은 여전히 필수다")
+        void 필수_넷() {
+            for (String f : new String[] {"\"speed\":87.3,", "\"rpm\":2400,", "\"engine_temp\":92.1,", "\"throttle_position\":34.5,"}) {
+                assertRejected(base().replace(f, ""), TelemetryContractException.PAYLOAD_VALIDATION_FAILED);
+            }
+        }
+
+        @Test
+        @DisplayName("OPTIONAL_NUMERIC 목록이 클래스의 @NotNull 없는 숫자 필드와 같다")
+        void 목록이_클래스와_같다() {
+            java.util.Set<String> fromClass = java.util.Arrays.stream(VehicleTelemetry.class.getDeclaredFields())
+                .filter(f -> f.getType() == Double.class)
+                .filter(f -> !f.isAnnotationPresent(jakarta.validation.constraints.NotNull.class))
+                .map(f -> f.getAnnotation(com.fasterxml.jackson.annotation.JsonProperty.class).value())
+                .collect(java.util.stream.Collectors.toSet());
+            assertThat(fromClass).isEqualTo(java.util.Set.copyOf(TelemetryDecoder.OPTIONAL_NUMERIC));
+        }
+    }
+
+    @Nested
     @DisplayName("이상 감지 대상 값은 반드시 통과해야 한다")
     class 이상감지_통과 {
 

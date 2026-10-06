@@ -83,6 +83,12 @@ public class TelemetryDecoder {
         "vehicle_id", "timestamp", "speed", "rpm", "engine_temp",
         "throttle_position", "fuel_level", "battery_voltage", "gps", "dtc_codes");
 
+    /**
+     * 없거나 null이면 통과하는 숫자 필드(ADR-030). {@link VehicleTelemetry}에서 {@code @NotNull}이
+     * 빠진 필드와 같고, {@code anomaly-detector/contract.py}의 {@code OPTIONAL_NUMERIC}과 같아야 한다.
+     */
+    static final List<String> OPTIONAL_NUMERIC = List.of("battery_voltage", "fuel_level");
+
     private final ObjectMapper strictMapper;
     private final Validator validator;
 
@@ -172,9 +178,24 @@ public class TelemetryDecoder {
 
         // ── 5) 값의 범위 ───────────────────────────────────────────
         Set<ConstraintViolation<VehicleTelemetry>> violations = validator.validate(telemetry);
-        if (!violations.isEmpty()) {
+        // 선택 필드의 **빈 문자열**은 "없음"이 아니라 위반이다(ADR-030). Jackson은 ""를 null로
+        // 바꾸므로 바인딩 결과만 보면 "없음"과 구분이 안 된다 — 원본 트리에서 본다.
+        // 필수 필드는 같은 ""가 null이 되어 @NotNull에 걸리므로 따로 볼 필요가 없다.
+        List<String> blankOptional = new ArrayList<>();
+        for (String name : OPTIONAL_NUMERIC) {
+            JsonNode node = root.get(name);
+            if (node != null && node.isTextual() && node.asText().isBlank()) {
+                blankOptional.add(name + " must not be blank");
+            }
+        }
+        if (!violations.isEmpty() || !blankOptional.isEmpty()) {
+            List<String> all = new ArrayList<>(blankOptional);
+            if (!violations.isEmpty()) {
+                all.add(describe(violations));
+            }
+            all.sort(null);
             throw new TelemetryContractException(
-                TelemetryContractException.PAYLOAD_VALIDATION_FAILED, describe(violations));
+                TelemetryContractException.PAYLOAD_VALIDATION_FAILED, String.join("; ", all));
         }
 
         // ── 5-b) 달력에 있는 날인가 ────────────────────────────────

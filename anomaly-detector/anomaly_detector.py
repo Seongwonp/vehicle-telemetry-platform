@@ -37,7 +37,7 @@ from dotenv import load_dotenv
 import rules
 import contract
 import notifier
-from ml_detector import MLAnomalyDetector
+from ml_detector import MLAnomalyDetector, missing_features
 
 load_dotenv()
 
@@ -332,6 +332,12 @@ PROCESSING_FAILED_TOTAL = Counter(
     "telemetry_anomaly_processing_failed_total",
     "계약을 통과했으나 처리(룰 판정·알림 발행)에서 실패한 레코드 수",
 )
+# 선택 필드(ADR-030)가 없어 **ML 채점을 건너뛴** 레코드 수. 룰 판정은 받았다 — 처리 실패가 아니다.
+# 이 값이 처리량과 같이 오르면 그 차량들에는 ML이 사실상 꺼져 있다는 뜻이다(조용히 0을 채우던 예전과 달리 보인다).
+ML_SKIPPED_MISSING_FEATURES = Counter(
+    "telemetry_anomaly_ml_skipped_missing_features_total",
+    "ML 피처(연료량·전압 등)가 없어 ML 채점을 건너뛴 레코드 수 — 룰 판정은 수행됨",
+)
 PROCESSED_TOTAL = Counter(
     "telemetry_anomaly_processed_total",
     "계약을 통과해 룰 판정까지 끝낸 레코드 수",
@@ -566,6 +572,10 @@ def main() -> None:
                     try:
                         detector = ml_detectors.get(topic_partition.partition)
                         batch_data = [data for _, data in parsed]
+                        # 피처가 빠진 레코드는 detector가 건너뛴다(0으로 채우지 않는다, ADR-030). 여기서는 센다.
+                        skipped = sum(1 for d in batch_data if missing_features(d))
+                        if skipped:
+                            ML_SKIPPED_MISSING_FEATURES.inc(skipped)
                         if ML_SCORE_DUMP:
                             ml_flags, ml_scores = detector.update_batch_with_scores(batch_data)
                             dump_scores(batch_data, ml_flags, ml_scores)

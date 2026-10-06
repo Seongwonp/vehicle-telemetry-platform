@@ -229,6 +229,9 @@ def make_features(seed: int = 0) -> dict:
         "engine_temp": random.uniform(85.0, 98.0),
         "battery_voltage": random.uniform(13.5, 14.2),
         "fuel_level": random.uniform(30.0, 80.0),
+        # 예전에는 이 키가 없어도 _extract가 0.0으로 채워 통과했다(피처 하나가 상수 0인 채로 학습).
+        # ADR-030부터 피처가 빠진 레코드는 ML을 건너뛰므로, 실제 payload처럼 여섯 피처를 다 준다.
+        "throttle_position": random.uniform(20.0, 60.0),
     }
 
 

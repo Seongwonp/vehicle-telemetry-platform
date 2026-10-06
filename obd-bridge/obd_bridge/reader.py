@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any, Callable, Optional
 
-from .mapping import PID_SPECS, quantity_to_float
+from .mapping import OPTIONAL_FIELDS, PID_SPECS, quantity_to_float
 
 log = logging.getLogger("obd_bridge.reader")
 
@@ -28,7 +28,10 @@ class PidReader:
         self.unsupported = tuple(
             s.field for s in PID_SPECS if not connection.supports(self.commands[s.field]))
         for field in self.unsupported:
-            log.warning("PID 미지원: %s — 이 필드가 없으면 계약상 payload를 만들 수 없다", field)
+            if field in OPTIONAL_FIELDS:
+                log.warning("PID 미지원: %s — 선택 필드라 매 주기 키를 생략하고 보낸다(0으로 채우지 않는다)", field)
+            else:
+                log.warning("PID 미지원: %s — 필수 필드라 이 차량에서는 payload를 만들 수 없다", field)
 
     def read(self) -> dict[str, Optional[float]]:
         out: dict[str, Optional[float]] = {}

@@ -28,6 +28,8 @@ class CycleStats:
     skipped_out_of_range: int = 0  # 계약 범위 밖 — 보내지 않았다
     skipped_overrun: int = 0       # 주기가 밀려 건너뛴 예정 주기 수(따라잡기 연사 안 함) — 읽지도 않았다
     missing_by_field: dict = field(default_factory=dict)
+    # 선택 PID(연료량·전압, ADR-030)가 없어 **키를 생략하고 보낸** 횟수. 보낸 주기다 — skipped가 아니다.
+    omitted_by_field: dict = field(default_factory=dict)
 
 
 class Bridge:
@@ -64,6 +66,9 @@ class Bridge:
             log.warning("계약 범위 밖 %s (원값 %s) — 보내지 않는다",
                         result.out_of_range, {f: readings[f] for f in result.out_of_range})
             return None
+        for f in result.omitted:
+            # 미지원 차량은 매 주기 생략하므로 경고 로그를 매번 남기지 않는다 — 카운터로 보고, 미지원은 기동 시 한 번 로그.
+            self.stats.omitted_by_field[f] = self.stats.omitted_by_field.get(f, 0) + 1
         self.spool.append(self.topic, json.dumps(result.payload, separators=(",", ":")),
                           ts, int(dt.timestamp() * 1000))
         self.stats.spooled += 1

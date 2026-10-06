@@ -103,8 +103,11 @@ public class TelemetryQueryService {
             .distinct()
             .map(id -> "r.vehicle_id == \"" + id + "\"")
             .collect(Collectors.joining(" or "));
-        // last()는 시리즈(vehicle_id, _field)별 마지막 값이다. 한 포인트에 모든 필드가 같은 _time으로
-        // 저장되므로 pivot 뒤 차량당 한 행이 된다. 아래 sort+limit는 그 전제가 깨졌을 때의 가드다.
+        // last()는 시리즈(vehicle_id, _field)별 마지막 값이다. 필수 필드는 한 포인트에 같은 _time으로
+        // 저장되므로 보통 pivot 뒤 차량당 한 행이 된다. **선택 필드(fuel_level·battery_voltage, ADR-030)는
+        // 최신 포인트에 없을 수 있다** — 그러면 그 필드의 last()가 더 오래된 _time을 가리켜 pivot 뒤
+        // 행이 둘이 된다. 아래 sort+limit가 최신 _time 행만 남기므로 그 필드는 **null**(= 이번 값에 없음)이 된다.
+        // 옛 값을 최신 값에 섞어 보여주지 않는 쪽이 맞다 — InfluxDbContractTest(실제 InfluxDB 2.7)가 고정한다.
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -%dh)

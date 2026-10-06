@@ -104,6 +104,43 @@ class TelemetryRepositoryTest {
         assertThat(repository.toPoint(telemetry())).isNotNull();
     }
 
+    @Test
+    void 선택필드가_없으면_NPE없이_그_필드를_쓰지_않는다() {
+        // ADR-030. 예전 toPoint는 finite(name, double)에 null을 언박싱해 NPE가 났다 — 계약은 통과한
+        // 레코드가 저장 단계에서 DLQ로 가는 것이다. 그렇다고 0으로 쓰면 "누락이 0으로 저장되던" 결함이 돌아온다.
+        repository = new TelemetryRepository(writeApi, new SimpleMeterRegistry());
+
+        VehicleTelemetry both = telemetry();
+        both.setFuelLevel(null);
+        both.setBatteryVoltage(null);
+        String line = repository.toPoint(both).toLineProtocol();
+        assertThat(line)
+            .doesNotContain("fuel_level")
+            .doesNotContain("battery_voltage")
+            .contains("speed=80.0")
+            .contains("throttle_position=30.0");
+
+        // 하나만 없을 때 — 있는 쪽은 그대로 쓴다.
+        VehicleTelemetry noFuel = telemetry();
+        noFuel.setFuelLevel(null);
+        assertThat(repository.toPoint(noFuel).toLineProtocol())
+            .doesNotContain("fuel_level")
+            .contains("battery_voltage=13.8");
+
+        VehicleTelemetry noBattery = telemetry();
+        noBattery.setBatteryVoltage(null);
+        assertThat(repository.toPoint(noBattery).toLineProtocol())
+            .doesNotContain("battery_voltage")
+            .contains("fuel_level=50.0");
+
+        // 있으면 유한성 검사는 그대로다 — 선택이 "검사 생략"이 아니다.
+        VehicleTelemetry infiniteFuel = telemetry();
+        infiniteFuel.setFuelLevel(Double.POSITIVE_INFINITY);
+        assertThatThrownBy(() -> repository.toPoint(infiniteFuel))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("fuel_level");
+    }
+
     private VehicleTelemetry telemetry() {
         VehicleTelemetry telemetry = new VehicleTelemetry();
         telemetry.setVehicleId("SIM-001");

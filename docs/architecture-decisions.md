@@ -1363,3 +1363,64 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 - 지표: 끝난 대기 Timer `telemetry.mqtt.ack.wait{outcome=acked|failed|interrupted}`(고정 버킷 10ms~150s, 40·45·60s 포함, 결과 3종뿐), 진행 중 게이지 `telemetry.mqtt.ack.wait.in.progress`(0/1)·`telemetry.mqtt.ack.wait.elapsed.seconds`(scrape 시점 계산). 끝난 대기만으로는 막혀 있는 순간이 안 보여서 게이지를 따로 둔다. 게이지는 기동 때 등록(부재 ≠ 0), 값은 기존 `waitLock` 아래서 읽는다.
 - 알림 문턱 **45초**: 대기 하나의 정상 상한은 `max.block.ms` 10초 + `delivery.timeout.ms` 30초 = 40초(그 뒤 spool로 완료)이고 keepAlive 60초 아래다. 45초 = 40초 + spool·스케줄링 여유 5초 — 넘으면 상한이 깨진 것(설정 회귀·spool 디스크 정지·다른 곳에서 막힘)이다. `for`는 두지 않는다: 게이지가 한 대기의 연속 경과라 값 자체가 지속 시간이고, `for`를 두면 scrape 15초 단위로 확인이 밀려 keepAlive 뒤가 된다. 탐지는 대기 시작 뒤 45~75초.
 - 이 알림은 **Kafka 장기 정지·D2식 인지 지연 자체를 잡지 않는다** — 대기 하나는 상한 안에서 끝나기 때문이다. 실험 D3(1회, 76초 pause 중 끊김): 대기 최대 29.9초, 알림 없음(예측대로), 인지 +10.6초·재접속 +11.9초, 유실 0·중복 3. 같은 실행에서 끊김 인터럽트가 백로그 경로의 **동기 spool 쓰기**(콜백 스레드)에 닿아 `ClosedByInterruptException` → ACK 안 함(유실 아님)·0바이트 `.tmp` 잔존을 봤다 — 결함 후보, 이번에 고치지 않았다. 실스택 firing 경로(대기 ≥45초)는 만들지 않았다(promtool·단위 테스트만).
+
+
+## ADR-030 — 연료량(PID 012F)·제어 모듈 전압(PID 0142)만 계약상 선택으로 (2026-10-06)
+
+### 문제
+
+입력 계약은 숫자 6개를 전부 필수로 요구했다(누락/null → `PAYLOAD_VALIDATION_FAILED`). 그런데 OBD-II 차량은 모든 PID를 지원하지 않는다.
+지원 여부는 SAE J1979의 PID 지원 비트맵(Mode 01 PID `00`·`20`·`40`…)으로 차량이 스스로 알리고, python-OBD는 연결 시 이 비트맵으로
+`supports()`를 채운다. `obd-bridge`는 한 PID라도 미지원이면 그 주기를 보내지 않으므로(0을 지어내지 않기 위해), **연료량이나 전압을
+지원하지 않는 차량은 속도·RPM·온도까지 포함해 아무것도 보낼 수 없었다**(`obd-bridge/README.md` 결정 대기 1).
+
+### 결정
+
+- **`fuel_level`(012F)·`battery_voltage`(0142) 두 필드만** 없거나 `null`이면 통과시킨다. 값이 있으면 범위·타입·NaN·Infinity 검사는 그대로다.
+  빈 문자열 `""`은 "없음"이 아니라 거부다(Jackson이 `""`를 null로 바꾸므로 `TelemetryDecoder`가 원본 트리에서 따로 막는다 — 안 막으면 Java만 통과시켜 두 경로가 갈린다).
+- **`speed`·`rpm`·`engine_temp`(냉각수)·`throttle_position`은 필수로 남긴다.**
+- 구현은 한 변경으로: Java `VehicleTelemetry`(`@NotNull` 제거, 범위 애너테이션 유지, `@JsonInclude(NON_NULL)`)·`TelemetryDecoder`, Python `contract.py`(`OPTIONAL_NUMERIC`),
+  공유 fixture(`contract-fixtures/cases.json`, 19칸 추가 → 80칸 Java·Python 같은 판정). 숫자의 단일 기준은 결정표 3-B절.
+
+### 왜 이 두 필드만인가
+
+- **사용자 결정이 두 필드로 범위를 정했다.** 근거는 "차종에 따라 지원하지 않는다고 알려진" 두 PID라는 것이고, **이 저장소에서 실차로 확인한 것이 아니다.**
+  어느 PID가 실제로 흔히 미지원인지는 **실차에서 지원 비트맵을 읽어 확인할 일**로 남긴다 — 여기서 "흔히 미지원"이라고 주장하지 않는다.
+- 나머지 넷은 감지 룰(과속·RPM 과부하·과열)과 트립 계산의 입력이다. 선택으로 만들면 "그 차량은 과열 감지가 영원히 안 된다"가 신호 없이 생긴다
+  (P0-2a에서 막은 바로 그 결함). 연료량은 룰이 없고, 전압 룰은 값이 없으면 평가하지 않는 것이 명확히 정의된다.
+- 다른 PID의 지원 여부는 **실차로 확인한 뒤** 같은 절차(공유 fixture → 두 계약 → 저장·감지·앱 → 혼합 버전 테스트)로 다시 정한다.
+
+### 배포 순서 — 감지기 → 백엔드 → 브리지 (§10-5와 같은 원칙)
+
+받는 쪽이 새 모양을 모르면 메시지 전체를 거부한다. 이번 새 모양은 필드 추가가 아니라 **생략**이다.
+
+| 순서를 어기면 | 결과 |
+| --- | --- |
+| 백엔드가 감지기보다 먼저 | 새 백엔드의 Kafka value(`NON_NULL`이라 키 없음)를 **구 감지기가 전부 DLQ** |
+| 브리지가 백엔드보다 먼저 | 키를 생략한 payload를 **구 백엔드 MQTT 입구가 거부**(MQTT DLQ) |
+
+온전한 payload는 구·신 모두 받으므로 감지기를 먼저 올리는 것은 안전하다. **롤백은 역순**이고, 되돌리기 전에 브리지를 먼저 되돌리거나
+멈춰야 한다 — 키 없는 메시지가 남아 있으면 구버전이 DLQ로 보낸다(그때 복구는 DLQ 재주입이 아니라 새 버전 재배포다).
+
+이 순서가 필요한 이유는 **테스트로 고정했다.** 새 계약을 고친 뒤에는 현재 코드로 구 동작을 재현할 수 없으므로 구 계약을 **얼려 두었다** —
+`anomaly-detector/tests/legacy/contract_v1.py`(Python 동결본), `backend/src/test/java/com/telemetry/domain/legacy/VehicleTelemetryV1.java`(Java 동결본).
+`test_mixed_version.py`·`MixedVersionContractTest`·`obd-bridge/tests/test_unsupported_null.py`가 "구 계약은 새 payload를 거부, 새 계약은 수용"을 단언한다.
+
+### 결과 — 경로별
+
+| 경로 | 값이 없을 때 | 근거 테스트 |
+| --- | --- | --- |
+| 저장(InfluxDB) | **필드를 쓰지 않는다.** 0으로 쓰면 "누락이 0으로 저장되던" 결함(결정표 2절)이 돌아온다. 예전 `toPoint`는 null 언박싱 NPE로 그 레코드를 DLQ로 보냈을 것이다 | `TelemetryRepositoryTest`(line protocol에 필드 없음), `InfluxDbContractTest`(실제 InfluxDB 2.7: 필드 행 수, 조회 null) |
+| 조회·WebSocket | 응답 DTO는 이미 `Double`이라 **null**. fleet 최신값(`last()`+pivot)은 필드별 `last()`가 옛 포인트를 가리켜도 최신 `_time` 행만 남겨 **옛 값을 섞지 않는다** | `InfluxDbContractTest` |
+| 보조 진단 프롬프트 | "nullV" 대신 "미수신(차량 미지원 가능)" | `DiagnosisServiceTest` |
+| 감지 룰 | 전압이 없으면 저전압·과전압 룰을 **평가하지 않는다**(오탐 없음). 다른 룰은 그대로 | `test_rules.py`, fixture detector 칸을 실제 룰로 실행 |
+| 감지 ML | **그 레코드를 건너뛴다**(버퍼·채점 제외, 판정 False·점수 nan). 0 채우기는 이상으로 찍히고(테스트로 확인) 학습 분포를 오염시킨다. 대체값은 미지원 차량마다 매번 같은 가짜 값이 되어 택하지 않았다. 건너뛴 수는 `telemetry_anomaly_ml_skipped_missing_features_total` | `test_ml_detector.py::TestMissingFeatures`, `test_consume_loop.py` |
+| 앱 | "미수신"으로 표시, 전압 기준 판정 안 함(0이나 기준 밖으로 보이지 않게) | 앱 저장소 위젯 테스트 |
+| 브리지 | 012F·0142가 미지원·null이면 **키 생략**(0도 null도 아님). 필수 넷 중 하나라도 없으면 여전히 그 주기 미전송 | `obd-bridge/tests/test_unsupported_null.py` |
+
+### 대가와 한계
+
+- **ML은 미지원 차량에서 사실상 꺼진다.** 피처 6개 모델 하나라 피처가 빠진 레코드를 채점할 방법이 없다. 피처 부분집합별 모델은 필요가 확인되면 별도 설계.
+- **전압 룰을 평가하지 않았다는 사실은 지표로 세지 않는다.** 차량별 "미지원" 상태는 InfluxDB에서 필드 부재로만 보인다.
+- 검증은 **단위·계약 테스트 수준**이다(Testcontainers InfluxDB 포함). **실스택 E2E(MQTT→Kafka→InfluxDB·감지기·앱)와 실차·실동글은 미검증**이다.
+- **어느 PID가 실차에서 흔히 미지원인지 확인하지 않았다** — 실차에서 지원 비트맵을 읽어 기록하는 것이 다음 근거다.

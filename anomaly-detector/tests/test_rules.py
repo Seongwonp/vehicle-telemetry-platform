@@ -150,3 +150,34 @@ class TestEdgeCases:
         anomalies = detect(make_data(speed=0.0))
         speed = [a for a in anomalies if a.field == "speed"]
         assert speed == []
+
+
+# ── 선택 필드(ADR-030) — 값이 없으면 그 룰은 평가하지 않는다 ─────────
+
+class TestOptionalFields:
+
+    def _without(self, *fields) -> dict:
+        data = make_data()
+        for f in fields:
+            data.pop(f, None)
+        return data
+
+    def test_전압_없음은_저전압_오탐이_아니다(self):
+        # 0으로 보면 "0 < 11.5"로 매 메시지 저전압 알림이 나간다 — 지원하지 않는 차량 전체가 오탐.
+        # 바로 위 test_배터리전압_0V가 "실제 0V는 알림"임을 고정한다 — 없음과 0은 다르다.
+        assert detect(self._without("battery_voltage")) == []
+
+    def test_전압_null도_평가하지_않는다(self):
+        assert detect(make_data(battery_voltage=None)) == []
+
+    def test_연료_없음은_알림이_없다(self):
+        assert detect(self._without("fuel_level")) == []
+
+    def test_전압이_없어도_다른_룰은_돈다(self):
+        anomalies = detect(make_data(battery_voltage=None, rpm=6500, engine_temp=110.0))
+        assert sorted(a.field for a in anomalies) == ["engine_temp", "rpm"]
+
+    def test_전압이_있으면_룰은_그대로다(self):
+        # 선택화가 "전압 룰 끔"이 아니다 — 값이 오면 기존 임계 그대로.
+        assert [a.anomaly_type for a in detect(make_data(battery_voltage=11.0))] == ["배터리 저전압"]
+        assert [a.anomaly_type for a in detect(make_data(battery_voltage=15.5))] == ["배터리 과전압"]

@@ -31,6 +31,23 @@ logger = logging.getLogger("ml_detector")
 FEATURES = ["speed", "rpm", "engine_temp", "battery_voltage", "fuel_level", "throttle_position"]
 
 
+def missing_features(data: dict) -> list[str]:
+    """이 레코드에 없는(또는 null인) 피처 이름. 비어 있으면 ML에 넣을 수 있다.
+
+    ## 왜 필요한가 — 선택 필드(ADR-030)
+
+    `fuel_level`·`battery_voltage`가 계약상 선택이 되면서 피처가 빠진 레코드가 정상으로 들어온다.
+    예전 `_extract`는 `data.get(f) or 0.0`이라 **없는 값을 조용히 0으로 채웠다** — 연료 0%·전압 0V는
+    정상 분포에서 멀리 떨어진 값이라 Isolation Forest가 그 레코드를 **이상으로 찍고**, 버퍼에 들어가면
+    **다음 학습의 분포까지 오염**시킨다. 그래서 피처가 하나라도 없으면 ML은 **그 레코드를 건너뛴다**
+    (버퍼에도 넣지 않고 채점도 안 한다). 룰 판정은 그대로 돈다.
+
+    대체값(평균·중앙값)으로 채우는 안은 택하지 않았다 — 지원하지 않는 차량은 **항상** 없으므로
+    그 차량의 모든 레코드가 같은 가짜 값을 갖게 되고, 그 값이 판정에 섞이는 근거를 설명할 수 없다.
+    """
+    return [f for f in FEATURES if data.get(f) is None]
+
+
 class MLAnomalyDetector:
     """
     Isolation Forest 기반 이상 감지기.
@@ -84,12 +101,18 @@ class MLAnomalyDetector:
         self._samples_since_train = 0
         # 마지막 학습에 쓴 표본 수. 워밍업 중 재학습 판단(2배 조건)에 쓴다.
         self._trained_with = 0
+        # 피처가 빠져 ML을 건너뛴 레코드 수(ADR-030). 상태 저장에는 넣지 않는다 — 관측용이다.
+        self.skipped_missing = 0
 
     def update(self, data: dict) -> bool:
         """
         데이터를 받아 버퍼에 추가하고, 이상 여부 반환.
         학습 전이면 False 반환 (정상으로 간주).
+        피처가 빠진 레코드는 버퍼에 넣지 않고 False를 돌려준다(`missing_features` 참고).
         """
+        if missing_features(data):
+            self.skipped_missing += 1
+            return False
         features = self._extract(data)
         self._buffer.append(features)
         self._samples_since_train += 1
@@ -123,21 +146,8 @@ class MLAnomalyDetector:
         """
         if not batch:
             return []
-
-        features_list = [self._extract(data) for data in batch]
-        self._buffer.extend(features_list)
-        self._samples_since_train += len(features_list)
-
-        if not self.is_trained:
-            if len(self._buffer) >= self.min_samples:
-                self._train()
-            else:
-                # 아직 최초 학습도 못 했으면 전부 정상으로 간주한다(단건 경로와 동일).
-                return [False] * len(features_list)
-        elif self._should_retrain():
-            self._train()
-
-        return self._score_and_flag(features_list)[0]
+        # 학습 전(아직 최초 학습도 못 함)이면 전부 정상으로 간주한다(단건 경로와 동일).
+        return self._process_batch(batch)[0]
 
     def update_batch_with_scores(self, batch: List[dict]) -> Tuple[List[bool], List[float]]:
         """`update_batch()`와 같은 일을 하되 이상 점수도 함께 돌려준다(측정·튜닝용).
@@ -157,8 +167,23 @@ class MLAnomalyDetector:
         """
         if not batch:
             return [], []
+        return self._process_batch(batch)
 
-        features_list = [self._extract(data) for data in batch]
+    def _process_batch(self, batch: List[dict]) -> Tuple[List[bool], List[float]]:
+        """배치 경로의 공통 본체. 결과는 **입력 순서 그대로** 돌려준다.
+
+        피처가 빠진 레코드(ADR-030)는 버퍼에도 채점에도 넣지 않고 판정 False·점수 nan으로 둔다 —
+        nan은 "채점하지 않았다"는 표시이고 0.0(실제로 나올 수 있는 점수)과 구분된다.
+        학습 전에도 같다: 점수를 매길 모델이 없으므로 판정은 전부 정상, 점수는 nan.
+        """
+        flags = [False] * len(batch)
+        scores = [float("nan")] * len(batch)
+        complete = [i for i, data in enumerate(batch) if not missing_features(data)]
+        self.skipped_missing += len(batch) - len(complete)
+        if not complete:
+            return flags, scores
+
+        features_list = [self._extract(batch[i]) for i in complete]
         self._buffer.extend(features_list)
         self._samples_since_train += len(features_list)
 
@@ -166,13 +191,15 @@ class MLAnomalyDetector:
             if len(self._buffer) >= self.min_samples:
                 self._train()
             else:
-                # 학습 전에는 점수를 매길 모델이 없다. 판정은 전부 정상, 점수는 nan으로
-                # 표시해 "0점"과 구분한다(0.0은 실제로 나올 수 있는 점수다).
-                return [False] * len(features_list), [float("nan")] * len(features_list)
+                return flags, scores
         elif self._should_retrain():
             self._train()
 
-        return self._score_and_flag(features_list)
+        scored_flags, scored = self._score_and_flag(features_list)
+        for i, flag, score in zip(complete, scored_flags, scored):
+            flags[i] = flag
+            scores[i] = score
+        return flags, scores
 
     def _score_and_flag(self, features_list: List[List[float]]) -> Tuple[List[bool], List[float]]:
         scores = self.model.score_samples(np.array(features_list))
@@ -225,7 +252,12 @@ class MLAnomalyDetector:
         logger.info(f"Isolation Forest (재)학습 완료 (윈도우 샘플: {len(self._buffer)}개)")
 
     def _extract(self, data: dict) -> list[float]:
-        return [float(data.get(f) or 0.0) for f in FEATURES]
+        # **없는 값을 0으로 채우지 않는다**(ADR-030). 예전에는 `data.get(f) or 0.0`이었다.
+        # 호출자가 missing_features로 걸러서 여기 오므로, 오면 그건 호출 순서 버그다 — 조용히 채우지 말고 터뜨린다.
+        missing = missing_features(data)
+        if missing:
+            raise ValueError(f"ML 피처 없음 {missing} — 0으로 채우지 않는다(missing_features로 먼저 거른다)")
+        return [float(data[f]) for f in FEATURES]
 
     # ── 상태 저장/복원 (재시작·리밸런싱 대응) ──────────────────────
 

@@ -38,4 +38,12 @@ class DiagnosisServiceTest {
             .isInstanceOf(ResourceNotFoundException.class)
             .hasMessageContaining("진단할 텔레메트리 데이터가 없습니다");
     }
+
+    @Test
+    void 선택_센서값이_없으면_프롬프트에_null이나_0이_아니라_미수신으로_적는다() {
+        // ADR-030 — 연료량·전압이 없을 때 "nullV"나 0V로 쓰면 진단이 "배터리 방전"으로 읽는다.
+        assertThat(DiagnosisService.orMissing(null, "V")).isEqualTo("미수신(차량 미지원 가능)");
+        assertThat(DiagnosisService.orMissing(13.8, "V")).isEqualTo("13.8V");
+        assertThat(DiagnosisService.orMissing(0.0, "%")).isEqualTo("0.0%");
+    }
 }

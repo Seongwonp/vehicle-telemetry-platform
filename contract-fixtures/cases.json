@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "storage/detector 두 칸 모두 **실측**이다. storage는 TelemetryDecoder(Java)와 contract.py(Python)가 53/53 같은 판정을 내는 것을 확인한 값이고, detector는 계약 적용 후 anomaly_detector의 판정이다. detector_before가 있는 칸은 **정책 적용 전** 동작이다 — 무엇이 바뀌었는지 보라.",
+  "note": "storage/detector 두 칸 모두 **실측**이다. storage는 TelemetryDecoder(Java)와 contract.py(Python)가 80/80 같은 판정(2026-10-06 ADR-030 칸 포함)을 내는 것을 확인한 값이고, detector는 계약 적용 후 anomaly_detector의 판정이다. detector_before가 있는 칸은 **정책 적용 전** 동작이다 — 무엇이 바뀌었는지 보라.",
   "cases": [
     {
       "id": "normal",
@@ -837,6 +837,234 @@
       "detector": {
         "verdict": "?",
         "note": "공백만"
+      }
+    },
+    {
+      "id": "fuel_level_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 연료량 없음은 통과, 저장 시 필드 생략(0 아님)"
+      }
+    },
+    {
+      "id": "fuel_level_null",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": null, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 명시적 null도 없음과 같다"
+      }
+    },
+    {
+      "id": "battery_voltage_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 전압이 없으면 저전압·과전압 룰을 **평가하지 않는다**(0으로 보면 매번 저전압 오탐)"
+      }
+    },
+    {
+      "id": "battery_voltage_null",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": null, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — null도 룰 평가 안 함"
+      }
+    },
+    {
+      "id": "optional_both_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 둘 다 없음. obd-bridge가 012F·0142 미지원 차량에서 보내는 모양"
+      }
+    },
+    {
+      "id": "optional_missing_with_rpm_anomaly",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 6500, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 선택 필드가 없어도 나머지 룰은 그대로 돈다(RPM 과부하 1건)"
+      }
+    },
+    {
+      "id": "battery_voltage_missing_while_stopped",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 0, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 정지 + 전압 없음. 없는 전압을 0으로 채우면 저전압 오탐이 나는 자리"
+      }
+    },
+    {
+      "id": "fuel_level_out_of_range",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 100.5, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 있으면 범위는 그대로 본다"
+      }
+    },
+    {
+      "id": "battery_voltage_out_of_range",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 70.0, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 있으면 범위는 그대로 본다(PID 42 상한 65.535)"
+      }
+    },
+    {
+      "id": "battery_voltage_negative",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": -0.1, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 하한 0"
+      }
+    },
+    {
+      "id": "fuel_level_empty_string",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": \"\", \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 빈 문자열은 '없음'이 아니라 위반. Java는 빈 문자열을 null로 바꾸므로 decoder가 원본 트리에서 따로 막는다"
+      }
+    },
+    {
+      "id": "fuel_level_not_a_number",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": \"low\", \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 타입 오류는 그대로 TYPE_MISMATCH"
+      }
+    },
+    {
+      "id": "battery_voltage_boolean",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": true, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "TYPE_MISMATCH"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — Python bool 함정(float(True)=1.0)이 선택 필드에서도 막히는지"
+      }
+    },
+    {
+      "id": "battery_voltage_nan_literal",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": NaN, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "MALFORMED_JSON"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — NaN 리터럴은 선택 필드여도 JSON이 아니다"
+      }
+    },
+    {
+      "id": "fuel_level_1e309",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": 1e309, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030(2026-10-06) 선택 필드 — Infinity는 범위 제약이 잡는다"
+      }
+    },
+    {
+      "id": "fuel_level_numeric_string",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"fuel_level\": \"55.5\", \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "accept",
+        "reason": null
+      },
+      "detector": {
+        "verdict": "no_alert",
+        "note": "ADR-030(2026-10-06) 선택 필드 — 숫자 문자열 허용 정책은 선택 필드에도 같다"
+      }
+    },
+    {
+      "id": "throttle_position_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": 92.1, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030 — 스로틀은 **여전히 필수**다(선택화 범위가 두 필드뿐인지 고정)"
+      }
+    },
+    {
+      "id": "engine_temp_null",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"rpm\": 2400, \"engine_temp\": null, \"throttle_position\": 34.5, \"fuel_level\": 67.0, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030 — 냉각수 온도는 **여전히 필수**다"
+      }
+    },
+    {
+      "id": "rpm_missing_with_optional_missing",
+      "payload": "{\"vehicle_id\": \"KR-GA-1234\", \"timestamp\": \"2026-09-09T10:00:00.000Z\", \"speed\": 87.3, \"engine_temp\": 92.1, \"throttle_position\": 34.5, \"battery_voltage\": 13.8, \"gps\": {\"lat\": 37.123456, \"lng\": 127.654321}, \"dtc_codes\": []}",
+      "storage": {
+        "verdict": "reject",
+        "reason": "PAYLOAD_VALIDATION_FAILED"
+      },
+      "detector": {
+        "verdict": "dlq",
+        "note": "ADR-030 — 선택 필드 생략이 필수 필드 누락을 덮지 않는다"
       }
     }
   ],

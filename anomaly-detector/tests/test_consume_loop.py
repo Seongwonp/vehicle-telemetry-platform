@@ -488,3 +488,32 @@ def test_지표_정상입력과_알림실패는_거부로_안_센다(loop):
                          entrance=ad.ENTRANCE, reason=r)
                 for r in ad.contract.REASONS)
     assert after == before, "계약 위반이 아닌데 거부 카운터가 올랐다"
+
+
+# ── 선택 필드(ADR-030) — 전압·연료가 없는 레코드 ──────────────────
+def test_선택필드가_없는_레코드는_DLQ도_오탐도_없고_ML만_건너뛴다(loop, monkeypatch):
+    """`main()` 그대로. 전압이 없는 레코드가 계약을 통과하고, 저전압 오탐이 없고, ML은 건너뛰며 그 수를 센다.
+
+    예전 구현이면 두 군데서 틀렸다 — 계약이 `PAYLOAD_VALIDATION_FAILED`로 DLQ에 보냈고,
+    계약을 통과시켰더라도 ML `_extract`가 없는 값을 0으로 채웠다.
+    """
+    monkeypatch.setattr(ad, "ML_ENABLED", True)
+    skipped_before = ad.REGISTRY.get_sample_value(
+        "telemetry_anomaly_ml_skipped_missing_features_total") or 0.0
+    batch = {ad.TopicPartition(TOPIC, PARTITION): [
+        Msg(0, payload(battery_voltage=...)),
+        Msg(1, payload(fuel_level=None)),
+        Msg(2, payload(battery_voltage=..., fuel_level=...)),
+        Msg(3, payload(battery_voltage=..., rpm=6500)),   # 다른 룰은 그대로 돈다
+        Msg(4, payload()),
+    ]}
+    consumer, producer, dlq, raised = loop([batch])
+
+    assert raised is None
+    assert dlq.sent == [], "선택 필드 누락은 계약 위반이 아니다"
+    assert [p["value"]["anomaly_type"] for p in producer.sent] == ["RPM 과부하"], \
+        "전압이 없다고 저전압 알림이 나가면 안 된다"
+    assert committed_offset(consumer) == 5
+    skipped_after = ad.REGISTRY.get_sample_value(
+        "telemetry_anomaly_ml_skipped_missing_features_total") or 0.0
+    assert skipped_after - skipped_before == 4.0

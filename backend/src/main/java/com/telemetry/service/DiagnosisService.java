@@ -139,7 +139,9 @@ public class DiagnosisService {
         sb.append("차량 ID: ").append(vehicleId).append('\n');
         sb.append("최신 센서값 — 속도: ").append(latest.getSpeed()).append("km/h, RPM: ").append(latest.getRpm())
           .append(", 엔진온도: ").append(latest.getEngineTemp()).append("°C, 배터리전압: ")
-          .append(latest.getBatteryVoltage()).append("V, 연료: ").append(latest.getFuelLevel()).append("%\n");
+          // 선택 필드(ADR-030) — 없으면 "nullV"나 0이 아니라 미수신이라고 적는다.
+          .append(orMissing(latest.getBatteryVoltage(), "V")).append(", 연료: ")
+          .append(orMissing(latest.getFuelLevel(), "%")).append('\n');
         if (latest.getDtcCodes() != null && !latest.getDtcCodes().isEmpty()) {
             sb.append("DTC 코드: ").append(String.join(", ", latest.getDtcCodes())).append('\n');
         }
@@ -154,6 +156,11 @@ public class DiagnosisService {
                 .append(", 심각도 ").append(a.getSeverity()).append(")\n"));
         }
         return sb.toString();
+    }
+
+    /** 선택 센서값 표기(ADR-030). 값이 없으면 "미수신(차량 미지원 가능)" — 0이나 "null"로 읽히지 않게. */
+    static String orMissing(Double value, String unit) {
+        return value == null ? "미수신(차량 미지원 가능)" : value + unit;
     }
 
     private static final Map<String, Object> RESPONSE_SCHEMA = Map.of(
