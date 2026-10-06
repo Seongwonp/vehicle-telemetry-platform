@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.telemetry.contract.MqttKafkaAckContractTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-10-06T03:24:53" hostname="DESKTOP-FDCVTT0" time="36.427">
+  <properties/>
+  <testcase name="compareNormalDeliveryAndRecoverKafkaOutageThroughSpool()" classname="com.telemetry.contract.MqttKafkaAckContractTest" time="36.427"/>
+  <system-out><![CDATA[12:24:42.644 [Test worker] INFO tc.confluentinc/cp-kafka:7.6.1 -- Creating container for image: confluentinc/cp-kafka:7.6.1
+12:24:44.112 [Test worker] INFO tc.confluentinc/cp-kafka:7.6.1 -- Container confluentinc/cp-kafka:7.6.1 is starting: 3e391af78aaa35c5c0c0e418c667a36ad86ef8847ce73bc7a49fd298ac90561f
+12:24:50.044 [Test worker] INFO tc.confluentinc/cp-kafka:7.6.1 -- Container confluentinc/cp-kafka:7.6.1 started in PT7.4001939S
+12:24:50.045 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Creating container for image: eclipse-mosquitto:2.0
+12:24:51.791 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Container eclipse-mosquitto:2.0 is starting: 95b426b161742b48cc2b92ec34d97e5293ec23acd6716ffd13f841f7eff1574d
+12:24:53.406 [Test worker] INFO tc.eclipse-mosquitto:2.0 -- Container eclipse-mosquitto:2.0 started in PT3.3604183S
+12:24:53.431 [Test worker] INFO org.apache.kafka.clients.admin.AdminClientConfig -- AdminClientConfig values: 
+	auto.include.jmx.reporter = true
+	bootstrap.servers = [PLAINTEXT://localhost:1303]
+	client.dns.lookup = use_all_dns_ips
+	client.id = 
+	connections.max.idle.ms = 300000
+	default.api.timeout.ms = 60000
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+
+12:24:53.515 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka version: 3.6.2
+12:24:53.515 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka commitId: c4deed513057c94e
+12:24:53.515 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka startTimeMs: 1791257093513
+12:24:54.957 [kafka-admin-client-thread | adminclient-1] INFO org.apache.kafka.common.utils.AppInfoParser -- App info kafka.admin.client for adminclient-1 unregistered
+12:24:54.961 [kafka-admin-client-thread | adminclient-1] INFO org.apache.kafka.common.metrics.Metrics -- Metrics scheduler closed
+12:24:54.961 [kafka-admin-client-thread | adminclient-1] INFO org.apache.kafka.common.metrics.Metrics -- Closing reporter org.apache.kafka.common.metrics.JmxReporter
+12:24:54.961 [kafka-admin-client-thread | adminclient-1] INFO org.apache.kafka.common.metrics.Metrics -- Metrics reporters closed
+12:24:55.459 [Test worker] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.1.Final
+12:24:55.610 [Test worker] INFO org.springframework.integration.channel.DirectChannel -- Channel 'unknown.channel.name' has 1 subscriber(s).
+12:24:55.620 [Test worker] INFO org.apache.kafka.clients.consumer.ConsumerConfig -- ConsumerConfig values: 
+	allow.auto.create.topics = true
+	auto.commit.interval.ms = 5000
+	auto.include.jmx.reporter = true
+	auto.offset.reset = earliest
+	bootstrap.servers = [PLAINTEXT://localhost:1303]
+	check.crcs = true
+	client.dns.lookup = use_all_dns_ips
+	client.id = consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1
+	client.rack = 
+	connections.max.idle.ms = 540000
+	default.api.timeout.ms = 60000
+	enable.auto.commit = true
+	exclude.internal.topics = true
+	fetch.max.bytes = 52428800
+	fetch.max.wait.ms = 500
+	fetch.min.bytes = 1
+	group.id = ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2
+	group.instance.id = null
+	heartbeat.interval.ms = 3000
+	interceptor.classes = []
+	internal.leave.group.on.close = true
+	internal.throw.on.fetch.stable.offset.unsupported = false
+	isolation.level = read_uncommitted
+	key.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+	max.partition.fetch.bytes = 1048576
+	max.poll.interval.ms = 300000
+	max.poll.records = 500
+	metadata.max.age.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partition.assignment.strategy = [class org.apache.kafka.clients.consumer.RangeAssignor, class org.apache.kafka.clients.consumer.CooperativeStickyAssignor]
+	receive.buffer.bytes = 65536
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 30000
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	session.timeout.ms = 45000
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	value.deserializer = class org.apache.kafka.common.serialization.StringDeserializer
+
+12:24:55.649 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka version: 3.6.2
+12:24:55.649 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka commitId: c4deed513057c94e
+12:24:55.649 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka startTimeMs: 1791257095649
+12:24:55.658 [Test worker] INFO org.apache.kafka.clients.consumer.KafkaConsumer -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Subscribed to topic(s): vehicle-telemetry
+12:24:56.349 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:24:56.620 [MQTT Call: normal-ack] INFO org.apache.kafka.clients.producer.ProducerConfig -- ProducerConfig values: 
+	acks = -1
+	auto.include.jmx.reporter = true
+	batch.size = 16384
+	bootstrap.servers = [PLAINTEXT://localhost:1303]
+	buffer.memory = 33554432
+	client.dns.lookup = use_all_dns_ips
+	client.id = producer-1
+	compression.type = none
+	connections.max.idle.ms = 540000
+	delivery.timeout.ms = 3000
+	enable.idempotence = true
+	interceptor.classes = []
+	key.serializer = class org.apache.kafka.common.serialization.StringSerializer
+	linger.ms = 0
+	max.block.ms = 3000
+	max.in.flight.requests.per.connection = 5
+	max.request.size = 1048576
+	metadata.max.age.ms = 300000
+	metadata.max.idle.ms = 300000
+	metric.reporters = []
+	metrics.num.samples = 2
+	metrics.recording.level = INFO
+	metrics.sample.window.ms = 30000
+	partitioner.adaptive.partitioning.enable = true
+	partitioner.availability.timeout.ms = 0
+	partitioner.class = null
+	partitioner.ignore.keys = false
+	receive.buffer.bytes = 32768
+	reconnect.backoff.max.ms = 1000
+	reconnect.backoff.ms = 50
+	request.timeout.ms = 1000
+	retries = 2147483647
+	retry.backoff.ms = 100
+	sasl.client.callback.handler.class = null
+	sasl.jaas.config = null
+	sasl.kerberos.kinit.cmd = /usr/bin/kinit
+	sasl.kerberos.min.time.before.relogin = 60000
+	sasl.kerberos.service.name = null
+	sasl.kerberos.ticket.renew.jitter = 0.05
+	sasl.kerberos.ticket.renew.window.factor = 0.8
+	sasl.login.callback.handler.class = null
+	sasl.login.class = null
+	sasl.login.connect.timeout.ms = null
+	sasl.login.read.timeout.ms = null
+	sasl.login.refresh.buffer.seconds = 300
+	sasl.login.refresh.min.period.seconds = 60
+	sasl.login.refresh.window.factor = 0.8
+	sasl.login.refresh.window.jitter = 0.05
+	sasl.login.retry.backoff.max.ms = 10000
+	sasl.login.retry.backoff.ms = 100
+	sasl.mechanism = GSSAPI
+	sasl.oauthbearer.clock.skew.seconds = 30
+	sasl.oauthbearer.expected.audience = null
+	sasl.oauthbearer.expected.issuer = null
+	sasl.oauthbearer.jwks.endpoint.refresh.ms = 3600000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.max.ms = 10000
+	sasl.oauthbearer.jwks.endpoint.retry.backoff.ms = 100
+	sasl.oauthbearer.jwks.endpoint.url = null
+	sasl.oauthbearer.scope.claim.name = scope
+	sasl.oauthbearer.sub.claim.name = sub
+	sasl.oauthbearer.token.endpoint.url = null
+	security.protocol = PLAINTEXT
+	security.providers = null
+	send.buffer.bytes = 131072
+	socket.connection.setup.timeout.max.ms = 30000
+	socket.connection.setup.timeout.ms = 10000
+	ssl.cipher.suites = null
+	ssl.enabled.protocols = [TLSv1.2, TLSv1.3]
+	ssl.endpoint.identification.algorithm = https
+	ssl.engine.factory.class = null
+	ssl.key.password = null
+	ssl.keymanager.algorithm = SunX509
+	ssl.keystore.certificate.chain = null
+	ssl.keystore.key = null
+	ssl.keystore.location = null
+	ssl.keystore.password = null
+	ssl.keystore.type = JKS
+	ssl.protocol = TLSv1.3
+	ssl.provider = null
+	ssl.secure.random.implementation = null
+	ssl.trustmanager.algorithm = PKIX
+	ssl.truststore.certificates = null
+	ssl.truststore.location = null
+	ssl.truststore.password = null
+	ssl.truststore.type = JKS
+	transaction.timeout.ms = 60000
+	transactional.id = null
+	value.serializer = class org.apache.kafka.common.serialization.StringSerializer
+
+12:24:56.626 [MQTT Call: normal-ack] INFO org.apache.kafka.clients.producer.KafkaProducer -- [Producer clientId=producer-1] Instantiated an idempotent producer.
+12:24:56.636 [MQTT Call: normal-ack] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka version: 3.6.2
+12:24:56.636 [MQTT Call: normal-ack] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka commitId: c4deed513057c94e
+12:24:56.636 [MQTT Call: normal-ack] INFO org.apache.kafka.common.utils.AppInfoParser -- Kafka startTimeMs: 1791257096636
+12:24:56.650 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.Metadata -- [Producer clientId=producer-1] Cluster ID: cBqhlFG3QbG9SGYP2_lnrA
+12:24:56.679 [awaitility-thread] INFO org.apache.kafka.clients.Metadata -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Cluster ID: cBqhlFG3QbG9SGYP2_lnrA
+12:24:56.873 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.producer.internals.TransactionManager -- [Producer clientId=producer-1] ProducerId set to 0 with epoch 0
+12:24:57.551 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Discovered group coordinator localhost:1303 (id: 2147483646 rack: null)
+12:24:57.554 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] (Re-)joining group
+12:24:57.569 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Request joining group due to: need to re-join with the given member-id: consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1-88c03e18-360c-4337-b219-86252a20605e
+12:24:57.569 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Request joining group due to: rebalance failed due to 'The group member needs to have a valid member id before actually entering a consumer group.' (MemberIdRequiredException)
+12:24:57.569 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] (Re-)joining group
+12:24:57.584 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Successfully joined group with generation Generation{generationId=1, memberId='consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1-88c03e18-360c-4337-b219-86252a20605e', protocol='range'}
+12:24:57.587 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Finished assignment for group at generation 1: {consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1-88c03e18-360c-4337-b219-86252a20605e=Assignment(partitions=[vehicle-telemetry-0, vehicle-telemetry-1, vehicle-telemetry-2])}
+12:24:57.604 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Successfully synced group in generation Generation{generationId=1, memberId='consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1-88c03e18-360c-4337-b219-86252a20605e', protocol='range'}
+12:24:57.604 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Notifying assignor about the new Assignment(partitions=[vehicle-telemetry-0, vehicle-telemetry-1, vehicle-telemetry-2])
+12:24:57.606 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Adding newly assigned partitions: vehicle-telemetry-0, vehicle-telemetry-1, vehicle-telemetry-2
+12:24:57.618 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Found no committed offset for partition vehicle-telemetry-2
+12:24:57.618 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Found no committed offset for partition vehicle-telemetry-0
+12:24:57.618 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Found no committed offset for partition vehicle-telemetry-1
+12:24:57.630 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.SubscriptionState -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Resetting offset for partition vehicle-telemetry-2 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:1303 (id: 1 rack: null)], epoch=0}}.
+12:24:57.630 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.SubscriptionState -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Resetting offset for partition vehicle-telemetry-0 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:1303 (id: 1 rack: null)], epoch=0}}.
+12:24:57.630 [awaitility-thread] INFO org.apache.kafka.clients.consumer.internals.SubscriptionState -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Resetting offset for partition vehicle-telemetry-1 to position FetchPosition{offset=0, offsetEpoch=Optional.empty, currentLeader=LeaderAndEpoch{leader=Optional[localhost:1303 (id: 1 rack: null)], epoch=0}}.
+ACK_LOCAL_COMPARE manual=false messages=100 elapsedMs=1295
+12:25:02.806 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:03.149 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+ACK_LOCAL_COMPARE manual=true messages=100 elapsedMs=513
+12:25:08.800 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:09.159 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+ACK_LOCAL_COMPARE manual=true messages=100 elapsedMs=402
+12:25:14.697 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:15.043 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+ACK_LOCAL_COMPARE manual=false messages=100 elapsedMs=204
+12:25:20.374 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:20.735 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:22.002 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.NetworkClient -- [Producer clientId=producer-1] Disconnecting from node 1 due to request timeout.
+12:25:22.003 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.NetworkClient -- [Producer clientId=producer-1] Cancelled in-flight PRODUCE request with correlation id 298 due to node 1 being disconnected (elapsed time since creation: 1009ms, elapsed time since send: 1009ms, request timeout: 1000ms)
+12:25:22.003 [kafka-producer-network-thread | producer-1] WARN org.apache.kafka.clients.producer.internals.Sender -- [Producer clientId=producer-1] Got error produce response with correlation id 298 on topic-partition vehicle-telemetry-0, retrying (2147483646 attempts left). Error: REQUEST_TIMED_OUT. Error Message: Disconnected from node 1 due to timeout
+12:25:23.124 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.NetworkClient -- [Producer clientId=producer-1] Disconnecting from node 1 due to request timeout.
+12:25:23.124 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.NetworkClient -- [Producer clientId=producer-1] Cancelled in-flight API_VERSIONS request with correlation id 299 due to node 1 being disconnected (elapsed time since creation: 1059ms, elapsed time since send: 1059ms, request timeout: 1000ms)
+12:25:24.012 [kafka-producer-network-thread | producer-1] ERROR com.telemetry.kafka.TelemetryProducer -- [Kafka] 브로커 전송 실패 ? spool에 보관 vehicle=ACK-001 ts=2026-10-01T00:00:00.400Z topic=vehicle-telemetry
+org.springframework.kafka.core.KafkaProducerException: Failed to send
+	at org.springframework.kafka.core.KafkaTemplate.lambda$buildCallback$9(KafkaTemplate.java:858)
+	at org.springframework.kafka.core.DefaultKafkaProducerFactory$CloseSafeProducer$1.onCompletion(DefaultKafkaProducerFactory.java:1058)
+	at org.apache.kafka.clients.producer.KafkaProducer$AppendCallbacks.onCompletion(KafkaProducer.java:1490)
+	at org.apache.kafka.clients.producer.internals.ProducerBatch.completeFutureAndFireCallbacks(ProducerBatch.java:313)
+	at org.apache.kafka.clients.producer.internals.ProducerBatch.done(ProducerBatch.java:274)
+	at org.apache.kafka.clients.producer.internals.ProducerBatch.completeExceptionally(ProducerBatch.java:238)
+	at org.apache.kafka.clients.producer.internals.Sender.failBatch(Sender.java:798)
+	at org.apache.kafka.clients.producer.internals.Sender.failBatch(Sender.java:787)
+	at org.apache.kafka.clients.producer.internals.Sender.sendProducerData(Sender.java:422)
+	at org.apache.kafka.clients.producer.internals.Sender.runOnce(Sender.java:343)
+	at org.apache.kafka.clients.producer.internals.Sender.run(Sender.java:247)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: org.apache.kafka.common.errors.TimeoutException: Expiring 1 record(s) for vehicle-telemetry-0:3010 ms has passed since batch creation
+12:25:24.014 [kafka-producer-network-thread | producer-1] ERROR org.springframework.kafka.support.LoggingProducerListener -- Exception thrown when sending a message with key='ACK-001' and payload='{"timestamp":"2026-10-01T00:00:00.400Z","speed":10.0,"rpm":900.0,"gps":{"lat":37.5,"lng":127.0},"veh...' to topic vehicle-telemetry:
+org.apache.kafka.common.errors.TimeoutException: Expiring 1 record(s) for vehicle-telemetry-0:3010 ms has passed since batch creation
+12:25:24.062 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.producer.internals.TransactionManager -- [Producer clientId=producer-1] No inflight batches remaining for vehicle-telemetry-0, last ack'd sequence for partition is 399, next sequence is 401. Going to bump epoch and reset sequence numbers.
+12:25:24.062 [kafka-producer-network-thread | producer-1] INFO org.apache.kafka.clients.producer.internals.TransactionManager -- [Producer clientId=producer-1] ProducerId set to 0 with epoch 1
+ACK_KAFKA_OUTAGE published=1 spooled=1 recovered=1 uniqueTotal=401
+12:25:24.312 [Test worker] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Revoke previously assigned partitions vehicle-telemetry-0, vehicle-telemetry-1, vehicle-telemetry-2
+12:25:24.312 [Test worker] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Member consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1-88c03e18-360c-4337-b219-86252a20605e sending LeaveGroup request to coordinator localhost:1303 (id: 2147483646 rack: null) due to the consumer is being closed
+12:25:24.313 [Test worker] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Resetting generation and member id due to: consumer pro-actively leaving the group
+12:25:24.313 [Test worker] INFO org.apache.kafka.clients.consumer.internals.ConsumerCoordinator -- [Consumer clientId=consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1, groupId=ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2] Request joining group due to: consumer pro-actively leaving the group
+12:25:24.812 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Metrics scheduler closed
+12:25:24.812 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Closing reporter org.apache.kafka.common.metrics.JmxReporter
+12:25:24.813 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Metrics reporters closed
+12:25:24.814 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- App info kafka.consumer for consumer-ack-contract-31a94714-0596-4a2a-988a-abcae107c2c2-1 unregistered
+12:25:29.826 [Test worker] INFO org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter -- stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2347b7af
+12:25:29.826 [Test worker] INFO org.apache.kafka.clients.producer.KafkaProducer -- [Producer clientId=producer-1] Closing the Kafka producer with timeoutMillis = 30000 ms.
+12:25:29.827 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Metrics scheduler closed
+12:25:29.827 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Closing reporter org.apache.kafka.common.metrics.JmxReporter
+12:25:29.828 [Test worker] INFO org.apache.kafka.common.metrics.Metrics -- Metrics reporters closed
+12:25:29.828 [Test worker] INFO org.apache.kafka.common.utils.AppInfoParser -- App info kafka.producer for producer-1 unregistered
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -78,6 +78,11 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+    // CI 콘솔에 예외 메시지·원인까지 남긴다 — 2026-10-06 flaky는 클래스·행만 남아 사유 코드를 못 읽었다.
+    testLogging {
+        events 'failed'
+        exceptionFormat 'full'
+    }
     def workerClasspath = layout.buildDirectory.file('mqtt-worker-classpath.txt')
     systemProperty 'test.runtime.classpath.file', workerClasspath.get().asFile.absolutePath
     doFirst {

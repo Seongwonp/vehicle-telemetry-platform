@@ -45,6 +45,7 @@ class MqttKafkaAckContractTest {
         .withExposedPorts(1883).withCopyToContainer(Transferable.of(
             "listener 1883\nallow_anonymous true\nlog_type all\nmax_inflight_messages 20\n"),
             "/mosquitto/config/mosquitto.conf").waitingFor(Wait.forListeningPort());
+    private static final String SUBACK_TO_ADAPTER = "Sending SUBACK to normal-ack";
     @TempDir Path temporary;
 
     @Test @SuppressWarnings("unchecked")
@@ -82,8 +83,7 @@ class MqttKafkaAckContractTest {
             // Alternate modes: small local comparison, not a maximum-throughput benchmark.
             int sequence = 0;
             for (boolean manual : new boolean[]{false, true, true, false}) {
-                adapter.setManualAcks(manual); adapter.start();
-                await().atMost(Duration.ofSeconds(10)).until(() -> BROKER.getLogs().contains("Received SUBSCRIBE from normal-ack"));
+                adapter.setManualAcks(manual); startAndAwaitSubscription(adapter);
                 int target = sequence + 100;
                 long start = System.nanoTime();
                 for (; sequence < target; sequence++) {
@@ -99,7 +99,7 @@ class MqttKafkaAckContractTest {
                 assertThat(spool.depth()).isZero();
                 adapter.stop();
             }
-            adapter.setManualAcks(true); adapter.start();
+            adapter.setManualAcks(true); startAndAwaitSubscription(adapter);
             KAFKA.getDockerClient().pauseContainerCmd(KAFKA.getContainerId()).exec();
             try {
                 publisher.publish("vehicle/telemetry/ACK-001", payload(400).getBytes(java.nio.charset.StandardCharsets.UTF_8), 1, false)
@@ -114,6 +114,21 @@ class MqttKafkaAckContractTest {
             System.out.println("ACK_KAFKA_OUTAGE published=1 spooled=1 recovered=1 uniqueTotal=401");
             publisher.disconnect().waitForCompletion(10000);
         } finally { adapter.stop(); adapter.destroy(); kafka.destroy(); producerFactory.destroy(); }
+    }
+
+    // The broker log accumulates across start/stop cycles, so a plain contains() is already true after the
+    // first start. Wait for one more SUBACK than before this start() to bind the wait to this subscription.
+    private static void startAndAwaitSubscription(MqttPahoMessageDrivenChannelAdapter adapter) {
+        int before = occurrences(BROKER.getLogs(), SUBACK_TO_ADAPTER);
+        adapter.start();
+        await().atMost(Duration.ofSeconds(10))
+            .until(() -> occurrences(BROKER.getLogs(), SUBACK_TO_ADAPTER) > before);
+    }
+
+    private static int occurrences(String text, String needle) {
+        int count = 0;
+        for (int at = text.indexOf(needle); at >= 0; at = text.indexOf(needle, at + needle.length())) count++;
+        return count;
     }
 
     private static String payload(int sequence) {
