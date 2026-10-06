@@ -39,10 +39,13 @@ public class MqttBrokerMetricsHandler {
         "$SYS/broker/clients/connected", "telemetry.mqtt.broker.clients.connected"
     );
 
+    /** 갱신 시각만 움직이는 토픽 — 게이지로 내보내지 않는다. 추적 토픽은 값이 바뀔 때만 와서 심장 박동이 못 된다. */
+    public static final String HEARTBEAT_TOPIC = "$SYS/broker/uptime";
+
     private final MeterRegistry meterRegistry;
     private final Map<String, AtomicLong> values = new ConcurrentHashMap<>();
     /**
-     * 마지막으로 추적 대상 $SYS 값을 받은 시각(epoch ms). 위 게이지들은 한 번 등록되면 지워지지 않아,
+     * 마지막으로 $SYS(추적 토픽 또는 uptime 심장 박동)를 받은 시각(epoch ms). 위 게이지들은 한 번 등록되면 지워지지 않아,
      * $SYS가 끊겨도 마지막 값이 그대로 노출된다 — 그 상태에서 MqttIngestStopped는 옛 값의 rate(=0)를 보고
      * 조용해진다. 이 시각으로 "값이 멈췄다"를 따로 알린다(MqttBrokerMetricsStale). 첫 수신 때 등록한다 —
      * 한 번도 안 왔으면 게이지가 없고, 그 경우는 MqttBrokerMetricsMissing이 본다.
@@ -56,6 +59,10 @@ public class MqttBrokerMetricsHandler {
     @ServiceActivator(inputChannel = "mqttBrokerMetricsChannel")
     public void handle(Message<String> message) {
         String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
+        if (HEARTBEAT_TOPIC.equals(topic)) {
+            touch();
+            return;
+        }
         String metricName = TRACKED_TOPICS.get(topic);
         if (metricName == null) {
             return;
@@ -77,6 +84,10 @@ public class MqttBrokerMetricsHandler {
             meterRegistry.gauge(name, holder, AtomicLong::get);
             return holder;
         }).set(value);
+        touch();
+    }
+
+    private void touch() {
         if (lastUpdateMillis.getAndSet(System.currentTimeMillis()) == 0) {
             meterRegistry.gauge("telemetry.mqtt.broker.last.update.seconds", lastUpdateMillis, v -> v.get() / 1000.0);
         }

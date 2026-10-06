@@ -463,7 +463,7 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - **Kafka 장기 정지 중 MQTT 연결 유지: 1회 관찰 완료(2026-10-05, 실험 E)** — 연결은 유지되지 않았고(keepalive 타임아웃, 약 120초 지점), 유실 0·중복 1(spool 보관 뒤 재전달). 반복·다른 정지 길이·고부하·복수 차량은 미검증. 재접속이 약 90초 늦은 원인은 미확정. **실험 E2(수정 후 재실행, 1회)에서는 끊김 약 2초 뒤 재접속됐고 `<unknown>` 타임아웃이 없었다 — 수정 효과인지는 단정 못 함, 원인은 여전히 미확정.**
 - **재시작 직후 구독 timeout: 재현됨(실험 F, 1회)** — 백로그가 있는 재접속에서 연결 5초 뒤 발생하고 구독은 유지됐다. 세션 소실 경로에서의 구독 상실 여부, 구독 실패 이벤트 감지 수단 부재는 미검증/결함 후보.
 - **producer timeout 30초(46937e7): E3 1회 관찰 완료(2026-10-06)** — 150초 정지에서 keepAlive 끊김 0, 첫 spool 보관 stop +30초, 유실 0·중복 0. **"30초 미만 정지는 버퍼가 흡수"는 1회 관찰(실험 P, 2026-10-06, 20초 `docker pause`, 실제 불가 20.7초): spool 0·끊김 0·유실 0·중복 0.** S의 20초 `docker stop`은 Kafka 복구 지연으로 실제 불가가 80초 넘어 spool 226건을 썼다. 30초 경계 부근·네트워크 분리·반복·고부하·복수 차량·spool 용량 한계는 미검증.
-- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다 — **실험 U(1회)에서 실제로 침묵했고(`$SYS`·수신 둘 다 막은 5분 21초 동안 pending 없음), 그 구간을 `MqttBrokerMetricsStale`이 덮었다(마지막 갱신 + 5분 8초 firing, 원복 뒤 해제).** **새 결함 후보: `MqttBrokerMetricsStale`이 유휴 스택에서 오탐한다(실험 U0, 1회)** — 발행이 없으면 추적 `$SYS` 값이 갱신되지 않아 마지막 갱신 + 5분 8초에 firing. 고치지 않았다. 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
+- **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다 — **실험 U(1회)에서 실제로 침묵했고(`$SYS`·수신 둘 다 막은 5분 21초 동안 pending 없음), 그 구간을 `MqttBrokerMetricsStale`이 덮었다(마지막 갱신 + 5분 8초 firing, 원복 뒤 해제).** ~~**새 결함 후보: `MqttBrokerMetricsStale`이 유휴 스택에서 오탐한다(실험 U0, 1회)**~~ → **수정**: `$SYS/broker/uptime`을 심장 박동으로 구독(아래 "실험 U1"), 유휴 6분 30초 1회 관찰에서 갱신 지연 ≤10초·Stale 없음. `$SYS` 차단 시 firing은 수정 뒤 실스택에서 다시 보지 않았다(promtool 단위 테스트만). 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
 - **`2aba182` 인터럽트 가드 실스택 재검증: 각 1회 관찰(실험 D2·D2b·D2c, 2026-10-06)** — 백엔드가 끊김을 안 순간 대기 중단은 매번 정확했고(같은 ms), 누수 증상·유실 0(중복 3·3·1). **수신 큐가 차지 않으면(D2c) 끊김 0.5ms 뒤 중단·1.3초 뒤 재접속**이지만, **메시지가 계속 들어와 Paho 수신 큐가 차면(D2·D2b) receiver 스레드가 큐 대기에 묶여 끊김 인지 자체가 저장 완료(Kafka unpause)까지 늦었다 — 재접속 11.5초·14.2초.** 이 조건에서 가드는 재접속을 앞당기지 못한다(결함 후보, 대기 상한은 producer timeout). 30초 넘는 정지와 겹친 끊김, 반쯤 열린 연결·네트워크 분리·TLS, 반복은 미검증.
 - 네트워크 분리(반쯤 열린 연결)·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
@@ -601,3 +601,15 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 **한계**: 각 1회, 단일 차량, 약 2.7건/초. 멈추는 방법이 dynamic-security role 변경이라 매 단계 클라이언트 끊김·재접속을 동반했다. dev 익명 접속이라 deny가 익명 전체에 적용된다(`$SYS`·텔레메트리를 구독하는 것은 백엔드뿐). U0의 유휴 구간은 약 9분 한 번이며, `$SYS`가 바뀔 때만 발행된다는 해석은 mosquitto 소스·설정(`sys_interval`)을 확인하지 않은 추정이다. 남긴 데이터: InfluxDB `RECON-PRB` 1·`RECON-D2` 360·`RECON-D2B` 240·`RECON-D2C` 63·`OUTAGE-U` 1592·`RECON-ZR` 5행, Kafka 같은 키 레코드(retention 1시간). 삭제하지 않았다.
 
 **원복**: 브로커를 원래 `mosquitto-dev.conf`·`acl` 마운트로 재생성(`Z_restore_mosquitto_mounts.txt`), 백엔드를 DEBUG override 없이 재생성(client ID 기본값), 5건 발행으로 수신 5·PUBACK 5·구독 오류 0 확인(`Z_restore_result.txt`). 그 뒤 `docker compose stop`(볼륨 유지, `down -v` 없음).
+
+## 실험 U1 — uptime 심장 박동 뒤 유휴 스택 (2026-10-07)
+
+**가설·기준(실행 전)**: U0의 오탐은 추적 `$SYS` 토픽이 값이 바뀔 때만 오기 때문이다. `$SYS/broker/uptime`(매 `sys_interval` 변함)을 갱신 시각에 포함하면, 발행 없는 스택에서 `telemetry_mqtt_broker_last_update_seconds`의 지연이 30초 아래로 유지되고 6분 넘게 `MqttBrokerMetricsStale`이 pending조차 되지 않는다(U0은 2분 8초에 pending).
+
+**조건**: HEAD `783ec70` + 작업 트리(이 수정), 백엔드 이미지 재빌드 `sha256:fe411c07201c…`, `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`, 시뮬레이터·발행 없음. 30초 간격 14회 폴링(백엔드 `/actuator/prometheus`, Prometheus `/api/v1/alerts`).
+
+**결과(1회)**: 04:49:11~04:55:44 UTC(6분 33초) 동안 갱신 지연 0~10초(매 폴링, 약 10초 주기 톱니), 알림은 첫 폴링의 기동 직후 `TelemetryBackendDown` pending 한 번뿐이고 `MqttBrokerMetricsStale`·`MqttBrokerMetricsMissing`·`MqttIngestStopped` 없음. 기준 충족.
+원본: [`evidence/2026-10-07-sys-heartbeat/idle_poll.txt`](evidence/2026-10-07-sys-heartbeat/idle_poll.txt).
+
+**한계**: 1회, 6분 33초. uptime이 매 주기 발행된다는 것은 이 관찰(약 10초 톱니)로만 확인했고 mosquitto 소스는 보지 않았다. `$SYS` 차단 시 이 알림이 여전히 뜨는지는 수정 뒤 실스택에서 재지 않았다 — 같은 `$SYS/#` deny가 uptime도 막으므로 U와 같이 동작할 것으로 보지만 미검증이다.
+

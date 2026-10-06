@@ -1,0 +1,3 @@
+HEAD 783ec70f3d1bc2356ff0dc8fc8cec68b6c5c6b82 + working tree (uptime heartbeat)
+image vehicle-telemetry-platform-backend sha256:fe411c07201c
+stack: docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d (simulator 없음 = 유휴)

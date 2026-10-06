@@ -51,7 +51,7 @@ class MqttBrokerMetricsHandlerTest {
     @Test
     @DisplayName("갱신 시각 게이지는 첫 추적 값에서 생기고 이후 수신마다 전진한다 — 멈춘 $SYS를 알리는 근거")
     void 갱신시각_게이지() {
-        handler.handle(sysMessage("$SYS/broker/uptime", "10"));
+        handler.handle(sysMessage("$SYS/broker/version", "mosquitto 2.0"));
         assertThat(meterRegistry.find("telemetry.mqtt.broker.last.update.seconds").gauge()).isNull();
 
         long before = System.currentTimeMillis();
@@ -62,6 +62,15 @@ class MqttBrokerMetricsHandlerTest {
         handler.handle(sysMessage("$SYS/broker/publish/messages/dropped", "0"));
         assertThat(meterRegistry.find("telemetry.mqtt.broker.last.update.seconds").gauges()).hasSize(1);
         assertThat(meterRegistry.get("telemetry.mqtt.broker.last.update.seconds").gauge().value()).isGreaterThanOrEqualTo(first);
+    }
+
+    @Test
+    @DisplayName("uptime은 값이 안 바뀌는 추적 토픽 대신 갱신 시각만 움직인다 — 유휴 스택의 거짓 Stale 방지")
+    void uptime_심장박동() {
+        handler.handle(sysMessage("$SYS/broker/uptime", "1234 seconds"));
+
+        assertThat(meterRegistry.get("telemetry.mqtt.broker.last.update.seconds").gauge().value()).isPositive();
+        assertThat(meterRegistry.find("telemetry.mqtt.broker.uptime").gauge()).isNull();
     }
 
     @Test
@@ -76,7 +85,7 @@ class MqttBrokerMetricsHandlerTest {
     @Test
     @DisplayName("추적 대상이 아닌 $SYS 토픽은 무시한다")
     void 미추적토픽_무시() {
-        handler.handle(sysMessage("$SYS/broker/uptime", "1234 seconds"));
+        handler.handle(sysMessage("$SYS/broker/version", "mosquitto version 2.0.22"));
 
         assertThat(meterRegistry.getMeters()).isEmpty();
     }

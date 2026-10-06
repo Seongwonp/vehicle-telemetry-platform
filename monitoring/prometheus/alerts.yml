@@ -85,7 +85,8 @@ groups:
           summary: "백엔드가 브로커 $SYS 통계를 받지 못함 — MqttIngestStopped가 동작하지 않는 상태"
 
       # 위는 게이지가 **없을** 때다. 게이지는 한 번 생기면 지워지지 않아 $SYS가 끊겨도 마지막 값이 남고,
-      # 그 rate는 0이라 MqttIngestStopped가 조용해진다. mosquitto sys_interval 기본 10초 — 2분이면 12주기 누락.
+      # 그 rate는 0이라 MqttIngestStopped가 조용해진다. 갱신 시각은 $SYS/broker/uptime(매 sys_interval, 기본 10초)으로도 움직인다 —
+      # 추적 토픽은 값이 바뀔 때만 와서 유휴 스택에서 거짓으로 떴다(2026-10-07 실험 U0). 2분이면 12주기 누락.
       - alert: MqttBrokerMetricsStale
         expr: time() - max(telemetry_mqtt_broker_last_update_seconds) > 120
         for: 3m
