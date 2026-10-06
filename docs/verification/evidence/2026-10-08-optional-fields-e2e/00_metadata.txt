@@ -1,0 +1,4 @@
+HEAD 86d7335 (clean)
+backend image 3e6caec942e3, anomaly-detector image b1c22696fad1
+stack: docker compose -f docker-compose.yml -f docker-compose.dev.yml (dev plaintext 1883)
+publish: eclipse-mosquitto:2.0 mosquitto_pub -q 1 -t vehicle/telemetry/OPTF-E2E -l < payloads.jsonl

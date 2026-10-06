@@ -1,0 +1,6 @@
+telemetry-backend   | 15:15:45 [-] [-] INFO  o.s.i.c.DefaultConfiguringBeanFactoryPostProcessor - No bean named 'errorChannel' has been explicitly defined. Therefore, a default PublishSubscribeChannel will be created.
+anomaly-detector-2  | 15:16:14 [WARNING] anomaly-detector[7a4cc9cb3276]: [이상 감지] vehicle=OPTF-E2E ts=2026-10-06T15:16:11.300Z event=e5c62138fff1f8c61425aa73bd9f68120d4b1fe1f1b36941e44ac108054ca617 type=배터리 저전압 field=battery_voltage value=10.5 severity=MEDIUM detector=RULE
+telemetry-backend   | 15:15:53 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - Adding {logging-channel-adapter:_org.springframework.integration.errorLogger} as a subscriber to the 'errorChannel' channel
+telemetry-backend   | 15:15:53 [-] [-] INFO  o.s.i.c.PublishSubscribeChannel - Channel 'vehicle-telemetry-backend.errorChannel' has 1 subscriber(s).
+telemetry-backend   | 15:15:53 [-] [-] INFO  o.s.i.e.EventDrivenConsumer - started bean '_org.springframework.integration.errorLogger'
+telemetry-backend   | 15:16:15 [-] [-] INFO  c.t.s.AnomalyService - [이상 저장] vehicle=OPTF-E2E ts=2026-10-06T15:16:11.300Z type=배터리 저전압 severity=MEDIUM event=e5c62138fff1f8c61425aa73bd9f68120d4b1fe1f1b36941e44ac108054ca617
