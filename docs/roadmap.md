@@ -20,6 +20,13 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 현재 우선순위는 [ACK 경계 작업 계획](plans/2026-10-01-mqtt-ack-boundary.md)의 문서 정리 → 수정 전 유실 재현 → 장애 범위를 정한 ACK 수정 → 동글 실측이다. 아래 09-09 계획은 이전 이력이며 이 순서를 대체하지 않는다.
 
+**2026-10-07 상태** (상세: `docs/HANDOFF_2026-10-07.md`, `docs/verification/2026-10-01-mqtt-ack-boundary.md`)
+- ACK 경계: 수동 ACK·poison 격리·재접속 인터럽트·producer timeout·수신 정지 알림까지 실스택 각 1회 관찰. **결함 후보(결정 대기)**: Paho 수신 큐가 차면 연결 끊김 인지가 저장 완료까지 늦다(실험 D2) — 인터럽트 가드는 이 조건에서 재접속을 못 앞당긴다.
+- `$SYS` 알림: `MqttBrokerMetricsStale`의 유휴 오탐(U0)을 uptime 심장 박동으로 수정(U1, 1회). `$SYS` 차단 시 firing은 수정 뒤 실스택 미재측정.
+- CI flaky(`MqttKafkaAckContractTest` 32202): Paho in-flight 슬롯 해제 지연으로 원인 확정·테스트 수정. 수정 뒤 CI 반복 통과는 쌓는 중.
+- 동글 실측 준비: `obd-bridge/` 프로토타입(ELM327-emulator로 주기만 측정, **실차·실동글 미검증**, compose·CI 미포함).
+- 앱: 비밀번호 변경·관리자/일반 사용자 메뉴 노출을 에뮬레이터 + 실제 로컬 백엔드로 1회 확인.
+
 ## 2026-09-09 재감사 이후 실행 순서 (이력)
 
 현재 상태의 종합 평가는 [`current-state-audit-2026-09-09.md`](current-state-audit-2026-09-09.md)에
@@ -825,7 +832,7 @@ Kafka 리텐션 1시간 유지, 차량 삭제는 소프트 삭제 유지 + 즉�
 - schema 버전과 호환성 정책
 - 성능 회귀 기준선 및 정기 soak test
 - 배포 롤백 자동화
-- 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증
+- 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증 — 브리지 프로토타입(`obd-bridge/`)까지만, 실장치 미검증
 - 멀티 브로커 Kafka와 replication factor 상향
 - 문제와 측정 근거가 있는 경우에만 수평 확장 또는 서비스 추가 분리
 
