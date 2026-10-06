@@ -37,6 +37,8 @@ tests:
         values: '0+60x15'
       - series: 'telemetry_mqtt_broker_messages_received{job="low"}'
         values: '0+3x15'
+      - series: 'telemetry_mqtt_broker_messages_dropped{job="telemetry-backend"}'
+        values: '0x15'
       - series: 'up{job="telemetry-backend"}'
         values: '1x15'
       - series: 'telemetry_mqtt_broker_last_update_seconds'
@@ -95,4 +97,25 @@ tests:
               summary: "브로커 $SYS 통계가 2분 넘게 갱신되지 않음 — MqttIngestStopped가 동작하지 않는 상태"
       - eval_time: 9m
         alertname: MqttIngestStopped
+        exp_alerts: []
+
+  # received는 오는데 dropped 구독만 빠졌다(필터 하나만 SUBACK 0x80) — uptime 심장 박동이 Stale을 막으므로 Missing이 잡는다.
+  - interval: 1m
+    input_series:
+      - series: 'up{job="telemetry-backend"}'
+        values: '1x10'
+      - series: 'telemetry_mqtt_broker_messages_received{job="telemetry-backend"}'
+        values: '0+60x10'
+      - series: 'telemetry_mqtt_broker_last_update_seconds'
+        values: '0+60x10'
+    alert_rule_test:
+      - eval_time: 6m
+        alertname: MqttBrokerMetricsMissing
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+            exp_annotations:
+              summary: "백엔드가 브로커 $SYS 통계를 받지 못함 — MqttIngestStopped가 동작하지 않는 상태"
+      - eval_time: 6m
+        alertname: MqttBrokerMetricsStale
         exp_alerts: []

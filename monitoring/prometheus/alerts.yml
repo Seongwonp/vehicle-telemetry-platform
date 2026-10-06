@@ -75,9 +75,12 @@ groups:
 
       # MqttIngestStopped는 브로커 $SYS 게이지가 있어야 성립한다. 게이지는 첫 $SYS 메시지 때 등록되므로
       # $SYS가 백엔드에 오지 않으면(구독 거부·ACL·$SYS 어댑터 정지) 지표 자체가 없어 위 알림이 침묵한다
-      # (2026-10-06 실험 H-2a). mosquitto는 $SYS를 10초마다 발행하니 백엔드가 떠 있는데 5분째 없으면 이상이다.
+      # (2026-10-06 실험 H-2a). 추적 토픽은 구독 때 보존 값으로 한 번 온다(관찰: 유휴 중 재기동한 백엔드도 dropped=0을 받았다) —
+      # 백엔드가 떠 있는데 5분째 없으면 이상이다. dropped도 본다: 필터 하나만 거부되면 uptime 심장 박동 때문에 Stale은 안 뜬다.
       - alert: MqttBrokerMetricsMissing
-        expr: absent(telemetry_mqtt_broker_messages_received) and on() (sum(up{job="telemetry-backend"}) > 0)
+        expr: >
+          (absent(telemetry_mqtt_broker_messages_received) or absent(telemetry_mqtt_broker_messages_dropped))
+            and on() (sum(up{job="telemetry-backend"}) > 0)
         for: 5m
         labels:
           severity: warning
@@ -86,7 +89,7 @@ groups:
 
       # 위는 게이지가 **없을** 때다. 게이지는 한 번 생기면 지워지지 않아 $SYS가 끊겨도 마지막 값이 남고,
       # 그 rate는 0이라 MqttIngestStopped가 조용해진다. 갱신 시각은 $SYS/broker/uptime(매 sys_interval, 기본 10초)으로도 움직인다 —
-      # 추적 토픽은 값이 바뀔 때만 와서 유휴 스택에서 거짓으로 떴다(2026-10-07 실험 U0). 2분이면 12주기 누락.
+      # 추적 토픽은 값이 바뀔 때만 와서 유휴 스택에서 거짓으로 떴다(2026-10-06 실험 U0). 2분이면 12주기 누락.
       - alert: MqttBrokerMetricsStale
         expr: time() - max(telemetry_mqtt_broker_last_update_seconds) > 120
         for: 3m

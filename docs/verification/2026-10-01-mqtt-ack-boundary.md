@@ -519,6 +519,8 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 
 ### 결과 — D2·D2b·D2c (각 1회 관찰)
 
+**절차와 실제의 차이**: `mosquitto_ctrl` 반영에 매번 약 3.8~4.1초가 걸리고 스크립트가 반영 완료를 기다려, 끊김·unpause·덤프 시각이 계획과 달랐다 — D2 끊김은 pause +11.8초(계획 +8초), unpause는 끊김 +10초(계획 약 +5초); D2b 덤프는 끊김 +0.29초(계획 +3초), unpause는 끊김 +12.75초(계획 약 +15초). 판정은 브로커의 끊김 시각 기준이라 결론은 바뀌지 않는다(`D2_marks.txt`, `D2b_marks.txt`, 브로커 로그).
+
 환경: HEAD `609e8f6`(백엔드 `src/main`은 `2aba182`와 차이 없음 — `git diff --stat 2aba182 HEAD -- backend/src/main` 빈 결과). 이 실행에서 `docker compose build backend` → 이미지 `sha256:84e0432c…`. 이미지 jar의 클래스에 `interruptedByConnectionLoss`·`telemetry.mqtt.broker.last.update.seconds`·`telemetry.mqtt.decode.failed` 문자열이 있음을 확인했다. dev(평문 1883) + 저장소 밖 dynamic-security 브로커 설정(`R_*` 사본) + DEBUG override. 기존 볼륨 유지. 실행 시각은 2026-10-06 03:52~04:03 UTC(폴더 이름의 날짜와 다르다).
 
 | 항목 | D2 (큐 포화, 끊고 약 10초 뒤 unpause) | D2b (큐 포화, 끊고 약 13초 뒤 unpause) | D2c (큐 비포화, 3건만 대기) |
@@ -539,7 +541,7 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 
 **읽은 것**
 - **`2aba182`의 가드는 백엔드가 끊김을 알아챈 순간에는 정확히 동작했다**(세 실행 모두 `Lost connection`과 같은 ms에 WARN, 인터럽트 1건, 구간 밖 누수 증상 없음). D2c(실험 D와 같은 조건 — 대기 메시지 몇 건)에서는 실험 D와 같이 끊김 0.5ms 뒤 대기 중단, 1.3초 뒤 재접속이 **Kafka가 아직 멈춘 상태에서** 일어났다.
-- **그러나 메시지가 계속 들어오는 조건(D2·D2b)에서는 끊김 인지 자체가 저장 완료까지 늦었다.** D2b 스레드 덤프에서 receiver 스레드가 수신 큐 대기(`CommsCallback.messageArrived`)에 있었고, 그래서 브로커가 닫은 소켓의 EOF를 읽지 못했다. Kafka가 풀려 콜백이 큐를 비우기 시작한 뒤에야 `connectionLost` → 이벤트 → 인터럽트가 왔다. D2는 unpause를 끊김 10초 뒤, D2b는 13초 뒤에 했고 인지 시각이 각각 그 직후였다 — **고정 타이머가 아니라 저장 완료에 묶여 있다**(1회씩, 두 점). 실험 E의 추정("수신 큐 포화 → receiver 정지")을 스레드 덤프로 1회 직접 본 것이다. 이 조건에서 가드는 재접속을 앞당기지 못했고, 대기의 상한은 기존 producer 상한(`delivery.timeout.ms` 30초 등)이다. Paho 소스의 큐 루프는 읽지 않았다(덤프의 프레임·행 번호만 근거).
+- **그러나 메시지가 계속 들어오는 조건(D2·D2b)에서는 끊김 인지 자체가 저장 완료까지 늦었다.** D2b 스레드 덤프에서 receiver 스레드가 수신 큐 대기(`CommsCallback.messageArrived`)에 있었고, 그래서 브로커가 닫은 소켓의 EOF를 읽지 못했다. Kafka가 풀려 콜백이 큐를 비우기 시작한 뒤에야 `connectionLost` → 이벤트 → 인터럽트가 왔다. D2는 unpause를 끊김 10초 뒤, D2b는 13초 뒤에 했고 인지 시각이 각각 그 직후였다 — **고정 타이머가 아니라 저장 완료에 묶여 있다**(1회씩, 두 점). 실험 E의 추정("수신 큐 포화 → receiver 정지")을 스레드 덤프로 1회 직접 본 것이다. 이 조건에서 가드는 재접속을 앞당기지 못했다. 대기의 상한은 **추정**이다 — 슬롯 하나가 비어도 receiver는 EOF 앞에 쌓인 PUBLISH를 먼저 읽어야 하고, Kafka가 계속 죽어 있으면 그 하나하나가 `max.block.ms` 10초 + `delivery.timeout.ms` 30초까지 쓸 수 있어 producer 상한 하나보다 길어질 수 있다(30초 넘는 정지는 미검증). 큐 크기 10은 Paho 1.2.5 `CommsCallback`의 `INBOUND_QUEUE_SIZE` 상수로 알려진 값이며 이번에 소스로 확인하지는 않았다(덤프의 프레임·행 번호만 근거).
 - 중복 3건(D2·D2b)의 내역(D2, 백엔드 로그): 대기 중이던 메시지(`…00.972Z`)와 큐의 다음 메시지(`…01.305Z`)는 unpause 뒤 저장이 완료되어 **이미 끊긴 연결에** ACK를 시도했고, 세 번째(`…01.638Z`)는 처리 중 인터럽트됐다(그 Kafka 전송은 2ms 뒤 완료). 셋 다 재전달되어 한 번 더 기록됐다. ADR-029가 적은 "끊긴 사이 대기를 마친 콜백의 옛 연결 ACK"가 여기서도 중복으로만 귀결됐다. 저장소가 `(vehicle_id, ms)`로 흡수했다.
 - 로그 문구: 예외 메시지 `MQTT 저장 확인 중단 — ACK하지 않음`은 로그에 **나오지 않았다** — 어댑터의 `Unhandled exception` 로그가 `MessageHandlingException` 바로 아래 원인으로 `InterruptedException`(91행)을 찍는다. Spring이 감싼 예외를 어떻게 펼치는지는 확인하지 않았다. 그래서 기준 (4)는 `InterruptedException`·`Unhandled exception` 수(각 1)로 셌다.
 - 재접속 5초 뒤 `Error subscribing … Timed out`이 D2·D2b에서 1회씩 다시 나왔다(실험 F와 같은 현상, 백로그 있는 재접속). 구독은 유지되어 이후 메시지가 들어왔다.
@@ -602,7 +604,7 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 
 **원복**: 브로커를 원래 `mosquitto-dev.conf`·`acl` 마운트로 재생성(`Z_restore_mosquitto_mounts.txt`), 백엔드를 DEBUG override 없이 재생성(client ID 기본값), 5건 발행으로 수신 5·PUBACK 5·구독 오류 0 확인(`Z_restore_result.txt`). 그 뒤 `docker compose stop`(볼륨 유지, `down -v` 없음).
 
-## 실험 U1 — uptime 심장 박동 뒤 유휴 스택 (2026-10-07)
+## 실험 U1 — uptime 심장 박동 뒤 유휴 스택 (2026-10-06 UTC 실행)
 
 **가설·기준(실행 전)**: U0의 오탐은 추적 `$SYS` 토픽이 값이 바뀔 때만 오기 때문이다. `$SYS/broker/uptime`(매 `sys_interval` 변함)을 갱신 시각에 포함하면, 발행 없는 스택에서 `telemetry_mqtt_broker_last_update_seconds`의 지연이 30초 아래로 유지되고 6분 넘게 `MqttBrokerMetricsStale`이 pending조차 되지 않는다(U0은 2분 8초에 pending).
 

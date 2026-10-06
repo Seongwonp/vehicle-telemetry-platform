@@ -185,7 +185,7 @@ public class MqttConfig {
             "$SYS/broker/publish/messages/received",
             "$SYS/broker/clients/connected",
             // 위 셋은 값이 바뀔 때만 온다 — 유휴 스택에서 갱신 시각이 멈춰 MqttBrokerMetricsStale이 거짓으로 떴다
-            // (2026-10-07 실험 U0). uptime은 매 sys_interval 바뀌므로 $SYS 수신의 심장 박동으로 쓴다.
+            // (2026-10-06 실험 U0). uptime은 매 sys_interval 바뀌므로 $SYS 수신의 심장 박동으로 쓴다.
             MqttBrokerMetricsHandler.HEARTBEAT_TOPIC);
 
         adapter.setCompletionTimeout(5000);
