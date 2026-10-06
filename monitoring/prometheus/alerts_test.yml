@@ -119,3 +119,46 @@ tests:
       - eval_time: 6m
         alertname: MqttBrokerMetricsStale
         exp_alerts: []
+
+  # 저장 확인 대기 하나가 자란다. 이 파일의 평가 간격은 1m이라 샘플도 1m 간격이다(실스택은 scrape·평가 15s).
+  # 44.9s는 안 뜨고 45s 이상이면 그 평가에서 바로 firing(for 없음), 대기가 끝나 0이 되면 해제.
+  - interval: 1m
+    input_series:
+      - series: 'telemetry_mqtt_ack_wait_elapsed_seconds{job="telemetry-backend",instance="backend:8080"}'
+        values: '0 44.9 0 30 75 0 0'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: MqttAckWaitStuck
+        exp_alerts: []
+      - eval_time: 4m
+        alertname: MqttAckWaitStuck
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              job: telemetry-backend
+              instance: backend:8080
+            exp_annotations:
+              summary: "MQTT 저장 확인 대기가 45초 이상 진행 중 — producer 상한(40초) 초과, 수신·재접속 지연 가능"
+              runbook: "docs/runbook/pipeline-observability.md"
+      - eval_time: 5m
+        alertname: MqttAckWaitStuck
+        exp_alerts: []
+
+  # 상한(40s) 안의 대기들(30s 근처 포함) — 뜨지 않는다. (실험 D3의 실제 모양은 30s 대기 1건 뒤 1s 미만.)
+  # 대기 중이 아닌 인스턴스(저장 전용, 0)도 뜨지 않는다.
+  - interval: 1m
+    input_series:
+      - series: 'telemetry_mqtt_ack_wait_elapsed_seconds{job="telemetry-backend",instance="backend:8080"}'
+        values: '0 30 15 30 0 20 40 0'
+      - series: 'telemetry_mqtt_ack_wait_elapsed_seconds{job="telemetry-backend-storage",instance="storage-1:8080"}'
+        values: '0x7'
+    alert_rule_test:
+      - eval_time: 1m
+        alertname: MqttAckWaitStuck
+        exp_alerts: []
+      - eval_time: 3m
+        alertname: MqttAckWaitStuck
+        exp_alerts: []
+      - eval_time: 6m
+        alertname: MqttAckWaitStuck
+        exp_alerts: []

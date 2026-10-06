@@ -1356,3 +1356,10 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 - **인터럽트는 대기 구간 안에서만 닿는다.** 처음 구현은 대기 스레드 참조를 지운 직후와 이벤트 발행이 경합하면 ACK 이후·다음 메시지·Paho 내부 코드에 인터럽트가 샐 수 있었다. 이벤트 쪽과 구간 종료 쪽이 같은 잠금을 쓰고, 연결 끊김으로 건 인터럽트는 구간 종료 때 지운다. 다른 출처(종료 등)의 인터럽트는 ACK하지 않고 플래그를 되살린다. 구간은 decode·DLQ 발행(`get(10s)`)·Kafka `send`(max.block)까지 덮는다 — 어디서 막혀 있든 깨울 수 있게. 단위 테스트 2건, 실스택 재검증은 하지 않았다.
 - **순서**: 중단된 메시지는 ACK되지 않고 같은 연결의 다음 메시지가 먼저 ACK될 수 있어, 재전달분이 뒤에 저장될 수 있다. 저장은 `(vehicle_id, timestamp)` identity라 결과는 같지만 "수신 순서 ACK"는 연결이 끊기지 않은 구간에서만 말한다.
 - 비계약 decode 실패는 원인 예외를 WARN으로 남기고 `telemetry.mqtt.decode.failed`를 올린다(DLQ 사유는 `DECODE_FAILED` 한 단어라 원인을 담지 않는다).
+
+### 추가 (2026-10-08) — 대기 관측과 `MqttAckWaitStuck` (구조 변경 없음)
+
+수신 큐가 차면 끊김 인지가 대기 끝까지 늦는 결함 후보(실험 D2)에 대해 구조를 바꾸지 않고(콜백 executor 분리안은 보류) **보이게** 했다.
+- 지표: 끝난 대기 Timer `telemetry.mqtt.ack.wait{outcome=acked|failed|interrupted}`(고정 버킷 10ms~150s, 40·45·60s 포함, 결과 3종뿐), 진행 중 게이지 `telemetry.mqtt.ack.wait.in.progress`(0/1)·`telemetry.mqtt.ack.wait.elapsed.seconds`(scrape 시점 계산). 끝난 대기만으로는 막혀 있는 순간이 안 보여서 게이지를 따로 둔다. 게이지는 기동 때 등록(부재 ≠ 0), 값은 기존 `waitLock` 아래서 읽는다.
+- 알림 문턱 **45초**: 대기 하나의 정상 상한은 `max.block.ms` 10초 + `delivery.timeout.ms` 30초 = 40초(그 뒤 spool로 완료)이고 keepAlive 60초 아래다. 45초 = 40초 + spool·스케줄링 여유 5초 — 넘으면 상한이 깨진 것(설정 회귀·spool 디스크 정지·다른 곳에서 막힘)이다. `for`는 두지 않는다: 게이지가 한 대기의 연속 경과라 값 자체가 지속 시간이고, `for`를 두면 scrape 15초 단위로 확인이 밀려 keepAlive 뒤가 된다. 탐지는 대기 시작 뒤 45~75초.
+- 이 알림은 **Kafka 장기 정지·D2식 인지 지연 자체를 잡지 않는다** — 대기 하나는 상한 안에서 끝나기 때문이다. 실험 D3(1회, 76초 pause 중 끊김): 대기 최대 29.9초, 알림 없음(예측대로), 인지 +10.6초·재접속 +11.9초, 유실 0·중복 3. 같은 실행에서 끊김 인터럽트가 백로그 경로의 **동기 spool 쓰기**(콜백 스레드)에 닿아 `ClosedByInterruptException` → ACK 안 함(유실 아님)·0바이트 `.tmp` 잔존을 봤다 — 결함 후보, 이번에 고치지 않았다. 실스택 firing 경로(대기 ≥45초)는 만들지 않았다(promtool·단위 테스트만).

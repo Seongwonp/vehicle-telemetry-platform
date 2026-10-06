@@ -98,6 +98,23 @@ groups:
         annotations:
           summary: "브로커 $SYS 통계가 2분 넘게 갱신되지 않음 — MqttIngestStopped가 동작하지 않는 상태"
 
+      # Paho 콜백 스레드의 저장 확인 대기 하나가 producer 최악 상한을 넘겼다(ADR-029, 2026-10-08 추가).
+      # 대기 하나의 정상 상한 = max.block.ms 10s + delivery.timeout.ms 30s = 40s(그 뒤엔 spool로 완료) < keepAlive 60s.
+      # 문턱 45s = 40s + spool 기록·스케줄링 여유 5s. 이걸 넘으면 상한 설정이 깨졌거나(설정 회귀·spool 디스크 정지 등)
+      # 콜백이 다른 곳에서 막힌 것이다 — 그동안 수신 큐(10건)가 차면 receiver가 EOF를 못 읽어 끊김 인지·재접속도 늦다(실험 D2).
+      # for 없음: 게이지가 **한 대기의 연속 경과 시간**이라 값 ≥45 자체가 "45초 내내 막혀 있었다"이다.
+      # for를 두면 scrape 15s 단위로 확인이 늦어져 keepAlive(60s) 뒤로 밀린다. 탐지: 대기 시작 후 45~75s(scrape+평가 각 15s).
+      # 한계: Kafka 장기 정지는 잡지 않는다 — 첫 대기가 약 30s에 spool로 끝나고, 그 뒤엔 spool 백로그로 새 메시지가
+      # spool에 직행해 대기가 1s 미만이 된다(실험 D3, 1회: 76s pause 중 최대 29.9s, 알림 없음). 그 상태는 spool 지표로 본다.
+      # 단위 테스트: alerts_test.yml.
+      - alert: MqttAckWaitStuck
+        expr: max by (job, instance) (telemetry_mqtt_ack_wait_elapsed_seconds) >= 45
+        labels:
+          severity: warning
+        annotations:
+          summary: "MQTT 저장 확인 대기가 45초 이상 진행 중 — producer 상한(40초) 초과, 수신·재접속 지연 가능"
+          runbook: "docs/runbook/pipeline-observability.md"
+
       # 12시간 soak에서 실제로 일어난 사고의 신호다: MQTT는 계속 들어오는데 InfluxDB
       # 저장이 26초 만에 멈췄고, 그런데도 Kafka lag은 끝까지 0이라(offset이 계속 커밋됨)
       # 기존 알림이 하나도 안 떴다. "lag이 0"은 "잘 처리되고 있다"가 아니라 "offset이

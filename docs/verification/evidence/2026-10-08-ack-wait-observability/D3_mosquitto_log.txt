@@ -1,0 +1,278 @@
+2026-10-06T14:51:07.662867273Z chown: /mosquitto/config/mosquitto.conf: Read-only file system
+2026-10-06T14:51:07.663008376Z chown: /mosquitto/config/acl: Read-only file system
+2026-10-06T14:51:07.664962146Z chown: /mosquitto/certs/backend.crt: Read-only file system
+2026-10-06T14:51:07.666074748Z chown: /mosquitto/certs/backend.key: Read-only file system
+2026-10-06T14:51:07.667179619Z chown: /mosquitto/certs/backend.p12: Read-only file system
+2026-10-06T14:51:07.668011281Z chown: /mosquitto/certs/ca.crt: Read-only file system
+2026-10-06T14:51:07.669048028Z chown: /mosquitto/certs/ca.key: Read-only file system
+2026-10-06T14:51:07.670088307Z chown: /mosquitto/certs/ca.srl: Read-only file system
+2026-10-06T14:51:07.671024413Z chown: /mosquitto/certs/generate-certs.sh: Read-only file system
+2026-10-06T14:51:07.671938114Z chown: /mosquitto/certs/server.crt: Read-only file system
+2026-10-06T14:51:07.672793377Z chown: /mosquitto/certs/server.key: Read-only file system
+2026-10-06T14:51:07.673616833Z chown: /mosquitto/certs/truststore.p12: Read-only file system
+2026-10-06T14:51:07.676706746Z chown: /mosquitto/certs/vehicles/SIM-001.crt: Read-only file system
+2026-10-06T14:51:07.677672036Z chown: /mosquitto/certs/vehicles/SIM-001.key: Read-only file system
+2026-10-06T14:51:07.678686390Z chown: /mosquitto/certs/vehicles/SIM-002.crt: Read-only file system
+2026-10-06T14:51:07.679593827Z chown: /mosquitto/certs/vehicles/SIM-002.key: Read-only file system
+2026-10-06T14:51:07.680418886Z chown: /mosquitto/certs/vehicles/SIM-003.crt: Read-only file system
+2026-10-06T14:51:07.681231133Z chown: /mosquitto/certs/vehicles/SIM-003.key: Read-only file system
+2026-10-06T14:51:07.681993348Z chown: /mosquitto/certs/vehicles/SIM-004.crt: Read-only file system
+2026-10-06T14:51:07.683579816Z chown: /mosquitto/certs/vehicles/SIM-004.key: Read-only file system
+2026-10-06T14:51:07.684776507Z chown: /mosquitto/certs/vehicles/SIM-005.crt: Read-only file system
+2026-10-06T14:51:07.686356522Z chown: /mosquitto/certs/vehicles/SIM-005.key: Read-only file system
+2026-10-06T14:51:07.688026821Z chown: /mosquitto/certs/vehicles/SIM-006.crt: Read-only file system
+2026-10-06T14:51:07.689167758Z chown: /mosquitto/certs/vehicles/SIM-006.key: Read-only file system
+2026-10-06T14:51:07.690269297Z chown: /mosquitto/certs/vehicles/SIM-007.crt: Read-only file system
+2026-10-06T14:51:07.691112003Z chown: /mosquitto/certs/vehicles/SIM-007.key: Read-only file system
+2026-10-06T14:51:07.691902247Z chown: /mosquitto/certs/vehicles/SIM-008.crt: Read-only file system
+2026-10-06T14:51:07.692797977Z chown: /mosquitto/certs/vehicles/SIM-008.key: Read-only file system
+2026-10-06T14:51:07.693626753Z chown: /mosquitto/certs/vehicles/SIM-009.crt: Read-only file system
+2026-10-06T14:51:07.694944903Z chown: /mosquitto/certs/vehicles/SIM-009.key: Read-only file system
+2026-10-06T14:51:07.695899592Z chown: /mosquitto/certs/vehicles/SIM-010.crt: Read-only file system
+2026-10-06T14:51:07.697569407Z chown: /mosquitto/certs/vehicles/SIM-010.key: Read-only file system
+2026-10-06T14:51:07.698493874Z chown: /mosquitto/certs/vehicles/SIM-011.crt: Read-only file system
+2026-10-06T14:51:07.699572738Z chown: /mosquitto/certs/vehicles/SIM-011.key: Read-only file system
+2026-10-06T14:51:07.700467862Z chown: /mosquitto/certs/vehicles/SIM-012.crt: Read-only file system
+2026-10-06T14:51:07.701257255Z chown: /mosquitto/certs/vehicles/SIM-012.key: Read-only file system
+2026-10-06T14:51:07.702077145Z chown: /mosquitto/certs/vehicles/SIM-013.crt: Read-only file system
+2026-10-06T14:51:07.702963940Z chown: /mosquitto/certs/vehicles/SIM-013.key: Read-only file system
+2026-10-06T14:51:07.703846659Z chown: /mosquitto/certs/vehicles/SIM-014.crt: Read-only file system
+2026-10-06T14:51:07.704759462Z chown: /mosquitto/certs/vehicles/SIM-014.key: Read-only file system
+2026-10-06T14:51:07.705860407Z chown: /mosquitto/certs/vehicles/SIM-015.crt: Read-only file system
+2026-10-06T14:51:07.707063017Z chown: /mosquitto/certs/vehicles/SIM-015.key: Read-only file system
+2026-10-06T14:51:07.708428406Z chown: /mosquitto/certs/vehicles/SIM-016.crt: Read-only file system
+2026-10-06T14:51:07.709282347Z chown: /mosquitto/certs/vehicles/SIM-016.key: Read-only file system
+2026-10-06T14:51:07.710047745Z chown: /mosquitto/certs/vehicles/SIM-017.crt: Read-only file system
+2026-10-06T14:51:07.710869608Z chown: /mosquitto/certs/vehicles/SIM-017.key: Read-only file system
+2026-10-06T14:51:07.711662660Z chown: /mosquitto/certs/vehicles/SIM-018.crt: Read-only file system
+2026-10-06T14:51:07.712487704Z chown: /mosquitto/certs/vehicles/SIM-018.key: Read-only file system
+2026-10-06T14:51:07.713205955Z chown: /mosquitto/certs/vehicles/SIM-019.crt: Read-only file system
+2026-10-06T14:51:07.714308064Z chown: /mosquitto/certs/vehicles/SIM-019.key: Read-only file system
+2026-10-06T14:51:07.715508380Z chown: /mosquitto/certs/vehicles/SIM-020.crt: Read-only file system
+2026-10-06T14:51:07.716782342Z chown: /mosquitto/certs/vehicles/SIM-020.key: Read-only file system
+2026-10-06T14:51:07.717923897Z chown: /mosquitto/certs/vehicles/SIM-021.crt: Read-only file system
+2026-10-06T14:51:07.718994273Z chown: /mosquitto/certs/vehicles/SIM-021.key: Read-only file system
+2026-10-06T14:51:07.720207316Z chown: /mosquitto/certs/vehicles/SIM-022.crt: Read-only file system
+2026-10-06T14:51:07.721917386Z chown: /mosquitto/certs/vehicles/SIM-022.key: Read-only file system
+2026-10-06T14:51:07.723541337Z chown: /mosquitto/certs/vehicles/SIM-023.crt: Read-only file system
+2026-10-06T14:51:07.724616056Z chown: /mosquitto/certs/vehicles/SIM-023.key: Read-only file system
+2026-10-06T14:51:07.725761432Z chown: /mosquitto/certs/vehicles/SIM-024.crt: Read-only file system
+2026-10-06T14:51:07.726921508Z chown: /mosquitto/certs/vehicles/SIM-024.key: Read-only file system
+2026-10-06T14:51:07.727918241Z chown: /mosquitto/certs/vehicles/SIM-025.crt: Read-only file system
+2026-10-06T14:51:07.728894731Z chown: /mosquitto/certs/vehicles/SIM-025.key: Read-only file system
+2026-10-06T14:51:07.729925885Z chown: /mosquitto/certs/vehicles/SIM-026.crt: Read-only file system
+2026-10-06T14:51:07.730728922Z chown: /mosquitto/certs/vehicles/SIM-026.key: Read-only file system
+2026-10-06T14:51:07.731665505Z chown: /mosquitto/certs/vehicles/SIM-027.crt: Read-only file system
+2026-10-06T14:51:07.732450225Z chown: /mosquitto/certs/vehicles/SIM-027.key: Read-only file system
+2026-10-06T14:51:07.733198707Z chown: /mosquitto/certs/vehicles/SIM-028.crt: Read-only file system
+2026-10-06T14:51:07.734051524Z chown: /mosquitto/certs/vehicles/SIM-028.key: Read-only file system
+2026-10-06T14:51:07.735065123Z chown: /mosquitto/certs/vehicles/SIM-029.crt: Read-only file system
+2026-10-06T14:51:07.736248084Z chown: /mosquitto/certs/vehicles/SIM-029.key: Read-only file system
+2026-10-06T14:51:07.737324537Z chown: /mosquitto/certs/vehicles/SIM-030.crt: Read-only file system
+2026-10-06T14:51:07.738254349Z chown: /mosquitto/certs/vehicles/SIM-030.key: Read-only file system
+2026-10-06T14:51:07.739385819Z chown: /mosquitto/certs/vehicles/SIM-031.crt: Read-only file system
+2026-10-06T14:51:07.740231016Z chown: /mosquitto/certs/vehicles/SIM-031.key: Read-only file system
+2026-10-06T14:51:07.740951552Z chown: /mosquitto/certs/vehicles/SIM-032.crt: Read-only file system
+2026-10-06T14:51:07.741826095Z chown: /mosquitto/certs/vehicles/SIM-032.key: Read-only file system
+2026-10-06T14:51:07.742559216Z chown: /mosquitto/certs/vehicles/SIM-033.crt: Read-only file system
+2026-10-06T14:51:07.743440388Z chown: /mosquitto/certs/vehicles/SIM-033.key: Read-only file system
+2026-10-06T14:51:07.744433732Z chown: /mosquitto/certs/vehicles/SIM-034.crt: Read-only file system
+2026-10-06T14:51:07.745797805Z chown: /mosquitto/certs/vehicles/SIM-034.key: Read-only file system
+2026-10-06T14:51:07.747044994Z chown: /mosquitto/certs/vehicles/SIM-035.crt: Read-only file system
+2026-10-06T14:51:07.748202869Z chown: /mosquitto/certs/vehicles/SIM-035.key: Read-only file system
+2026-10-06T14:51:07.749361851Z chown: /mosquitto/certs/vehicles/SIM-036.crt: Read-only file system
+2026-10-06T14:51:07.750380040Z chown: /mosquitto/certs/vehicles/SIM-036.key: Read-only file system
+2026-10-06T14:51:07.751774306Z chown: /mosquitto/certs/vehicles/SIM-037.crt: Read-only file system
+2026-10-06T14:51:07.753506206Z chown: /mosquitto/certs/vehicles/SIM-037.key: Read-only file system
+2026-10-06T14:51:07.755012756Z chown: /mosquitto/certs/vehicles/SIM-038.crt: Read-only file system
+2026-10-06T14:51:07.756025000Z chown: /mosquitto/certs/vehicles/SIM-038.key: Read-only file system
+2026-10-06T14:51:07.757432168Z chown: /mosquitto/certs/vehicles/SIM-039.crt: Read-only file system
+2026-10-06T14:51:07.758517762Z chown: /mosquitto/certs/vehicles/SIM-039.key: Read-only file system
+2026-10-06T14:51:07.759589274Z chown: /mosquitto/certs/vehicles/SIM-040.crt: Read-only file system
+2026-10-06T14:51:07.760596646Z chown: /mosquitto/certs/vehicles/SIM-040.key: Read-only file system
+2026-10-06T14:51:07.761690879Z chown: /mosquitto/certs/vehicles/SIM-041.crt: Read-only file system
+2026-10-06T14:51:07.762652746Z chown: /mosquitto/certs/vehicles/SIM-041.key: Read-only file system
+2026-10-06T14:51:07.763442983Z chown: /mosquitto/certs/vehicles/SIM-042.crt: Read-only file system
+2026-10-06T14:51:07.764550150Z chown: /mosquitto/certs/vehicles/SIM-042.key: Read-only file system
+2026-10-06T14:51:07.765860389Z chown: /mosquitto/certs/vehicles/SIM-043.crt: Read-only file system
+2026-10-06T14:51:07.767168836Z chown: /mosquitto/certs/vehicles/SIM-043.key: Read-only file system
+2026-10-06T14:51:07.768223460Z chown: /mosquitto/certs/vehicles/SIM-044.crt: Read-only file system
+2026-10-06T14:51:07.769317122Z chown: /mosquitto/certs/vehicles/SIM-044.key: Read-only file system
+2026-10-06T14:51:07.770563262Z chown: /mosquitto/certs/vehicles/SIM-045.crt: Read-only file system
+2026-10-06T14:51:07.771621841Z chown: /mosquitto/certs/vehicles/SIM-045.key: Read-only file system
+2026-10-06T14:51:07.772491474Z chown: /mosquitto/certs/vehicles/SIM-046.crt: Read-only file system
+2026-10-06T14:51:07.773364563Z chown: /mosquitto/certs/vehicles/SIM-046.key: Read-only file system
+2026-10-06T14:51:07.774401154Z chown: /mosquitto/certs/vehicles/SIM-047.crt: Read-only file system
+2026-10-06T14:51:07.775927516Z chown: /mosquitto/certs/vehicles/SIM-047.key: Read-only file system
+2026-10-06T14:51:07.777191400Z chown: /mosquitto/certs/vehicles/SIM-048.crt: Read-only file system
+2026-10-06T14:51:07.778368918Z chown: /mosquitto/certs/vehicles/SIM-048.key: Read-only file system
+2026-10-06T14:51:07.779500465Z chown: /mosquitto/certs/vehicles/SIM-049.crt: Read-only file system
+2026-10-06T14:51:07.780578749Z chown: /mosquitto/certs/vehicles/SIM-049.key: Read-only file system
+2026-10-06T14:51:07.781414268Z chown: /mosquitto/certs/vehicles/SIM-050.crt: Read-only file system
+2026-10-06T14:51:07.782734347Z chown: /mosquitto/certs/vehicles/SIM-050.key: Read-only file system
+2026-10-06T14:51:07.784234033Z chown: /mosquitto/certs/vehicles/SIM-051.crt: Read-only file system
+2026-10-06T14:51:07.785638018Z chown: /mosquitto/certs/vehicles/SIM-051.key: Read-only file system
+2026-10-06T14:51:07.787308580Z chown: /mosquitto/certs/vehicles/SIM-052.crt: Read-only file system
+2026-10-06T14:51:07.788433192Z chown: /mosquitto/certs/vehicles/SIM-052.key: Read-only file system
+2026-10-06T14:51:07.789702216Z chown: /mosquitto/certs/vehicles/SIM-053.crt: Read-only file system
+2026-10-06T14:51:07.790855747Z chown: /mosquitto/certs/vehicles/SIM-053.key: Read-only file system
+2026-10-06T14:51:07.792061353Z chown: /mosquitto/certs/vehicles/SIM-054.crt: Read-only file system
+2026-10-06T14:51:07.793259061Z chown: /mosquitto/certs/vehicles/SIM-054.key: Read-only file system
+2026-10-06T14:51:07.794351306Z chown: /mosquitto/certs/vehicles/SIM-055.crt: Read-only file system
+2026-10-06T14:51:07.795548084Z chown: /mosquitto/certs/vehicles/SIM-055.key: Read-only file system
+2026-10-06T14:51:07.796681251Z chown: /mosquitto/certs/vehicles/SIM-056.crt: Read-only file system
+2026-10-06T14:51:07.797865280Z chown: /mosquitto/certs/vehicles/SIM-056.key: Read-only file system
+2026-10-06T14:51:07.799031246Z chown: /mosquitto/certs/vehicles/SIM-057.crt: Read-only file system
+2026-10-06T14:51:07.800084853Z chown: /mosquitto/certs/vehicles/SIM-057.key: Read-only file system
+2026-10-06T14:51:07.800968954Z chown: /mosquitto/certs/vehicles/SIM-058.crt: Read-only file system
+2026-10-06T14:51:07.802037984Z chown: /mosquitto/certs/vehicles/SIM-058.key: Read-only file system
+2026-10-06T14:51:07.803061424Z chown: /mosquitto/certs/vehicles/SIM-059.crt: Read-only file system
+2026-10-06T14:51:07.803958784Z chown: /mosquitto/certs/vehicles/SIM-059.key: Read-only file system
+2026-10-06T14:51:07.805154243Z chown: /mosquitto/certs/vehicles/SIM-060.crt: Read-only file system
+2026-10-06T14:51:07.806628491Z chown: /mosquitto/certs/vehicles/SIM-060.key: Read-only file system
+2026-10-06T14:51:07.807429310Z chown: /mosquitto/certs/vehicles/SIM-061.crt: Read-only file system
+2026-10-06T14:51:07.808664431Z chown: /mosquitto/certs/vehicles/SIM-061.key: Read-only file system
+2026-10-06T14:51:07.809760882Z chown: /mosquitto/certs/vehicles/SIM-062.crt: Read-only file system
+2026-10-06T14:51:07.810732102Z chown: /mosquitto/certs/vehicles/SIM-062.key: Read-only file system
+2026-10-06T14:51:07.811625596Z chown: /mosquitto/certs/vehicles/SIM-063.crt: Read-only file system
+2026-10-06T14:51:07.812564595Z chown: /mosquitto/certs/vehicles/SIM-063.key: Read-only file system
+2026-10-06T14:51:07.813644719Z chown: /mosquitto/certs/vehicles/SIM-064.crt: Read-only file system
+2026-10-06T14:51:07.815164951Z chown: /mosquitto/certs/vehicles/SIM-064.key: Read-only file system
+2026-10-06T14:51:07.816898850Z chown: /mosquitto/certs/vehicles/SIM-065.crt: Read-only file system
+2026-10-06T14:51:07.818843715Z chown: /mosquitto/certs/vehicles/SIM-065.key: Read-only file system
+2026-10-06T14:51:07.820206840Z chown: /mosquitto/certs/vehicles/SIM-066.crt: Read-only file system
+2026-10-06T14:51:07.821378134Z chown: /mosquitto/certs/vehicles/SIM-066.key: Read-only file system
+2026-10-06T14:51:07.822572106Z chown: /mosquitto/certs/vehicles/SIM-067.crt: Read-only file system
+2026-10-06T14:51:07.823588588Z chown: /mosquitto/certs/vehicles/SIM-067.key: Read-only file system
+2026-10-06T14:51:07.824734446Z chown: /mosquitto/certs/vehicles/SIM-068.crt: Read-only file system
+2026-10-06T14:51:07.826645938Z chown: /mosquitto/certs/vehicles/SIM-068.key: Read-only file system
+2026-10-06T14:51:07.828399286Z chown: /mosquitto/certs/vehicles/SIM-069.crt: Read-only file system
+2026-10-06T14:51:07.829937541Z chown: /mosquitto/certs/vehicles/SIM-069.key: Read-only file system
+2026-10-06T14:51:07.831098896Z chown: /mosquitto/certs/vehicles/SIM-070.crt: Read-only file system
+2026-10-06T14:51:07.832335981Z chown: /mosquitto/certs/vehicles/SIM-070.key: Read-only file system
+2026-10-06T14:51:07.833887185Z chown: /mosquitto/certs/vehicles/SIM-071.crt: Read-only file system
+2026-10-06T14:51:07.835547612Z chown: /mosquitto/certs/vehicles/SIM-071.key: Read-only file system
+2026-10-06T14:51:07.837067511Z chown: /mosquitto/certs/vehicles/SIM-072.crt: Read-only file system
+2026-10-06T14:51:07.838122743Z chown: /mosquitto/certs/vehicles/SIM-072.key: Read-only file system
+2026-10-06T14:51:07.839263532Z chown: /mosquitto/certs/vehicles/SIM-073.crt: Read-only file system
+2026-10-06T14:51:07.840397139Z chown: /mosquitto/certs/vehicles/SIM-073.key: Read-only file system
+2026-10-06T14:51:07.841310856Z chown: /mosquitto/certs/vehicles/SIM-074.crt: Read-only file system
+2026-10-06T14:51:07.842353895Z chown: /mosquitto/certs/vehicles/SIM-074.key: Read-only file system
+2026-10-06T14:51:07.843386220Z chown: /mosquitto/certs/vehicles/SIM-075.crt: Read-only file system
+2026-10-06T14:51:07.844504141Z chown: /mosquitto/certs/vehicles/SIM-075.key: Read-only file system
+2026-10-06T14:51:07.845724040Z chown: /mosquitto/certs/vehicles/SIM-076.crt: Read-only file system
+2026-10-06T14:51:07.846665087Z chown: /mosquitto/certs/vehicles/SIM-076.key: Read-only file system
+2026-10-06T14:51:07.847952512Z chown: /mosquitto/certs/vehicles/SIM-077.crt: Read-only file system
+2026-10-06T14:51:07.850431979Z chown: /mosquitto/certs/vehicles/SIM-077.key: Read-only file system
+2026-10-06T14:51:07.850449666Z chown: /mosquitto/certs/vehicles/SIM-078.crt: Read-only file system
+2026-10-06T14:51:07.852162952Z chown: /mosquitto/certs/vehicles/SIM-078.key: Read-only file system
+2026-10-06T14:51:07.853424402Z chown: /mosquitto/certs/vehicles/SIM-079.crt: Read-only file system
+2026-10-06T14:51:07.854870177Z chown: /mosquitto/certs/vehicles/SIM-079.key: Read-only file system
+2026-10-06T14:51:07.856928877Z chown: /mosquitto/certs/vehicles/SIM-080.crt: Read-only file system
+2026-10-06T14:51:07.858159244Z chown: /mosquitto/certs/vehicles/SIM-080.key: Read-only file system
+2026-10-06T14:51:07.859365412Z chown: /mosquitto/certs/vehicles/SIM-081.crt: Read-only file system
+2026-10-06T14:51:07.860423285Z chown: /mosquitto/certs/vehicles/SIM-081.key: Read-only file system
+2026-10-06T14:51:07.861400952Z chown: /mosquitto/certs/vehicles/SIM-082.crt: Read-only file system
+2026-10-06T14:51:07.862380807Z chown: /mosquitto/certs/vehicles/SIM-082.key: Read-only file system
+2026-10-06T14:51:07.863966559Z chown: /mosquitto/certs/vehicles/SIM-083.crt: Read-only file system
+2026-10-06T14:51:07.865077681Z chown: /mosquitto/certs/vehicles/SIM-083.key: Read-only file system
+2026-10-06T14:51:07.866301008Z chown: /mosquitto/certs/vehicles/SIM-084.crt: Read-only file system
+2026-10-06T14:51:07.867485778Z chown: /mosquitto/certs/vehicles/SIM-084.key: Read-only file system
+2026-10-06T14:51:07.868638765Z chown: /mosquitto/certs/vehicles/SIM-085.crt: Read-only file system
+2026-10-06T14:51:07.869671693Z chown: /mosquitto/certs/vehicles/SIM-085.key: Read-only file system
+2026-10-06T14:51:07.871137599Z chown: /mosquitto/certs/vehicles/SIM-086.crt: Read-only file system
+2026-10-06T14:51:07.871974727Z chown: /mosquitto/certs/vehicles/SIM-086.key: Read-only file system
+2026-10-06T14:51:07.873022666Z chown: /mosquitto/certs/vehicles/SIM-087.crt: Read-only file system
+2026-10-06T14:51:07.873888761Z chown: /mosquitto/certs/vehicles/SIM-087.key: Read-only file system
+2026-10-06T14:51:07.875194527Z chown: /mosquitto/certs/vehicles/SIM-088.crt: Read-only file system
+2026-10-06T14:51:07.877086562Z chown: /mosquitto/certs/vehicles/SIM-088.key: Read-only file system
+2026-10-06T14:51:07.878281604Z chown: /mosquitto/certs/vehicles/SIM-089.crt: Read-only file system
+2026-10-06T14:51:07.879561485Z chown: /mosquitto/certs/vehicles/SIM-089.key: Read-only file system
+2026-10-06T14:51:07.880407223Z chown: /mosquitto/certs/vehicles/SIM-090.crt: Read-only file system
+2026-10-06T14:51:07.881211201Z chown: /mosquitto/certs/vehicles/SIM-090.key: Read-only file system
+2026-10-06T14:51:07.882067866Z chown: /mosquitto/certs/vehicles/SIM-091.crt: Read-only file system
+2026-10-06T14:51:07.882986575Z chown: /mosquitto/certs/vehicles/SIM-091.key: Read-only file system
+2026-10-06T14:51:07.883969359Z chown: /mosquitto/certs/vehicles/SIM-092.crt: Read-only file system
+2026-10-06T14:51:07.885254518Z chown: /mosquitto/certs/vehicles/SIM-092.key: Read-only file system
+2026-10-06T14:51:07.887554152Z chown: /mosquitto/certs/vehicles/SIM-093.crt: Read-only file system
+2026-10-06T14:51:07.889754350Z chown: /mosquitto/certs/vehicles/SIM-093.key: Read-only file system
+2026-10-06T14:51:07.891180858Z chown: /mosquitto/certs/vehicles/SIM-094.crt: Read-only file system
+2026-10-06T14:51:07.892063753Z chown: /mosquitto/certs/vehicles/SIM-094.key: Read-only file system
+2026-10-06T14:51:07.893032951Z chown: /mosquitto/certs/vehicles/SIM-095.crt: Read-only file system
+2026-10-06T14:51:07.893963354Z chown: /mosquitto/certs/vehicles/SIM-095.key: Read-only file system
+2026-10-06T14:51:07.895286051Z chown: /mosquitto/certs/vehicles/SIM-096.crt: Read-only file system
+2026-10-06T14:51:07.897011026Z chown: /mosquitto/certs/vehicles/SIM-096.key: Read-only file system
+2026-10-06T14:51:07.897938290Z chown: /mosquitto/certs/vehicles/SIM-097.crt: Read-only file system
+2026-10-06T14:51:07.899067685Z chown: /mosquitto/certs/vehicles/SIM-097.key: Read-only file system
+2026-10-06T14:51:07.900101612Z chown: /mosquitto/certs/vehicles/SIM-098.crt: Read-only file system
+2026-10-06T14:51:07.900925731Z chown: /mosquitto/certs/vehicles/SIM-098.key: Read-only file system
+2026-10-06T14:51:07.901735249Z chown: /mosquitto/certs/vehicles/SIM-099.crt: Read-only file system
+2026-10-06T14:51:07.902485232Z chown: /mosquitto/certs/vehicles/SIM-099.key: Read-only file system
+2026-10-06T14:51:07.903273495Z chown: /mosquitto/certs/vehicles/SIM-100.crt: Read-only file system
+2026-10-06T14:51:07.904306954Z chown: /mosquitto/certs/vehicles/SIM-100.key: Read-only file system
+2026-10-06T14:51:07.905734517Z chown: /mosquitto/certs/vehicles: Read-only file system
+2026-10-06T14:51:07.905748903Z chown: /mosquitto/certs/vehicles: Read-only file system
+2026-10-06T14:51:07.906245289Z chown: /mosquitto/certs: Read-only file system
+2026-10-06T14:51:07.906257332Z chown: /mosquitto/certs: Read-only file system
+2026-10-06T14:51:22.628680930Z 1791298282: New connection from 172.18.0.11:37156 on port 1883.
+2026-10-06T14:51:22.933000317Z 1791298282: New client connected from 172.18.0.11:37156 as telemetry-backend (p2, c0, k60).
+2026-10-06T14:51:22.936397255Z 1791298282: New connection from 172.18.0.11:37158 on port 1883.
+2026-10-06T14:51:22.936634074Z 1791298282: telemetry-backend 1 vehicle/telemetry/#
+2026-10-06T14:51:23.238477347Z 1791298283: New client connected from 172.18.0.11:37158 as telemetry-backend-sys (p2, c0, k60).
+2026-10-06T14:51:23.240121293Z 1791298283: telemetry-backend-sys 0 $SYS/broker/publish/messages/dropped
+2026-10-06T14:51:23.240137724Z 1791298283: telemetry-backend-sys 0 $SYS/broker/publish/messages/received
+2026-10-06T14:51:23.240139886Z 1791298283: telemetry-backend-sys 0 $SYS/broker/clients/connected
+2026-10-06T14:51:23.240141499Z 1791298283: telemetry-backend-sys 0 $SYS/broker/uptime
+2026-10-06T14:52:10.112805686Z 1791298330: New connection from 172.18.0.15:36040 on port 1883.
+2026-10-06T14:52:10.114284788Z 1791298330: New client connected from 172.18.0.15:36040 as auto-E1C68458-B1E9-82CE-D6D4-93F7C046C341 (p2, c1, k60).
+2026-10-06T14:52:56.148611425Z 1791298376: New connection from 172.18.0.16:42354 on port 1883.
+2026-10-06T14:52:56.148631462Z 1791298376: New client connected from 172.18.0.16:42354 as auto-E252B809-4CEB-F473-8E5C-3445DE03A31E (p2, c1, k60).
+2026-10-06T14:52:56.148802976Z 1791298376: auto-E252B809-4CEB-F473-8E5C-3445DE03A31E 0 $CONTROL/dynamic-security/v1/response
+2026-10-06T14:52:57.082829711Z 1791298377: New connection from 172.18.0.16:42366 on port 1883.
+2026-10-06T14:52:57.082852305Z 1791298377: New client connected from 172.18.0.16:42366 as auto-7DE99A6D-709B-8B8B-2E5F-C7B4E2BD310F (p2, c1, k60).
+2026-10-06T14:52:57.087842891Z 1791298377: Client telemetry-backend been disconnected by administrative action.
+2026-10-06T14:52:57.087865274Z 1791298377: Client telemetry-backend-sys been disconnected by administrative action.
+2026-10-06T14:52:57.087903771Z 1791298377: Client auto-E1C68458-B1E9-82CE-D6D4-93F7C046C341 been disconnected by administrative action.
+2026-10-06T14:52:57.087919619Z 1791298377: Client auto-E252B809-4CEB-F473-8E5C-3445DE03A31E been disconnected by administrative action.
+2026-10-06T14:52:57.087959437Z 1791298377: Client auto-7DE99A6D-709B-8B8B-2E5F-C7B4E2BD310F been disconnected by administrative action.
+2026-10-06T14:52:58.089576350Z 1791298378: New connection from 172.18.0.15:59986 on port 1883.
+2026-10-06T14:52:58.089596280Z 1791298378: New connection from 172.18.0.16:42380 on port 1883.
+2026-10-06T14:52:58.089597679Z 1791298378: New client connected from 172.18.0.15:59986 as auto-FA19CFDA-82CD-A2C3-E94C-563FD368F84F (p2, c1, k60).
+2026-10-06T14:52:58.089598915Z 1791298378: New client connected from 172.18.0.16:42380 as auto-787BDCB1-1ED2-E9A4-9792-E80763C057AB (p2, c1, k60).
+2026-10-06T14:52:58.089758150Z 1791298378: auto-787BDCB1-1ED2-E9A4-9792-E80763C057AB 0 $CONTROL/dynamic-security/v1/response
+2026-10-06T14:52:58.093933906Z 1791298378: New connection from 172.18.0.11:38742 on port 1883.
+2026-10-06T14:52:58.395414025Z 1791298378: New client connected from 172.18.0.11:38742 as telemetry-backend-sys (p2, c0, k60).
+2026-10-06T14:52:58.396490932Z 1791298378: telemetry-backend-sys 0 $SYS/broker/publish/messages/dropped
+2026-10-06T14:52:58.396504493Z 1791298378: telemetry-backend-sys 0 $SYS/broker/publish/messages/received
+2026-10-06T14:52:58.396506513Z 1791298378: telemetry-backend-sys 0 $SYS/broker/clients/connected
+2026-10-06T14:52:58.396508174Z 1791298378: telemetry-backend-sys 0 $SYS/broker/uptime
+2026-10-06T14:53:00.148836699Z 1791298380: Client auto-787BDCB1-1ED2-E9A4-9792-E80763C057AB disconnected.
+2026-10-06T14:53:08.714407512Z 1791298388: New connection from 172.18.0.11:41436 on port 1883.
+2026-10-06T14:53:09.015859237Z 1791298389: New client connected from 172.18.0.11:41436 as telemetry-backend (p2, c0, k60).
+2026-10-06T14:53:09.016749178Z 1791298389: telemetry-backend 1 vehicle/telemetry/#
+2026-10-06T14:54:28.513557339Z 1791298468: New connection from 172.18.0.16:56762 on port 1883.
+2026-10-06T14:54:28.513582967Z 1791298468: New client connected from 172.18.0.16:56762 as auto-2C8387FB-5B06-0C2B-9AA6-ADD59335A997 (p2, c1, k60).
+2026-10-06T14:54:28.513676515Z 1791298468: auto-2C8387FB-5B06-0C2B-9AA6-ADD59335A997 0 $CONTROL/dynamic-security/v1/response
+2026-10-06T14:54:29.515024389Z 1791298469: New connection from 172.18.0.16:56776 on port 1883.
+2026-10-06T14:54:29.515045407Z 1791298469: New client connected from 172.18.0.16:56776 as auto-4398ED00-75DB-8254-4490-8720B6CD868A (p2, c1, k60).
+2026-10-06T14:54:29.520611025Z 1791298469: Client auto-FA19CFDA-82CD-A2C3-E94C-563FD368F84F been disconnected by administrative action.
+2026-10-06T14:54:29.520633187Z 1791298469: Client telemetry-backend-sys been disconnected by administrative action.
+2026-10-06T14:54:29.520721350Z 1791298469: Client telemetry-backend been disconnected by administrative action.
+2026-10-06T14:54:29.520727759Z 1791298469: Client auto-2C8387FB-5B06-0C2B-9AA6-ADD59335A997 been disconnected by administrative action.
+2026-10-06T14:54:29.520729258Z 1791298469: Client auto-4398ED00-75DB-8254-4490-8720B6CD868A been disconnected by administrative action.
+2026-10-06T14:54:30.522330029Z 1791298470: New connection from 172.18.0.16:56786 on port 1883.
+2026-10-06T14:54:30.522354677Z 1791298470: New connection from 172.18.0.15:47856 on port 1883.
+2026-10-06T14:54:30.522369067Z 1791298470: New client connected from 172.18.0.16:56786 as auto-802BE5A6-9254-CD79-9DBE-735C53966185 (p2, c1, k60).
+2026-10-06T14:54:30.522371022Z 1791298470: New client connected from 172.18.0.15:47856 as auto-11BB0639-43A9-F974-700E-98252DD0E420 (p2, c1, k60).
+2026-10-06T14:54:30.522519274Z 1791298470: auto-802BE5A6-9254-CD79-9DBE-735C53966185 0 $CONTROL/dynamic-security/v1/response
+2026-10-06T14:54:30.523104345Z 1791298470: New connection from 172.18.0.11:45832 on port 1883.
+2026-10-06T14:54:30.523118007Z 1791298470: New connection from 172.18.0.11:45834 on port 1883.
+2026-10-06T14:54:30.825052339Z 1791298470: New client connected from 172.18.0.11:45834 as telemetry-backend (p2, c0, k60).
+2026-10-06T14:54:30.825074614Z 1791298470: New client connected from 172.18.0.11:45832 as telemetry-backend-sys (p2, c0, k60).
+2026-10-06T14:54:30.826024517Z 1791298470: telemetry-backend 1 vehicle/telemetry/#
+2026-10-06T14:54:30.826040265Z 1791298470: telemetry-backend-sys 0 $SYS/broker/publish/messages/dropped
+2026-10-06T14:54:30.826043099Z 1791298470: telemetry-backend-sys 0 $SYS/broker/publish/messages/received
+2026-10-06T14:54:30.826044870Z 1791298470: telemetry-backend-sys 0 $SYS/broker/clients/connected
+2026-10-06T14:54:30.826046642Z 1791298470: telemetry-backend-sys 0 $SYS/broker/uptime
+2026-10-06T14:54:32.513881769Z 1791298472: Client auto-802BE5A6-9254-CD79-9DBE-735C53966185 disconnected.
+2026-10-06T14:55:24.960319936Z 1791298524: Client auto-11BB0639-43A9-F974-700E-98252DD0E420 disconnected.

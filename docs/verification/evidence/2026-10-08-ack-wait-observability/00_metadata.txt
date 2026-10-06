@@ -1,0 +1,18 @@
+purpose=저장 확인 대기 관측 지표(MqttMessageHandler) + MqttAckWaitStuck 알림 + 실험 D3(Kafka 75초 pause 중 MQTT 끊김), 각 1회 관찰
+git_head=ea1816139f0cae1dc7931bf116d2447e6bbf5fb3 (dirty: MqttMessageHandler.java, MqttAckWaitMetricsTest.java(신규), RedisAlertingMetricsTest.java, alerts.yml, alerts_test.yml, 검증 문서·ADR·runbook)
+backend_image=sha256:9d2d21bbe8f3567a769456467e43c55a8c19a4fa182270d3caf47a26025534ce created 2026-10-06T14:50:18Z (docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend, 위 dirty 트리)
+image_check=기동 직후 /actuator/prometheus에 telemetry_mqtt_ack_wait_in_progress·telemetry_mqtt_ack_wait_elapsed_seconds 0.0 존재
+tests=./gradlew test --no-daemon --offline: XML 68개, 388건, 실패 0, 오류 0, skip 0, 계약 패키지 파일 8 (Docker 실행 중)
+promtool=prom/prometheus:v2.51.0 check rules alerts.yml SUCCESS 16 rules; test rules alerts_test.yml SUCCESS
+prometheus=v2.51.0 scrape/eval 15s; 규칙 파일 수정 뒤 SIGHUP(docker kill --signal=HUP telemetry-prometheus)으로 재적재, /api/v1/rules에서 MqttAckWaitStuck 확인
+alertmanager=v0.27.0, receiver default 하나(설정 없음) — D3_alertmanager_status_config.txt, 실행 뒤 /api/v2/alerts = [] (D3_alertmanager_alerts_after.json)
+compose=docker-compose.yml + docker-compose.dev.yml + 저장소 밖 R_override-r.yml(mosquitto 설정·dynsec 마운트) + R_debug-override.yml(LOGGING_LEVEL_COM_TELEMETRY=DEBUG), up -d --no-deps mosquitto backend
+broker_config=R_mosquitto-r.conf, R_dynamic-security_initial.json(실행 전 초기 상태로 되돌림, clients 없음). 끊기: addRoleACL revocable publishClientSend d3/noop1·d3/noop2
+ctl_note=ctl.sh의 mosquitto_sub -W 4가 두 번 다 "Timed out"(응답 토픽 미수신)이었으나 브로커 로그에 administrative 끊김이 기록됨 — 명령은 적용됨
+environment_diff_vs_D2=이상 감지기 3개 실행 중(Kafka 소비자, MQTT 경로 밖), 시뮬레이터 없음
+run_time_utc=2026-10-06 14:51:56 ~ 14:57:27 (폴더 이름 날짜는 요청 이름)
+log_timestamps=docker logs -t (UTC). 브로커 줄 숫자 접두는 epoch 초
+restore=up -d --no-deps mosquitto backend (docker-compose.yml + dev만) → Z_restore_mosquitto_mounts.txt(원래 mosquitto-dev.conf), backend LOGGING_LEVEL_COM_TELEMETRY 없음, Z_restore_result.txt(5/5)
+volumes kept; no down -v; 실험 영속 세션·InfluxDB 실험 행 삭제 없음. spool 볼륨의 0바이트 .tmp 1개(D3_spool_dir_after.txt)는 지우지 않음
+test_vehicles=RECON-D3(540), RECON-D3Z(5)
+scripts=expD3.sh, poll.sh, ctl.sh, offsets.sh, kafka_unique.sh, influx_count.sh(값은 컨테이너 env 이름으로만 참조), genpaced.py, sanity.sh

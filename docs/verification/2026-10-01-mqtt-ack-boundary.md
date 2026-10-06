@@ -464,7 +464,7 @@ HEAD `46937e7`. 이미지·스택은 E3·S와 같다(재빌드 없음). Promethe
 - **재시작 직후 구독 timeout: 재현됨(실험 F, 1회)** — 백로그가 있는 재접속에서 연결 5초 뒤 발생하고 구독은 유지됐다. 세션 소실 경로에서의 구독 상실 여부, 구독 실패 이벤트 감지 수단 부재는 미검증/결함 후보.
 - **producer timeout 30초(46937e7): E3 1회 관찰 완료(2026-10-06)** — 150초 정지에서 keepAlive 끊김 0, 첫 spool 보관 stop +30초, 유실 0·중복 0. **"30초 미만 정지는 버퍼가 흡수"는 1회 관찰(실험 P, 2026-10-06, 20초 `docker pause`, 실제 불가 20.7초): spool 0·끊김 0·유실 0·중복 0.** S의 20초 `docker stop`은 Kafka 복구 지연으로 실제 불가가 80초 넘어 spool 226건을 썼다. 30초 경계 부근·네트워크 분리·반복·고부하·복수 차량·spool 용량 한계는 미검증.
 - **`MqttIngestStopped` 알림: 구독이 막힌 상태에서 pending → firing(2분) 확인(2026-10-06, 실험 H, 각 1회)**, 복구 뒤 해제 확인. **정상 수신이 갑자기 멈추는 경우의 탐지 시간은 1회 관찰(실험 T, 2026-10-06): 수신 중단 → pending 약 2분 7초 → firing 약 4분 5초(dynamic-security 런타임 회수, 끊김 동반), 원복 뒤 해제 확인.** 반복·다른 원인(어댑터 정지 등)은 미측정. H-2의 dynsec 키 오타 가능성은 미확인. 브로커 `$SYS` 수신이 막히면 이 알림이 침묵한다 — **실험 U(1회)에서 실제로 침묵했고(`$SYS`·수신 둘 다 막은 5분 21초 동안 pending 없음), 그 구간을 `MqttBrokerMetricsStale`이 덮었다(마지막 갱신 + 5분 8초 firing, 원복 뒤 해제).** ~~**새 결함 후보: `MqttBrokerMetricsStale`이 유휴 스택에서 오탐한다(실험 U0, 1회)**~~ → **수정**: `$SYS/broker/uptime`을 심장 박동으로 구독(아래 "실험 U1"), 유휴 6분 30초 1회 관찰에서 갱신 지연 ≤10초·Stale 없음. `$SYS` 차단 시 firing은 수정 뒤 실스택에서 다시 보지 않았다(promtool 단위 테스트만). 실제 SUBACK 0x80은 백엔드 로그에 이유 코드 없이 `Error subscribing` 한 줄이며 재시도가 없다 — 로그만으로 거부와 timeout을 구분할 수 없다. 운영 `acl`(mTLS)은 구독을 허용하고 전달만 막을 가능성(추정, 미검증).
-- **`2aba182` 인터럽트 가드 실스택 재검증: 각 1회 관찰(실험 D2·D2b·D2c, 2026-10-06)** — 백엔드가 끊김을 안 순간 대기 중단은 매번 정확했고(같은 ms), 누수 증상·유실 0(중복 3·3·1). **수신 큐가 차지 않으면(D2c) 끊김 0.5ms 뒤 중단·1.3초 뒤 재접속**이지만, **메시지가 계속 들어와 Paho 수신 큐가 차면(D2·D2b) receiver 스레드가 큐 대기에 묶여 끊김 인지 자체가 저장 완료(Kafka unpause)까지 늦었다 — 재접속 11.5초·14.2초.** 이 조건에서 가드는 재접속을 앞당기지 못한다(결함 후보, 대기 상한은 producer timeout). 30초 넘는 정지와 겹친 끊김, 반쯤 열린 연결·네트워크 분리·TLS, 반복은 미검증.
+- **`2aba182` 인터럽트 가드 실스택 재검증: 각 1회 관찰(실험 D2·D2b·D2c, 2026-10-06)** — 백엔드가 끊김을 안 순간 대기 중단은 매번 정확했고(같은 ms), 누수 증상·유실 0(중복 3·3·1). **수신 큐가 차지 않으면(D2c) 끊김 0.5ms 뒤 중단·1.3초 뒤 재접속**이지만, **메시지가 계속 들어와 Paho 수신 큐가 차면(D2·D2b) receiver 스레드가 큐 대기에 묶여 끊김 인지 자체가 저장 완료(Kafka unpause)까지 늦었다 — 재접속 11.5초·14.2초.** 이 조건에서 가드는 재접속을 앞당기지 못한다(결함 후보, 대기 상한은 producer timeout). **30초 넘는 정지와 겹친 끊김은 1회 관찰(실험 D3, 2026-10-08)**: 인지는 진행 중 대기가 delivery timeout으로 끝난 직후(끊김 +10.6초), 재접속 +11.9초, 유실 0·중복 3. 이때 인터럽트가 동기 spool 쓰기에 닿아 0바이트 `.tmp`가 남았다(결함 후보). 대기 관측 지표·`MqttAckWaitStuck`(≥45초) 추가 — D3에서는 대기 최대 약 30초라 알림은 뜨지 않았다(예측대로). 반쯤 열린 연결·네트워크 분리·TLS, 반복은 미검증.
 - 네트워크 분리(반쯤 열린 연결)·재접속과 저장 지연이 겹치는 경우, 디스크 용량 부족 실스택 재현.
 - 수동 ACK 변경 후 목표 부하에서 처리량·지연·큐 포화 비교. 현재는 저부하 계약만 확인했다.
 - 브로커 강제 종료/호스트 전원 차단은 이번 보호 범위 밖이다.
@@ -547,6 +547,61 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 - 재접속 5초 뒤 `Error subscribing … Timed out`이 D2·D2b에서 1회씩 다시 나왔다(실험 F와 같은 현상, 백로그 있는 재접속). 구독은 유지되어 이후 메시지가 들어왔다.
 
 **한계**: 각 1회, 단일 차량, 약 2.7건/초, Kafka `pause`(프로세스 정지)만. 끊는 방법이 브로커가 닫는 깨끗한 단절(dynamic-security role 변경의 부수 효과, `-sys`·발행기도 같이 끊김)이며 반쯤 열린 연결·네트워크 분리·TLS는 보지 않았다. 30초를 넘는 pause(spool 경로와 겹치는 끊김)는 보지 않았다. 스레드 덤프는 D2b·D2c 각 한 순간이다.
+
+## 실험 D3 — 30초 넘는 Kafka 정지 중 끊김과 저장 확인 대기 관측 (2026-10-08 추가)
+
+상태: **1회 관찰 완료(결과는 아래 결과 절). 가설·기준은 실행 전에 적었다.** 원본: [`evidence/2026-10-08-ack-wait-observability/`](evidence/2026-10-08-ack-wait-observability/)(`D3_*`).
+
+**배경**: 인계(2026-10-07) §3-1의 A안. D2·D2b는 수신 큐가 차면 끊김 인지가 저장 완료까지 늦는 것을 보였지만, 콜백이 얼마나 오래 막혀 있는지를 **지표로 볼 수단이 없었다**(끝난 대기도, 진행 중 대기도). 이번 변경: `MqttMessageHandler`의 대기 구간에 지표 3종을 넣었다 — 끝난 대기 Timer `telemetry_mqtt_ack_wait_seconds{outcome=acked|failed|interrupted}`(고정 버킷 10ms~150s, 40·45·60s 경계 포함), 진행 중 게이지 `telemetry_mqtt_ack_wait_in_progress`(0/1), `telemetry_mqtt_ack_wait_elapsed_seconds`(scrape 시점 계산, 대기 없으면 0). 게이지는 기동 때 등록(부재 ≠ 0). 알림 `MqttAckWaitStuck`: `max by (job, instance) (telemetry_mqtt_ack_wait_elapsed_seconds) >= 45`, `for` 없음 — 근거는 ADR-029 추가(2026-10-08)와 `alerts.yml` 주석.
+
+**질문**: (1) Kafka가 `delivery.timeout.ms`(30초)보다 오래 멈춘 상태에서 MQTT 연결이 끊기면, 새 게이지로 콜백 대기를 실제로 볼 수 있는가(부재 없음, 값의 모양). (2) 이 조건에서 대기 하나가 producer 최악 상한(40초)을 넘는가 — 즉 `MqttAckWaitStuck`이 뜨는가. (3) 끊김 인지·재접속이 얼마나 늦는가(D2는 unpause에 묶였다). (4) spool 경로와 겹쳐도 유실이 없는가.
+
+**조작**: D2와 같은 발행(`mosquitto_pub -q 1 -l`, 호스트 `sleep 0.333`, 약 2.7건/초), 차량 `RECON-D3`, 고유 밀리초 timestamp 540건(약 180초). 발행 시작 30초 뒤 `docker pause telemetry-kafka`, pause +15초에 dynamic-security `addRoleACL`(익명 그룹의 role `revocable`, **`publishClientSend`** allow `d3/noop1` — 아무것도 막지 않는 ACL, role 변경의 부수 효과로 그 role의 클라이언트가 끊긴다; D2는 `publishClientReceive`를 썼다), pause +75초에 `docker unpause`. 대조로 unpause +30초에 Kafka 정상 상태에서 한 번 더 끊는다(`d3/noop2`). `mosquitto_ctrl` 반영에 약 4초가 걸리므로(D2) 실제 끊김 시각은 브로커 로그로 판정한다. 관측: 백엔드 `/actuator/prometheus` 직접 2초 간격(게이지), Prometheus `/api/v1/alerts` 5초 간격, 실행 뒤 Prometheus 범위 질의(게이지·히스토그램, step 5s). 환경 차이: D2와 달리 이상 감지기 3개가 떠 있다(Kafka 소비자, MQTT 경로 밖). 시뮬레이터 없음.
+
+**가설(실행 전, 추정)**:
+- H1(대기 상한 유지): pause 중 첫 메시지는 `delivery.timeout.ms` 30초에 실패해 spool로 끝나고(완료 = ACK 가능), 다음 메시지들도 각자 30초(메타데이터를 다시 기다리면 `max.block.ms` 10초) 안에 끝난다. 게이지 elapsed는 **0~약 31초 톱니**이고 45초에 닿지 않아 **`MqttAckWaitStuck`은 pending/firing 모두 없다.** in_progress는 pause 구간 대부분 1. 끝난 대기는 `outcome="acked"`(spool 완료도 정상 완료) — 단, 끊김 인지 순간 진행 중이던 대기가 있으면 `interrupted` 1건.
+- H2(인지 지연): 끊김은 pause +약 19초, 그때 수신 큐(10)가 이미 찼으므로(15초 × 2.7건/초 ≈ 40건) receiver가 EOF를 못 읽는다. 끊김 인지는 끊김 즉시가 아니라 진행 중 대기가 끝난 뒤(가장 이르게 pause +30초 spool 완료 때의 옛 연결 PUBACK 쓰기 실패, 늦으면 unpause 뒤 큐 소진 뒤). **재접속은 끊김 +5초를 넘는다**(D2와 같은 결함 후보의 재현). 상한은 추정하지 않는다 — 관찰값으로 적는다.
+- H3(유실 0): PUBACK(RC:0) = Kafka 고유 timestamp = InfluxDB 고유 시점 = N. spool 보관 ≥ 1(30초 넘는 정지라서). 중복은 허용하고 센다.
+
+**성공 기준(실행 전)**: (1) 실행 전 구간·pause 구간·이후 구간 내내 게이지 두 개가 scrape에 있고(부재 0회), pause 구간에 in_progress=1이 관찰되며 elapsed가 증가하는 표본이 있다. (2) 알림 판정은 H1 기준으로 **안 뜨는 것이 예측**이다 — 뜨면 "대기 하나가 40초 상한을 넘었다"는 관찰이므로 그 대기의 시작·끝을 백엔드 로그에서 찾아 원인을 적는다(가설 위반으로 기록, 알림 동작 확인으로 읽지 않는다). (3) PUBACK(RC:0) = N, Kafka 고유 = N, InfluxDB 고유 = N. (4) DLQ(`-dlq`·`-mqtt-dlq`) 증가 0, `decode.failed` 0, `ack.callback.missing` 0. (5) 실행 뒤 Timer `_count` 합의 증가 = `messages.received` 증가(대기 경로를 탄 메시지 전부가 한 번씩 기록). (6) Alertmanager receiver는 `default` 하나(외부 발송 설정 없음) — 실행 전 설정 파일과 `/api/v2/status`로 확인. **실패 기준**: 고유 수 < N, 게이지 부재, Timer 합 ≠ 수신 증가, 수신 미재개.
+**판정하지 않는 것**: 재접속 시간(H2는 관찰), 알림 탐지 시간(알림이 안 뜨는 것이 예측이므로). 각 1회 관찰이며 반복·안정성 주장은 하지 않는다.
+
+### 결과 — D3 (1회 관찰)
+
+환경: HEAD `ea18161` + 미커밋 변경(이 지표·알림), 이미지 `sha256:9d2d21bb…`(이 트리에서 빌드), dev 평문 1883 + 저장소 밖 dynamic-security 브로커 설정 + DEBUG override. 실행 2026-10-06 14:51:56~14:57:27 UTC(폴더 이름 날짜와 다르다). 상세 `00_metadata.txt`. `ctl.sh`의 응답 구독은 두 번 다 `Timed out`이었지만 브로커 로그에 administrative 끊김이 남아 명령은 적용됐다.
+
+| 항목 | 값 |
+| --- | --- |
+| Kafka pause → unpause (`docker pause` 완료 ~ `unpause` 호출) | 14:52:37.534 → 14:53:54.070 (**76.5초**) |
+| 브로커 admin 끊김 1 (`telemetry-backend`) | 14:52:57.088 (pause +19.6초) |
+| 그 순간 진행 중이던 대기 | pause 직후 첫 메시지(`…23.972Z`)의 Kafka 전송. 게이지 elapsed가 14:52:38 1.32 → 14:53:07.448 **29.92**까지 2초마다 증가, in_progress=1 |
+| 그 대기의 끝 | 14:53:07.655 `Expiring 1 record(s) … 30007 ms` → spool 보관 → ACK 시도(이미 끊긴 연결) |
+| 백엔드가 끊김을 안 시각 = 대기 중단 WARN | 14:53:07.712 — **끊김 +10.6초**, 첫 대기가 끝나고 57ms 뒤 |
+| 백엔드 재접속(브로커 로그) | 14:53:09.016 — **끊김 +11.9초**, Kafka는 아직 pause(unpause 45초 전) |
+| 재접속 뒤 대기 | 전부 1초 미만(spool 백로그가 있으면 새 메시지도 spool로 직행 — `TelemetryProducer.send`). 게이지 elapsed 0.03~0.08 |
+| 대조 끊김 2 (Kafka 정상) | 14:54:29.521 → 재접속 +1.30초, 대기 중단 WARN 0 |
+| `MqttAckWaitStuck` | **pending·firing 없음** — Prometheus `ALERTS{alertname="MqttAckWaitStuck"}` 범위 질의 0 시계열, `/api/v1/alerts` 5초 폴링 30회 모두 없음. Prometheus가 본 elapsed 최대 27.45(15초 scrape 표본) |
+| 다른 알림 | `TelemetrySpoolNotDraining` pending 14:53:30~14:54:10(for 10m 전에 해제, firing 없음). Alertmanager `/api/v2/alerts` 실행 뒤 `[]`, receiver `default`만 |
+| 게이지 부재 | 0회 — 백엔드 직접 폴링 150회, Prometheus 범위 질의 step 5s 69점 모두 값 있음 |
+| Timer 증가 | `acked` 542(30~40초 버킷 1건 = 첫 대기, 나머지 541건 ≤0.5초), `failed` 1(0.0025초), `interrupted` 0. 합 **543 = `messages.received` 증가 543** |
+| 발행 / PUBACK(RC:0) | 540 / **540** |
+| Kafka p0 레코드 / 고유 / 중복 | 543 / **540** / 3 (`…23.972Z` ×3, `…24.305Z` ×2) |
+| InfluxDB 고유 시점(`RECON-D3`) | **540** |
+| spool 드레인 / 실행 뒤 pending / corrupt | 213 / 0 / 0 |
+| DLQ(`-dlq`, `-mqtt-dlq`) 증가 / `ack.callback.missing` / `decode.failed` | 0·0 / 0 / 0 |
+| `InterruptedException` / `Unhandled exception` / `spool 저장까지 실패` | 0 / 1 / **1** |
+
+**판정**(실행 전 기준): (1) 게이지 부재 0, pause 구간 in_progress=1, elapsed 증가 표본 있음 — **충족**. (2) 알림 안 뜸 — **예측대로**. (3) PUBACK 540 = Kafka 고유 540 = InfluxDB 540 — **충족(유실 0, 중복 3)**. (4) DLQ 0 등 — **충족**. (5) Timer 합 543 = 수신 543 — **충족**. (6) Alertmanager 외부 발송 없음 — **충족**. 실패 기준 해당 없음.
+
+**가설과 다른 것**
+- **H1의 모양이 틀렸다.** 게이지가 0~30초 톱니일 것으로 예측했지만 30초 대기는 **첫 메시지 하나뿐**이었다. 첫 spool 보관 뒤에는 `backlog` 플래그로 새 메시지가 Kafka를 거치지 않고 spool로 바로 가서 대기가 1초 미만이 됐다. 알림이 안 뜬다는 결론은 같다. `alerts.yml`·runbook의 "톱니" 서술을 관찰에 맞게 고쳤다.
+- **H2는 가장 이른 쪽으로 맞았다.** 끊김 인지가 끊김 즉시가 아니라 **진행 중 대기가 끝난 직후**(+10.6초)였고, Kafka가 풀리기 전에 재접속했다. D2·D2b(unpause 직후 인지)와 같은 결함 후보의 다른 얼굴이다 — 인지는 "저장 완료"가 아니라 "그 대기의 끝"(여기선 delivery timeout)에 묶였다. 대기 끝 → 57ms 뒤 인지가 옛 연결 PUBACK 쓰기 실패 때문인지 receiver 재개 때문인지는 이 로그로 가를 수 없다.
+
+**새로 본 것 (결함 후보 1, 관찰 1)**
+- **연결 끊김 인터럽트가 동기 spool 쓰기에 닿았다.** 인지 순간 콜백은 다음 메시지(`…24.638Z`)를 처리 중이었고, 그 `send()`는 백로그 때문에 **콜백 스레드에서 직접** spool에 썼다. 인터럽트가 `FileChannel.write`를 `ClosedByInterruptException`으로 끊어 `텔레메트리 로컬 spool 저장 실패` → ACK 안 함 → 재전달 뒤 1회 저장(유실 없음, 이 메시지는 Kafka에 1건). Timer에는 `interrupted`가 아니라 `failed`로 잡혔다(예외가 `InterruptedException`이 아니므로). **부수 효과로 spool 볼륨에 0바이트 `.tmp` 1개가 남았다**(`CREATE_NEW` 뒤 끊김, `D3_spool_dir_after.txt`). 드레인은 `.json`만 읽어 막히지 않았지만(pending 0) 청소하는 코드가 없다. 지우지 않았다. 대기 구간이 `send`까지 덮는 것은 2차 리뷰에서 의도한 것이며(ADR-029 2026-10-06 추가), 동기 spool 경로가 그 안에 있다는 점은 그때 다루지 않았다.
+- **"만료"된 레코드가 Kafka에 기록돼 있었다.** 첫 메시지는 클라이언트가 `Expiring … 30007 ms`로 실패 처리했는데 p0 offset 3567(CreateTime 14:52:37.578 = 최초 전송)에 있었다 — unpause 뒤 브로커가 받은 것으로 보인다. spool 사본 2개(3568·3570)와 함께 3중 기록. 저장소가 `(vehicle_id, ms)`로 흡수했다. **timeout은 "발행 안 됨"이 아니다**(P0-2b에 적은 원칙)를 producer 쪽에서 1회 본 것이다.
+
+**한계**: 1회, 단일 차량, 약 2.7건/초, `docker pause`(프로세스 정지)만, 브로커가 닫는 깨끗한 단절만. 알림이 실제로 firing하는 경로(대기 하나 ≥ 45초)는 실스택에서 만들지 않았다 — promtool 단위 테스트와 단위 테스트(게이지 증가)만이 근거다. 끊김 인지 지연의 상한은 여전히 추정이다.
 
 ## 실험 U — `$SYS` 갱신 멈춤과 `MqttBrokerMetricsStale` (`2aba182` 재검증, 2026-10-06 실행)
 

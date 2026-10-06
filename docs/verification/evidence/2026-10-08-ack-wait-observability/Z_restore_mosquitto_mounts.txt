@@ -1,0 +1,6 @@
+/var/lib/docker/volumes/vehicle-telemetry-platform_mosquitto-log/_data -> /mosquitto/log
+/run/desktop/mnt/host/d/vehicle-telemetry-platform/broker/config/mosquitto-dev.conf -> /mosquitto/config/mosquitto.conf
+/run/desktop/mnt/host/d/vehicle-telemetry-platform/broker/config/acl -> /mosquitto/config/acl
+/run/desktop/mnt/host/d/vehicle-telemetry-platform/broker/certs -> /mosquitto/certs
+/var/lib/docker/volumes/vehicle-telemetry-platform_mosquitto-data/_data -> /mosquitto/data
+

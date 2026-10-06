@@ -49,6 +49,9 @@
 | `TelemetryStorageStalled` (critical) | 유입은 있는데 저장 성공이 0 | 약 4분 |
 | `TelemetryStorageRatioLow` (warning) | (저장 + DLQ) / 수신 < 95% | 10분 |
 | `TelemetrySpoolNotDraining` (warning) | spool이 10분간 안 줄어듦 | 10분 |
+| `MqttAckWaitStuck` (warning) | 진행 중인 MQTT 저장 확인 대기 하나가 45초 이상(`telemetry_mqtt_ack_wait_elapsed_seconds`) | 대기 시작 뒤 45~75초(scrape·평가 15초) |
+
+**`MqttAckWaitStuck`**: 대기 하나의 정상 상한은 producer `max.block.ms` 10초 + `delivery.timeout.ms` 30초 = 40초다(그 뒤 spool로 완료). 넘었다면 상한이 깨진 것 — `application.yml`의 producer timeout 회귀, spool 디스크 정지(`telemetry_spool_*`), 또는 콜백이 다른 곳에서 막힘. 백엔드 로그에서 그 vehicle·ts의 `[Kafka] 전송`·`spool` 줄을 찾고, 필요하면 `docker kill --signal=QUIT telemetry-backend`(스레드 덤프, 종료 아님)로 `MQTT Call` 스레드 위치를 본다. 막힌 동안 수신 큐(10건)가 차면 연결 끊김 인지·재접속도 늦다(검증 문서 실험 D2·D3). **이 알림은 Kafka 장기 정지를 잡지 않는다** — 첫 대기가 약 30초에 spool로 끝나고 그 뒤 메시지는 spool로 직행해 대기가 1초 미만이 된다(실험 D3, 1회). 그 상태는 `telemetry_spool_pending`과 `TelemetrySpoolNotDraining`으로 본다. 연결 끊김 인터럽트가 동기 spool 쓰기에 닿으면 spool 디렉터리에 0바이트 `*.tmp`가 남을 수 있다(D3, 드레인은 `.json`만 읽어 막히지 않음).
 
 `TelemetryStorageStalled`는 위 12시간 soak 사고를 재현해 **실제로 발동하는 것을 확인했다.**
 그때 `kafka_consumer_records_lag_max`는 값 자체가 없어서, 기존 `KafkaConsumerLagHigh`로는

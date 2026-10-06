@@ -1,0 +1,1 @@
+{"status":"success","data":{"resultType":"matrix","result":[{"metric":{"__name__":"ALERTS","alertname":"TelemetrySpoolNotDraining","alertstate":"pending","severity":"warning"},"values":[[1791298410,"1"],[1791298415,"1"],[1791298420,"1"],[1791298425,"1"],[1791298430,"1"],[1791298435,"1"],[1791298440,"1"],[1791298445,"1"],[1791298450,"1"]]}]}}

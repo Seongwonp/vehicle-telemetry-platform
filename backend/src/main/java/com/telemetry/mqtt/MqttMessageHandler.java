@@ -5,7 +5,9 @@ import com.telemetry.domain.TelemetryDecoder;
 import com.telemetry.domain.VehicleTelemetry;
 import com.telemetry.kafka.TelemetryProducer;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.Message;
@@ -18,6 +20,7 @@ import org.springframework.integration.mqtt.event.MqttConnectionFailedEvent;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.regex.Matcher;
@@ -47,6 +50,17 @@ public class MqttMessageHandler {
     private Thread awaitingThread;
     /** 이번 대기 구간의 인터럽트가 연결 끊김 때문인지 — 아니면 플래그를 복원한다. {@link #waitLock}으로 보호. */
     private boolean interruptedByConnectionLoss;
+    /** 이번 대기 구간 시작(System.nanoTime). {@link #awaitingThread}가 null이면 의미 없다. {@link #waitLock}으로 보호. */
+    private long waitStartNanos;
+    /** 끝난 대기 시간 — 결과별. 진행 중인 대기는 게이지가 본다(끝난 대기만으로는 막혀 있는 순간이 안 보인다). */
+    private final Timer ackWaitAcked;
+    private final Timer ackWaitFailed;
+    private final Timer ackWaitInterrupted;
+    /** 버킷 경계: producer 최악 대기(40초)·알림 문턱(45초)·keepAlive(60초)·get 상한(150초)을 포함한다. */
+    private static final Duration[] ACK_WAIT_BUCKETS = {
+        Duration.ofMillis(10), Duration.ofMillis(50), Duration.ofMillis(100), Duration.ofMillis(500),
+        Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofSeconds(10), Duration.ofSeconds(30),
+        Duration.ofSeconds(40), Duration.ofSeconds(45), Duration.ofSeconds(60), Duration.ofSeconds(150)};
 
     public MqttMessageHandler(
         TelemetryProducer telemetryProducer,
@@ -64,6 +78,24 @@ public class MqttMessageHandler {
         this.missingAckCallbackCounter = meterRegistry.counter("telemetry.mqtt.ack.callback.missing");
         // 계약 예외가 아닌 decode 실패로 격리한 수. 0이 아니면 validator·매퍼 회귀를 의심한다(사유별 계약 지표에는 안 잡힌다).
         this.decodeFailedCounter = meterRegistry.counter("telemetry.mqtt.decode.failed");
+        this.ackWaitAcked = ackWaitTimer(meterRegistry, "acked");
+        this.ackWaitFailed = ackWaitTimer(meterRegistry, "failed");
+        this.ackWaitInterrupted = ackWaitTimer(meterRegistry, "interrupted");
+        // 게이지는 기동 때 등록한다 — 시계열 부재(배포·설정 문제)와 0(대기 없음)을 구분하려고.
+        Gauge.builder("telemetry.mqtt.ack.wait.in.progress", this, h -> h.waitInProgress() ? 1 : 0)
+            .description("Paho 콜백 스레드가 지금 저장 확인을 기다리는 중이면 1")
+            .register(meterRegistry);
+        Gauge.builder("telemetry.mqtt.ack.wait.elapsed.seconds", this, MqttMessageHandler::currentWaitSeconds)
+            .description("진행 중인 저장 확인 대기의 경과 초(scrape 시점 계산, 대기 없으면 0)")
+            .register(meterRegistry);
+    }
+
+    private static Timer ackWaitTimer(MeterRegistry registry, String outcome) {
+        return Timer.builder("telemetry.mqtt.ack.wait")
+            .description("Paho 콜백 스레드의 저장 확인 대기 시간(끝난 대기만)")
+            .tag("outcome", outcome)
+            .serviceLevelObjectives(ACK_WAIT_BUCKETS)
+            .register(registry);
     }
 
     // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
@@ -86,7 +118,7 @@ public class MqttMessageHandler {
         // Kafka send의 max.block 포함)를 덮는다 — 어디서 막혀 있든 연결 끊김이 깨울 수 있게.
         boolean interrupted = false;
         Exception failure = null;
-        enterWait();
+        long started = enterWait();
         try {
             process(message).get(150, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -96,6 +128,8 @@ public class MqttMessageHandler {
             failure = e;
         } finally {
             boolean ours = exitWait();
+            (interrupted ? ackWaitInterrupted : failure != null ? ackWaitFailed : ackWaitAcked)
+                .record(System.nanoTime() - started, TimeUnit.NANOSECONDS);
             // 연결 끊김 인터럽트는 여기서 끝낸다(Paho 스레드는 재연결을 이어가야 한다). 다른 출처의 인터럽트는 복원한다.
             if (interrupted && !ours) Thread.currentThread().interrupt();
         }
@@ -171,10 +205,26 @@ public class MqttMessageHandler {
             });
     }
 
-    private void enterWait() {
+    /** @return 대기 시작 시각(System.nanoTime) */
+    private long enterWait() {
         synchronized (waitLock) {
             awaitingThread = Thread.currentThread();
             interruptedByConnectionLoss = false;
+            waitStartNanos = System.nanoTime();
+            return waitStartNanos;
+        }
+    }
+
+    private boolean waitInProgress() {
+        synchronized (waitLock) {
+            return awaitingThread != null;
+        }
+    }
+
+    /** 진행 중인 대기의 경과 초 — scrape 때 계산하므로 막혀 있는 동안에도 자란다. */
+    private double currentWaitSeconds() {
+        synchronized (waitLock) {
+            return awaitingThread == null ? 0.0 : (System.nanoTime() - waitStartNanos) / 1e9;
         }
     }
 

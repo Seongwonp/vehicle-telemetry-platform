@@ -111,6 +111,8 @@ class RedisAlertingMetricsTest {
             .contains("telemetry_mqtt_messages_received_total[2m])) == 0");
         // MqttBrokerMetricsHandler가 첫 $SYS 수신 때 등록하는 갱신 시각 게이지.
         assertThat(exprOf(yaml, "MqttBrokerMetricsStale")).contains("telemetry_mqtt_broker_last_update_seconds");
+        // MqttMessageHandler가 기동 때 등록하는 진행 중 대기 게이지(telemetry.mqtt.ack.wait.elapsed.seconds).
+        assertThat(exprOf(yaml, "MqttAckWaitStuck")).contains("telemetry_mqtt_ack_wait_elapsed_seconds");
     }
 
     private static String exprOf(String yaml, String alert) {
