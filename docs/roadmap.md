@@ -20,6 +20,8 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 
 현재 우선순위는 [ACK 경계 작업 계획](plans/2026-10-01-mqtt-ack-boundary.md)의 문서 정리 → 수정 전 유실 재현 → 장애 범위를 정한 ACK 수정 → 동글 실측이다. 아래 09-09 계획은 이전 이력이며 이 순서를 대체하지 않는다.
 
+**2026-10-09 상태** — 범위 닫기: MqttAckWaitStuck 대조군 1회(덮어쓴 delivery.timeout으로 firing 확인), SIM-024·SIM-088 CRL 폐기, 실험 G 세션 정리, README 대표 사례 3개, 기준점 태그 `v0.9-pre-vehicle`(상세 `docs/HANDOFF_2026-10-09.md`).
+
 **2026-10-07 상태** (상세: `docs/HANDOFF_2026-10-07.md`, `docs/verification/2026-10-01-mqtt-ack-boundary.md`)
 - ACK 경계: 수동 ACK·poison 격리·재접속 인터럽트·producer timeout·수신 정지 알림까지 실스택 각 1회 관찰. **결함 후보(결정 대기)**: Paho 수신 큐가 차면 연결 끊김 인지가 저장 완료까지 늦다(실험 D2) — 인터럽트 가드는 이 조건에서 재접속을 못 앞당긴다.
 - `$SYS` 알림: `MqttBrokerMetricsStale`의 유휴 오탐(U0)을 uptime 심장 박동으로 수정(U1, 1회). `$SYS` 차단 시 firing은 수정 뒤 실스택 미재측정.
