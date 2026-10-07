@@ -1,0 +1,1 @@
+puback_rc0=5 influx=5 telemetry_mqtt_ack_wait_seconds_count{outcome="failed",} 0.0 telemetry_mqtt_ack_wait_seconds_count{outcome="acked",} 5.0 telemetry_mqtt_ack_wait_seconds_count{outcome="interrupted",} 0.0 telemetry_mqtt_messages_received_total{} 5.0 

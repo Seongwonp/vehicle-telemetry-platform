@@ -1,0 +1,3 @@
+CreateTime:1791376386492	Offset:23785	{"timestamp":"2026-10-07T12:32:52.639Z","speed":60.5
+CreateTime:1791376510797	Offset:23786	{"timestamp":"2026-10-07T12:32:52.639Z","speed":60.5
+CreateTime:1791376537726	Offset:23787	{"timestamp":"2026-10-07T12:32:52.639Z","speed":60.5

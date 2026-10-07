@@ -1,0 +1,21 @@
+purpose=MqttAckWaitStuck 대조군 — producer delivery.timeout.ms를 이 실행만 120000으로 올려 대기 하나가 45초를 넘게 만들고 알림 동작을 본다, 1회 관찰
+git_head=e496ac48017edebdc2c00802235be4f2f0782f67 (작업 트리 clean, 이 문서·증거만 추가)
+backend_image=sha256:0dde14a57debe8dc63c4ec0c640c62bab0c3cc965119036b9a78cb379064a162 (docker compose -f docker-compose.yml -f docker-compose.dev.yml build backend, HEAD에서 실행 직전 빌드)
+docker=Docker Desktop server 29.7.2
+compose_run=MQTT_TLS_PORT=18883 docker compose -f docker-compose.yml -f docker-compose.dev.yml -f <scratchpad>/stuck-override.yml up -d (override 사본 R_stuck-override.yml)
+override=backend 환경 변수 SPRING_KAFKA_PRODUCER_PROPERTIES_DELIVERY_TIMEOUT_MS=120000 하나. request.timeout.ms 10000·max.block.ms 10000·linger.ms 0은 그대로(제약 delivery >= linger + request 충족)
+effective_override=A_effective_producer_config_override.txt (producer-1 ProducerConfig 덤프의 delivery.timeout.ms = 120000). producer는 첫 send 때 만들어지므로 1건 워밍업(STUCK-WARM, PUBACK 1, W_*)으로 덤프를 띄웠다
+port_note=호스트 8883이 Windows 동적 제외 범위(8875-8974, netsh excludedportrange)에 들어 compose up이 바인딩 실패 → 셸 환경 변수 MQTT_TLS_PORT=18883으로 호스트 게시 포트만 바꿈(컨테이너 내부 8883·dev 1883 경로 무관, .env 미변경)
+broker=저장소 기본 mosquitto-dev.conf(dynamic-security 없음), 끊기 조작 없음
+prometheus=v2.51.0 scrape/eval 15s, 규칙 MqttAckWaitStuck health ok, duration 0 (A_prom_rule.txt)
+alertmanager=v0.27.0 receiver default 하나(A_alertmanager_status_config.txt). 실행 뒤 alerts_received firing 1·resolved 3, notifications_total 모든 integration 0 (C_alertmanager_metrics_after.txt)
+pre_run=spool pending 0, 게이지 0.0 존재. spool 디렉터리에는 D3의 0바이트 .tmp 1개만(보존)
+run_time_utc=2026-10-07 12:32:25 ~ 12:38:07 (폴더 이름 날짜는 요청 이름)
+script=expStuck.sh(poll.sh, offsets.sh, genpaced.py), 사후 kafka_unique.sh·influx_count.sh(값은 컨테이너 env 이름으로만 참조)
+poll_note=poll.sh 알림 폴링은 i가 2씩 늘어 i%5==0 → 실제 약 11초 간격(D3와 같은 스크립트, 문서의 "5초"는 틀림). 판정은 activeAt·범위 질의 기준
+host=호스트 온도·클럭 미기록. 이 실행 전 같은 날 다른 실험 없음(스택 정지 상태에서 기동)
+env_diff=이상 감지기 3개 실행(detector-1이 pause 중 12:35:17 Kafka bootstrap 실패로 종료 → 12:35:20 재시작, MQTT 경로 밖). 시뮬레이터 없음
+restore=MQTT_TLS_PORT=18883 docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --no-deps backend (override 없음, env에 DELIVERY_TIMEOUT 없음) → Z_effective_producer_config_restored.txt delivery.timeout.ms = 30000, Z_restore_result.txt PUBACK 5·InfluxDB 5·acked 5
+stack_left=UP, 정상 설정(backend override 없음). mosquitto는 MQTT_TLS_PORT=18883으로 만든 컨테이너 그대로
+volumes kept; no down -v; 실험 행·세션 삭제 없음
+test_vehicles=STUCK-WARM(1), STUCK-CTL(720), STUCK-CTLZ(5)

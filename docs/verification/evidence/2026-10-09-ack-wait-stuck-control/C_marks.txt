@@ -1,0 +1,9 @@
+poll_start=2026-10-07T12:32:25.882Z
+publish_start=2026-10-07T12:32:35.950Z
+pause_send=2026-10-07T12:33:06.000Z
+pause_done=2026-10-07T12:33:06.490Z
+unpause_send=2026-10-07T12:35:36.542Z
+unpause_done=2026-10-07T12:35:37.342Z
+publish_end=2026-10-07T12:37:02.882Z
+sent=720 puback_rc0=720
+end=2026-10-07T12:38:06.986Z

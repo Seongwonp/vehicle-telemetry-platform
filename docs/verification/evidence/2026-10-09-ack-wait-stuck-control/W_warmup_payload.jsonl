@@ -1,0 +1,1 @@
+{"vehicle_id": "STUCK-WARM", "timestamp": "2026-10-07T12:31:30.100Z", "speed": 60.5, "rpm": 2000.25, "engine_temp": 90.0, "throttle_position": 20.0, "fuel_level": 50.0, "battery_voltage": 12.6, "gps": {"lat": 37.5, "lng": 127.0}, "dtc_codes": []}

@@ -1,0 +1,4 @@
+services:
+  backend:
+    environment:
+      SPRING_KAFKA_PRODUCER_PROPERTIES_DELIVERY_TIMEOUT_MS: "120000"

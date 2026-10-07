@@ -604,6 +604,66 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 
 **한계**: 1회, 단일 차량, 약 2.7건/초, `docker pause`(프로세스 정지)만, 브로커가 닫는 깨끗한 단절만. 알림이 실제로 firing하는 경로(대기 하나 ≥ 45초)는 실스택에서 만들지 않았다 — promtool 단위 테스트와 단위 테스트(게이지 증가)만이 근거다. 끊김 인지 지연의 상한은 여전히 추정이다.
 
+### 대조군 — producer 상한을 일부러 깬 상태에서 `MqttAckWaitStuck` (2026-10-07 실행)
+
+상태: **1회 관찰 완료(결과는 아래 "결과 — 대조군"). 가설·기준은 실행 전에 적었고 고치지 않았다.** 원본: [`evidence/2026-10-09-ack-wait-stuck-control/`](evidence/2026-10-09-ack-wait-stuck-control/).
+
+**왜**: D3는 "정상 설정에서는 대기 하나가 40초를 못 넘어 알림이 안 뜬다"를 1회 봤다. 그 결과는 **알림이 뜰 수 있는 조건에서 실제로 뜨는지**를 보지 않으면 "규칙이 죽어 있다"와 구분되지 않는다. 그래서 이 실행 하나만 producer `delivery.timeout.ms`를 30000 → **120000**으로 올려(설정 회귀를 흉내 낸다) 대기 하나가 45초를 넘게 만든다. 운영 설정 변경이 아니다.
+
+**설정 변경(이 실행만)**: 저장소 밖(scratchpad) compose override로 백엔드에만 `SPRING_KAFKA_PRODUCER_PROPERTIES_DELIVERY_TIMEOUT_MS=120000`(Spring 환경 변수 → `spring.kafka.producer.properties.delivery.timeout.ms`). `request.timeout.ms` 10000·`max.block.ms` 10000·`linger.ms`는 그대로 — `delivery.timeout.ms ≥ linger.ms + request.timeout.ms` 제약을 이미 만족하므로 바꿀 것이 없다. **실효값은 백엔드 기동 로그의 `ProducerConfig values` 덤프에서 `delivery.timeout.ms` 한 줄로 확인**하고, 120000이 아니면 실행하지 않는다. 나머지는 D3와 같은 dev 평문 스택(`docker-compose.yml` + `docker-compose.dev.yml`), 브로커 설정은 저장소 기본(`mosquitto-dev.conf`, dynamic-security 없음 — 이번엔 브로커 쪽 끊기 조작을 하지 않는다), 백엔드 이미지는 HEAD에서 다시 빌드.
+
+**조작**: D3와 같은 발행(`mosquitto_pub -q 1 -l`, 호스트 `sleep 0.333`, 약 2.7건/초), 차량 `STUCK-CTL`, 고유 밀리초 timestamp 720건(약 265초). 발행 시작 30초 뒤 `docker pause telemetry-kafka`, **150초 뒤** `docker unpause`. MQTT 연결을 일부러 끊지 않는다. 실행 직전 spool pending = 0을 확인한다(백로그가 켜져 있으면 첫 메시지가 Kafka를 거치지 않아 대기가 생기지 않는다). 관측: 백엔드 `/actuator/prometheus` 직접 2초 간격(게이지), Prometheus `/api/v1/alerts` 5초 간격, 실행 뒤 범위 질의(`ALERTS`, elapsed, in_progress, Timer 버킷 — step 5s), Alertmanager `/api/v2/alerts`, 백엔드·브로커 로그.
+
+**가설(실행 전, 추정)**:
+- H1(대기가 상한을 넘는다): pause 직후 첫 메시지의 대기가 끊기지 않고 자라서 elapsed가 **45초를 넘는다.** 백엔드 직접 폴링의 elapsed 최대는 약 115~121초, Prometheus가 본 최대(15초 scrape)는 약 105~121초.
+- H2(알림): `MqttAckWaitStuck`이 **대기 시작 + 45~75초**(scrape 15초 + 평가 15초) 사이의 첫 평가에서 뜬다. `for`가 없으므로 **pending을 거치지 않고 바로 firing**으로 보일 것이다(Prometheus는 `for: 0`이면 첫 평가에서 firing — 5초 폴링에 pending이 한 번도 안 보이는 것을 예측한다). 대기가 끝난 뒤 첫 scrape·평가(약 0~30초)에서 해제된다. Alertmanager는 받지만 receiver `default`(설정 없음)라 외부 발송은 없다.
+- H3(무엇이 대기를 끝내나 — **예측: keepAlive 끊김이 먼저**): 실험 E·E2(기본 delivery 120초, `docker stop`)에서 Paho `Timed out as no activity, keepAlive=60s`가 정지 후 약 120초에 났고 만료(`Expiring … 120000 ms`)와 0.5~1초 안에 붙어 있었다. 수신 큐(10건)가 약 4초에 차 receiver가 PINGRESP를 못 읽으므로 같은 모양을 예측한다: 대기 시작 후 약 **118~122초**에 keepAlive 끊김 → 연결 끊김 인터럽트(`c41ff49`)가 대기를 깨워 Timer `interrupted` 1건(약 120초 버킷), 그 직후 producer 만료 → spool 보관(대기는 이미 끝났지만 저장 경로는 진행 — 재전달과 합쳐 중복 후보). **반대 순서**(만료가 먼저 → spool 완료 → `acked` ~120초 → 옛 연결 PUBACK)도 가능하며, 어느 쪽이었는지는 백엔드 로그의 `Timed out as no activity`·`Expiring`·대기 중단 WARN 시각으로 판정해 적는다. `get(150초)` 상한이나 unpause(150초)가 먼저 끝낼 것으로는 보지 않는다.
+- H4(이후): 첫 spool 보관 뒤 backlog로 새 메시지는 spool 직행(대기 1초 미만, D3와 같음), unpause 뒤 드레인. 재접속은 끊김 뒤 수 초 안(E2 2초). 유실 0: PUBACK(RC:0) = Kafka 고유 = InfluxDB 고유 = N. 중복은 허용하고 센다(끊김이 있으면 E·E2처럼 1건 이상 예상).
+
+**성공 기준(실행 전)**: (1) 실효 `delivery.timeout.ms` = 120000(기동 로그). (2) 백엔드 직접 폴링에서 elapsed ≥ 45 표본이 있다. (3) `ALERTS{alertname="MqttAckWaitStuck"}`가 범위 질의에 나타나고, **첫 firing 시각 − 그 대기의 시작(첫 메시지 처리 시작 ≈ elapsed가 0에서 오르기 시작한 시각) = 45~75초**면 "규칙 예상과 일치". 해제는 대기 끝 + 30초 안. (4) PUBACK(RC:0) = N, Kafka 고유 = N, InfluxDB 고유 = N. (5) DLQ 증가 0, `decode.failed` 0, `ack.callback.missing` 0. (6) Timer `_count` 합 증가 = `messages.received` 증가. (7) Alertmanager receiver `default` 하나(외부 발송 없음). **실패 기준**: (2)는 충족됐는데 알림이 없음, 또는 firing이 대기 시작 + 90초 뒤, 또는 고유 수 < N. H3의 순서는 판정하지 않고 관찰로 적는다.
+**원복(실행 뒤)**: override 없이 백엔드를 재생성, 기동 로그에서 `delivery.timeout.ms = 30000` 확인, 5건 발행(PUBACK 5·InfluxDB 5). 스택은 정상 설정으로 켜 둔다. 볼륨·실험 데이터 삭제 없음. 각 1회 관찰이며 반복·안정성 주장은 하지 않는다.
+
+#### 결과 — 대조군 (1회 관찰)
+
+환경: HEAD `e496ac4`(작업 트리 clean), 백엔드 이미지 `sha256:0dde14a5…`(실행 직전 HEAD에서 빌드), dev 평문 1883, 브로커 저장소 기본 설정. 실행 2026-10-07 12:32:25~12:38:07 UTC(폴더 이름 날짜와 다르다). **실효 `delivery.timeout.ms` = 120000** — producer는 첫 send 때 만들어져서 1건 워밍업(`STUCK-WARM`) 뒤 `producer-1`의 `ProducerConfig values` 덤프에서 확인했다(`A_effective_producer_config_override.txt`). 환경 차이 두 가지: 호스트 8883이 Windows 동적 제외 포트 범위(8875–8974)에 들어가 compose가 바인딩에 실패해 **호스트 게시 포트만** `MQTT_TLS_PORT=18883`으로 바꿨다(이 실험은 compose 네트워크 안 1883만 쓴다, `.env` 미변경). 이상 감지기 1이 pause 중 Kafka bootstrap 실패로 종료·재시작됐다(MQTT 경로 밖). 상세 `00_metadata.txt`. 컨테이너 시각(UTC), 호스트 시계와 차이 1초 미만.
+
+| 항목 | 값 |
+| --- | --- |
+| Kafka pause → unpause | 12:33:06.490 → 12:35:37.342 (약 150.9초) |
+| 첫 대기 시작(Prometheus scrape 12:35:05.045의 elapsed 118.564에서 역산) | **12:33:06.48** — pause 직후 첫 메시지(`…12:32:52.639Z`)의 Kafka 전송 |
+| 백엔드 직접 폴링 elapsed ≥ 45 첫 표본 | 12:33:52.593 (46.16) |
+| Prometheus가 본 elapsed ≥ 45 첫 표본 | scrape 12:34:05.045 (58.56) — 그 전 scrape 12:33:50.045는 43.56 |
+| **`MqttAckWaitStuck` firing** (`activeAt`, 규칙 평가 시각) | **12:34:12.958 = 대기 시작 + 66.5초**. pending 시계열은 범위 질의에 **없다**(바로 firing) |
+| 대기를 끝낸 것 | **keepAlive 끊김.** 12:35:06.125 Paho `Timed out as no activity, keepAlive=60s`(마지막 수신 활동으로부터 약 115.7초) → 12:35:06.128 대기 중단 WARN → Timer `interrupted` **119.64초**. producer 만료 `Expiring 1 record(s) … 120001 ms`는 **0.44초 뒤** 12:35:06.561 → spool 보관 |
+| elapsed 최대 | 백엔드 직접 **117.84**(12:35:04.268), Prometheus **118.56**(scrape 12:35:05.045) |
+| 알림 해제 | 다음 scrape 12:35:20.044의 값 0.06 → 평가 12:35:27.93에서 해제(대기 끝 + 21.8초). firing 구간 약 75초 |
+| 브로커 쪽 | 12:35:06.125 `Client telemetry-backend closed its connection` → 12:35:07.432 재접속(**+1.31초**). 재접속 직후 12:35:12.43 `Error subscribing … Timed out`(E2와 같은 구독 timeout) — 영속 세션이라 수신은 이어졌다 |
+| 재접속 뒤 대기 | 모두 0.4초 미만(`acked` 최대 0.381초, spool 백로그 직행). 단 12:35:12~12:35:37 폴링마다 in_progress=1(밀린 메시지를 연속 처리한 것으로 추정, 확인 안 함) |
+| 다른 알림 | `MqttIngestStopped` pending 12:35:12.96~(해제 12:35:27.93), `TelemetrySpoolNotDraining` pending 12:35:27.96~(해제 12:35:57.93), `TelemetryStorageStalled` pending 12:35:42.96~(해제 12:35:57.93) — 모두 firing 없음 |
+| Alertmanager | receiver `default` 하나. 실행 뒤 `alerts_received_total{firing}` 1·`{resolved}` 3, **`notifications_total` 모든 integration 0**(외부 발송 없음), `/api/v2/alerts` `[]` |
+| 게이지 부재 | 0회(직접 폴링 154회) |
+| Timer 증가 | `acked` 720, `interrupted` 1(60~150초 버킷), `failed` 0. 합 **721 = `messages.received` 증가 721** |
+| 발행 / PUBACK(RC:0) | 720 / **720** |
+| Kafka p2 레코드 / 고유 / 중복 | 722 / **720** / 1개 timestamp ×3(`…12:32:52.639Z`: offset 23785 CreateTime 12:33:06.492 = 최초 전송, "만료"됐지만 기록됨 — D3와 같은 모양 / 23786 12:35:10.797 / 23787 12:35:37.726) |
+| InfluxDB 고유 시점(`STUCK-CTL`) | **720** |
+| spool 드레인 / 실행 뒤 pending / corrupt / 새 `.tmp` | 217 / 0 / 0 / 0 |
+| DLQ(`-dlq`·`-mqtt-dlq`) 증가 / `decode.failed` / `ack.callback.missing` | 0·0 / 0 / 0 |
+
+**판정**(실행 전 기준): (1) 실효값 120000 — **충족**. (2) elapsed ≥ 45 표본 — **충족**. (3) 알림이 범위 질의에 있고 firing − 대기 시작 = 66.5초(기준 45~75초) — **규칙 예상과 일치**, 해제는 대기 끝 + 21.8초(기준 30초 안) — 충족. (4) PUBACK 720 = Kafka 고유 720 = InfluxDB 720 — **충족(이 실행에서 유실 0, 중복 2레코드)**. (5) DLQ 0 등 — 충족. (6) Timer 합 721 = 수신 721 — 충족. (7) 외부 발송 없음 — 충족. 실패 기준 해당 없음.
+
+**가설과 비교**
+- H1·H2 — 예측 범위 안. 바로 firing(pending 없음)도 예측대로.
+- **H3 — 예측대로 keepAlive 끊김이 먼저였다. 다만 차이는 0.44초**다(실험 E의 0.5초와 비슷). Paho의 keepAlive 판정(마지막 수신 활동 ≈ pause +4초에서 약 116초)과 `delivery.timeout.ms` 120초가 거의 겹치는 조건이라 **이 순서는 경합이며 1회 관찰로 일반화하지 않는다.** 끊김 쪽이 먼저였으므로 대기는 `interrupted`로 기록됐고, 그 메시지는 저장 경로가 계속 진행돼(만료 → spool) 재전달과 합쳐 3중 기록이 됐다 — InfluxDB가 `(vehicle_id, ms)`로 흡수.
+- H4 — 재접속 1.31초, 유실 0. 중복은 예상대로 생겼다.
+
+**이 실행이 보여 준 것**: D3의 "알림 안 뜸"은 규칙이 죽어 있어서가 아니었다 — 대기 하나가 45초를 넘으면 이 스택에서 **대기 시작 + 66.5초에 firing, 대기 끝 + 21.8초에 해제**됐다(1회). 동시에 **이 알림은 keepAlive 끊김보다 약 53초 먼저 떴다**(firing 12:34:12.96, 끊김 12:35:06.13) — `for`를 두지 않은 근거(keepAlive 앞에서 알리기)와 맞는 관찰이다.
+
+**측정 도구 정정**: `poll.sh`의 알림 폴링은 `i`가 2씩 늘어 `i % 5 == 0`이 5회마다라 **실제 간격이 약 11초**다(실행 전 기록과 D3 절의 "5초"는 틀렸다 — D3의 "30회"도 이 간격에서 나온 수다). 또 `/api/v1/alerts` 폴링 결과가 규칙 상태보다 늦게 보였다 — firing `activeAt` 12:34:12.96 뒤인 12:34:17.75 폴링이 `none`, 해제(12:35:27.93) 뒤인 12:35:34.86 폴링이 여전히 firing. 호스트와 Prometheus 시계 차이는 1초 미만이었고 **원인은 확인하지 못했다.** 그래서 알림 시각 판정은 폴링이 아니라 `activeAt`과 TSDB `ALERTS` 범위 질의(1초 step 재질의 포함)로 했다.
+
+**한계**: 1회, 단일 차량, 약 2.7건/초, `docker pause`(프로세스 정지)만. 설정 회귀를 `delivery.timeout.ms` 하나로 흉내 냈다 — spool 디스크 정지나 다른 곳에서 콜백이 막히는 경우는 보지 않았다. 대기를 끝낸 것이 keepAlive였는지 만료였는지는 0.44초 차이의 경합이다. Alertmanager는 receiver가 비어 있어 실제 알림 전달 경로(이메일·웹훅 등)는 시험하지 않았다. 남긴 데이터: InfluxDB `STUCK-WARM` 1·`STUCK-CTL` 720·`STUCK-CTLZ` 5행, Kafka 같은 키 레코드(retention 1시간). 삭제하지 않았다.
+
+**원복 확인**: override 없이 `up -d --no-deps backend`로 재생성(컨테이너 env에 `DELIVERY_TIMEOUT` 없음). 5건 발행 뒤 `producer-1` 덤프 **`delivery.timeout.ms = 30000`**(`Z_effective_producer_config_restored.txt`), PUBACK 5·InfluxDB 5·`acked` 5·spool pending 0(`Z_restore_result.txt`). 스택은 정상 설정으로 켜 두었다(볼륨 유지, `down -v` 없음). mosquitto 컨테이너는 `MQTT_TLS_PORT=18883`으로 만든 그대로다 — 이 변수 없이 compose가 mosquitto를 다시 만들면 8883 바인딩에서 같은 오류가 날 것이다.
+
 ## 실험 U — `$SYS` 갱신 멈춤과 `MqttBrokerMetricsStale` (`2aba182` 재검증, 2026-10-06 실행)
 
 상태: **각 1회 관찰 완료(결과는 아래 결과 절). 가설·기준은 실행 전에 적었다.** 원본: 위와 같은 폴더(`U_*`).

@@ -1,0 +1,3 @@
+2026-10-07T12:41:19.020364561Z 12:41:19 [-] [-] INFO  o.a.k.c.p.ProducerConfig - ProducerConfig values: 
+2026-10-07T12:41:19.020396776Z 	client.id = producer-1
+2026-10-07T12:41:19.020412605Z 	delivery.timeout.ms = 30000
