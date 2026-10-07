@@ -9,6 +9,7 @@
 | 스택 | dev compose(평문 1883). 수집 중 다른 에이전트가 같은 스택에서 MQTT/Kafka 실험을 돌리고 있었다 — 값은 그 시점의 스냅샷이다 |
 | 방법 | 읽기 전용 조회만. 컨테이너 재시작·새 consumer group·새 MQTT 연결 없음. 비밀값은 컨테이너 내부 환경변수로만 썼고 출력하지 않았다 |
 | 원본 | [`docs/verification/evidence/2026-10-08-experiment-data-inventory/`](verification/evidence/2026-10-08-experiment-data-inventory/) (01~06, 각 파일 첫 줄에 명령) |
+| 삭제 후보 dry-run | [§6](#6-삭제-후보-표--dry-run-삭제-실행-없음) — 같은 디렉터리 `dryrun_01`~`dryrun_07`. 삭제 명령은 **적지만 실행하지 않았고**, 같은 조건의 COUNT/SELECT/describe만 돌렸다 |
 
 "삭제 영향" 값의 뜻:
 
@@ -25,7 +26,7 @@
 | InfluxDB `telemetry` 버킷 | 실험 차량 28개 tag (총 8,222행) + 시뮬레이터 SIM-001~003 (63,581행) | 남아 있음. 버킷 보존 2160h(90일) |
 | Kafka DLQ·운영 토픽 | 6개 토픽 **전부 비어 있음**(earliest = latest) | retention 1시간으로 만료. 09-29 문서의 "RPL DLQ 레코드가 남아 있다"는 **더 이상 사실이 아니다** |
 | Kafka 테스트 토픽 | `itc-220850-*`·`itc-t1-*` (6개) | 토픽은 남음, 레코드는 만료(비어 있음) |
-| Consumer group | `dlq-replay-trace-20260929` (Empty) | 남아 있음. 기본 `offsets.retention.minutes=10080`(7일)에 걸리는 시점이라 곧 자동 만료될 수 있다(시각 미확인) |
+| Consumer group | `dlq-replay-trace-20260929` (Empty) | 남아 있음. 기본 `offsets.retention.minutes=10080`(7일)에 걸리는 시점이라 곧 자동 만료될 수 있다(시각 미확인). **→ dry-run 시점(15:57 UTC)에는 이미 없다(자동 만료, §6)** |
 | PostgreSQL | 사용자 `e2e-pw-0929183104`, `qa-admin`(비활성), `qa-user`(비활성), 차량 SIM-002(소유자 qa-user), SIM-001 긴 이름, `SCHEMA145736-*` 알림 3행 | 남아 있음 |
 
 ## 1. Mosquitto 영속 세션
@@ -48,7 +49,7 @@
 
 **g1·g2에 관해 관찰한 것(추정 포함)**:
 
-- DB에 남은 텔레메트리 메시지 본문은 약 10,617건이다(차량별 내역은 원본 §B — OUTAGE-E3·S·R·P·T·TR·U, RECON-*, SESSLOSS-G2, SIM-001~003, payload 시각 2026-10-05 13:08 ~ 2026-10-06 05:16 UTC).
+- DB에 남은 텔레메트리 메시지 본문은 약 10,617건이다(**정정(§6 dry-run 때 확인): 원본 §B의 합은 9,897건이다 — 10,617은 잘못 더한 값이다.** 9,897은 g1 참조 9,899와 거의 같다. 차량별 내역은 원본 §B — OUTAGE-E3·S·R·P·T·TR·U, RECON-*, SESSLOSS-G2, SIM-001~003, payload 시각 2026-10-05 13:08 ~ 2026-10-06 05:16 UTC).
   `telemetry-backend-g1` 9,899회와 `-g2` 8,999회의 차이가 정확히 900 = `SESSLOSS-G2` 발행 수(g2가 접속해 있던 동안 g1만 쌓았다)라서, **이 수치는 두 세션의 오프라인 큐 길이로 읽힌다.** DB를 파싱해 확인한 것은 아니다.
 - 두 세션은 QoS 1 `vehicle/telemetry/#` 구독을 가진 채 오프라인이므로, Mosquitto 의미상 **새 텔레메트리가 들어올 때마다 큐가 늘어난다**(클라이언트당 상한 `max_queued_messages 100000`). 현재 큐 길이는 보지 않았다.
 - 이 메시지들은 `telemetry-backend` 세션으로 이미 저장 경로를 탄 것과 같은 메시지다. 누군가 `MQTT_CLIENT_ID=telemetry-backend-g1`로 백엔드를 띄우면 쌓인 메시지가 재전달된다(실험 G의 "원래 ID 복귀 시 백로그 재전달"과 같은 기전).
@@ -134,9 +135,151 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 
 `users` id 2는 존재하지 않는다(과거에 지워졌거나 롤백 — 이번에 확인하지 않음).
 
+## 6. 삭제 후보 표 — dry-run (삭제 실행 없음)
+
+상태: **사용자 결정 "지금은 삭제하지 않음"에 따라 후보와 명령만 준비했다. 아무것도 지우지 않았다.**
+수집: 호스트 시계 2026-10-07 00:52~01:01 KST = **2026-10-06 15:52~16:01 UTC**. dev 스택을 `up -d`로 띄워 읽기 전용으로 조회하고 `stop`했다(볼륨 유지, `down -v` 없음).
+이번 기동 동안 브로커에 붙은 것은 백엔드(`telemetry-backend`, `-sys`)뿐이었다(시뮬레이터·발행 없음, `dryrun_01` 끝) — 그래서 아래 Mosquitto 수치는 기동 중 메모리 상태와도 같다고 본다(추정).
+
+**후보 기준**: 특정 실험이 만들었고 **그 실험의 문서·evidence에 정확한 식별자가 적힌 것만** `삭제 후보`. 출처가 하나로 정해지지 않거나 사용자 결정이 있는 것은 `보류`/`보존`.
+**dry-run 방식**: 삭제 명령을 그대로 적고(실행 안 함), **같은 조건(같은 predicate·WHERE·시간 범위·대상 이름)**으로 COUNT/SELECT/describe를 돌려 영향 건수를 남겼다.
+
+| 원본 | 내용 |
+| --- | --- |
+| [`dryrun_01_mosquitto_sessions.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_01_mosquitto_sessions.txt) | `mosquitto.db` 재집계(client ID 문자열, 차량별 본문 수), 이번 기동 중 연결 |
+| [`dryrun_02_mosquitto_session_removal_NOT_RUN.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_02_mosquitto_session_removal_NOT_RUN.txt) | 세션 제거 방법(실행 안 함)과 대안 비교 |
+| [`dryrun_03_influx_delete_counts.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_03_influx_delete_counts.txt) | 차량별 `influx delete` 명령 틀 + 같은 창·같은 predicate의 Flux 카운트, 전체 목록, 버킷·tag key |
+| [`dryrun_04_kafka_group_and_topics.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_04_kafka_group_and_topics.txt) | consumer group 목록·describe, `itc-*` 토픽 describe·offset |
+| [`dryrun_05_postgres_delete_counts.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_05_postgres_delete_counts.txt) | `BEGIN READ ONLY … ROLLBACK` 안의 SELECT. DELETE는 주석으로만 |
+| [`dryrun_06_redis_keys.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_06_redis_keys.txt) | 키 이름 접두사·TTL·refresh token 소유자 일치 여부(토큰·값은 출력 안 함) |
+| [`dryrun_07_volumes_spool.txt`](verification/evidence/2026-10-08-experiment-data-inventory/dryrun_07_volumes_spool.txt) | compose 볼륨 목록, spool 볼륨 파일 |
+
+### 6-1. 2026-10-06 수집 이후 바뀐 것
+
+- **Mosquitto 큐가 자랐다(추정 확인)**: `telemetry-backend-g1` 9,899 → **10,447**, `-g2` 8,999 → **9,547**. 둘 다 **+548** = 그 사이 발행된 `RECON-D3` 540 + `RECON-D3Z` 5 + `OPTF-E2E` 3. DB 본문도 9,897 → **10,445**(차량별 내역이 정확히 그 548건만큼 늘었다). g1−g2 = 900(`SESSLOSS-G2`) 그대로. 파일 4,258,086 → 4,498,962 bytes(mtime 2026-10-06 15:16:58 UTC = 직전 정지 시각).
+- **InfluxDB 실험 행**: 8,222 → **8,770**(같은 548건: `RECON-D3`·`RECON-D3Z`·`OPTF-E2E` 추가 — [실험 D3](verification/2026-10-01-mqtt-ack-boundary.md), [선택 필드 E2E](verification/2026-10-08-optional-fields-e2e.md)).
+- **PostgreSQL**: `anomaly_alerts`에 `OPTF-E2E` 1행 추가.
+- **Consumer group `dlq-replay-trace-20260929`는 이미 없다**(`does not exist`, 7일 offsets 보존으로 자동 만료). 지울 것이 없다.
+- 새로 본 것: Redis 키 6개(§6-3), spool 볼륨의 0바이트 `.tmp` 1개(D3, §6-3).
+
+### 6-2. 삭제 후보 (dry-run 건수 포함, 실행 안 함)
+
+공통: **저장소에 백업이 없다**(`influx backup`·`pg_dump`·`mosquitto.db` 사본 없음 — 저장소 파일과 compose 볼륨 목록 기준). 아래 삭제는 모두 **되돌릴 수 없다**. "재생성"은 같은 종류의 데이터를 다시 만든다는 뜻이지 같은 상태로 되돌린다는 뜻이 아니다.
+
+#### Mosquitto 영속 세션 (`mosquitto-data` 볼륨의 `mosquitto.db`)
+
+삭제 방법(실행 안 함): 같은 client ID로 **clean_session=true** 접속 후 즉시 끊기 —
+`docker run --rm --network vehicle-telemetry-platform_telemetry-net eclipse-mosquitto:2.0 mosquitto_sub -h mosquitto -p 1883 -i <CLIENT_ID> -t 'telemetrix/session-cleanup/noop' -q 0 -E`.
+브로커는 clean session CONNECT를 받는 순간 그 ID의 구독과 큐를 **전달 없이 버린다** — **이 접속 자체가 삭제다.** 운영 ID `telemetry-backend`·`-sys`에는 절대 쓰지 않는다 — 실행 중 백엔드가 끊기는 데 그치지 않고, **그 영속 세션의 구독과 아직 PUBACK 안 된 QoS 1 큐가 버려진다.** ADR-029 ACK 경계가 재전달을 기대는 바로 그 메시지라 **실제 유실**이 된다. 스크립트로 만들 경우 위 6개 ID의 **정확한 허용 목록**만 받게 한다(2차 리뷰). `mosquitto.db` 파일 삭제는 운영 세션까지 지우므로 쓰지 않는다. `mosquitto_ctrl`/dynsec kick은 오프라인 세션을 못 지우고 dev 설정엔 dynsec도 없다. 사후 확인은 브로커 정지 뒤 스냅샷으로만 가능하다(`dryrun_02`).
+
+| # | 식별자 | 생성한 실험 | 연관 데이터 | dry-run (같은 대상 읽기 전용) | 삭제 영향 | 복구 가능 여부 |
+| --- | --- | --- | --- | --- | --- | --- |
+| M1 | `telemetry-backend-g1` | [실험 G](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-05-mqtt-session-loss/override_g1.yml`) | `vehicle/telemetry/#` QoS1 구독 + **오프라인 큐 약 10,447건**(차량: OUTAGE-E3·S·R·T·TR·P·U, RECON-PRB·D2·D2B·D2C·ZR·D3·D3Z, SESSLOSS-G2, OPTF-E2E, SIM-001~003 각 1,168). 이 메시지들은 `telemetry-backend` 세션으로 이미 저장 경로를 탄 사본이다 | client ID 문자열 **10,447회**(`dryrun_01`) | 실험 G 주장은 evidence 파일로 닫혀 있다(evidence already in files). **남겨 두면 브로커 가동 중 텔레메트리가 발행될 때마다 큐가 자란다**(정지 중엔 아님, 상한 100,000 — §6-3-b). 누가 이 ID로 백엔드를 띄우면 약 1만 건이 재전달되어 **InfluxDB에서 지운 행이 되살아날 수 있다** — InfluxDB 행을 지운다면 이 세션을 먼저(또는 함께) 지워야 한다 | 큐 내용은 **복구 불가**(사본이라 손실은 없음). 세션 자체는 실험 G 절차(`MQTT_CLIENT_ID=telemetry-backend-g1`, c0)로 다시 만들 수 있으나 큐는 그 뒤 발행분만 쌓인다 |
+| M2 | `telemetry-backend-g2` | 실험 G (`override_g2.yml`) | 같은 구독 + 큐 약 **9,547건**(= g1 − SESSLOSS-G2 900) | **9,547회** | 같음. 본문은 g1과 참조를 나눠 가져 **g1·g2를 둘 다 지워야** 공유 본문이 풀린다 | 같음 |
+| M3 | `telemetry-backend-g1-sys` | 실험 G (백엔드가 `<clientId>-sys`로 자동 생성, `MqttConfig.java:183`; evidence `G2_mosq_before/after.txt`에 기록) | `$SYS` 구독 3개. `$SYS`는 QoS0이라 오프라인 큐 없음 | 문자열 4회(세션 1 + 구독 3) | 없음(큐 없음). 실험 G evidence 파일에 이미 있음 | 실험 G 재실행 시 자동 재생성 |
+| M4 | `telemetry-backend-g2-sys` | 실험 G | 같음 | 4회 | 같음 | 같음 |
+| M5 | `telemetry-backend-h2` | [실험 H-2·H-2a](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-06-timeout-alert/H2_override-h2.yml`) | **구독 기록 없음**(SUBACK 거부 실험) → 큐 없음 | 1회 | 없음. evidence already in files | H-2 재실행으로 재생성 |
+| M6 | `telemetry-backend-h2-sys` | 실험 H-2 (`H2_mosquitto_log.txt`에 기록) | `$SYS` 구독 3개, 큐 없음 | 4회 | 없음 | 같음 |
+
+큐 길이 한계: `mosquitto.db`를 파싱하지 않고 `strings` 출현 횟수로 셌다. g1 10,447 vs 본문 10,445(차이 2)처럼 ±몇 건의 오차가 있다.
+
+#### InfluxDB `telemetry` 버킷 (measurement `vehicle_telemetry`, tag `vehicle_id` 하나)
+
+명령 틀(실행 안 함, 차량마다 1회):
+`influx delete --bucket telemetry --org "$DOCKER_INFLUXDB_INIT_ORG" --token "$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" --start <START> --stop <STOP> --predicate '_measurement="vehicle_telemetry" AND vehicle_id="<ID>"'`
+(컨테이너 안 환경변수 이름으로만 참조). 창은 `START = 첫 점의 초 내림`, `STOP = 마지막 점의 초 내림 + 1초`로 잡았다 — 앞뒤 여유가 있어 `influx delete`와 Flux `range()`(stop 배타)의 경계 차이가 결과를 바꾸지 않는다. 각 차량의 START/STOP은 `dryrun_03` 표에 있다.
+
+**predicate 한계(정직하게)**: InfluxDB 2.x delete predicate는 **`=`와 `AND`만** 된다 — **`OR` 없음, 정규식·접두사 없음, `!=` 없음, `_field` 지정 불가**(시리즈의 모든 필드가 지워진다). 그래서 `SCHEMA145736-*` 같은 묶음도 **tag 값마다 명령 하나**다(아래 31개 tag = 31개 명령). 삭제는 즉시 되돌릴 수 없고 compaction 전까지 디스크가 바로 줄지 않을 수 있다.
+**삭제 전 확인(2차 리뷰)**: "evidence already in files"는 I2·I15·P1/P2만 파일을 명시했고 I3~I14는 행마다 근거 파일을 적지 않았다(이 표의 "생성한 실험" 링크 문서 기준). InfluxDB 삭제는 되돌릴 수 없으므로 **실행 전 행마다 건수 증거 파일 경로를 채운다.**
+
+행(row) = `speed` 포인트 수, 포인트 = 모든 필드 합(보통 행당 8, `OPTF-E2E`는 선택 필드가 빠져 14/3).
+
+| # | 식별자 (`vehicle_id`) | 생성한 실험 | dry-run: 행 / 포인트 | 연관 데이터 | 삭제 영향 | 복구 가능 여부 |
+| --- | --- | --- | --- | --- | --- | --- |
+| I1 | `SCHEMA145736-K01`·`K02`·`K03`·`M01`·`M02`·`M03`·`MIX` | [스키마 계약 E2E](../load-test/schema-contract/RESULT_20260909_contract_e2e.md) (`inputs.csv` prefix=`SCHEMA145736`) | 1·1·1·1·1·1·2 = **8 / 64** | PostgreSQL 알림 K03·M03(P1), K08(보류, §6-3) | evidence already in files(체크섬 매니페스트 있음). 버킷 보존 90일이라 **2026-12-08 전후 자동 만료** 예정 | `PREFIX=SCHEMA145736 ./run_e2e.sh`로 같은 ID 재생성 가능, 타임스탬프는 다름(payload 파일 없음) |
+| I2 | `RPL-02` | [DLQ 재주입 추적 §3](verification/2026-09-29-trace-redelivery-spool.md) | **1 / 8** | Kafka DLQ 레코드는 이미 만료 | evidence already in files(`26_synthetic_influx.txt`) | `20_synthetic_payload_RPL-02.json`으로 같은 시점 재생성 가능(보존 기간 안) |
+| I3 | `ACKTEST-A` / `ACKTEST-B` | 실험 C ([ack-boundary](verification/2026-10-01-mqtt-ack-boundary.md)) | 30 / 30 = **60 / 480** | — | evidence already in files | `10_control.payloads.jsonl`·`22_exp.payloads.jsonl` 재발행으로 같은 시점 재생성 가능 |
+| I4 | `OUTAGE-E` | 실험 E | **720 / 5,760** | — | evidence already in files | `E_payloads.jsonl` |
+| I5 | `RESUB-F` / `RESUB-F2` | 실험 F | 300 / 10 = **310 / 2,480** | — | evidence already in files | `F_pub300`·`F_pub10.payloads.jsonl` |
+| I6 | `OUTAGE-E2` | 실험 E2 | **720 / 5,760** | — | evidence already in files | `E2_payloads.jsonl` |
+| I7 | `SESSLOSS-G1` / `SESSLOSS-G2` | 실험 G | 10 / 900 = **910 / 7,280** | G2 900건은 g1 큐(M1)에도 있음 | evidence already in files. **G2 라이브 900 ≠ 판정 시점 523** — 라이브 행은 이미 판정 근거가 아니다 | `G1_pub10`·`G2_payloads.jsonl`. 단 523/900 같은 중간 상태는 재현 불가 |
+| I8 | `OUTAGE-E3` / `OUTAGE-S` | 실험 E3·S | 720 / 720 = **1,440 / 11,520** | g1·g2 큐에 사본 | evidence already in files | `E3_`·`S_payloads.jsonl` |
+| I9 | `OUTAGE-R` | 실험 H 복구 확인 | **300 / 2,400** | 큐에 사본 | evidence already in files | `R_payloads.jsonl`(timeout-alert) |
+| I10 | `OUTAGE-P` | 실험 P | **720 / 5,760** | 큐에 사본 | evidence already in files | `P_payloads.jsonl` |
+| I11 | `OUTAGE-T` / `OUTAGE-TR` | 실험 T / 복구 확인 | 767 / 5 = **772 / 6,176** | 큐에 사본 | evidence already in files | T: `T_payloads.jsonl`. TR: `R_pub.log`만 있고 payload 파일은 확인하지 못함 |
+| I12 | `RECON-PRB` / `RECON-D2` / `D2B` / `D2C` | 실험 D2 프로브·D2·D2b·D2c | 1 / 360 / 240 / 63 = **664 / 5,312** | 큐에 사본 | evidence already in files | `R_probe_payload`·`D2*_payloads.jsonl` |
+| I13 | `OUTAGE-U` / `RECON-ZR` | 실험 U / 복구 확인 | 1,592 / 5 = **1,597 / 12,776** | 큐에 사본 | evidence already in files | `U_payloads`·`Z_restore_payloads.jsonl`(recheck) |
+| I14 | `RECON-D3` / `RECON-D3Z` | [실험 D3](verification/2026-10-01-mqtt-ack-boundary.md) / 복구 확인 (`2026-10-08-ack-wait-observability/00_metadata.txt` test_vehicles) | 540 / 5 = **545 / 4,360** | 큐에 사본, spool `.tmp`(보존, §6-3) | evidence already in files | `D3_payloads`·`Z_restore_payloads.jsonl`(ack-wait) |
+| I15 | `OPTF-E2E` | [선택 필드 E2E](verification/2026-10-08-optional-fields-e2e.md) | **3 / 14** | 알림 P2, 큐에 사본 | evidence already in files(`influx_field_counts.txt`) | `payloads.jsonl` 재발행으로 같은 시점 재생성 가능 |
+| | **합계 31개 tag** | | **8,770 행 / 70,150 포인트** | | | |
+
+#### Kafka 토픽
+
+| # | 식별자 | 생성한 실험 | 연관 데이터 | dry-run | 삭제 영향 | 복구 가능 여부 |
+| --- | --- | --- | --- | --- | --- | --- |
+| K1 | `itc-220850-telemetry` / `-dlq` / `-alerts` | `load-test/anomaly-contract-kafka` 실행 `20260909-220850` — **중단된 실행**([`INVALID.md`](../load-test/anomaly-contract-kafka/evidence/20260909-220850/INVALID.md)), 근거는 `INVALID.md`와 실행 시각이다 — `inputs.csv`의 `itc-220850-telemetry`는 스크립트의 고정 `evidence_input` 라벨(`run_integration.sh` 32행)이라 실제 만든 토픽 이름을 증명하지 못한다(다른 실행들도 같은 형식 라벨, 현재 스크립트는 `itc-<RUN>-<slot>-<t>`를 만든다 — 라벨이 낡은 작은 증거 결함). 이름 형식은 슬롯 도입 전 스크립트와 맞는다(추정). 중단돼서 스크립트의 정리 단계(`--delete --topic`)가 안 돌았다 | 전용 group `itc-220850-group`은 이미 없음 | `kafka-topics --describe`: 각 1 partition, RF 1, 토픽 설정 없음(보존 168h). earliest = latest = 6 / 2 / 0 → **레코드 0건** | none(빈 토픽, 무효 실행). 무효 사유는 evidence에 남아 있음 | 명령(실행 안 함): `docker exec telemetry-kafka kafka-topics --bootstrap-server localhost:29092 --delete --topic itc-220850-telemetry`(‑dlq·‑alerts 각각). 빈 토픽이라 잃는 레코드 없음. 같은 이름 재생성은 `kafka-topics --create`로 가능 |
+
+#### PostgreSQL `anomaly_alerts`
+
+| # | 식별자 | 생성한 실험 | 명령(실행 안 함) | dry-run (같은 WHERE, `BEGIN READ ONLY`) | 삭제 영향 | 복구 가능 여부 |
+| --- | --- | --- | --- | --- | --- | --- |
+| P1 | `SCHEMA145736-K03`·`M03` 알림(엔진 과열 106°C, id 2·1) | 스키마 계약 E2E (`counts.csv` `anomaly_alerts_K=1`·`_M=1`) | `DELETE FROM anomaly_alerts WHERE vehicle_id IN ('SCHEMA145736-K03','SCHEMA145736-M03') AND detected_at >= '2026-09-09 06:03:54+00' AND detected_at < '2026-09-09 06:03:58+00';` | **2행** | evidence already in files(건수 `counts.csv`, 체크섬 있음). FK 없음(다른 테이블이 참조 안 함) | 재실행으로 같은 종류 재생성. `event_id`는 원본 payload에서 결정되므로 같은 payload면 같은 키 |
+| P2 | `OPTF-E2E` 저전압 알림(10.5V, id 1318) | 선택 필드 E2E | `DELETE FROM anomaly_alerts WHERE vehicle_id = 'OPTF-E2E' AND detected_at >= '2026-10-06 15:16:00+00' AND detected_at < '2026-10-06 15:17:00+00';` | **1행** | evidence already in files(`anomaly_alerts.txt`, `logs_grep.txt`에 event_id) | `payloads.jsonl` 재발행 시 같은 `event_id`(`e5c62138…`)로 재생성될 것으로 본다(미확인) |
+
+### 6-3. 보류·보존
+
+| 식별자 | 저장소 | 판정 | 읽기 전용 확인 | 이유 |
+| --- | --- | --- | --- | --- |
+| `qa-admin`(id 4), `qa-user`(id 5) | PostgreSQL `users` | **보존(사용자 결정)** | 둘 다 `active=f`, refresh token 0(Redis 값 대조) | 사용자 결정. `qa-user`는 `vehicles.owner_id`(FK `fk_vehicles_owner`)가 참조 |
+| `SIM-002` (vehicles id 2, "QA User Car") | PostgreSQL `vehicles` | **보존(사용자 결정)** | 소유자 `qa-user` | 사용자 결정 |
+| `telemetry-backend`, `telemetry-backend-sys` | Mosquitto | 보존(운영) | 이번 기동에서 접속 | 운영 기본 ID |
+| `telemetry-storage-group`·`anomaly-detector-group`·`anomaly-storage-group` | Kafka group | 보존(운영) | 목록에 있음 | 운영 |
+| 운영 토픽 6개(`vehicle-telemetry`, DLQ 4개, `vehicle-anomaly-alerts`) | Kafka | 보존(운영) | retention 1h로 이미 비어 있음(04) | 운영 토픽. 레코드 삭제가 필요 없다 |
+| `dlq-replay-trace-20260929` | Kafka group | **대상 없음** | `does not exist`(dryrun_04) | 자동 만료됐다 |
+| `itc-t1-telemetry` / `-dlq` / `-alerts` | Kafka 토픽 | 보류 | 레코드 0(3/1/0 = 3/1/0) | **출처 미확인** — 저장소 어디에도 `itc-t1` 문자열이 없다. 후보 기준(문서화된 식별자) 미달 |
+| `SCHEMA145736-K08` 알림 1행(과속, speed 300) | PostgreSQL `anomaly_alerts` | 보류 | 1행(id 3, dryrun_05 H1) | 실험은 확실하지만 **evidence가 이 행을 담고 있지 않다** — `counts.csv`는 K03·M03 알림만 셌다. 저장은 거부(DLQ)되고 감지기는 알림을 낸, **P0-2a 이전 저장/감지 갈림의 이 실행 유일한 라이브 흔적**이다. 지우면 재확인 불가(self-contained 아님) |
+| `e2e-pw-0929183104`(id 3) + Redis refresh token 1개 | PostgreSQL `users`, Redis | 보류 | 소유 차량 0, `active=t`. refresh token 1개(값이 이 사용자, TTL로 역산하면 2026-09-29 09:30 UTC 발급 = E2E 실행, 2026-10-13경 자동 만료) | 지시상 e2e 사용자는 보류. 문서가 "DB에 남아 있다"고 적은 의도적 잔여물이다. 지운다면 Redis 토큰도 함께(`RefreshTokenService.revokeAll` 방식) |
+| `SIM-001`~`SIM-003` 행(20,037 / 21,772 / 21,772), 알림 404 / 440 / 452 | InfluxDB, PostgreSQL | 보류 | 전체 목록(dryrun_03 끝, dryrun_05) | 시뮬레이터 일상 데이터. 특정 실험이 만든 것이 아니고 앱·대시보드 확인과 09-29 추적이 기댄다 |
+| `vehicles` id 1 `SIM-001`(긴 이름, 소유자 admin) | PostgreSQL | 보류 | 그대로 | admin 소유 유일 차량. 긴 이름 확인은 앱 저장소 문서 |
+| `counter:__rand_int__`, `key:__rand_int__` | Redis | 보류 | 2키, TTL 없음 | redis-benchmark의 고정 키 이름이고 테스트 종류(SET/GET/INCR)가 `load-test/redis-outage/evidence/20260912-115730/redis-normal-latency.csv`와 맞는다. 하지만 **키 이름이 evidence에 적혀 있지 않다**(기준 미달). 지우는 영향은 없다 |
+| admin refresh token 3개 | Redis | 보존 | 값이 `admin` | 운영 계정 |
+| spool `1791298387712-…-11c1b58d-….tmp` (0바이트) | `backend-spool` 볼륨 | **보존(증거)** | 1개, 2026-10-06 14:53:07 UTC(dryrun_07) | 실험 D3 결함 후보의 현물 증거. 처리 방식은 HANDOFF_2026-10-08 §3-1 결정 대기 |
+| compose 볼륨 12개 | Docker 볼륨 | 보존 | 목록(dryrun_07) | 볼륨 삭제·`down -v` 금지 |
+| Grafana·Prometheus TSDB | 볼륨 | 범위 밖 | — | 이번에 보지 않음 |
+
+### 6-3-b. g1·g2 큐 — 측정 시각과 증가 구간 (2026-10-07 보정)
+
+큐 크기는 **브로커가 디스크에 쓴 `mosquitto.db` 스냅샷**을 `strings`로 센 추정치다(실시간 메모리가 아님).
+
+| 측정 | 읽은 시각(UTC) | 스냅샷 시각 = `mosquitto.db` mtime(UTC) | g1 | g2 |
+| --- | --- | --- | ---: | ---: |
+| 1차 목록 | 2026-10-06 14:37:41 | 2026-10-06 05:16:45 | 약 9,899 | 약 8,999 |
+| dry-run | 2026-10-06 15:52:08 | 2026-10-06 15:16:58 | 약 10,447 | 약 9,547 |
+
+- **증가는 두 스냅샷 사이(10-06 05:16:45 → 15:16:58 UTC), 브로커가 가동 중이던 구간에서 일어났다.** 그 구간에 `vehicle/telemetry/#`로 발행된 실험 메시지(D3 540 + D3Z 5 + OPTF-E2E 3 = 548)와 증가분 +548이 정확히 같다.
+- **스택이 정지한 동안에는 늘지 않는다**(브로커가 꺼져 있으면 받을 메시지가 없다). 앞선 보고의 "지금도 계속 증가"는 "브로커가 가동되고 누군가 `vehicle/telemetry/#`로 발행하는 동안 늘어난다"로 고친다.
+- 현재 다른 발행자: dry-run 뒤 스택은 `stop` 상태이고, 시뮬레이터 profile은 dry-run 기동에 포함되지 않았다(그 에이전트 보고 기준). 다음에 시뮬레이터를 켜면 초당 발행량만큼 두 큐가 다시 늘어난다(상한 `max_queued_messages` 100,000).
+- **clean session 접속 금지(재확인)**: 두 ID가 실험 전용임은 실험 G 문서·증거의 client ID와 일치하는 것까지만 확인했다. 사용자가 실험 전용임을 확정하기 전에는 어떤 정리 접속도 하지 않는다.
+
+### 6-3-c. 삭제 후보별 복구 가능한 백업 방법 (실행 안 함)
+
+| 대상 | 백업 방법 | 복원 방법 | 주의 |
+| --- | --- | --- | --- |
+| Mosquitto 세션(M1~M6) | 브로커 **정지 후** 데이터 볼륨의 `mosquitto.db`를 통째로 복사(예: 임시 컨테이너로 볼륨을 읽어 호스트에 tar) | 같은 파일을 되돌리고 브로커 기동 | **파일 단위라 선택 복원이 안 된다** — 운영 세션(`telemetry-backend`·`-sys`)까지 그 시점으로 돌아간다. 가동 중 복사는 일관성 보장 없음 |
+| InfluxDB 실험 차량 행(I1~I31) | (a) `influx backup`(버킷 전체) (b) 차량별 `influx query`로 annotated CSV 추출 | (a) `influx restore` (b) `influx write --format csv`로 같은 timestamp 재기록(같은 시리즈·시각은 덮어쓰기) | (a)는 전체 버킷이 그 시점으로 — 운영 데이터와 섞여 선택 복원이 어렵다. (b)가 차량 단위 복원에 맞다. 대부분은 실험 `payloads.jsonl` 재발행으로도 재생성 가능(SCHEMA145736·OUTAGE-TR은 payload 파일 없음) |
+| Kafka 빈 토픽(K1) | `kafka-topics --describe` 출력 보관(파티션·설정) | `kafka-topics --create`로 같은 이름·설정 | 레코드 0건이라 데이터 백업 불필요 |
+| PostgreSQL 알림 행(P1~P3) | `\copy (SELECT * FROM anomaly_alerts WHERE <같은 조건>) TO '<파일>' CSV HEADER` | `\copy anomaly_alerts FROM '<파일>' CSV HEADER` | `id`·`event_id` UNIQUE 충돌 확인, 시퀀스는 건드리지 않음 |
+| 볼륨 전체(최후 수단) | 스택 정지 후 각 named volume을 tar로 보관 | 같은 볼륨에 풀기 | 크고 느리다. 선택 복원 불가. **볼륨 삭제는 하지 않는다** |
+
+### 6-4. 실행한다면 순서 (참고, 결정 아님)
+
+1. Mosquitto M1·M2(큐가 있는 것)를 먼저 — 남겨 둔 채 InfluxDB만 지우면, 이 ID로 누가 접속할 때 OUTAGE-E3 이후 실험 행과 SIM 행이 재전달로 다시 쓰인다.
+2. InfluxDB I1~I15(tag마다 명령 1개), PostgreSQL P1·P2, Kafka K1.
+3. 각 단계 뒤 이 절의 dry-run 조회를 그대로 다시 돌려 0이 되는지 확인. Mosquitto는 브로커 정지 뒤 스냅샷으로만 확인된다.
+
 ## 보지 않은 것
 
 - Mosquitto **메모리상** 현재 세션 목록과 큐 길이(위 §1 한계).
-- Redis 키(이번 범위 밖). qa 계정 refresh token은 10-08 문서에 따르면 이미 삭제됐다.
+- Redis 키(이번 범위 밖). qa 계정 refresh token은 10-08 문서에 따르면 이미 삭제됐다. **→ §6에서 키 이름·소유자만 확인했다(6개: admin refresh 3, e2e refresh 1, redis-benchmark 2; qa 0).**
 - Grafana·Prometheus TSDB 안의 실험 기간 시계열(보존 기간 동안 남는다).
 - 다른 에이전트가 수집 이후에 추가한 데이터.

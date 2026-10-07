@@ -1,0 +1,59 @@
+# NOT RUN: docker exec telemetry-kafka kafka-consumer-groups --bootstrap-server localhost:29092 --delete --group dlq-replay-trace-20260929
+# NOT RUN: docker exec telemetry-kafka kafka-topics --bootstrap-server localhost:29092 --delete --topic itc-220850-telemetry   (and -dlq, -alerts; one --topic each)
+# RUN instead (read-only): kafka-consumer-groups --list; --describe --group <same> --state / --offsets; kafka-topics --describe --topic <same>; kafka-get-offsets --topic <same> --time -2/-1
+# collected UTC 2026-10-06 15:57:10
+## kafka-consumer-groups --list
+anomaly-storage-group
+anomaly-detector-group
+telemetry-storage-group
+## --describe --group dlq-replay-trace-20260929 --state
+
+Error: Consumer group 'dlq-replay-trace-20260929' does not exist.
+## --describe --group dlq-replay-trace-20260929 (offsets)
+
+Error: Consumer group 'dlq-replay-trace-20260929' does not exist.
+## kafka-topics --list
+__consumer_offsets
+itc-220850-alerts
+itc-220850-dlq
+itc-220850-telemetry
+itc-t1-alerts
+itc-t1-dlq
+itc-t1-telemetry
+vehicle-anomaly-alerts
+vehicle-anomaly-alerts-dlq
+vehicle-telemetry
+vehicle-telemetry-anomaly-dlq
+vehicle-telemetry-dlq
+vehicle-telemetry-mqtt-dlq
+## kafka-topics --describe --topic itc-220850-telemetry
+Topic: itc-220850-telemetry	TopicId: FPSqfWX6R5qbRS91BGe3dw	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-220850-telemetry	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-topics --describe --topic itc-220850-dlq
+Topic: itc-220850-dlq	TopicId: 6MWKWqmfS82WOYfjPtSD_w	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-220850-dlq	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-topics --describe --topic itc-220850-alerts
+Topic: itc-220850-alerts	TopicId: iIx611hgSj--b2IB4A9ijg	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-220850-alerts	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-topics --describe --topic itc-t1-telemetry
+Topic: itc-t1-telemetry	TopicId: 4KZRF8-xSmWr7Q3c3yVtnw	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-t1-telemetry	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-topics --describe --topic itc-t1-dlq
+Topic: itc-t1-dlq	TopicId: VSA--FuATM-RbI14v5pC1A	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-t1-dlq	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-topics --describe --topic itc-t1-alerts
+Topic: itc-t1-alerts	TopicId: 3t3YfnuJRGeiNodBereVDg	PartitionCount: 1	ReplicationFactor: 1	Configs: 
+	Topic: itc-t1-alerts	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
+## kafka-get-offsets --time -2 (earliest) / -1 (latest) for itc-*
+earliest itc-220850-alerts:0:0
+earliest itc-220850-dlq:0:2
+earliest itc-220850-telemetry:0:6
+earliest itc-t1-alerts:0:0
+earliest itc-t1-dlq:0:1
+earliest itc-t1-telemetry:0:3
+latest   itc-220850-alerts:0:0
+latest   itc-220850-dlq:0:2
+latest   itc-220850-telemetry:0:6
+latest   itc-t1-alerts:0:0
+latest   itc-t1-dlq:0:1
+latest   itc-t1-telemetry:0:3

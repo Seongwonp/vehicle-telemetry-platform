@@ -1,0 +1,72 @@
+# docker exec telemetry-mosquitto sh -c "ls -la --full-time /mosquitto/data/; strings /mosquitto/data/mosquitto.db | grep -o \"telemetry-backend[-a-z0-9]*\" | sort | uniq -c | sort -rn"
+# collected UTC 2026-10-06 15:52:08 — read-only (strings on on-disk snapshot; file not modified; no MQTT connection). Snapshot = state written at last broker shutdown (mtime), NOT live memory
+total 4408
+drwxr-xr-x    2 mosquitto mosquitto      4096 2026-10-06 15:16:59 +0000 .
+drwxr-xr-x    1 mosquitto mosquitto      4096 2026-10-06 15:00:44 +0000 ..
+-rw-------    1 mosquitto mosquitto   4498962 2026-10-06 15:16:58 +0000 mosquitto.db
+## client-id string occurrences
+  10447 telemetry-backend-g1
+   9547 telemetry-backend-g2
+      5 telemetry-backend-sys
+      4 telemetry-backend-h2-sys
+      4 telemetry-backend-g2-sys
+      4 telemetry-backend-g1-sys
+      1 telemetry-backendvehicle
+      1 telemetry-backend-h2
+      1 telemetry-backend-g2vehicle
+      1 telemetry-backend-g1vehicle
+      1 telemetry-backend
+## same method as 01 §A: strings | grep "^telemetry-backend" | sort | uniq -c
+  10447 telemetry-backend-g1
+   9547 telemetry-backend-g2
+      1 telemetry-backendvehicle/telemetry/#
+      1 telemetry-backend-sys$SYS/broker/uptime
+      1 telemetry-backend-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-sys$SYS/broker/clients/connected
+      1 telemetry-backend-sys
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-h2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-h2-sys
+      1 telemetry-backend-h2
+      1 telemetry-backend-g2vehicle/telemetry/#
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g2-sys
+      1 telemetry-backend-g1vehicle/telemetry/#
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g1-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g1-sys
+      1 telemetry-backend
+## same method as 01 §B: stored message bodies by vehicle_id (count, min ts, max ts)
+OPTF-E2E 3 2026-10-06T15:16:11.100Z 2026-10-06T15:16:11.300Z
+## (corrected) stored message bodies: count of "vehicle_id":"X" occurrences per X (key order varies between publishers, so previous line used a too-narrow pattern)
+      3 OPTF-E2E
+    720 OUTAGE-E3
+    720 OUTAGE-P
+    300 OUTAGE-R
+    720 OUTAGE-S
+    767 OUTAGE-T
+      5 OUTAGE-TR
+   1592 OUTAGE-U
+    360 RECON-D2
+    240 RECON-D2B
+     63 RECON-D2C
+    540 RECON-D3
+      5 RECON-D3Z
+      1 RECON-PRB
+      5 RECON-ZR
+    900 SESSLOSS-G2
+   1168 SIM-001
+   1168 SIM-002
+   1168 SIM-003
+## total
+10445
+## broker connections since this start (docker logs telemetry-mosquitto | awk epoch>=1791301900), now epoch 1791301995
+1791301919: New connection from 172.18.0.11:40258 on port 1883.
+1791301920: New client connected from 172.18.0.11:40258 as telemetry-backend (p2, c0, k60).
+1791301920: New connection from 172.18.0.11:40268 on port 1883.
+1791301920: New client connected from 172.18.0.11:40268 as telemetry-backend-sys (p2, c0, k60).

@@ -1,0 +1,98 @@
+# NOT RUN (per candidate): influx delete --bucket telemetry --org "$DOCKER_INFLUXDB_INIT_ORG" --token "$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" --start <START> --stop <STOP> --predicate '_measurement="vehicle_telemetry" AND vehicle_id="<ID>"'
+# RUN instead (same predicate, same window): Flux count, via docker exec telemetry-influxdb sh -c 'influx query --org "$DOCKER_INFLUXDB_INIT_ORG" --token "$DOCKER_INFLUXDB_INIT_ADMIN_TOKEN" --raw "$1"' (token value never printed)
+# window: START = floor(first point, 1s), STOP = floor(last point, 1s) + 1s. The padding makes the inclusivity difference between
+#   `influx delete` (start..stop) and Flux range() (stop exclusive) irrelevant: every point of the tag lies strictly inside both.
+# delete predicate limits (InfluxDB 2.x): only `=` on _measurement / tag keys joined by AND. No OR, no regex/prefix, no !=, no _field
+#   (every field of the matched series is deleted). So one command per vehicle_id; "SCHEMA145736-*" cannot be a single command.
+#   Deletion is irreversible (no undo; only a prior `influx backup` could restore). Points != rows: one stored message = several field points.
+# columns: id | START | STOP | points(all fields) | speed_rows
+# collected UTC 2026-10-06 15:55:02
+ACKTEST-A | 2026-10-05T12:13:58Z | 2026-10-05T12:13:59Z | 240 | 30
+ACKTEST-B | 2026-10-05T12:15:14Z | 2026-10-05T12:15:15Z | 240 | 30
+OPTF-E2E | 2026-10-06T15:16:11Z | 2026-10-06T15:16:12Z | 14 | 3
+OUTAGE-E | 2026-10-05T12:29:05Z | 2026-10-05T12:33:05Z | 5760 | 720
+OUTAGE-E2 | 2026-10-05T12:56:52Z | 2026-10-05T13:00:52Z | 5760 | 720
+OUTAGE-E3 | 2026-10-05T21:47:03Z | 2026-10-05T21:51:03Z | 5760 | 720
+OUTAGE-P | 2026-10-05T22:44:28Z | 2026-10-05T22:48:28Z | 5760 | 720
+OUTAGE-R | 2026-10-05T22:17:19Z | 2026-10-05T22:18:59Z | 2400 | 300
+OUTAGE-S | 2026-10-05T21:53:13Z | 2026-10-05T21:57:13Z | 5760 | 720
+OUTAGE-T | 2026-10-05T22:58:37Z | 2026-10-05T23:08:01Z | 6136 | 767
+OUTAGE-TR | 2026-10-05T23:11:01Z | 2026-10-05T23:11:03Z | 40 | 5
+OUTAGE-U | 2026-10-06T04:10:59Z | 2026-10-06T04:27:42Z | 12736 | 1592
+RECON-D2 | 2026-10-06T03:52:33Z | 2026-10-06T03:54:33Z | 2880 | 360
+RECON-D2B | 2026-10-06T03:58:25Z | 2026-10-06T03:59:45Z | 1920 | 240
+RECON-D2C | 2026-10-06T04:01:28Z | 2026-10-06T04:01:49Z | 504 | 63
+RECON-D3 | 2026-10-06T14:51:56Z | 2026-10-06T14:54:56Z | 4320 | 540
+RECON-D3Z | 2026-10-06T15:01:08Z | 2026-10-06T15:01:10Z | 40 | 5
+RECON-PRB | 2026-10-06T03:52:16Z | 2026-10-06T03:52:17Z | 8 | 1
+RECON-ZR | 2026-10-06T04:31:29Z | 2026-10-06T04:31:31Z | 40 | 5
+RESUB-F | 2026-10-05T12:37:47Z | 2026-10-05T12:37:48Z | 2400 | 300
+RESUB-F2 | 2026-10-05T12:38:34Z | 2026-10-05T12:38:35Z | 80 | 10
+RPL-02 | 2026-09-29T09:01:00Z | 2026-09-29T09:01:01Z | 8 | 1
+SCHEMA145736-K01 | 2026-09-09T06:03:55Z | 2026-09-09T06:03:56Z | 8 | 1
+SCHEMA145736-K02 | 2026-09-09T06:03:56Z | 2026-09-09T06:03:57Z | 8 | 1
+SCHEMA145736-K03 | 2026-09-09T06:03:56Z | 2026-09-09T06:03:57Z | 8 | 1
+SCHEMA145736-M01 | 2026-09-09T06:03:54Z | 2026-09-09T06:03:55Z | 8 | 1
+SCHEMA145736-M02 | 2026-09-09T06:03:54Z | 2026-09-09T06:03:55Z | 8 | 1
+SCHEMA145736-M03 | 2026-09-09T06:03:54Z | 2026-09-09T06:03:55Z | 8 | 1
+SCHEMA145736-MIX | 2026-09-09T06:03:56Z | 2026-09-09T06:03:57Z | 16 | 2
+SESSLOSS-G1 | 2026-10-05T13:07:29Z | 2026-10-05T13:07:30Z | 80 | 10
+SESSLOSS-G2 | 2026-10-05T13:08:05Z | 2026-10-05T13:09:39Z | 7200 | 900
+# Flux used per row (with <ID>/<START>/<STOP> substituted):
+from(bucket: "telemetry") |> range(start: <START>, stop: <STOP>) |> filter(fn: (r) => r._measurement == "vehicle_telemetry" and r.vehicle_id == "<ID>") |> map(fn: (r) => ({_time: r._time, k: 1, f: r._field})) |> group() |> reduce(identity: {points: 0, speed_rows: 0}, fn: (r, accumulator) => ({points: accumulator.points + 1, speed_rows: if r.f == "speed" then accumulator.speed_rows + 1 else accumulator.speed_rows}))
+# full-range listing used to derive windows (all vehicle_id tags incl. preserved SIM-*); query:
+from(bucket: "telemetry") |> range(start: 1970-01-01T00:00:00Z, stop: 2100-01-01T00:00:00Z) |> filter(fn: (r) => r._measurement == "vehicle_telemetry") |> map(fn: (r) => ({_time: r._time, vehicle_id: r.vehicle_id, f: r._field})) |> group(columns: ["vehicle_id"]) |> reduce(identity: {points: 0, speed_rows: 0, mn: 2100-01-01T00:00:00Z, mx: 1970-01-01T00:00:00Z}, fn: (r, accumulator) => ({points: accumulator.points + 1, speed_rows: if r.f == "speed" then accumulator.speed_rows + 1 else accumulator.speed_rows, mn: if r._time < accumulator.mn then r._time else accumulator.mn, mx: if r._time > accumulator.mx then r._time else accumulator.mx})) |> group() |> sort(columns: ["vehicle_id"])
+vehicle_id,first,last,points,speed_rows
+ACKTEST-A,2026-10-05T12:13:58.001Z,2026-10-05T12:13:58.03Z,240,30
+ACKTEST-B,2026-10-05T12:15:14.001Z,2026-10-05T12:15:14.03Z,240,30
+OPTF-E2E,2026-10-06T15:16:11.1Z,2026-10-06T15:16:11.3Z,14,3
+OUTAGE-E,2026-10-05T12:29:05.333Z,2026-10-05T12:33:04.76Z,5760,720
+OUTAGE-E2,2026-10-05T12:56:52.333Z,2026-10-05T13:00:51.76Z,5760,720
+OUTAGE-E3,2026-10-05T21:47:03.333Z,2026-10-05T21:51:02.76Z,5760,720
+OUTAGE-P,2026-10-05T22:44:28.333Z,2026-10-05T22:48:27.76Z,5760,720
+OUTAGE-R,2026-10-05T22:17:19.333Z,2026-10-05T22:18:58.9Z,2400,300
+OUTAGE-S,2026-10-05T21:53:13.333Z,2026-10-05T21:57:12.76Z,5760,720
+OUTAGE-T,2026-10-05T22:58:37.333Z,2026-10-05T23:08:00.103Z,6136,767
+OUTAGE-TR,2026-10-05T23:11:01.333Z,2026-10-05T23:11:02.665Z,40,5
+OUTAGE-U,2026-10-06T04:10:59.333Z,2026-10-06T04:27:41.663Z,12736,1592
+RECON-D2,2026-10-06T03:52:33.333Z,2026-10-06T03:54:32.88Z,2880,360
+RECON-D2B,2026-10-06T03:58:25.333Z,2026-10-06T03:59:44.92Z,1920,240
+RECON-D2C,2026-10-06T04:01:28.333Z,2026-10-06T04:01:48.979Z,504,63
+RECON-D3,2026-10-06T14:51:56.333Z,2026-10-06T14:54:55.82Z,4320,540
+RECON-D3Z,2026-10-06T15:01:08.2Z,2026-10-06T15:01:09Z,40,5
+RECON-PRB,2026-10-06T03:52:16.001Z,2026-10-06T03:52:16.001Z,8,1
+RECON-ZR,2026-10-06T04:31:29.333Z,2026-10-06T04:31:30.665Z,40,5
+RESUB-F,2026-10-05T12:37:47.001Z,2026-10-05T12:37:47.3Z,2400,300
+RESUB-F2,2026-10-05T12:38:34.001Z,2026-10-05T12:38:34.01Z,80,10
+RPL-02,2026-09-29T09:01:00Z,2026-09-29T09:01:00Z,8,1
+SCHEMA145736-K01,2026-09-09T06:03:55.922Z,2026-09-09T06:03:55.922Z,8,1
+SCHEMA145736-K02,2026-09-09T06:03:56.041Z,2026-09-09T06:03:56.041Z,8,1
+SCHEMA145736-K03,2026-09-09T06:03:56.051Z,2026-09-09T06:03:56.051Z,8,1
+SCHEMA145736-M01,2026-09-09T06:03:54.909Z,2026-09-09T06:03:54.909Z,8,1
+SCHEMA145736-M02,2026-09-09T06:03:54.916Z,2026-09-09T06:03:54.916Z,8,1
+SCHEMA145736-M03,2026-09-09T06:03:54.923Z,2026-09-09T06:03:54.923Z,8,1
+SCHEMA145736-MIX,2026-09-09T06:03:56.048Z,2026-09-09T06:03:56.05Z,16,2
+SESSLOSS-G1,2026-10-05T13:07:29.001Z,2026-10-05T13:07:29.01Z,80,10
+SESSLOSS-G2,2026-10-05T13:08:05.734Z,2026-10-05T13:09:38.261Z,7200,900
+SIM-001,2026-09-16T12:18:05.392Z,2026-10-06T05:16:37.369Z,160360,20037
+SIM-002,2026-09-16T12:18:05.39Z,2026-10-06T05:16:37.451Z,174251,21772
+SIM-003,2026-09-16T12:18:05.39Z,2026-10-06T05:16:37.561Z,174239,21772
+## influx bucket list (ID/name/retention) + schema.measurements / schema.tagKeys(bucket: telemetry)
+ID			Name		Retention	Shard group duration	Organization ID		Schema Type
+31a8f5226d6d6f60	_monitoring	168h0m0s	24h0m0s			78d8937819ca6dde	implicit
+73bb1990d899ef93	_tasks		72h0m0s		24h0m0s			78d8937819ca6dde	implicit
+156fc76164114905	telemetry	2160h0m0s	24h0m0s			78d8937819ca6dde	implicit
+Result: _result
+Table: keys: []
+         _value:string
+----------------------
+     vehicle_telemetry
+Result: _result
+Table: keys: []
+         _value:string
+----------------------
+                _start
+                 _stop
+                _field
+          _measurement
+            vehicle_id

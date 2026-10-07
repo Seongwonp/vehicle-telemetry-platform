@@ -1,0 +1,23 @@
+# docker volume ls --filter name=vehicle-telemetry-platform ; docker exec telemetry-backend sh -c 'ls -la --full-time <spool dir>'   (read-only listing; nothing removed)
+# collected UTC 2026-10-06 16:00:46
+vehicle-telemetry-platform_backend-spool
+vehicle-telemetry-platform_grafana-data
+vehicle-telemetry-platform_influxdb-config
+vehicle-telemetry-platform_influxdb-data
+vehicle-telemetry-platform_kafka-data
+vehicle-telemetry-platform_mosquitto-data
+vehicle-telemetry-platform_mosquitto-log
+vehicle-telemetry-platform_postgres-data
+vehicle-telemetry-platform_prometheus-data
+vehicle-telemetry-platform_redis-data
+vehicle-telemetry-platform_zookeeper-data
+vehicle-telemetry-platform_zookeeper-log
+## backend mounts
+ -> /app/certs
+vehicle-telemetry-platform_backend-spool -> /app/data/telemetry-spool
+
+## spool volume (docker exec telemetry-backend find /app/data/telemetry-spool -type f -exec ls -la --full-time {} +; plus counts by suffix)
+      1 tmp
+-rw-r--r-- 1 root root 0 2026-10-06 14:53:07.707228527 +0000 /app/data/telemetry-spool/1791298387712-00000000000000000002-11c1b58d-52cd-423b-8ee4-e3772d8ac524.tmp
+/app/data/telemetry-spool
+/app/data/telemetry-spool/1791298387712-00000000000000000002-11c1b58d-52cd-423b-8ee4-e3772d8ac524.tmp

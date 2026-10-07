@@ -1,0 +1,32 @@
+# NOT RUN (would delete): docker run --rm --network vehicle-telemetry-platform_telemetry-net eclipse-mosquitto:2.0 mosquitto_sub -h mosquitto -p 1883 -i <CLIENT_ID> -t 'telemetrix/session-cleanup/noop' -q 0 -E
+# Purpose of this file: record the removal method for experiment persistent sessions WITHOUT executing it. Nothing below was executed.
+#
+# Why this deletes: mosquitto_sub without -c connects with clean_session=true (MQTT 3.1.1; v5 = clean start + session expiry 0).
+# On CONNECT with clean_session=true the broker DISCARDS the stored session for that client id — subscriptions and all queued
+# QoS1 messages — without delivering them. -E disconnects right after SUBACK, leaving no session behind.
+# This is itself a deletion. It also creates a broker log line ("New client connected ... as <CLIENT_ID> (p2, c1, k60)").
+#
+# Per-candidate command (dev listener 1883, allow_anonymous true in mosquitto-dev.conf; default compose is mTLS 8883 and would need certs):
+#   telemetry-backend-g1      : ... -i telemetry-backend-g1      ...   (queue est. 10,447 refs in snapshot, see dryrun_01)
+#   telemetry-backend-g2      : ... -i telemetry-backend-g2      ...   (queue est. 9,547 refs)
+#   telemetry-backend-g1-sys  : ... -i telemetry-backend-g1-sys  ...   ($SYS subs only; $SYS is QoS0 -> no offline queue)
+#   telemetry-backend-g2-sys  : ... -i telemetry-backend-g2-sys  ...
+#   telemetry-backend-h2      : ... -i telemetry-backend-h2      ...   (no subscription record -> no queue)
+#   telemetry-backend-h2-sys  : ... -i telemetry-backend-h2-sys  ...
+# NEVER: -i telemetry-backend / telemetry-backend-sys (production default ids; the running backend would be kicked —
+#   Mosquitto disconnects the existing connection when a new one uses the same id).
+#   [2026-10-08 review addendum] Worse: clean_session=true on a production id DISCARDS that persistent session's
+#   subscription and its queued, un-PUBACKed QoS 1 messages -> real loss of messages the ACK boundary relies on.
+#   If scripted, accept only an exact allowlist of the six experiment ids.
+#
+# Read-only verification after a (future, user-approved) removal: the on-disk snapshot is only rewritten at broker shutdown/autosave,
+#   so the effect is visible via `strings` only after `docker compose ... stop mosquitto` (no restart needed to delete, only to inspect).
+#
+# Alternatives considered (not recommended):
+#   - stop broker + remove/edit /mosquitto/data/mosquitto.db : deletes ALL sessions incl. telemetry-backend (its in-flight/queued state) -> irreversible, too broad.
+#   - persistent_client_expiration <dur> in mosquitto.conf  : persistent config change, applies to every offline persistent client incl. production id.
+#   - dynamic-security kick : only disconnects connected clients; g1/g2 are offline and the dev config has no dynsec plugin.
+#   - mosquitto_ctrl : needs dynsec; no session-delete command in Mosquitto 2.0.
+#
+# Shared message store note: bodies are reference-counted. g1 and g2 share 9,547 bodies; removing only g1 frees the 900 SESSLOSS-G2
+#   bodies that only g1 holds; the rest are freed when both are removed. Whether any other session still references them was not verified (telemetry-backend is online with c0; its queue is expected to drain on connect, not inspected).
