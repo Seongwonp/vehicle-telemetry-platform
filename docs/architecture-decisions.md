@@ -1259,6 +1259,11 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
 - **비활성화가 이미 열린 WebSocket 구독을 끊지 않는다.** 소유권 검사는 SUBSCRIBE 시점에만 돌고(ADR-025) 구독 등록부가 없어, 비활성화 뒤에도
   그 세션은 access token 만료(기본 수명)까지 프레임을 받는다. 비활성 차량은 시뮬레이터가 계속 보내지 않는 한 새 프레임도 없어 실제 노출은
   "만료 전 잔여 수신"으로 한정된다(2026-09-29 외부 평가 PLAUSIBLE, 코드로 확인 — 수정 안 함: 세션 추적을 붙이는 비용 대비 작다고 판단).
+  **2026-10-08 갱신**: 열린 세션의 **새 SUBSCRIBE**는 이제 거부된다 — 인터셉터가 SUBSCRIBE마다 `DbUserDetailsService`로 사용자를 다시 읽고
+  (`User::canLogin`) **현재 권한**으로 소유권을 판정한다(비활성·삭제 계정, 강등된 관리자의 남의 차량 구독 거부). 거부되면 Spring이 STOMP ERROR를
+  보내고 그 연결을 닫는다. **이미 맺은 구독으로의 전달은 그대로다** — 클라이언트가 아무 프레임도 보내지 않으면 **JWT 만료 시각**까지 받고, 그 시각에
+  `WebSocketSessionRegistry`의 스케줄러가 WebSocket 연결 자체를 닫아(1008 "JWT expired") 브로커 구독도 사라진다(실제 Tomcat·STOMP 클라이언트 통합 테스트
+  `WebSocketExpiryIntegrationTest`). 즉시 종료는 구현하지 않았다 — 설계안은 `docs/verification/2026-10-08-websocket-subscribe-auth.md` §4.
 - **비활성화도 관리자만 한다(2026-09-29).** 등록만 관리자고 `DELETE /api/vehicles/{id}`는 소유자도 되던 비대칭이었다 —
   비활성 차량은 관리자도 접근할 수 없고 같은 ID 재등록은 409라, 일반 사용자가 **되돌릴 수 없는 삭제**를 할 수 있었다(외부 리뷰).
   URL 규칙 + `@PreAuthorize` 이중. 재활성화 API는 여전히 없다 — 관리자가 DB에서 `active`를 되돌린다.

@@ -63,7 +63,9 @@ class WebSocketAuthChannelInterceptorTest {
     void rejectsSubscriptionToVehicleWithoutOwnership() {
         var authentication = new UsernamePasswordAuthenticationToken(
             "user", null, java.util.List.of());
-        given(vehicleAccessService.canAccess(authentication, "KR-GA-1234")).willReturn(false);
+        given(userDetailsService.loadUserByUsername("user"))
+            .willReturn(User.withUsername("user").password("x").roles("USER").build());
+        given(vehicleAccessService.canAccess(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("KR-GA-1234"))).willReturn(false);
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
         accessor.setDestination("/topic/vehicle/KR-GA-1234/telemetry");
         accessor.setUser(authentication);
@@ -107,7 +109,9 @@ class WebSocketAuthChannelInterceptorTest {
         // 권한 검사는 SUBSCRIBE 한 번뿐이고 simple broker는 프레임마다 다시 묻지 않는다 — 비활성화 뒤에도
         // 이미 맺은 구독에는 계속 나간다. 이 동작을 바꾸면(세션 종료·outbound 재검사) 이 테스트를 뒤집는다.
         var authentication = new UsernamePasswordAuthenticationToken("hong", null, java.util.List.of());
-        given(vehicleAccessService.canAccess(authentication, "KR-GA-1234")).willReturn(true);
+        given(userDetailsService.loadUserByUsername("hong"))
+            .willReturn(User.withUsername("hong").password("x").roles("USER").build());
+        given(vehicleAccessService.canAccess(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("KR-GA-1234"))).willReturn(true);
         StompHeaderAccessor accessor = StompHeaderAccessor.create(StompCommand.SUBSCRIBE);
         accessor.setDestination("/topic/vehicle/KR-GA-1234/telemetry");
         accessor.setSessionId("s1");
@@ -138,7 +142,7 @@ class WebSocketAuthChannelInterceptorTest {
 
         org.mockito.Mockito.verify(outbound).send(org.mockito.ArgumentMatchers.any());
         org.mockito.Mockito.verify(vehicleAccessService, org.mockito.Mockito.times(1))
-            .canAccess(authentication, "KR-GA-1234");
+            .canAccess(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.eq("KR-GA-1234"));
         broker.stop();
     }
 

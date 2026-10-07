@@ -16,6 +16,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
@@ -92,9 +93,23 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
         if (matcher == null || !matcher.matches()) {
             throw new AccessDeniedException("허용되지 않은 WebSocket 구독 경로입니다");
         }
-        if (!(accessor.getUser() instanceof Authentication authentication)
-            || !vehicleAccessService.canAccess(authentication, matcher.group(1))) {
+        if (!(accessor.getUser() instanceof Authentication connectPrincipal)
+            || !vehicleAccessService.canAccess(currentAuthentication(connectPrincipal), matcher.group(1))) {
             throw new AccessDeniedException("차량 WebSocket 구독 권한이 없습니다");
+        }
+    }
+
+    /**
+     * SUBSCRIBE마다 사용자를 DB에서 다시 읽는다. CONNECT 때 세운 principal을 그대로 쓰면 열린 세션에서
+     * 비활성·삭제된 계정도 새 구독을 맺고, 강등된 관리자도 만료까지 관리자 권한으로 남의 차량을 구독한다.
+     * 이미 맺은 구독의 전달은 막지 않는다 — 세션은 JWT 만료 시각에 닫힌다(sessionRegistry).
+     */
+    private Authentication currentAuthentication(Authentication connectPrincipal) {
+        try {
+            UserDetails user = userDetailsService.loadUserByUsername(connectPrincipal.getName());
+            return new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+        } catch (UsernameNotFoundException e) {
+            throw new AccessDeniedException("WebSocket 구독 거부: 로그인할 수 없는 계정입니다");
         }
     }
 
