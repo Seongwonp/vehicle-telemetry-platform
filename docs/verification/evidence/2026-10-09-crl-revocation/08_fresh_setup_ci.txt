@@ -1,0 +1,36 @@
+# 새 환경·CI 경로 — generate-certs.sh를 저장소 밖 임시 디렉터리 사본에서 실행(기존 broker/certs는 그대로)
+# 사본: generate-certs.sh, generate-crl.sh, revoked-certs.txt 세 파일만. 실행 전에 compose가 남기는 빈 디렉터리를 흉내 냄.
+
+## A. Windows Git Bash (OpenSSL 3.2.1 mingw64), MSYS_NO_PATHCONV=1 + JDK17 keytool — 미리 만든 빈 디렉터리: ca.crt/, crl.pem/
+1차(수정 전 generate-crl.sh): generate-certs.sh exit=1 — MSYS_NO_PATHCONV=1이면 /c/... 경로가 mingw openssl에 그대로 넘어가 openssl ca가 CA 파일을 못 엶(stderr를 버려 메시지 없음).
+  → generate-crl.sh 수정: CA·임시 경로를 cygpath -m으로 변환(없으면 그대로), 실패 시 openssl ca 진단을 stderr로.
+2차(수정 후):
+exit=0
+      빈 디렉터리 ca.crt 제거(인증서 생성 전 compose up이 남긴 것)
+      빈 디렉터리 crl.pem 제거(인증서 생성 전 compose up이 남긴 것)
+      crl.pem 생성: 폐기 0건, nextUpdate=Oct  7 12:54:48 2027 GMT
+  생성 완료!
+-rw-r--r-- 1290 ca.crt
+-rw-r--r-- 690 crl.pem
+        Issuer: C=KR, ST=Seoul, O=VehicleTelemetry, CN=TelemetryCA
+        Next Update: Oct  7 12:54:48 2027 GMT
+No Revoked Certificates.
+verify OK
+새 CA sha256 Fingerprint=0C:1C:85:A1:...:01:50 (저장소 CA 14:5E:75:E1:...:9F:96와 다름 → revoked-certs.txt 두 줄은 걸러짐)
+
+## B. Linux (CI 러너 흉내) — vehicle-telemetry-platform-backend:latest 이미지(Ubuntu 22.04, OpenSSL 3.0.2, keytool), cygpath 없음
+## 미리 만든 빈 디렉터리: crl.pem/ ; 실행: cd /w && /w/generate-certs.sh (CI ci.yml 111-112행과 같은 호출)
+generate-certs exit=0
+cygpath: 없음(Linux)
+      빈 디렉터리 crl.pem 제거(인증서 생성 전 compose up이 남긴 것)
+      crl.pem 생성: 폐기 0건, nextUpdate=Oct  7 12:55:49 2027 GMT
+-rw-r--r-- crl.pem   (generate-crl.sh가 chmod 644 — 브로커가 읽을 수 있음)
+        Next Update: Oct  7 12:55:33 2027 GMT   (같은 이미지 1차 실행; 2차는 12:55:49)
+No Revoked Certificates.
+verify OK
+
+## C. 호스트 저장소(broker/certs)에서 generate-crl.sh 단독 — 두 실행법 모두
+bash generate-crl.sh                      → exit=0, 폐기 2건
+MSYS_NO_PATHCONV=1 bash generate-crl.sh   → exit=0, 폐기 2건
+
+임시 사본(생성된 일회용 키 포함)은 확인 뒤 삭제했다. 키 내용은 어디에도 출력하지 않았다.

@@ -1,0 +1,83 @@
+# openssl crl -in broker/certs/crl.pem -noout -text  (2026-10-07, 공개 정보)
+Certificate Revocation List (CRL):
+        Version 2 (0x1)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=KR, ST=Seoul, O=VehicleTelemetry, CN=TelemetryCA
+        Last Update: Oct  7 12:47:01 2026 GMT
+        Next Update: Oct  7 12:47:01 2027 GMT
+        CRL extensions:
+            X509v3 Authority Key Identifier: 
+                FE:74:47:07:3C:47:C9:3B:9D:74:F0:6D:BA:52:DC:E5:EC:FE:6A:23
+            X509v3 CRL Number: 
+                1791377221
+Revoked Certificates:
+    Serial Number: 4A42F92149A5A5AB7C66574317E62916C6738F96
+        Revocation Date: Oct  7 12:46:14 2026 GMT
+        CRL entry extensions:
+            X509v3 CRL Reason Code: 
+                Key Compromise
+    Serial Number: 4A42F92149A5A5AB7C66574317E62916C6738FD6
+        Revocation Date: Oct  7 12:46:14 2026 GMT
+        CRL entry extensions:
+            X509v3 CRL Reason Code: 
+                Key Compromise
+    Signature Algorithm: sha256WithRSAEncryption
+    Signature Value:
+        53:d8:05:cd:7e:56:0c:fc:6d:d0:6d:6a:11:84:21:e1:fa:e1:
+        0e:24:79:78:d8:67:94:76:00:21:44:6d:2e:5c:01:18:27:4b:
+        32:96:3a:bc:5b:90:35:e3:c1:f2:72:28:ed:88:5a:05:3d:2b:
+        96:17:3a:83:94:67:16:47:01:7e:9a:ab:b2:d1:18:b8:ac:55:
+        f5:7e:8d:6e:81:de:7f:a9:1f:cb:63:0a:2f:dc:fc:ac:dc:a4:
+        30:7d:20:69:ec:c0:a2:2b:fa:2c:e3:91:e0:a9:40:32:3c:02:
+        e9:68:a0:78:a3:8e:2f:5d:3b:03:5c:de:8e:29:df:a1:9a:96:
+        b9:52:fc:0f:3f:3c:92:d1:82:a4:39:8d:c1:32:a9:3c:46:5a:
+        a8:77:2c:27:ef:ee:27:b8:78:58:7c:41:c9:cf:36:f3:39:f7:
+        fc:38:ae:a9:c9:9d:ea:67:d7:24:87:66:dc:5a:d4:59:27:43:
+        80:c6:bd:5e:0a:ea:99:ad:f8:31:4b:04:98:d6:04:f2:30:96:
+        4e:3f:2b:2b:98:ab:80:49:a2:73:df:21:5c:ae:21:43:6c:d2:
+        4c:0a:96:3c:85:bf:59:ae:aa:d4:0c:88:62:34:a2:eb:34:dc:
+        31:29:a1:bb:a0:5e:4a:3d:c3:a3:c2:93:1b:43:97:84:b1:7b:
+        c3:ee:8a:62
+
+# 서명 검증: openssl crl -in crl.pem -CAfile ca.crt -noout
+verify OK
+exit=0
+
+# 대상 인증서 serial (openssl x509 -noout -serial -subject)
+serial=4A42F92149A5A5AB7C66574317E62916C6738F96 subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-024 
+serial=4A42F92149A5A5AB7C66574317E62916C6738FD6 subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-088 
+serial=4A42F92149A5A5AB7C66574317E62916C6738FB0 subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-050 
+serial=4A42F92149A5A5AB7C66574317E62916C6738F7F subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-001 
+
+# openssl verify -crl_check (호스트, 브로커와 같은 leaf CRL 검사)
+SIM-024: C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-024 error 23 at 0 depth lookup: certificate revoked error vehicles/SIM-024.crt: verification failed 
+SIM-088: C=KR, ST=Seoul, O=VehicleTelemetry, CN=SIM-088 error 23 at 0 depth lookup: certificate revoked error vehicles/SIM-088.crt: verification failed 
+SIM-050: vehicles/SIM-050.crt: OK 
+SIM-001: vehicles/SIM-001.crt: OK 
+backend.crt: OK
+
+# ── 최종 crl.pem (generate-crl.sh 경로 수정 뒤 재생성, 2026-10-07 21:56:26    ) — 위 본문은 첫 생성본(CRL Number 1791377221)이고 일련번호·사유·폐기 시각은 같다
+Certificate Revocation List (CRL):
+        Version 2 (0x1)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: C=KR, ST=Seoul, O=VehicleTelemetry, CN=TelemetryCA
+        Last Update: Oct  7 12:54:35 2026 GMT
+        Next Update: Oct  7 12:54:35 2027 GMT
+        CRL extensions:
+            X509v3 Authority Key Identifier: 
+                FE:74:47:07:3C:47:C9:3B:9D:74:F0:6D:BA:52:DC:E5:EC:FE:6A:23
+            X509v3 CRL Number: 
+                1791377675
+Revoked Certificates:
+    Serial Number: 4A42F92149A5A5AB7C66574317E62916C6738F96
+        Revocation Date: Oct  7 12:46:14 2026 GMT
+        CRL entry extensions:
+            X509v3 CRL Reason Code: 
+                Key Compromise
+    Serial Number: 4A42F92149A5A5AB7C66574317E62916C6738FD6
+        Revocation Date: Oct  7 12:46:14 2026 GMT
+        CRL entry extensions:
+            X509v3 CRL Reason Code: 
+                Key Compromise
+sha256(crl.pem): 63cff5733b6cd764baa6d619618e5b1cdcfb1798c1f5ec2703b7cb5bc1bfde19
+verify OK

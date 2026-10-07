@@ -1,0 +1,12 @@
+# #6 CRL 만료 동작 — 호스트 OpenSSL 3.2.1의 -crl_check(브로커 crlfile과 같은 leaf CRL 검사)를 -attime으로 nextUpdate 앞뒤 시각에 실행.
+# 브로커 시계를 조작한 실험이 아니다. 브로커는 mosquitto 2.0.22 + 이미지의 OpenSSL로 같은 X509 검증을 쓴다(아래 판단 근거 참고).
+## attime=2027-10-07T12:00:00Z
+vehicles/SIM-001.crt: vehicles/SIM-001.crt: OK 
+vehicles/SIM-024.crt: error 23 at 0 depth lookup: certificate revoked error vehicles/SIM-024.crt: verification failed 
+backend.crt: backend.crt: OK 
+## attime=2027-10-08T00:00:00Z
+vehicles/SIM-001.crt: error 12 at 0 depth lookup: CRL has expired error vehicles/SIM-001.crt: verification failed 
+vehicles/SIM-024.crt: error 12 at 0 depth lookup: CRL has expired error 23 at 0 depth lookup: certificate revoked error vehicles/SIM-024.crt: verification failed 
+backend.crt: error 12 at 0 depth lookup: CRL has expired error backend.crt: verification failed 
+
+# 브로커 이미지의 OpenSSL: /usr/lib/libssl.so.3 

@@ -138,6 +138,8 @@ services:
       - ./broker/certs/ca.crt:/mosquitto/certs/ca.crt:ro
       - ./broker/certs/server.crt:/mosquitto/certs/server.crt:ro
       - ./broker/certs/server.key:/mosquitto/certs/server.key:ro
+      # 폐기 목록(공개 정보). generate-certs.sh/generate-crl.sh가 만든다 — 폐기가 없어도 빈 CRL이 있다.
+      - ./broker/certs/crl.pem:/mosquitto/certs/crl.pem:ro
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
     networks:

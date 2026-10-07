@@ -1,0 +1,13 @@
+# 폐기한 MQTT 인증서 목록 — generate-crl.sh가 이 파일로 crl.pem을 만든다.
+#
+# 공개 정보만 적는다(일련번호·CN·날짜). 키·비밀번호는 절대 넣지 않는다.
+# 형식(공백 구분, 한 줄 한 장):
+#   <발급 CA SHA-256 지문(콜론 없이)> <일련번호 hex> <폐기 시각 YYYYMMDDHHMMSSZ> <사유> <CN>
+# 사유: keyCompromise | superseded | cessationOfHierarchy 등 openssl ca의 crl_reason 값.
+#
+# 첫 칸이 지금 ca.crt의 지문과 같은 줄만 CRL에 들어간다. 그래서 CA를 새로 만든 환경
+# (CI, 새 PC의 generate-certs.sh)에서는 빈 CRL이 된다 — 그 CA는 이 일련번호를 발급한 적이 없다.
+#
+# 근거: docs/verification/2026-10-08-vehicle-key-exposure.md (10-07 도구 출력에 키 본문 일부 줄 노출)
+145E75E1CAAF13A267B4319977D770E879AD4EE7BE86430887FEE8DBE3829F96 4A42F92149A5A5AB7C66574317E62916C6738F96 20261007124614Z keyCompromise SIM-024
+145E75E1CAAF13A267B4319977D770E879AD4EE7BE86430887FEE8DBE3829F96 4A42F92149A5A5AB7C66574317E62916C6738FD6 20261007124614Z keyCompromise SIM-088

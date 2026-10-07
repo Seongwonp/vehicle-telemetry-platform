@@ -16,7 +16,7 @@ localhost로. **인증서는 재발급하지 않는다.**
 
 | 서비스 | 전(디렉터리 `./broker/certs` 통째) | 후 | 근거 |
 | --- | --- | --- | --- |
-| mosquitto | 전부(아래 "전부" 참고) | `ca.crt`, `server.crt`, `server.key` | `mosquitto.conf`의 `cafile`/`certfile`/`keyfile` 세 줄뿐 |
+| mosquitto | 전부(아래 "전부" 참고) | `ca.crt`, `server.crt`, `server.key`, **`crl.pem`**(2026-10-07 추가, 공개 정보) | `mosquitto.conf`의 `cafile`/`certfile`/`keyfile` 세 줄 + `crlfile`([차량 키 노출 문서 §CRL 적용 결과](2026-10-08-vehicle-key-exposure.md#crl-적용-결과-2026-10-07)). `crl.pem`은 mosquitto에만 간다 |
 | backend | 전부 | `backend.p12`, `truststore.p12` | `MQTT_TLS_KEYSTORE_PATH`/`TRUSTSTORE_PATH` 두 경로뿐(`MqttConfig`) |
 | backend-storage-1/2/3 (profile `scale`) | 전부 | `backend.p12`, `truststore.p12`(backend와 같은 두 파일, TLS 설정 **변경 없음**) | 아래 §2 — 처음엔 마운트를 빼고 TLS를 껐다가 되돌림 |
 | simulator (profile `simulator`) | 전부 | `ca.crt`, `vehicles/`(차량 100대 `.crt`+`.key`) | `vehicle_simulator.py` 376–386행: `TLS_CA_CERT` + `TLS_VEHICLE_CERT_DIR/<ID>.crt/.key` |
@@ -126,13 +126,13 @@ dev 실행에서 기동 직후 `Error subscribing … Timed out waiting for a re
 **(b) dev 환경 정책**
 
 - 이 CA는 이 PC에서 만든 자체 서명 CA이고, 이 CA를 신뢰하는 것은 이 저장소의 mosquitto뿐이다. 운영 배포 없음.
-- mosquitto에 CRL이 없다(`mosquitto.conf`에 `crlfile` 없음). 차량 인증서 한 장만 무효화할 수 없고, 무효화하려면 CA까지 새로 만들어야 한다.
+- mosquitto에 CRL이 없다(`mosquitto.conf`에 `crlfile` 없음). 차량 인증서 한 장만 무효화할 수 없고, 무효화하려면 CA까지 새로 만들어야 한다. **→ 2026-10-07 해소**: `crlfile` 적용, SIM-024·SIM-088 폐기([차량 키 노출 문서](2026-10-08-vehicle-key-exposure.md#crl-적용-결과-2026-10-07)). 이제 차량 한 장만 폐기할 수 있다.
 
 **판단**: 지금 재발급할 근거는 약하다. `ca.key`는 노출 근거가 없고, 부분 노출된 것은 dev 차량 키뿐이다. 그 키는
 이 dev CA를 신뢰하는 브로커에만 쓸 수 있고, 그 브로커는 이제 기본으로 이 PC에서만 닿는다.
 **재발급이 필요해지는 조건**: (1) `MQTT_TLS_BIND`로 8883을 공유망·외부에 열 때, (2) dev 밖(시연 서버·EC2)에서 쓸 때,
 (3) 10-07 출력이 완전한 키였다고 확인될 때. 이 경우 비밀번호만 바꾸면 안 되고 `generate-certs.sh`로 **CA부터 전부**
-다시 만든다(CRL이 없으니 차량 키만 바꿔서는 옛 키가 막히지 않는다). 이번에는 재발급하지 않았다.
+다시 만든다(CRL이 없으니 차량 키만 바꿔서는 옛 키가 막히지 않는다). 이번에는 재발급하지 않았다. (작성 당시 기준. 지금은 CRL이 있어 차량 키만 바꾸고 옛 인증서는 `revoked-certs.txt`로 폐기할 수 있다.)
 
 ## 6. 한계
 

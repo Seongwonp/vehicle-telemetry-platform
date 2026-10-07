@@ -1,0 +1,16 @@
+# #4 폐기 안 된 차량 SIM-050 1회 발행 (유효 payload, QoS 1)
+# 2026-10-07 21:50:45     client=SIM-050 ts=2026-10-07T12:50:45.000Z
+mosquitto_pub exit=0
+
+# #5 인증서 없는 클라이언트 (CA만)
+# 2026-10-07 21:50:52     client=none ts=2026-10-07T12:50:52.000Z
+Error: The connection was lost.
+mosquitto_pub exit=7
+
+# 브로커 로그(이 구간)
+1791377449: New connection from 172.18.0.16:53198 on port 8883.
+1791377449: New client connected from 172.18.0.16:53198 as crltest-SIM-050 (p2, c1, k60, u'SIM-050').
+1791377449: Client crltest-SIM-050 disconnected.
+1791377456: New connection from 172.18.0.16:59958 on port 8883.
+1791377456: OpenSSL Error[0]: error:0A0000C7:SSL routines::peer did not return a certificate
+1791377456: Client <unknown> disconnected: Protocol error.

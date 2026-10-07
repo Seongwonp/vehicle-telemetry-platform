@@ -1,0 +1,20 @@
+# #3·#4 InfluxDB vehicle_telemetry speed 행(vehicle_id별) since 2026-10-07T12:48:00Z — count_crl.sh를 influx 컨테이너 안에서 실행(토큰은 컨테이너 env, 출력 안 함)
+# query: from(bucket) |> range(start: 2026-10-07T12:48:00Z) |> filter(_measurement==vehicle_telemetry, _field==speed) |> group(columns:[vehicle_id]) |> count()
+sample 1 at 2026-10-07T12:51:06Z:
+   SIM-001 135
+   SIM-002 135
+   SIM-003 135
+   SIM-050 1
+   backend telemetry_mqtt_messages_received_total 406.0
+sample 2 at 2026-10-07T12:51:22Z:
+   SIM-001 151
+   SIM-002 151
+   SIM-003 151
+   SIM-050 1
+   backend telemetry_mqtt_messages_received_total 454.0
+sample 3 at 2026-10-07T12:51:37Z:
+   SIM-001 166
+   SIM-002 166
+   SIM-003 166
+   SIM-050 1
+   backend telemetry_mqtt_messages_received_total 499.0

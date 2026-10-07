@@ -1,0 +1,17 @@
+# docker compose config --quiet (기본)
+exit=0
+# docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile simulator --profile scale config --quiet
+exit=0
+# mosquitto 마운트(기본, compose config 발췌)
+\broker\config\mosquitto.conf -> /mosquitto/config/mosquitto.conf ro
+\broker\config\acl -> /mosquitto/config/acl ro
+\broker\certs\ca.crt -> /mosquitto/certs/ca.crt ro
+\broker\certs\server.crt -> /mosquitto/certs/server.crt ro
+\broker\certs\server.key -> /mosquitto/certs/server.key ro
+\broker\certs\crl.pem -> /mosquitto/certs/crl.pem ro
+mosquitto-data -> /mosquitto/data rw
+mosquitto-log -> /mosquitto/log rw
+# crl.pem 마운트하는 서비스(기본 + simulator + scale)
+['mosquitto']
+# ca.key 마운트하는 서비스
+[]

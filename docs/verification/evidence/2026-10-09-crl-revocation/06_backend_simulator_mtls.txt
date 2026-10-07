@@ -1,0 +1,16 @@
+# #3 backend mTLS — 이번 컨테이너(기본 프로파일로 재생성, 2026-10-07T12:48:40.398006289Z)
+# env(값이 비밀 아닌 것만): MQTT_PORT=8883 MQTT_HOST=mosquitto MQTT_TLS_ENABLED=true 
+# compose 파일: docker-compose.yml 하나(dev override·실험 override 없음 — 기본 mTLS 프로파일)
+# Error subscribing 건수: 0
+# 어댑터 시작 줄:
+12:48:51 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.config.MqttConfig.
+12:48:51 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'; defined in: 'class path resource [com/telemetry/config/MqttConfig.class]'; from source: 'com.telemetry.confi
+12:48:51 [-] [-] INFO  c.t.TelemetryApplication - Started TelemetryApplication in 10.093 seconds (process running for 10.567)
+# 브로커 쪽 backend 접속(전체 로그에서):
+1791377331: New client connected from 172.18.0.12:48596 as telemetry-backend (p2, c0, k60, u'telemetry-backend').
+1791377331: New client connected from 172.18.0.12:48610 as telemetry-backend-sys (p2, c0, k60, u'telemetry-backend').
+# 브로커 쪽 simulator 접속:
+1791377321: New client connected from 172.18.0.11:58851 as simulator-SIM-001 (p2, c1, k60, u'SIM-001').
+1791377322: New client connected from 172.18.0.11:57137 as simulator-SIM-002 (p2, c1, k60, u'SIM-002').
+1791377322: New client connected from 172.18.0.11:60949 as simulator-SIM-003 (p2, c1, k60, u'SIM-003').
+# 폐기된 CN의 접속 성공 줄(기대 0): 0

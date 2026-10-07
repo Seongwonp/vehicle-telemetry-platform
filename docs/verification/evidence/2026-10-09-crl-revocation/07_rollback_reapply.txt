@@ -1,0 +1,88 @@
+# #7 되돌리기 — crlfile 줄만 뺀 설정 사본(scratch override로 같은 경로에 마운트; 저장소 파일은 그대로) → mosquitto 재생성
+# diff: -crlfile /mosquitto/certs/crl.pem (그 외 동일)
+## 21:52:21 up -d mosquitto (rollback)
+ Container telemetry-mosquitto Starting 
+ Container telemetry-mosquitto Started 
+
+crlfile in running conf: 0
+## 21:52:39 SIM-024 (CRL 없음 — TLS 핸드셰이크만, MQTT 발행 안 함)
+CONNECTION ESTABLISHED
+Verification: OK
+s_client exit=0
+## 21:52:40 SIM-088 (CRL 없음 — TLS 핸드셰이크만, MQTT 발행 안 함)
+CONNECTION ESTABLISHED
+Verification: OK
+s_client exit=0
+# 브로커 로그(이 구간)
+1791377559: New connection from 172.18.0.1:32808 on port 8883.
+1791377560: New connection from 172.18.0.12:40930 on port 8883.
+1791377560: Client <unknown> closed its connection.
+1791377560: New client connected from 172.18.0.12:40930 as telemetry-backend-sys (p2, c0, k60, u'telemetry-backend').
+1791377560: New connection from 172.18.0.1:58792 on port 8883.
+1791377561: Client <unknown> closed its connection.
+
+## 21:52:50 재적용: up -d mosquitto (docker-compose.yml만 — crlfile 있는 저장소 설정)
+ Container telemetry-mosquitto Starting 
+ Container telemetry-mosquitto Started 
+crlfile in running conf: 1
+mosquitto StartedAt: 2026-10-07T12:52:56.338647791Z
+# 재적용 뒤 브로커 로그(재기동 이후 전체, 21:53:05)
+1791377577: New connection from 172.18.0.12:51540 on port 8883.
+1791377577: New connection from 172.18.0.12:51554 on port 8883.
+1791377577: New client connected from 172.18.0.12:51554 as telemetry-backend (p2, c0, k60, u'telemetry-backend').
+1791377577: New client connected from 172.18.0.12:51540 as telemetry-backend-sys (p2, c0, k60, u'telemetry-backend').
+1791377581: New connection from 172.18.0.11:39891 on port 8883.
+1791377581: New client connected from 172.18.0.11:39891 as simulator-SIM-001 (p2, c1, k60, u'SIM-001').
+1791377581: New connection from 172.18.0.11:60531 on port 8883.
+1791377581: New connection from 172.18.0.11:58203 on port 8883.
+1791377581: New client connected from 172.18.0.11:58203 as simulator-SIM-002 (p2, c1, k60, u'SIM-002').
+1791377581: New client connected from 172.18.0.11:60531 as simulator-SIM-003 (p2, c1, k60, u'SIM-003').
+## 21:53:06 SIM-024 (CRL 재적용)
+34280000:error:0A000414:SSL routines:ssl3_read_bytes:ssl/tls alert certificate revoked:../openssl-3.2.1/ssl/record/rec_layer_s3.c:865:SSL alert number 44
+s_client exit=1
+## 21:53:06 SIM-088 (CRL 재적용)
+80820000:error:0A000414:SSL routines:ssl3_read_bytes:ssl/tls alert certificate revoked:../openssl-3.2.1/ssl/record/rec_layer_s3.c:865:SSL alert number 44
+s_client exit=1
+
+# mosquitto 재기동(12:52:56Z) 뒤 backend 로그: Error subscribing 0건, ERROR 줄 2건 = 12:52:54 "Lost connection: Connection lost" ×2(mqttInbound·metrics, 브로커 재기동 시점 — 예상된 끊김) → 12:52:57 재접속
+sample 1 at 2026-10-07T12:53:17Z:
+   SIM-001 267
+   SIM-002 266
+   SIM-003 266
+   SIM-050 1
+   backend telemetry_mqtt_messages_received_total 802.0
+sample 2 at 2026-10-07T12:53:33Z:
+   SIM-001 282
+   SIM-002 282
+   SIM-003 282
+   SIM-050 1
+   backend telemetry_mqtt_messages_received_total 847.0
+
+# 최종 crl.pem(sha256 63cff573…)으로 mosquitto 재시작 후 1회 재확인 — 21:56:53
+ Container telemetry-mosquitto Started 
+StartedAt: 2026-10-07T12:56:56.026505621Z
+sha256(컨테이너 안 crl.pem): 63cff5733b6cd764baa6d619618e5b1cdcfb1798c1f5ec2703b7cb5bc1bfde19
+## 21:57:04 SIM-024
+48860000:error:0A000414:SSL routines:ssl3_read_bytes:ssl/tls alert certificate revoked:../openssl-3.2.1/ssl/record/rec_layer_s3.c:865:SSL alert number 44
+s_client exit=1
+## 21:57:04 SIM-088
+28750000:error:0A000414:SSL routines:ssl3_read_bytes:ssl/tls alert certificate revoked:../openssl-3.2.1/ssl/record/rec_layer_s3.c:865:SSL alert number 44
+s_client exit=1
+## 21:57:04 SIM-050
+CONNECTION ESTABLISHED
+s_client exit=0
+# 재시작 뒤 접속(브로커 로그):
+1791377821: New client connected from 172.18.0.11:45521 as simulator-SIM-003 (p2, c1, k60, u'SIM-003').
+1791377821: New client connected from 172.18.0.11:60273 as simulator-SIM-001 (p2, c1, k60, u'SIM-001').
+1791377821: New client connected from 172.18.0.11:58269 as simulator-SIM-002 (p2, c1, k60, u'SIM-002').
+1791377830: New client connected from 172.18.0.12:60722 as telemetry-backend-sys (p2, c0, k60, u'telemetry-backend').
+backend Error subscribing(12:56:50 이후): 0
+1791377832: New client connected ... as telemetry-backend (p2, c0, k60, u'telemetry-backend')   (12:57:12Z, 위 grep 이후에 확인)
+정정: 위 'Error subscribing 0'은 12:57:12 이전 시점 값이다. 12:57:17에 1건 발생 — 'Error subscribing to [vehicle/telemetry/#]', 원인 'MqttException: Timed out waiting for a response from the server'.
+  2026-10-01-mqtt-ack-boundary.md에 기록된 기존 현상(TLS 접속은 성공한 뒤 MQTT SUBSCRIBE 응답 대기 시간 초과, c0=세션 유지).
+  수신 계속: telemetry_mqtt_messages_received_total 1552 -> 1584 (12:57:29~39Z, 10초)
+sample at 2026-10-07T12:57:49Z:
+   SIM-001 538
+   SIM-002 538
+   SIM-003 538
+   SIM-050 1
