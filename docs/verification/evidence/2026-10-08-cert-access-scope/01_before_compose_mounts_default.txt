@@ -1,0 +1,28 @@
+alertmanager
+  port   0.0.0.0(all):9093->9093
+backend
+  port   0.0.0.0(all):8080->8080
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-1
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-2
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-3
+  mount  bind ./broker/certs -> /app/certs (ro)
+grafana
+  port   0.0.0.0(all):3000->3000
+influxdb
+  port   0.0.0.0(all):8086->8086
+kafka
+  port   0.0.0.0(all):9092->9092
+mosquitto
+  port   0.0.0.0(all):8883->8883
+  mount  bind ./broker/certs -> /mosquitto/certs (ro)
+postgres
+  port   0.0.0.0(all):5432->5432
+prometheus
+  port   0.0.0.0(all):9090->9090
+redis
+  port   0.0.0.0(all):6379->6379
+simulator
+  mount  bind ./broker/certs -> /app/certs (ro)

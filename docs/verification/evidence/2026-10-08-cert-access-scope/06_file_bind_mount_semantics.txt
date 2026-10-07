@@ -1,0 +1,21 @@
+# File-level bind mount behaviour on this host (throwaway compose project "certmounttest",
+# image eclipse-mosquitto:2.0, harmless text file — no certificate material)
+# Docker engine 29.7.2 / client 29.7.2, Docker Compose v5.4.0, Docker Desktop on Windows 11
+
+## A. source file missing at `up`
+long syntax, no create_host_path         -> container Started; host path ./certs/a.txt CREATED AS A DIRECTORY
+long syntax, bind.create_host_path:false -> container Started; host path ./certs/a.txt CREATED AS A DIRECTORY
+  (create_host_path:false was NOT honoured on this Docker Desktop host)
+  consequence: afterwards `echo v1 > certs/a.txt` -> "Is a directory"; `rm` -> "Is a directory"
+  => if `docker compose up` runs before generate-certs.sh, file mounts leave empty directories
+     at ca.crt/server.crt/... and the next generate run fails. Guard added to generate-certs.sh
+     (rmdir only EMPTY directories at expected file paths).
+
+## B. source file present, renewal
+read at start                         : v1
+in-place overwrite, no restart        : v2   (same inode — visible)
+rm + recreate (new inode), no restart : v3   (visible on Docker Desktop's file sharing;
+                                              on native Linux a bind-mounted file keeps the old inode
+                                              until the container restarts — not tested here)
+after `docker compose restart`        : v3
+  => after renewal: `docker compose restart mosquitto backend simulator` (processes load certs at start anyway)

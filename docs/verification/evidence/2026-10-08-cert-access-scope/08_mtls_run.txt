@@ -1,0 +1,76 @@
+# DEFAULT mTLS run: docker compose --profile simulator up -d --no-build  (started 2026-10-07T00:58:59Z; recreated mosquitto/backend/simulator)
+# commit d276d84 + uncommitted compose change; images not rebuilt
+
+## docker inspect bind mounts
+/telemetry-mosquitto [/mosquitto/certs/server.key rw=false] [/mosquitto/config/mosquitto.conf rw=false] [/mosquitto/config/acl rw=false] [/mosquitto/certs/ca.crt rw=false] [/mosquitto/certs/server.crt rw=false] 
+/telemetry-backend [/app/certs/backend.p12 rw=false] [/app/certs/truststore.p12 rw=false] 
+/telemetry-simulator [/app/certs/ca.crt rw=false] [/app/certs/vehicles rw=false] 
+
+## published ports (mosquitto)
+8883/tcp -> 127.0.0.1:8883
+
+## in-container cert dir listings (names only)
+== telemetry-mosquitto  ls -1 /mosquitto/certs
+   ca.crt
+   server.crt
+   server.key
+   ca.key search (find / -xdev; find /mosquitto /app): []
+== telemetry-backend  ls -1 /app/certs
+   backend.p12
+   truststore.p12
+   ca.key search (find / -xdev; find /mosquitto /app): []
+== telemetry-simulator  ls -1 /app/certs
+   ca.crt
+   vehicles
+   vehicles/: 200 files (.crt 100, .key 100)
+   ca.key search (find / -xdev; find /mosquitto /app): []
+
+## backend MQTT flags (non-secret)
+MQTT_TLS_ENABLED=true MQTT_PORT=8883 MQTT_TLS_STORE_PASSWORD=set
+
+## mosquitto log — connections (8883 only listener in mosquitto.conf; u'' = cert CN via use_identity_as_username)
+1791334760: New connection from 172.18.0.13:38075 on port 8883.
+1791334760: New client connected from 172.18.0.13:38075 as simulator-SIM-001 (p2, c1, k60, u'SIM-001').
+1791334760: New connection from 172.18.0.13:38689 on port 8883.
+1791334760: New client connected from 172.18.0.13:38689 as simulator-SIM-002 (p2, c1, k60, u'SIM-002').
+1791334760: New connection from 172.18.0.13:41633 on port 8883.
+1791334760: New client connected from 172.18.0.13:41633 as simulator-SIM-003 (p2, c1, k60, u'SIM-003').
+1791334772: New connection from 172.18.0.16:60830 on port 8883.
+1791334773: New client connected from 172.18.0.16:60830 as telemetry-backend (p2, c0, k60, u'telemetry-backend').
+1791334773: New connection from 172.18.0.16:60840 on port 8883.
+1791334773: New client connected from 172.18.0.16:60840 as telemetry-backend-sys (p2, c0, k60, u'telemetry-backend').
+1791334855: New connection from ::1:59550 on port 8883.
+
+## backend log — MQTT adapter start / subscribe errors
+00:59:33 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttInbound'
+00:59:33 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started bean 'mqttBrokerMetricsInbound'
+(Error subscribing lines in this run: 0)
+
+## negative check: client WITHOUT certificate to 8883 (inside mosquitto container, CA only)
+Error: The connection was lost.
+exit=7
+## mosquitto log for the no-cert client (both attempts)
+1791334855: New connection from ::1:59550 on port 8883.
+1791334855: OpenSSL Error[0]: error:0A0000C7:SSL routines::peer did not return a certificate
+1791334855: Client <unknown> disconnected: Protocol error.
+1791334874: New connection from ::1:48662 on port 8883.
+1791334874: OpenSSL Error[0]: error:0A0000C7:SSL routines::peer did not return a certificate
+1791334874: Client <unknown> disconnected: Protocol error.
+
+## InfluxDB vehicle_telemetry speed rows per vehicle since 2026-10-07T00:59:00Z (count.sh runs inside influx container; token from container env, not printed)
+## query: from(bucket) |> range(start: 2026-10-07T00:59:00Z) |> filter(_measurement==vehicle_telemetry, _field==speed) |> group(columns:[vehicle_id]) |> count()
+sample 1 at 2026-10-07T01:01:34+00:00:
+   SIM-001 125
+   SIM-002 125
+   SIM-003 124
+   backend telemetry_mqtt_messages_received_total 366.0
+sample 2 at 2026-10-07T01:01:49+00:00:
+   SIM-001 140
+   SIM-002 140
+   SIM-003 140
+   backend telemetry_mqtt_messages_received_total 411.0
+sample 3 at 2026-10-07T01:02:04+00:00:
+   SIM-001 156
+   SIM-002 155
+   SIM-003 155
+   backend telemetry_mqtt_messages_received_total 459.0

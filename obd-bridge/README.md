@@ -108,6 +108,14 @@ $env:PYTHONUTF8 = "1"   # Windows cp949에서 ELM327-emulator sdist 빌드가 Un
 
 TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문은 명시적으로 켜야 한다(저장소 규칙과 같다).
 
+**브리지를 스택과 다른 장치(노트북·라즈베리파이 등)에서 돌릴 때**: compose의 8883은 기본이
+`127.0.0.1` 게시라 다른 장치에서 닿지 않는다(2026-10-08). 스택을 띄우는 PC의 `.env`에
+`MQTT_TLS_BIND=0.0.0.0`(또는 그 PC의 특정 NIC IP)을 넣고 `docker compose up -d mosquitto`로
+다시 만든다. 브리지 장치에는 `ca.crt`와 **그 차량의** `vehicles/<VEHICLE_ID>.crt/.key`만 복사한다
+(`ca.key`·다른 차량 키는 복사하지 않는다). `--mqtt-host`는 스택 PC의 IP, 브로커 인증서 CN은
+`mosquitto`라 호스트명 검증에 걸리면 별도 결정이 필요하다(미검증 — 아래 "미검증").
+공유망(학교·카페)에서는 열지 않는다.
+
 ## 테스트 (하드웨어 없음)
 
 `.\.venv\Scripts\python -m pytest -q` → **82 passed, skip 0** (2026-10-06, Windows 11, Python 3.11.9).

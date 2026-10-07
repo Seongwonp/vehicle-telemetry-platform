@@ -1,0 +1,5 @@
+telemetry_influx_write_failures_total{application="vehicle-telemetry-backend",} 0.0
+telemetry_influx_write_seconds_max{application="vehicle-telemetry-backend",} 0.316723234
+telemetry_influx_write_seconds_count{application="vehicle-telemetry-backend",} 1.0
+telemetry_influx_write_seconds_sum{application="vehicle-telemetry-backend",} 0.316723234
+telemetry_influx_points_written_total{application="vehicle-telemetry-backend",} 3.0

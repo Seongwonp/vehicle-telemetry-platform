@@ -1,0 +1,28 @@
+# storage instances: MQTT_INGEST_ENABLED / MQTT_TLS_ENABLED (non-secret flags only)
+backend None true volumes= 3
+backend-storage-1 false false volumes= 0
+backend-storage-2 false false volumes= 0
+backend-storage-3 false false volumes= 0
+
+# opt-in: MQTT_TLS_BIND=0.0.0.0 docker compose config (mosquitto ports)
+mosquitto
+  port   0.0.0.0:8883->8883
+
+# dev override (after)
+backend
+  port   0.0.0.0(all):8080->8080
+  mount  bind ./broker/certs/backend.p12 -> /app/certs/backend.p12 (ro)
+  mount  bind ./broker/certs/truststore.p12 -> /app/certs/truststore.p12 (ro)
+grafana
+  port   0.0.0.0(all):3000->3000
+--
+mosquitto
+  port   127.0.0.1:8883->8883
+  port   127.0.0.1:1883->1883
+  mount  bind ./broker/certs/ca.crt -> /mosquitto/certs/ca.crt (ro)
+  mount  bind ./broker/certs/server.crt -> /mosquitto/certs/server.crt (ro)
+  mount  bind ./broker/certs/server.key -> /mosquitto/certs/server.key (ro)
+--
+simulator
+  mount  bind ./broker/certs/ca.crt -> /app/certs/ca.crt (ro)
+  mount  bind ./broker/certs/vehicles -> /app/certs/vehicles (ro)

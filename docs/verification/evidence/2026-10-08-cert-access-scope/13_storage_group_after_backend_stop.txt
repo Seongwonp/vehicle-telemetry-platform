@@ -1,0 +1,5 @@
+   
+GROUP TOPIC PARTITION CONSUMER-ID
+telemetry-storage-group vehicle-telemetry 0 telemetry-storage-1-0-0eaeb21b-b96a-43bc-951b-b18fb67595ad
+telemetry-storage-group vehicle-telemetry 1 telemetry-storage-1-1-11520aee-8653-409b-b409-e55b9a948b02
+telemetry-storage-group vehicle-telemetry 2 telemetry-storage-1-2-e450eb18-28a9-4431-94ac-6a74451f49cf

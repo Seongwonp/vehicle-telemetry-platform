@@ -1,0 +1,42 @@
+# generate-certs.sh (unchanged) run in a TEMP copy dir (scratchpad), NOT broker/certs.
+# env: MQTT_TLS_STORE_PASSWORD=<throwaway test value> MQTT_VEHICLE_IDS=SIM-001,SIM-002; run twice in same dir (2nd = renewal overwrite)
+run1 exit=0, run2 exit=0 (see above session); tail of run2 log (names only):
+[1/5] CA 인증서 생성 중...
+      ca.key / ca.crt 생성 완료
+[2/5] 서버 인증서 생성 중...
+      server.key / server.crt 생성 완료
+[3/4] Backend 인증서 생성 중...
+      backend.key / backend.crt 생성 완료
+[4/5] 차량별 인증서 생성 중...
+[5/5] Spring Boot용 PKCS12 키/트러스트스토어 생성 중...
+      backend.p12 / truststore.p12 생성 완료 (비밀번호: MQTT_TLS_STORE_PASSWORD 환경변수 또는 기본값 <redacted: public default literal>)
+  생성 완료!
+
+# chain check (openssl verify -CAfile ca.crt)
+server.crt: OK
+backend.crt: OK
+vehicles/SIM-001.crt: OK
+vehicles/SIM-002.crt: OK
+
+# every compose bind source (after change) exists in the generated layout?
+  present  ca.crt
+  present  server.crt
+  present  server.key
+  present  backend.p12
+  present  truststore.p12
+  present  vehicles
+
+# truststore entries (keytool -list, entry types only)
+Your keystore contains 1 entry
+telemetry-ca, 2026. 10. 7., trustedCertEntry, 
+Your keystore contains 1 entry
+telemetry-backend, 2026. 10. 7., PrivateKeyEntry, 
+
+# guard test (modified generate-certs.sh): temp dir pre-seeded with EMPTY DIRECTORIES ca.crt/ and server.key/ (what compose up leaves before certs exist)
+exit=0
+      빈 디렉터리 ca.crt 제거(인증서 생성 전 compose up이 남긴 것)
+      빈 디렉터리 server.key 제거(인증서 생성 전 compose up이 남긴 것)
+  생성 완료!
+ca.crt is regular file: yes; server.key is regular file: yes
+server.crt: OK
+vehicles/SIM-001.crt: OK

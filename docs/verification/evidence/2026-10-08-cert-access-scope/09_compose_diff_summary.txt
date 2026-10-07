@@ -1,0 +1,53 @@
+# compose config diff summary — cert mounts and 8883 binding only (from 01/03, env values never dumped)
+# produced by: docker compose --profile simulator --profile scale config --format json | mounts.py (prints ports + volumes containing 'certs' only)
+
+@@ -2,13 +2,8 @@
+   port   0.0.0.0(all):9093->9093
+ backend
+   port   0.0.0.0(all):8080->8080
+-  mount  bind ./broker/certs -> /app/certs (ro)
+-backend-storage-1
+-  mount  bind ./broker/certs -> /app/certs (ro)
+-backend-storage-2
+-  mount  bind ./broker/certs -> /app/certs (ro)
+-backend-storage-3
+-  mount  bind ./broker/certs -> /app/certs (ro)
++  mount  bind ./broker/certs/backend.p12 -> /app/certs/backend.p12 (ro)
++  mount  bind ./broker/certs/truststore.p12 -> /app/certs/truststore.p12 (ro)
+ grafana
+   port   0.0.0.0(all):3000->3000
+ influxdb
+@@ -16,8 +11,10 @@
+ kafka
+   port   0.0.0.0(all):9092->9092
+ mosquitto
+-  port   0.0.0.0(all):8883->8883
+-  mount  bind ./broker/certs -> /mosquitto/certs (ro)
++  port   127.0.0.1:8883->8883
++  mount  bind ./broker/certs/ca.crt -> /mosquitto/certs/ca.crt (ro)
++  mount  bind ./broker/certs/server.crt -> /mosquitto/certs/server.crt (ro)
++  mount  bind ./broker/certs/server.key -> /mosquitto/certs/server.key (ro)
+ postgres
+   port   0.0.0.0(all):5432->5432
+ prometheus
+@@ -25,4 +22,5 @@
+ redis
+   port   0.0.0.0(all):6379->6379
+ simulator
+-  mount  bind ./broker/certs -> /app/certs (ro)
++  mount  bind ./broker/certs/ca.crt -> /app/certs/ca.crt (ro)
++  mount  bind ./broker/certs/vehicles -> /app/certs/vehicles (ro)
+
+# docker compose config --quiet (default) / (dev + simulator + scale): both exit 0
+
+# git diff --stat (files touched by this task)
+warning: in the working copy of '.env.example', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'broker/certs/generate-certs.sh', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docker-compose.yml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/deployment-guide.md', LF will be replaced by CRLF the next time Git touches it
+ .env.example                   |  3 +++
+ broker/certs/generate-certs.sh | 10 ++++++++++
+ docker-compose.yml             | 42 ++++++++++++++++++++++++++++++------------
+ docs/deployment-guide.md       |  5 +++++
+ obd-bridge/README.md           |  8 ++++++++
+ 5 files changed, 56 insertions(+), 12 deletions(-)

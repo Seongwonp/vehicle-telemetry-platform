@@ -1,0 +1,21 @@
+backend
+  port   0.0.0.0(all):8080->8080
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-1
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-2
+  mount  bind ./broker/certs -> /app/certs (ro)
+backend-storage-3
+  mount  bind ./broker/certs -> /app/certs (ro)
+grafana
+  port   0.0.0.0(all):3000->3000
+influxdb
+--
+mosquitto
+  port   0.0.0.0(all):8883->8883
+  port   127.0.0.1:1883->1883
+  mount  bind ./broker/certs -> /mosquitto/certs (ro)
+postgres
+--
+simulator
+  mount  bind ./broker/certs -> /app/certs (ro)

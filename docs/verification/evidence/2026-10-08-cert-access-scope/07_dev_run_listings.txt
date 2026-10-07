@@ -1,0 +1,27 @@
+# DEV override run: docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile simulator up -d --no-build (2026-10-07T09:58:45+09:00)
+# (images not rebuilt — the cert change is compose-only)
+
+## docker inspect bind mounts
+/telemetry-mosquitto [/mosquitto/certs/server.key rw=false] [/mosquitto/config/mosquitto.conf rw=false] [/mosquitto/config/acl rw=false] [/mosquitto/certs/ca.crt rw=false] [/mosquitto/certs/server.crt rw=false] 
+/telemetry-backend [/app/certs/backend.p12 rw=false] [/app/certs/truststore.p12 rw=false] 
+/telemetry-simulator [/app/certs/vehicles rw=false] [/app/certs/ca.crt rw=false] 
+
+## in-container cert dir listings (names only)
+== telemetry-mosquitto  ls -1 /mosquitto/certs
+   ca.crt
+   server.crt
+   server.key
+   ca.key search (find / -xdev; find /mosquitto /app): []
+== telemetry-backend  ls -1 /app/certs
+   backend.p12
+   truststore.p12
+   ca.key search (find / -xdev; find /mosquitto /app): []
+== telemetry-simulator  ls -1 /app/certs
+   ca.crt
+   vehicles
+   vehicles/: 200 files (.crt 100, .key 100)
+   ca.key search (find / -xdev; find /mosquitto /app): []
+
+## dev data flow (plaintext 1883): backend counter
+telemetry_mqtt_messages_received_total{application="vehicle-telemetry-backend",} 501.0
+note: one startup 'Error subscribing ... Timed out waiting for a response' (known, documented in docs/verification/2026-10-01-mqtt-ack-boundary.md etc.); persistent session kept delivering (counter > 0)

@@ -120,11 +120,24 @@ services:
     image: eclipse-mosquitto:2.0
     container_name: telemetry-mosquitto
     ports:
-      - "${MQTT_TLS_PORT:-8883}:8883"
+      # 기본은 이 PC(127.0.0.1)에서만 닿는다. 같은 compose 네트워크 안의 backend·simulator는
+      # 포트 게시와 무관하게 mosquitto:8883으로 붙으므로 영향이 없다.
+      # 다른 기기(obd-bridge를 다른 장치에서 돌릴 때, EC2 배포)가 붙어야 할 때만
+      # `.env`에 MQTT_TLS_BIND=0.0.0.0(또는 특정 NIC IP)을 명시한다.
+      # docs/verification/2026-10-08-cert-access-scope.md
+      - "${MQTT_TLS_BIND:-127.0.0.1}:${MQTT_TLS_PORT:-8883}:8883"
     volumes:
       - ./broker/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - ./broker/config/acl:/mosquitto/config/acl:ro
-      - ./broker/certs:/mosquitto/certs:ro
+      # 인증서 디렉터리 전체가 아니라 브로커가 쓰는 세 파일만 마운트한다.
+      # **ca.key(CA 개인키)는 어떤 런타임 서비스에도 마운트하지 않는다** — 그건
+      # broker/certs/generate-certs.sh(호스트에서 실행)만 쓴다.
+      # 주의: 인증서를 만들기 전에 `up`하면 Docker가 없는 파일 자리에 **빈 디렉터리**를 만든다
+      # (이 PC의 Docker Desktop은 create_host_path:false도 무시했다). generate-certs.sh가 시작할 때
+      # 그런 빈 디렉터리를 지운다. 갱신 뒤에는 `docker compose restart mosquitto backend simulator`.
+      - ./broker/certs/ca.crt:/mosquitto/certs/ca.crt:ro
+      - ./broker/certs/server.crt:/mosquitto/certs/server.crt:ro
+      - ./broker/certs/server.key:/mosquitto/certs/server.key:ro
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
     networks:
@@ -141,8 +154,9 @@ services:
     ports:
       - "${SERVER_PORT:-8080}:8080"
     volumes:
-      # 기본 mTLS 연결에 필요한 backend.p12/truststore.p12.
-      - ./broker/certs:/app/certs:ro
+      # 기본 mTLS 연결에 필요한 backend.p12/truststore.p12 두 파일만(ca.key·다른 서비스 키 없음).
+      - ./broker/certs/backend.p12:/app/certs/backend.p12:ro
+      - ./broker/certs/truststore.p12:/app/certs/truststore.p12:ro
       - backend-spool:/app/data/telemetry-spool
     environment:
       <<: *backend-env
@@ -172,13 +186,18 @@ services:
   #   2. GROUP_INSTANCE_ID_BASE     — 정적 멤버십 id가 겹치면 서로 fencing 한다
   #   3. spool 볼륨 없음            — 수집을 안 하니 쌓일 게 없고, 같은 볼륨을 여러
   #                                   인스턴스가 스캔하면 드레인이 서로를 덮친다
+  #   4. MQTT 연결은 없다(수신 어댑터가 MQTT_INGEST_ENABLED=false면 생성되지 않음). 그래도
+  #      MqttConfig.mqttClientFactory()는 조건 없이 만들어지고 TLS 설정(기본 켜짐)에 따라 기동 시
+  #      keystore를 읽으므로, TLS 설정은 그대로 두고 backend와 같은 두 파일만 읽기 전용으로 준다
+  #      (ca.key·서버·차량 키 없음). docs/verification/2026-10-08-cert-access-scope.md
   # ════════════════════════════════════════════════════════════
   backend-storage-1:
     <<: *backend-base
     profiles: ["scale"]
     container_name: telemetry-backend-storage-1
     volumes:
-      - ./broker/certs:/app/certs:ro
+      - ./broker/certs/backend.p12:/app/certs/backend.p12:ro
+      - ./broker/certs/truststore.p12:/app/certs/truststore.p12:ro
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
@@ -189,7 +208,8 @@ services:
     profiles: ["scale"]
     container_name: telemetry-backend-storage-2
     volumes:
-      - ./broker/certs:/app/certs:ro
+      - ./broker/certs/backend.p12:/app/certs/backend.p12:ro
+      - ./broker/certs/truststore.p12:/app/certs/truststore.p12:ro
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
@@ -200,7 +220,8 @@ services:
     profiles: ["scale"]
     container_name: telemetry-backend-storage-3
     volumes:
-      - ./broker/certs:/app/certs:ro
+      - ./broker/certs/backend.p12:/app/certs/backend.p12:ro
+      - ./broker/certs/truststore.p12:/app/certs/truststore.p12:ro
     environment:
       <<: *backend-env
       MQTT_INGEST_ENABLED: "false"
@@ -253,8 +274,11 @@ services:
     depends_on:
       - mosquitto
     volumes:
-      # mTLS 테스트 시 TLS_CA_CERT 등 PEM 경로가 이 디렉터리를 가리키게 된다. 평문 모드에선 미사용.
-      - ./broker/certs:/app/certs:ro
+      # 시뮬레이터는 ca.crt와 차량 인증서·키(vehicles/<ID>.crt/.key)만 쓴다. 평문 모드에선 미사용.
+      # VEHICLE_ID_OFFSET·VEHICLE_COUNT로 어느 차량을 쓸지 바뀌므로 vehicles/는 디렉터리째 둔다.
+      # ca.key·server.key·backend.*는 마운트하지 않는다.
+      - ./broker/certs/ca.crt:/app/certs/ca.crt:ro
+      - ./broker/certs/vehicles:/app/certs/vehicles:ro
     environment:
       MQTT_HOST: mosquitto
       MQTT_PORT: 8883

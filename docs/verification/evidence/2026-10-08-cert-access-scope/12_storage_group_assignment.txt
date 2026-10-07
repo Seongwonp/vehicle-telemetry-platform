@@ -1,0 +1,5 @@
+      
+GROUP TOPIC PARTITION CURRENT-OFFSET LOG-END-OFFSET LAG CONSUMER-ID
+telemetry-storage-group vehicle-telemetry 1 46921 46921 0 telemetry-backend-consumer-1-40ceb045-4fd9-43d4-bcd7-d798ece701ad
+telemetry-storage-group vehicle-telemetry 2 23666 23666 0 telemetry-backend-consumer-2-55b2b95a-fd7f-40a1-93bd-7cc874aa3613
+telemetry-storage-group vehicle-telemetry 0 4035 4035 0 telemetry-backend-consumer-0-3d8f2b91-d9c5-43c2-9a2b-dd52862d0c92

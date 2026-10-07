@@ -1,0 +1,16 @@
+# host ./broker/certs — names, sizes, first-line type marker only (no key content)
+backend.crt            1278  BEGIN CERTIFICATE
+backend.key            1732  BEGIN PRIVATE KEY
+backend.p12            3686  (no PEM marker)
+ca.crt                 1290  BEGIN CERTIFICATE
+ca.key                 1732  BEGIN PRIVATE KEY
+ca.srl                   42  (no PEM marker)
+generate-certs.sh      5620  (no PEM marker)
+server.crt             1266  BEGIN CERTIFICATE
+server.key             1732  BEGIN PRIVATE KEY
+truststore.p12         1286  (no PEM marker)
+
+# vehicles/: 200 files
+  .crt: 100  .key: 100
+  key markers:     100 -----BEGIN PRIVATE KEY-----
+  range: SIM-001.crt .. SIM-100.crt

@@ -22,6 +22,11 @@
 
 > 기본 Compose는 8883/mTLS만 노출한다. 1883 평문은 `docker-compose.dev.yml`을 명시한
 > 로컬 개발 프로파일에서만 `127.0.0.1`에 바인딩된다.
+>
+> **2026-10-08부터 8883도 기본은 `127.0.0.1`이다.** EC2에서 차량·시뮬레이터가 밖에서 붙으려면
+> 서버의 `.env`에 `MQTT_TLS_BIND=0.0.0.0`을 넣어야 한다(보안 그룹은 그대로 허용 대상 IP만).
+> 인증서는 서버에서 `broker/certs/generate-certs.sh`로 새로 만들고, 각 서비스에는 필요한 파일만
+> 마운트된다(`ca.key`는 어떤 컨테이너에도 안 들어간다) — `docs/verification/2026-10-08-cert-access-scope.md`.
 
 > `/actuator/prometheus`는 애플리케이션 레벨에선 인증 없이 열려있다(Prometheus 스크레이핑용, `SecurityConfig.java`).
 > 운영 배포 시엔 보안그룹/리버스프록시로 `/actuator/**` 전체를 내부망(모니터링 서버)에서만 접근 가능하도록 제한할 것.

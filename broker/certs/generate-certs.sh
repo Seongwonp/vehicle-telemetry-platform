@@ -29,6 +29,16 @@ MQTT_VEHICLE_IDS="${MQTT_VEHICLE_IDS:-SIM-001,SIM-002,SIM-003}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# docker-compose.yml은 서비스별로 필요한 파일만 파일 단위로 마운트한다(ca.key는 어디에도 안 감).
+# 인증서를 만들기 전에 `docker compose up`을 하면 Docker가 없는 파일 자리에 **빈 디렉터리**를
+# 만들어 두고, 그러면 아래 openssl이 "Is a directory"로 실패한다. 비어 있는 디렉터리만 지운다
+# (rmdir은 내용이 있으면 실패하므로 실제 파일·데이터는 건드리지 않는다).
+for mounted in ca.crt server.crt server.key backend.p12 truststore.p12; do
+  if [ -d "$mounted" ]; then
+    rmdir "$mounted" && echo "      빈 디렉터리 $mounted 제거(인증서 생성 전 compose up이 남긴 것)"
+  fi
+done
+
 echo "================================================================"
 echo "  MQTT TLS 인증서 생성 시작"
 echo "================================================================"
