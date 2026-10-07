@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.telemetry.contract.MqttReconnectAckContractTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-10-06T16:27:38" hostname="DESKTOP-FDCVTT0" time="28.54">
+  <properties/>
+  <testcase name="ackPendingAcrossReconnectDoesNotLoseOrBlockMessages()" classname="com.telemetry.contract.MqttReconnectAckContractTest" time="15.87"/>
+  <testcase name="interruptDuringSpoolWriteIsNotAckedThenRedeliveredAndSpooledOnce()" classname="com.telemetry.contract.MqttReconnectAckContractTest" time="12.67"/>
+  <system-out><![CDATA[01:27:35 [-] [-] INFO  tc.eclipse-mosquitto:2.0 - Creating container for image: eclipse-mosquitto:2.0
+01:27:37 [-] [-] INFO  tc.eclipse-mosquitto:2.0 - Container eclipse-mosquitto:2.0 is starting: 77ed4bc8b1676aca9bc1e410c1b02c869c489ad831af00778905195978679e59
+01:27:38 [-] [-] INFO  tc.eclipse-mosquitto:2.0 - Container eclipse-mosquitto:2.0 started in PT3.0083941S
+01:27:38 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'unknown.channel.name' has 1 subscriber(s).
+01:27:38 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2c988a97
+01:27:39 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: 연결 유실
+01:27:39 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 연결 끊김 ? 저장 확인 대기 중단, ACK 없이 재전달 대기
+01:27:39 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Unhandled exception for GenericMessage [payload={"vehicle_id":"RECON-001","timestamp":"2026-10-01T00:00:00.001Z",
+ "speed":10,"rpm":900,"engine_temp":85,"throttle_position":12,"fuel_level":55,
+ "battery_voltage":13.8,"gps":{"lat":37.5,"lng":127.0},"dtc_codes":[]}
+, headers={mqtt_receivedRetained=false, acknowledgmentCallback=org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter$AcknowledgmentImpl@7349604b, mqtt_id=1, mqtt_duplicate=false, id=de1c0a39-24ac-d989-0de2-38f38531858e, mqtt_receivedTopic=vehicle/telemetry/RECON-001, mqtt_receivedQos=1, timestamp=1791304059426}]
+org.springframework.messaging.MessageDeliveryException: Dispatcher failed to deliver Message
+	at org.springframework.integration.support.utils.IntegrationUtils.wrapInDeliveryExceptionIfNecessary(IntegrationUtils.java:166)
+	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:136)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:332)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+	at io.micrometer.observation.Observation.observe(Observation.java:499)
+	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.lang.IllegalStateException: MQTT 저장 확인 중단 ? ACK하지 않음
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:140)
+	at com.telemetry.contract.MqttReconnectAckContractTest.lambda$ackPendingAcrossReconnectDoesNotLoseOrBlockMessages$2(MqttReconnectAckContractTest.java:197)
+	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+	... 18 common frames omitted
+Caused by: java.lang.InterruptedException: null
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:386)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2096)
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:123)
+	... 20 common frames omitted
+01:27:51 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@2c988a97
+  828ms send seq=1 attempt=1 thread=MQTT Call: reconnect-c18decd9-9646-4ed5-aa43-2da6018fd8a5
+  943ms connection dropped (seq 1 receipt pending)
+  947ms MqttConnectionFailedEvent
+  947ms handler threw MQTT 저장 확인 중단 ? ACK하지 않음
+ 2285ms send seq=1 attempt=2 thread=MQTT Call: reconnect-c18decd9-9646-4ed5-aa43-2da6018fd8a5
+ 2297ms broker saw reconnect
+ 2355ms pending receipts completed
+ 2356ms send seq=2 attempt=1 thread=MQTT Call: reconnect-c18decd9-9646-4ed5-aa43-2da6018fd8a5
+ 2357ms send seq=3 attempt=1 thread=MQTT Call: reconnect-c18decd9-9646-4ed5-aa43-2da6018fd8a5
+RECONNECT_BOUNDARY seq=1 sendAttempts=2
+RECONNECT_BOUNDARY seq=2 sendAttempts=1
+RECONNECT_BOUNDARY seq=3 sendAttempts=1
+RECONNECT_BOUNDARY redeliveredAfterResume=[]
+01:27:54 [-] [-] INFO  o.s.i.c.DirectChannel - Channel 'unknown.channel.name' has 1 subscriber(s).
+01:27:54 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - started org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@3e821bba
+01:27:55 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: 연결 유실
+01:27:55 [-] [-] WARN  c.t.m.MqttMessageHandler - [MQTT] 연결 끊김 ? 저장 확인 대기 중단, ACK 없이 재전달 대기
+01:27:55 [-] [-] ERROR c.t.k.TelemetryProducer - [Kafka] 전송 실패 후 spool 저장까지 실패 ? MQTT ACK 금지 vehicle=RECON-001 ts=2026-10-01T00:00:00.001Z
+java.lang.IllegalStateException: 텔레메트리 로컬 spool 저장 실패
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:61)
+	at com.telemetry.contract.MqttReconnectAckContractTest$2.store(MqttReconnectAckContractTest.java:307)
+	at com.telemetry.kafka.TelemetryProducer.storeForRetry(TelemetryProducer.java:277)
+	at com.telemetry.kafka.TelemetryProducer.sendDirect(TelemetryProducer.java:221)
+	at com.telemetry.kafka.TelemetryProducer.send(TelemetryProducer.java:133)
+	at com.telemetry.mqtt.MqttMessageHandler.process(MqttMessageHandler.java:195)
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:123)
+	at com.telemetry.contract.MqttReconnectAckContractTest.lambda$interruptDuringSpoolWriteIsNotAckedThenRedeliveredAndSpooledOnce$13(MqttReconnectAckContractTest.java:347)
+	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:332)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+	at io.micrometer.observation.Observation.observe(Observation.java:499)
+	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.nio.channels.ClosedByInterruptException: null
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:199)
+	at java.base/sun.nio.ch.FileChannelImpl.endBlocking(FileChannelImpl.java:171)
+	at java.base/sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:293)
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:45)
+	... 26 common frames omitted
+01:27:55 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Unhandled exception for GenericMessage [payload={"vehicle_id":"RECON-001","timestamp":"2026-10-01T00:00:00.001Z",
+ "speed":10,"rpm":900,"engine_temp":85,"throttle_position":12,"fuel_level":55,
+ "battery_voltage":13.8,"gps":{"lat":37.5,"lng":127.0},"dtc_codes":[]}
+, headers={mqtt_receivedRetained=false, acknowledgmentCallback=org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter$AcknowledgmentImpl@2f45f055, mqtt_id=1, mqtt_duplicate=false, id=0be7ed04-1ce1-7419-bb17-9b7510abd26b, mqtt_receivedTopic=vehicle/telemetry/RECON-001, mqtt_receivedQos=1, timestamp=1791304075299}]
+org.springframework.messaging.MessageDeliveryException: Dispatcher failed to deliver Message
+	at org.springframework.integration.support.utils.IntegrationUtils.wrapInDeliveryExceptionIfNecessary(IntegrationUtils.java:166)
+	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:136)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.doDispatch(UnicastingDispatcher.java:133)
+	at org.springframework.integration.dispatcher.UnicastingDispatcher.dispatch(UnicastingDispatcher.java:106)
+	at org.springframework.integration.channel.AbstractSubscribableChannel.doSend(AbstractSubscribableChannel.java:72)
+	at org.springframework.integration.channel.AbstractMessageChannel.sendInternal(AbstractMessageChannel.java:378)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:332)
+	at org.springframework.integration.channel.AbstractMessageChannel.send(AbstractMessageChannel.java:302)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:187)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:166)
+	at org.springframework.messaging.core.GenericMessagingTemplate.doSend(GenericMessagingTemplate.java:47)
+	at org.springframework.messaging.core.AbstractMessageSendingTemplate.send(AbstractMessageSendingTemplate.java:109)
+	at org.springframework.integration.endpoint.MessageProducerSupport.lambda$sendMessage$1(MessageProducerSupport.java:262)
+	at io.micrometer.observation.Observation.observe(Observation.java:499)
+	at org.springframework.integration.endpoint.MessageProducerSupport.sendMessage(MessageProducerSupport.java:262)
+	at org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter.messageArrived(MqttPahoMessageDrivenChannelAdapter.java:371)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.deliverMessage(CommsCallback.java:511)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.handleMessage(CommsCallback.java:417)
+	at org.eclipse.paho.client.mqttv3.internal.CommsCallback.run(CommsCallback.java:214)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.lang.IllegalStateException: MQTT 저장 확인 실패 ? ACK하지 않음
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:140)
+	at com.telemetry.contract.MqttReconnectAckContractTest.lambda$interruptDuringSpoolWriteIsNotAckedThenRedeliveredAndSpooledOnce$13(MqttReconnectAckContractTest.java:347)
+	at org.springframework.integration.dispatcher.AbstractDispatcher.tryOptimizedDispatch(AbstractDispatcher.java:132)
+	... 18 common frames omitted
+Caused by: java.util.concurrent.ExecutionException: java.lang.IllegalStateException: 텔레메트리 로컬 spool 저장 실패
+	at java.base/java.util.concurrent.CompletableFuture.reportGet(CompletableFuture.java:396)
+	at java.base/java.util.concurrent.CompletableFuture.get(CompletableFuture.java:2096)
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:123)
+	... 20 common frames omitted
+Caused by: java.lang.IllegalStateException: 텔레메트리 로컬 spool 저장 실패
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:61)
+	at com.telemetry.contract.MqttReconnectAckContractTest$2.store(MqttReconnectAckContractTest.java:307)
+	at com.telemetry.kafka.TelemetryProducer.storeForRetry(TelemetryProducer.java:277)
+	at com.telemetry.kafka.TelemetryProducer.sendDirect(TelemetryProducer.java:221)
+	at com.telemetry.kafka.TelemetryProducer.send(TelemetryProducer.java:133)
+	at com.telemetry.mqtt.MqttMessageHandler.process(MqttMessageHandler.java:195)
+	... 21 common frames omitted
+Caused by: java.nio.channels.ClosedByInterruptException: null
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:199)
+	at java.base/sun.nio.ch.FileChannelImpl.endBlocking(FileChannelImpl.java:171)
+	at java.base/sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:293)
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:45)
+	... 26 common frames omitted
+01:28:03 [-] [-] INFO  o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - stopped org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter@3e821bba
+  811ms delivered seq=1 dup=false
+  826ms first store: connection dropped, waiting for interrupt
+  826ms MqttConnectionFailedEvent
+  827ms first store: interrupted=true
+  830ms first store failed: java.nio.channels.ClosedByInterruptException
+  831ms handler threw MQTT 저장 확인 실패 ? ACK하지 않음
+ 2162ms delivered seq=1 dup=true
+ 2166ms store ok seq=1
+ 2167ms handler acked
+SPOOL_INTERRUPT_CONTRACT deliveries=[false, true] json=1 tmp=0 pubackFromClient=1 redeliveredAfterResume=[] firstFailure=java.nio.channels.ClosedByInterruptException
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

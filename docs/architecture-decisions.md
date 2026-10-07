@@ -1349,7 +1349,7 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 
 ### 추가 (2026-10-05) — 재접속과 저장 대기
 
-콜백 스레드에서 저장 확인을 기다리는 구조는 Paho 재접속과 충돌했다. 옛 콜백 스레드가 끝날 때까지 재접속이 대기해, 브로커가 살아 있어도 최대 150초 동안 수신이 멈췄다. `MqttConnectionFailedEvent` 수신 시 대기 중인 콜백 스레드만 인터럽트해 ACK 없이 빠져나오도록 했다. 유실은 없고 재전달 중복이 늘 뿐이다. `$SYS` 어댑터는 제외한다. 범위와 한계는 [실험 D](verification/2026-10-01-mqtt-ack-boundary.md)를 따른다(1회 관찰, 깨끗한 TCP 단절만).
+콜백 스레드에서 저장 확인을 기다리는 구조는 Paho 재접속과 충돌했다. 옛 콜백 스레드가 끝날 때까지 재접속이 대기해, 브로커가 살아 있어도 최대 150초 동안 수신이 멈췄다. `MqttConnectionFailedEvent` 수신 시 대기 중인 콜백 스레드만 인터럽트해 ACK 없이 빠져나오도록 했다. 실험 D에서는 유실 없이 재전달 중복만 관찰했다(1회). ~~유실은 없고 재전달 중복이 늘 뿐이다.~~ — 일반 명제로 쓰지 않는다: 인터럽트가 콜백 스레드의 동기 spool 쓰기(백로그 경로, 또는 `kafka.send()` 동기 구간에서 인터럽트된 뒤의 대체 쓰기)에 닿으면 그 메시지는 영속되지 않으므로 중복이 아니라 **재전달에 전적으로 기댄다**(2026-10-08 추가 참고). `$SYS` 어댑터는 제외한다. 범위와 한계는 [실험 D](verification/2026-10-01-mqtt-ack-boundary.md)를 따른다(1회 관찰, 깨끗한 TCP 단절만).
 
 ### 추가 (2026-10-06) — 2차 리뷰 후속
 
@@ -1362,7 +1362,14 @@ HTTP에는 `traceId`(MDC)가 있지만 요청 단위라 MQTT→Kafka→InfluxDB/
 수신 큐가 차면 끊김 인지가 대기 끝까지 늦는 결함 후보(실험 D2)에 대해 구조를 바꾸지 않고(콜백 executor 분리안은 보류) **보이게** 했다.
 - 지표: 끝난 대기 Timer `telemetry.mqtt.ack.wait{outcome=acked|failed|interrupted}`(고정 버킷 10ms~150s, 40·45·60s 포함, 결과 3종뿐), 진행 중 게이지 `telemetry.mqtt.ack.wait.in.progress`(0/1)·`telemetry.mqtt.ack.wait.elapsed.seconds`(scrape 시점 계산). 끝난 대기만으로는 막혀 있는 순간이 안 보여서 게이지를 따로 둔다. 게이지는 기동 때 등록(부재 ≠ 0), 값은 기존 `waitLock` 아래서 읽는다.
 - 알림 문턱 **45초**: 대기 하나의 정상 상한은 `max.block.ms` 10초 + `delivery.timeout.ms` 30초 = 40초(그 뒤 spool로 완료)이고 keepAlive 60초 아래다. 45초 = 40초 + spool·스케줄링 여유 5초 — 넘으면 상한이 깨진 것(설정 회귀·spool 디스크 정지·다른 곳에서 막힘)이다. `for`는 두지 않는다: 게이지가 한 대기의 연속 경과라 값 자체가 지속 시간이고, `for`를 두면 scrape 15초 단위로 확인이 밀려 keepAlive 뒤가 된다. 탐지는 대기 시작 뒤 45~75초.
-- 이 알림은 **Kafka 장기 정지·D2식 인지 지연 자체를 잡지 않는다** — 대기 하나는 상한 안에서 끝나기 때문이다. 실험 D3(1회, 76초 pause 중 끊김): 대기 최대 29.9초, 알림 없음(예측대로), 인지 +10.6초·재접속 +11.9초, 유실 0·중복 3. 같은 실행에서 끊김 인터럽트가 백로그 경로의 **동기 spool 쓰기**(콜백 스레드)에 닿아 `ClosedByInterruptException` → ACK 안 함(유실 아님)·0바이트 `.tmp` 잔존을 봤다 — 결함 후보, 이번에 고치지 않았다. 실스택 firing 경로(대기 ≥45초)는 만들지 않았다(promtool·단위 테스트만).
+- 이 알림은 **Kafka 장기 정지·D2식 인지 지연 자체를 잡지 않는다** — 대기 하나는 상한 안에서 끝나기 때문이다. 실험 D3(1회, 76초 pause 중 끊김): 대기 최대 29.9초, 알림 없음(예측대로), 인지 +10.6초·재접속 +11.9초, 유실 0·중복 3. 같은 실행에서 끊김 인터럽트가 백로그 경로의 **동기 spool 쓰기**(콜백 스레드)에 닿아 `ClosedByInterruptException` → ACK 안 함 → 재전달 뒤 1회 저장(그 실행 1건 관찰)·0바이트 `.tmp` 잔존을 봤다 — 결함 후보, 이 커밋에서는 고치지 않았다(아래 추가). 실스택 firing 경로(대기 ≥45초)는 만들지 않았다(promtool·단위 테스트만).
+
+### 추가 (2026-10-08) — 인터럽트된 spool 쓰기의 `.tmp` 정리
+
+D3 결함 후보를 재현했다([검증 문서](verification/2026-10-08-spool-interrupt-durability.md)). 콜백 스레드 자신이 spool에 쓰는 경로는 둘이다 — (1) 백로그 경로(D3에서 관찰), (2) 백로그가 아니어도 `kafka.send()`의 동기 구간(메타데이터 대기·버퍼 할당, `max.block.ms`)에서 인터럽트된 경우: kafka-clients 3.6.2가 `InterruptException`으로 바꿔 던지며 플래그를 다시 세우고(바이트코드 확인), `sendDirect`의 catch가 같은 스레드에서 spool로 넘긴다. (2)는 실제 `KafkaTemplate`·`TelemetryProducer`·`TelemetrySpool`·핸들러 + KafkaProducer의 변환을 흉내 낸 가짜 Producer로 단위 테스트만 했다 — (1)과 같이 쓰기 실패·ACK 없음·`.tmp` 없음. 실제 KafkaProducer 대기·실제 브로커 재전달로는 돌리지 않았다. 인터럽트는 `FileChannel.open` 뒤 `write`·`force`에서만 쓰기를 끊는다(`ClosedByInterruptException`) — 남는 것은 0바이트 또는 내용이 다 쓰였지만 rename 안 된 `.tmp`이고, `.json`은 생기지 않으며 ACK는 나가지 않는다. rename(`Files.move`)은 인터럽트로 끊기지 않아, force 뒤에 닿은 인터럽트는 완전한 `.json` 뒤 ACK가 된다(계약 안).
+- **결정**: `TelemetrySpool.store`가 실패하면 **자기 `.tmp`만 지우고 실패를 그대로 던진다.** 계약(ACK는 Kafka 성공 또는 spool 영속 뒤)은 바뀌지 않는다 — 실패한 메시지는 ACK되지 않고 브로커 재전달에 맡긴다.
+- **택하지 않은 것**: (a) 쓰기를 인터럽트 불가로(플래그 비웠다 복원, 또는 `FileOutputStream`+`sync`) — 메시지를 첫 시도에 영속시키지만 옛 연결 ACK로 재전달 중복이 되고, 플래그를 비우는 방식은 쓰기 도중 도착하는 인터럽트를 못 막는다. 결함은 "실패"가 아니라 "잔재"였으므로 범위를 넘는다. (c) 기동 시 오래된 `.tmp` 정리 — 증거 파일 삭제 정책과 부딪히고, (b) 뒤에 남는 `.tmp`는 프로세스 강제 종료·전원 차단 잔재뿐이며 드레인·depth에 영향이 없다(테스트로 확인).
+- **검증 범위**: 실제 Mosquitto 2.0 + 실제 어댑터·핸들러·`TelemetryProducer`·`TelemetrySpool`(임시 디렉터리), Kafka는 동기 실패 mock, 인터럽트 시점은 테스트 훅으로 고정(`MqttReconnectAckContractTest#interruptDuringSpoolWriteIsNotAckedThenRedeliveredAndSpooledOnce`, 수정 전 2회는 `.tmp` 단언에서만 실패, 수정 후 단독 1회·전체 실행 1회 통과). 이 계약 테스트는 **"쓰기 전에 플래그가 이미 선" 창(훅으로 만든 것)만** 덮는다 — `write`·`force` 도중 도착은 `TelemetrySpoolInterruptTest`의 무작위 단위 테스트가, 경로 (2)는 위 단위 테스트가 덮으며 둘 다 실제 브로커 재전달까지는 보지 않았다. 실스택(실제 Kafka·InfluxDB·수신 큐 포화)에서 다시 재현하지 않았다. 타이머가 이 경우를 `interrupted`가 아니라 `failed`로 세는 것은 그대로다.
 
 
 ## ADR-030 — 연료량(PID 012F)·제어 모듈 전압(PID 0142)만 계약상 선택으로 (2026-10-06)

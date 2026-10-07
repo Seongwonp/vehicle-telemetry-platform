@@ -246,7 +246,10 @@ public class MqttMessageHandler {
      * <p>Paho의 재연결(ConnectBG)은 옛 콜백 스레드가 끝날 때까지 기다린다(CommsCallback.start).
      * 콜백 스레드가 {@code receipt.get}에서 최대 150초 막혀 있으면 브로커가 살아 있어도 그동안 재연결이
      * 멈춘다(실험 D, ADR-029). 옛 연결 기준 ACK는 어차피 쓸 수 없으니 기다림을 끝내고 ACK 없이 빠져나온다.
-     * 저장 경로는 그대로 진행되므로 브로커의 재전달은 중복이 될 뿐 유실이 아니다.
+     * Kafka 완료를 기다리던 중이면 저장 경로는 그대로 진행되어 재전달이 중복이 된다. 콜백 스레드 자신이 spool에 쓰는 경우 —
+     * 백로그 경로, 또는 {@code kafka.send()}의 동기 구간(max.block)에서 인터럽트되어 {@code InterruptException}이 플래그를
+     * 다시 세운 채 spool로 넘어간 경우 — 그 쓰기가 {@code ClosedByInterruptException}으로 실패한다. 영속되지 않았으므로
+     * ACK하지 않고 회복은 브로커 재전달에 달린다(실험 D3, {@code docs/verification/2026-10-08-spool-interrupt-durability.md}).
      * {@code $SYS} 어댑터의 연결 끊김은 텔레메트리 ACK와 무관하다.
      */
     @EventListener

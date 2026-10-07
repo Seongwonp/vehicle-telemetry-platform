@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.telemetry.kafka.TelemetrySpoolInterruptTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-06T15:59:32" hostname="DESKTOP-FDCVTT0" time="1.86">
+  <properties/>
+  <testcase name="repeatedInterruptedStores_doNotAccumulateTmp_andNormalStoresStillWork()" classname="com.telemetry.kafka.TelemetrySpoolInterruptTest" time="0.292"/>
+  <testcase name="interruptAtRandomPoint_neverYieldsJsonOnFailure_norPartialJson_norLeftoverTmp()" classname="com.telemetry.kafka.TelemetrySpoolInterruptTest" time="1.533"/>
+  <testcase name="pendingInterruptFailsStoreWithoutJson_andLeavesNoTmp()" classname="com.telemetry.kafka.TelemetrySpoolInterruptTest" time="0.009"/>
+  <testcase name="leftoverZeroByteAndPartialTmp_areIgnoredByStartupAndDrain_andNotCountedNorDeleted()" classname="com.telemetry.kafka.TelemetrySpoolInterruptTest" time="0.022"/>
+  <system-out><![CDATA[SPOOL_INTERRUPT_REPEAT failures=200 tmpLeft=0 json=4
+SPOOL_INTERRUPT_RANDOM iterations=40 outcomes={returned:noInterruptSeen=9, threw:ClosedByInterruptException=31}
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

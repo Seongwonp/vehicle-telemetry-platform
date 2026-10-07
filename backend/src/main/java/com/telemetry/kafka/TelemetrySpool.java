@@ -37,19 +37,38 @@ public class TelemetrySpool {
             Path target = spoolDirectory.resolve(id + ".json");
             // force() 뒤에 rename한다. 예전에는 writeString만 하고 rename해서, 전원이 끊기면 이름은 .json인데
             // 내용이 비었거나 잘린 파일이 남을 수 있었다 — 그 파일 하나가 드레인을 영원히 막았다(quarantine 참고).
-            try (FileChannel channel = FileChannel.open(temporary,
-                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-                ByteBuffer bytes = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
-                while (bytes.hasRemaining()) channel.write(bytes);
-                channel.force(true);
-            }
+            FileChannel channel = FileChannel.open(temporary,
+                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             try {
-                return Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE);
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-                return Files.move(temporary, target);
+                try (channel) {
+                    ByteBuffer bytes = ByteBuffer.wrap(payload.getBytes(StandardCharsets.UTF_8));
+                    while (bytes.hasRemaining()) channel.write(bytes);
+                    channel.force(true);
+                }
+                try {
+                    return Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE);
+                } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                    return Files.move(temporary, target);
+                }
+            } catch (IOException | RuntimeException e) {
+                // 실패한 쓰기의 .tmp를 지운다. 이 메시지는 영속되지 않았으므로 호출자는 실패를 받고 ACK하지 않는다 —
+                // 실패를 삼키지 않는다. 연결 끊김 인터럽트가 write/force에 닿으면(ClosedByInterruptException) 0바이트·
+                // 내용만 있는 .tmp가 남았고 정리 주체가 없었다(실험 D3, docs/verification/2026-10-08-spool-interrupt-durability.md).
+                discardTemporary(temporary, e);
+                throw e;
             }
         } catch (IOException e) {
             throw new IllegalStateException("텔레메트리 로컬 spool 저장 실패", e);
+        }
+    }
+
+    /** .json으로 옮겨지지 않은 자기 .tmp만 지운다. 지우지 못하면 원래 실패에 붙여 남긴다(드레인은 .tmp를 읽지 않는다). */
+    static void discardTemporary(Path temporary, Exception failure) {
+        try {
+            Files.deleteIfExists(temporary);
+        } catch (IOException e) {
+            failure.addSuppressed(e);
+            log.warn("실패한 spool 쓰기의 임시 파일 삭제 실패 path={}", temporary, e);
         }
     }
 

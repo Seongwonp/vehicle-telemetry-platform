@@ -274,6 +274,164 @@ class MqttReconnectAckContractTest {
         }
     }
 
+    /**
+     * 실험 D3 결함 후보의 재현: 백로그(spool 직행) 경로에서 콜백 스레드가 spool에 쓰는 중에 연결 끊김 인터럽트가 닿는다.
+     * 기대(계약): 그 메시지는 영속되지 않았으므로 PUBACK이 나가지 않고, 재접속 뒤 브로커가 재전달해 spool에 정확히 1건 남는다.
+     * 인터럽트가 쓰기 구간에 닿도록, 첫 store()가 중계기를 끊고 인터럽트 플래그가 설 때까지 기다린 뒤 실제 쓰기를 한다.
+     */
+    @Test @SuppressWarnings("unchecked")
+    void interruptDuringSpoolWriteIsNotAckedThenRedeliveredAndSpooledOnce() throws Exception {
+        String brokerHost = BROKER.getHost();
+        int brokerPort = BROKER.getMappedPort(1883);
+        String clientId = "spoolint-" + UUID.randomUUID();
+        List<String> timeline = Collections.synchronizedList(new ArrayList<>());
+        long t0 = System.nanoTime();
+        Path spoolDir = temporary.resolve("spool-interrupt");
+        AtomicBoolean firstStore = new AtomicBoolean(true);
+        java.util.concurrent.atomic.AtomicReference<Throwable> firstFailure = new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.atomic.AtomicReference<Runnable> dropConnection = new java.util.concurrent.atomic.AtomicReference<>();
+        List<Boolean> deliveryDuplicateFlags = new CopyOnWriteArrayList<>();
+
+        var spool = new TelemetrySpool(spoolDir.toString()) {
+            @Override public Path store(String json) {
+                if (firstStore.getAndSet(false)) {
+                    dropConnection.get().run();
+                    timeline.add("%5dms first store: connection dropped, waiting for interrupt".formatted(ms(t0)));
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+                    // parkNanos는 인터럽트 플래그를 지우지 않는다 — 플래그를 단 채로 실제 쓰기에 들어간다.
+                    while (!Thread.currentThread().isInterrupted() && System.nanoTime() < deadline) {
+                        java.util.concurrent.locks.LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(5));
+                    }
+                    timeline.add("%5dms first store: interrupted=%s".formatted(ms(t0), Thread.currentThread().isInterrupted()));
+                    try {
+                        return super.store(json);
+                    } catch (RuntimeException e) {
+                        firstFailure.set(e.getCause());
+                        timeline.add("%5dms first store failed: %s".formatted(ms(t0), e.getCause()));
+                        throw e;
+                    }
+                }
+                Path stored = super.store(json);
+                timeline.add("%5dms store ok seq=%d".formatted(ms(t0), sequenceOf(json)));
+                return stored;
+            }
+        };
+        KafkaTemplate<String, String> kafka = mock(KafkaTemplate.class);
+        // Kafka가 멈춘 상태를 동기 실패로 흉내 낸다 — 모든 정상 메시지가 콜백 스레드에서 spool로 간다(D3의 백로그 경로).
+        when(kafka.send(anyString(), anyString(), anyString()))
+            .thenThrow(new org.apache.kafka.common.errors.TimeoutException("kafka paused (test)"));
+        var registry = new SimpleMeterRegistry();
+        var handler = new MqttMessageHandler(new TelemetryProducer(kafka, new ObjectMapper(), spool, registry, 100),
+            TestDecoders.telemetryDecoder(), registry, new MqttInvalidMessagePublisher(kafka, new ObjectMapper(), registry));
+
+        try (var proxy = new Proxy(brokerHost, brokerPort)) {
+            dropConnection.set(proxy::drop);
+            var options = new MqttConnectOptions();
+            options.setServerURIs(new String[]{"tcp://127.0.0.1:" + proxy.port()});
+            options.setCleanSession(false);
+            options.setAutomaticReconnect(true);
+            options.setMaxReconnectDelay(1000);
+            options.setKeepAliveInterval(60);
+            var factory = new DefaultMqttPahoClientFactory();
+            factory.setConnectionOptions(options);
+            var adapter = new MqttPahoMessageDrivenChannelAdapter(clientId, factory, "vehicle/telemetry/RECON-001");
+            adapter.setBeanFactory(new DefaultListableBeanFactory());
+            adapter.setQos(1);
+            adapter.setManualAcks(true);
+            var channel = new DirectChannel();
+            channel.subscribe(message -> {
+                Boolean dup = message.getHeaders().get("mqtt_duplicate", Boolean.class);
+                deliveryDuplicateFlags.add(dup);
+                timeline.add("%5dms delivered seq=%d dup=%s".formatted(ms(t0), sequenceOf((String) message.getPayload()), dup));
+                try {
+                    handler.handle((Message<String>) message);
+                    timeline.add("%5dms handler acked".formatted(ms(t0)));
+                } catch (RuntimeException e) {
+                    timeline.add("%5dms handler threw %s".formatted(ms(t0), e.getMessage()));
+                    throw e;
+                }
+            });
+            adapter.setApplicationEventPublisher(event -> {
+                if (event instanceof org.springframework.integration.mqtt.event.MqttConnectionFailedEvent failed) {
+                    timeline.add("%5dms MqttConnectionFailedEvent".formatted(ms(t0)));
+                    handler.onConnectionLost(failed);
+                }
+            });
+            adapter.setOutputChannel(channel);
+            adapter.afterPropertiesSet();
+            adapter.start();
+            await().atMost(Duration.ofSeconds(15))
+                .until(() -> BROKER.getLogs().contains("Received SUBSCRIBE from " + clientId));
+            int connectsBefore = count(BROKER.getLogs(), " as " + clientId + " (");
+
+            try (var publisher = new MqttClient("tcp://" + brokerHost + ":" + brokerPort,
+                "pub-" + UUID.randomUUID(), new MemoryPersistence())) {
+                publisher.connect();
+                publisher.publish("vehicle/telemetry/RECON-001", payload(1).getBytes(StandardCharsets.UTF_8), 1, false);
+                try {
+                    await().atMost(Duration.ofSeconds(30)).until(
+                        () -> count(BROKER.getLogs(), " as " + clientId + " (") > connectsBefore);
+                    // 재전달된 seq 1이 spool에 정상 기록될 때까지
+                    await().atMost(Duration.ofSeconds(30)).until(() -> jsonCount(spoolDir) >= 1);
+                } catch (RuntimeException e) {
+                    timeline.forEach(System.out::println);
+                    System.out.println(BROKER.getLogs());
+                    throw e;
+                }
+                // 재전달분 ACK가 브로커에 닿을 시간을 둔다
+                Thread.sleep(2000);
+                publisher.disconnect();
+            }
+            adapter.stop();
+            adapter.destroy();
+            // 저장된 메시지의 ACK가 닿았다면 같은 client ID로 다시 붙어도 재전달이 없다.
+            var redelivered = new LinkedBlockingQueue<Integer>();
+            try (var resumed = new MqttClient("tcp://" + brokerHost + ":" + brokerPort, clientId, new MemoryPersistence())) {
+                resumed.setCallback(new MqttCallback() {
+                    public void connectionLost(Throwable cause) { }
+                    public void deliveryComplete(IMqttDeliveryToken token) { }
+                    public void messageArrived(String topic, MqttMessage message) {
+                        redelivered.add(sequenceOf(new String(message.getPayload(), StandardCharsets.UTF_8)));
+                    }
+                });
+                var resumeOptions = new MqttConnectOptions();
+                resumeOptions.setCleanSession(false);
+                resumed.connect(resumeOptions);
+                Thread.sleep(3000);
+                resumed.disconnect();
+            }
+            List<Path> json;
+            List<Path> tmp;
+            try (var s = java.nio.file.Files.list(spoolDir)) {
+                var all = s.toList();
+                json = all.stream().filter(p -> p.getFileName().toString().endsWith(".json")).toList();
+                tmp = all.stream().filter(p -> p.getFileName().toString().endsWith(".tmp")).toList();
+            }
+            String logs = BROKER.getLogs();
+            timeline.forEach(System.out::println);
+            System.out.println("SPOOL_INTERRUPT_CONTRACT deliveries=" + deliveryDuplicateFlags
+                + " json=" + json.size() + " tmp=" + tmp.size()
+                + " pubackFromClient=" + count(logs, "Received PUBACK from " + clientId)
+                + " redeliveredAfterResume=" + redelivered
+                + " firstFailure=" + firstFailure.get());
+
+            assertThat(firstFailure.get()).as("첫 쓰기는 인터럽트로 실패해야 재현이다")
+                .isInstanceOf(java.nio.channels.ClosedByInterruptException.class);
+            assertThat(deliveryDuplicateFlags).as("PUBACK이 없었으므로 브로커가 재전달했다(DUP)").containsExactly(false, true);
+            assertThat(json).as("최종: spool에 정확히 1건").hasSize(1);
+            assertThat(sequenceOf(java.nio.file.Files.readString(json.get(0)))).isEqualTo(1);
+            assertThat(redelivered).as("재전달분은 저장 뒤 ACK되어 더 이상 재전달되지 않는다").isEmpty();
+            assertThat(tmp).as("실패한 쓰기가 .tmp를 남기지 않는다").isEmpty();
+        }
+    }
+
+    private static long jsonCount(Path dir) throws IOException {
+        if (!java.nio.file.Files.exists(dir)) return 0;
+        try (var s = java.nio.file.Files.list(dir)) {
+            return s.filter(p -> p.getFileName().toString().endsWith(".json")).count();
+        }
+    }
+
     private static int count(String text, String needle) {
         int count = 0, from = 0;
         while ((from = text.indexOf(needle, from)) >= 0) { count++; from += needle.length(); }

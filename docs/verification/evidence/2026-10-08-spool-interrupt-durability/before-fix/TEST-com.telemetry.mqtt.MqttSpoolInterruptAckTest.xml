@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.telemetry.mqtt.MqttSpoolInterruptAckTest" tests="2" skipped="0" failures="1" errors="0" timestamp="2026-10-06T15:57:42" hostname="DESKTOP-FDCVTT0" time="0.787">
+  <properties/>
+  <testcase name="interruptLandingBeforeSpoolWrite_failsWithoutAck_andLeavesNothing()" classname="com.telemetry.mqtt.MqttSpoolInterruptAckTest" time="0.692">
+    <failure message="java.lang.AssertionError: [실패한 저장이 .tmp를 남기지 않는다] &#13;&#10;Expecting empty but was: [C:\Users\USER\AppData\Local\Temp\junit5775513729629542460\1791302262873-00000000000000000000-7c5f57e5-3979-45c4-b42f-039b19725f9c.tmp]" type="java.lang.AssertionError">java.lang.AssertionError: [실패한 저장이 .tmp를 남기지 않는다] 
+Expecting empty but was: [C:\Users\USER\AppData\Local\Temp\junit5775513729629542460\1791302262873-00000000000000000000-7c5f57e5-3979-45c4-b42f-039b19725f9c.tmp]
+	at com.telemetry.mqtt.MqttSpoolInterruptAckTest.interruptLandingBeforeSpoolWrite_failsWithoutAck_andLeavesNothing(MqttSpoolInterruptAckTest.java:76)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1511)
+</failure>
+  </testcase>
+  <testcase name="interruptLandingAfterSpoolRename_acksBecauseAlreadyPersisted()" classname="com.telemetry.mqtt.MqttSpoolInterruptAckTest" time="0.092"/>
+  <system-out><![CDATA[00:57:42.872 [pool-1-thread-1] WARN com.telemetry.mqtt.MqttMessageHandler -- [MQTT] 연결 끊김 ? 저장 확인 대기 중단, ACK 없이 재전달 대기
+00:57:42.874 [pool-1-thread-1] ERROR com.telemetry.kafka.TelemetryProducer -- [Kafka] 전송 실패 후 spool 저장까지 실패 ? MQTT ACK 금지 vehicle=ACK-001 ts=2026-10-01T00:00:00Z
+java.lang.IllegalStateException: 텔레메트리 로컬 spool 저장 실패
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:52)
+	at com.telemetry.mqtt.MqttSpoolInterruptAckTest$1.store(MqttSpoolInterruptAckTest.java:60)
+	at com.telemetry.kafka.TelemetryProducer.storeForRetry(TelemetryProducer.java:277)
+	at com.telemetry.kafka.TelemetryProducer.sendDirect(TelemetryProducer.java:221)
+	at com.telemetry.kafka.TelemetryProducer.send(TelemetryProducer.java:133)
+	at com.telemetry.mqtt.MqttMessageHandler.process(MqttMessageHandler.java:195)
+	at com.telemetry.mqtt.MqttMessageHandler.handle(MqttMessageHandler.java:123)
+	at com.telemetry.mqtt.MqttSpoolInterruptAckTest.lambda$interruptLandingBeforeSpoolWrite_failsWithoutAck_andLeavesNothing$0(MqttSpoolInterruptAckTest.java:71)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:539)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:264)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.nio.channels.ClosedByInterruptException: null
+	at java.base/java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:199)
+	at java.base/sun.nio.ch.FileChannelImpl.endBlocking(FileChannelImpl.java:171)
+	at java.base/sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:293)
+	at com.telemetry.kafka.TelemetrySpool.store(TelemetrySpool.java:43)
+	... 12 common frames omitted
+00:57:42.963 [pool-2-thread-1] WARN com.telemetry.mqtt.MqttMessageHandler -- [MQTT] 연결 끊김 ? 저장 확인 대기 중단, ACK 없이 재전달 대기
+00:57:42.966 [pool-2-thread-1] ERROR com.telemetry.kafka.TelemetryProducer -- [Kafka] 브로커 전송 실패 ? spool에 보관 vehicle=ACK-001 ts=2026-10-01T00:00:00Z topic=vehicle-telemetry
+org.apache.kafka.common.errors.TimeoutException: kafka paused
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

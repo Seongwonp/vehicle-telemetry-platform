@@ -591,14 +591,15 @@ D2에서 브로커가 끊은 뒤 백엔드가 끊김을 알아챈 시각이 약 
 | DLQ(`-dlq`, `-mqtt-dlq`) 증가 / `ack.callback.missing` / `decode.failed` | 0·0 / 0 / 0 |
 | `InterruptedException` / `Unhandled exception` / `spool 저장까지 실패` | 0 / 1 / **1** |
 
-**판정**(실행 전 기준): (1) 게이지 부재 0, pause 구간 in_progress=1, elapsed 증가 표본 있음 — **충족**. (2) 알림 안 뜸 — **예측대로**. (3) PUBACK 540 = Kafka 고유 540 = InfluxDB 540 — **충족(유실 0, 중복 3)**. (4) DLQ 0 등 — **충족**. (5) Timer 합 543 = 수신 543 — **충족**. (6) Alertmanager 외부 발송 없음 — **충족**. 실패 기준 해당 없음.
+**판정**(실행 전 기준): (1) 게이지 부재 0, pause 구간 in_progress=1, elapsed 증가 표본 있음 — **충족**. (2) 알림 안 뜸 — **예측대로**. (3) PUBACK 540 = Kafka 고유 540 = InfluxDB 540 — **충족(이 실행에서 유실 0, 중복 3)**. (4) DLQ 0 등 — **충족**. (5) Timer 합 543 = 수신 543 — **충족**. (6) Alertmanager 외부 발송 없음 — **충족**. 실패 기준 해당 없음.
 
 **가설과 다른 것**
 - **H1의 모양이 틀렸다.** 게이지가 0~30초 톱니일 것으로 예측했지만 30초 대기는 **첫 메시지 하나뿐**이었다. 첫 spool 보관 뒤에는 `backlog` 플래그로 새 메시지가 Kafka를 거치지 않고 spool로 바로 가서 대기가 1초 미만이 됐다. 알림이 안 뜬다는 결론은 같다. `alerts.yml`·runbook의 "톱니" 서술을 관찰에 맞게 고쳤다.
 - **H2는 가장 이른 쪽으로 맞았다.** 끊김 인지가 끊김 즉시가 아니라 **진행 중 대기가 끝난 직후**(+10.6초)였고, Kafka가 풀리기 전에 재접속했다. D2·D2b(unpause 직후 인지)와 같은 결함 후보의 다른 얼굴이다 — 인지는 "저장 완료"가 아니라 "그 대기의 끝"(여기선 delivery timeout)에 묶였다. 대기 끝 → 57ms 뒤 인지가 옛 연결 PUBACK 쓰기 실패 때문인지 receiver 재개 때문인지는 이 로그로 가를 수 없다.
 
 **새로 본 것 (결함 후보 1, 관찰 1)**
-- **연결 끊김 인터럽트가 동기 spool 쓰기에 닿았다.** 인지 순간 콜백은 다음 메시지(`…24.638Z`)를 처리 중이었고, 그 `send()`는 백로그 때문에 **콜백 스레드에서 직접** spool에 썼다. 인터럽트가 `FileChannel.write`를 `ClosedByInterruptException`으로 끊어 `텔레메트리 로컬 spool 저장 실패` → ACK 안 함 → 재전달 뒤 1회 저장(유실 없음, 이 메시지는 Kafka에 1건). Timer에는 `interrupted`가 아니라 `failed`로 잡혔다(예외가 `InterruptedException`이 아니므로). **부수 효과로 spool 볼륨에 0바이트 `.tmp` 1개가 남았다**(`CREATE_NEW` 뒤 끊김, `D3_spool_dir_after.txt`). 드레인은 `.json`만 읽어 막히지 않았지만(pending 0) 청소하는 코드가 없다. 지우지 않았다. 대기 구간이 `send`까지 덮는 것은 2차 리뷰에서 의도한 것이며(ADR-029 2026-10-06 추가), 동기 spool 경로가 그 안에 있다는 점은 그때 다루지 않았다.
+- **연결 끊김 인터럽트가 동기 spool 쓰기에 닿았다.** 인지 순간 콜백은 다음 메시지(`…24.638Z`)를 처리 중이었고, 그 `send()`는 백로그 때문에 **콜백 스레드에서 직접** spool에 썼다. 인터럽트가 `FileChannel.write`를 `ClosedByInterruptException`으로 끊어 `텔레메트리 로컬 spool 저장 실패` → ACK 안 함 → 재전달 뒤 1회 저장(이 실행에서 이 메시지는 Kafka에 1건, 유실 0 — **1회 관찰**이며, ACK가 안 나갔다는 것만으로 유실이 없다고 일반화하지 않는다. 인터럽트된 메시지는 영속되지 않았으므로 브로커 재전달에 전적으로 기댄다). Timer에는 `interrupted`가 아니라 `failed`로 잡혔다(예외가 `InterruptedException`이 아니므로). **부수 효과로 spool 볼륨에 0바이트 `.tmp` 1개가 남았다**(`CREATE_NEW` 뒤 끊김, `D3_spool_dir_after.txt`). 드레인은 `.json`만 읽어 막히지 않았지만(pending 0) 청소하는 코드가 없다. 지우지 않았다. 대기 구간이 `send`까지 덮는 것은 2차 리뷰에서 의도한 것이며(ADR-029 2026-10-06 추가), 동기 spool 경로가 그 안에 있다는 점은 그때 다루지 않았다.
+  - **후속(2026-10-08)**: 별도 디렉터리에서 재현하고 실패한 쓰기의 `.tmp`를 지우도록 고쳤다 — [`2026-10-08-spool-interrupt-durability.md`](2026-10-08-spool-interrupt-durability.md). 실제 Mosquitto 계약 테스트에서 "spool 쓰기 중 인터럽트 → PUBACK 없음 → 재접속 뒤 DUP 재전달 → spool에 정확히 1건"을 확인했다(Kafka는 mock, 인터럽트 시점은 테스트 훅). 실스택 재실행은 하지 않았다. 볼륨의 0바이트 `.tmp`는 수정 전 증거로 그대로 둔다(수정 코드는 기존 `.tmp`를 지우지 않는다).
 - **"만료"된 레코드가 Kafka에 기록돼 있었다.** 첫 메시지는 클라이언트가 `Expiring … 30007 ms`로 실패 처리했는데 p0 offset 3567(CreateTime 14:52:37.578 = 최초 전송)에 있었다 — unpause 뒤 브로커가 받은 것으로 보인다. spool 사본 2개(3568·3570)와 함께 3중 기록. 저장소가 `(vehicle_id, ms)`로 흡수했다. **timeout은 "발행 안 됨"이 아니다**(P0-2b에 적은 원칙)를 producer 쪽에서 1회 본 것이다.
 
 **한계**: 1회, 단일 차량, 약 2.7건/초, `docker pause`(프로세스 정지)만, 브로커가 닫는 깨끗한 단절만. 알림이 실제로 firing하는 경로(대기 하나 ≥ 45초)는 실스택에서 만들지 않았다 — promtool 단위 테스트와 단위 테스트(게이지 증가)만이 근거다. 끊김 인지 지연의 상한은 여전히 추정이다.
