@@ -1,0 +1,18 @@
+# docker exec telemetry-mosquitto sh -c "ls -la --full-time /mosquitto/data/; strings /mosquitto/data/mosquitto.db | grep -o \"telemetry-backend[-a-z0-9]*\" | sort | uniq -c | sort -rn"
+# collected UTC 2026-10-07 13:02:11 — read-only, on-disk snapshot (state at db mtime, NOT live memory). No MQTT connection.
+total 4944
+drwxr-xr-x    2 mosquitto mosquitto      4096 2026-10-07 12:58:04 +0000 .
+drwxr-xr-x    1 mosquitto mosquitto      4096 2026-10-07 12:58:13 +0000 ..
+-rw-------    1 mosquitto mosquitto   5049635 2026-10-07 12:58:04 +0000 mosquitto.db
+  11719 telemetry-backend-g1
+  10819 telemetry-backend-g2
+      4 telemetry-backend-sys
+      4 telemetry-backend-h2-sys
+      4 telemetry-backend-g2-sys
+      4 telemetry-backend-g1-sys
+      1 telemetry-backendvehicle
+      1 telemetry-backendtelemetry-backend
+      1 telemetry-backend-systelemetry-backend
+      1 telemetry-backend-h2
+      1 telemetry-backend-g2vehicle
+      1 telemetry-backend-g1vehicle

@@ -1,0 +1,12 @@
+# bash cleanup_sessions.sh telemetry-backend
+REFUSED (not in allowlist): 'telemetry-backend' — nothing executed
+exit=3
+# bash cleanup_sessions.sh telemetry-backend-sys
+REFUSED (not in allowlist): 'telemetry-backend-sys' — nothing executed
+exit=3
+# bash cleanup_sessions.sh telemetry-backend-h2
+REFUSED (not in allowlist): 'telemetry-backend-h2' — nothing executed
+exit=3
+# bash cleanup_sessions.sh telemetry-backend-g1 telemetry-backend
+REFUSED (not in allowlist): 'telemetry-backend' — nothing executed
+exit=3

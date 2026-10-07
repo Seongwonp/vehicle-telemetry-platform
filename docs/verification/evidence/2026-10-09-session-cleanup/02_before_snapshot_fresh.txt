@@ -1,0 +1,70 @@
+# docker run --rm -v vehicle-telemetry-platform_mosquitto-data:/data:ro eclipse-mosquitto:2.0 sh -c "<strings counts below>"   (broker STOPPED at 13:02:22 UTC -> fresh snapshot)
+# collected UTC 2026-10-07 13:02:40; read-only mount
+-rw-------    1 mosquitto mosquitto   5049590 2026-10-07 13:02:22 +0000 /data/mosquitto.db
+72067d72c5a39b8d917c22680bc07eb7363c02527c4ca4e7cfbd5c93101be652  /data/mosquitto.db
+## A. client-id occurrences (grep -o)
+  11719 telemetry-backend-g1
+  10819 telemetry-backend-g2
+      5 telemetry-backend-sys
+      4 telemetry-backend-h2-sys
+      4 telemetry-backend-g2-sys
+      4 telemetry-backend-g1-sys
+      1 telemetry-backendvehicle
+      1 telemetry-backend-h2
+      1 telemetry-backend-g2vehicle
+      1 telemetry-backend-g1vehicle
+      1 telemetry-backend
+## B. lines starting with telemetry-backend (session + subscription records)
+      1 telemetry-backend
+  11719 telemetry-backend-g1
+      1 telemetry-backend-g1-sys
+      1 telemetry-backend-g1-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g1-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g1vehicle/telemetry/#
+  10819 telemetry-backend-g2
+      1 telemetry-backend-g2-sys
+      1 telemetry-backend-g2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-g2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-g2vehicle/telemetry/#
+      1 telemetry-backend-h2
+      1 telemetry-backend-h2-sys
+      1 telemetry-backend-h2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys
+      1 telemetry-backend-sys$SYS/broker/clients/connected
+      1 telemetry-backend-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys$SYS/broker/uptime
+      1 telemetry-backendvehicle/telemetry/#
+## C. stored message bodies per vehicle_id
+      3 "vehicle_id":"OPTF-E2E"
+## total bodies
+3
+## C (corrected). bodies per vehicle_id, pattern "vehicle_id": *"X" (publishers differ in spacing/key order)
+      3 "vehicle_id":"OPTF-E2E"
+    720 "vehicle_id":"OUTAGE-E3"
+    720 "vehicle_id":"OUTAGE-P"
+    300 "vehicle_id":"OUTAGE-R"
+    720 "vehicle_id":"OUTAGE-S"
+    767 "vehicle_id":"OUTAGE-T"
+      5 "vehicle_id":"OUTAGE-TR"
+   1592 "vehicle_id":"OUTAGE-U"
+    360 "vehicle_id":"RECON-D2"
+    240 "vehicle_id":"RECON-D2B"
+     63 "vehicle_id":"RECON-D2C"
+    540 "vehicle_id":"RECON-D3"
+      5 "vehicle_id":"RECON-D3Z"
+      1 "vehicle_id":"RECON-PRB"
+      5 "vehicle_id":"RECON-ZR"
+    900 "vehicle_id":"SESSLOSS-G2"
+   1350 "vehicle_id":"SIM-001"
+   1350 "vehicle_id":"SIM-002"
+   1350 "vehicle_id":"SIM-003"
+    720 "vehicle_id":"STUCK-CTL"
+      5 "vehicle_id":"STUCK-CTLZ"
+      1 "vehicle_id":"STUCK-WARM"
+## total bodies
+11717

@@ -1,0 +1,43 @@
+# bash cleanup_sessions.sh telemetry-backend-g1 telemetry-backend-g2 telemetry-backend-g1-sys telemetry-backend-g2-sys
+== 2026-10-07 13:03:38 UTC clean-session connect as 'telemetry-backend-g1'
+Client telemetry-backend-g1 sending CONNECT
+Client telemetry-backend-g1 received CONNACK (0)
+Client telemetry-backend-g1 sending SUBSCRIBE (Mid: 1, Topic: telemetrix/session-cleanup/noop, QoS: 0, Options: 0x00)
+Client telemetry-backend-g1 received SUBACK
+Subscribed (mid: 1): 0
+Client telemetry-backend-g1 sending DISCONNECT
+   exit=0
+== 2026-10-07 13:03:43 UTC clean-session connect as 'telemetry-backend-g2'
+Client telemetry-backend-g2 sending CONNECT
+Client telemetry-backend-g2 received CONNACK (0)
+Client telemetry-backend-g2 sending SUBSCRIBE (Mid: 1, Topic: telemetrix/session-cleanup/noop, QoS: 0, Options: 0x00)
+Client telemetry-backend-g2 received SUBACK
+Subscribed (mid: 1): 0
+Client telemetry-backend-g2 sending DISCONNECT
+   exit=0
+== 2026-10-07 13:03:48 UTC clean-session connect as 'telemetry-backend-g1-sys'
+Client telemetry-backend-g1-sys sending CONNECT
+Client telemetry-backend-g1-sys received CONNACK (0)
+Client telemetry-backend-g1-sys sending SUBSCRIBE (Mid: 1, Topic: telemetrix/session-cleanup/noop, QoS: 0, Options: 0x00)
+Client telemetry-backend-g1-sys received SUBACK
+Subscribed (mid: 1): 0
+Client telemetry-backend-g1-sys sending DISCONNECT
+   exit=0
+== 2026-10-07 13:03:53 UTC clean-session connect as 'telemetry-backend-g2-sys'
+Client telemetry-backend-g2-sys sending CONNECT
+Client telemetry-backend-g2-sys received CONNACK (0)
+Client telemetry-backend-g2-sys sending SUBSCRIBE (Mid: 1, Topic: telemetrix/session-cleanup/noop, QoS: 0, Options: 0x00)
+Client telemetry-backend-g2-sys received SUBACK
+Subscribed (mid: 1): 0
+Client telemetry-backend-g2-sys sending DISCONNECT
+   exit=0
+script exit=0
+## broker log lines for these connects
+1791378221: New client connected from 172.18.0.12:36084 as telemetry-backend-g1 (p2, c1, k60).
+1791378221: Client telemetry-backend-g1 disconnected.
+1791378226: New client connected from 172.18.0.12:36094 as telemetry-backend-g2 (p2, c1, k60).
+1791378226: Client telemetry-backend-g2 disconnected.
+1791378231: New client connected from 172.18.0.12:43774 as telemetry-backend-g1-sys (p2, c1, k60).
+1791378231: Client telemetry-backend-g1-sys disconnected.
+1791378236: New client connected from 172.18.0.12:43780 as telemetry-backend-g2-sys (p2, c1, k60).
+1791378236: Client telemetry-backend-g2-sys disconnected.

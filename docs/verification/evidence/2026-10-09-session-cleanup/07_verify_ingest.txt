@@ -1,0 +1,12 @@
+# bash docs/verification/evidence/2026-10-05-mqtt-session-loss/influx_count.sh SESSCLN-1009   (before publish: empty = 0 rows)
+# publish: mosquitto_pub -q 1 -t vehicle/telemetry/SESSCLN-1009 -l < 06_verify_pub5.payloads.jsonl -> sent=5 PUBACK=5
+# collected UTC 2026-10-07 13:04:51
+,,0,2026-09-07T13:04:52.021537724Z,2026-10-07T13:04:52.021537724Z,5
+## backend reconnect (broker log)
+1791378268: New client connected from 172.18.0.11:39536 as telemetry-backend-sys (p2, c0, k60).
+1791378282: New client connected from 172.18.0.12:58742 as auto-B64D805A-02AF-EB91-C623-1596BDDA3022 (p2, c1, k60).
+## backend log, last lines mentioning mqtt/subscribe
+13:02:22 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+13:02:22 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+13:04:11 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost
+13:04:11 [-] [-] ERROR o.s.i.m.i.MqttPahoMessageDrivenChannelAdapter - Lost connection: Connection lost

@@ -1,0 +1,27 @@
+# Experiment-G MQTT session cleanup (M1-M4) + leak check — metadata
+date (host clock): 2026-10-07 13:02-13:07 UTC  (directory named 2026-10-09 per task; host clock differs from doc dates, see inventory header)
+HEAD: 3d6ab2859ac641c23fe37a69852e9696b879668a (working tree clean except this directory)
+stack: docker-compose.yml + docker-compose.dev.yml (mosquitto-dev.conf: listener 1883, allow_anonymous true, persistence true,
+       no autosave_interval -> default; no ACL on the dev listener). Mosquitto port map 127.0.0.1:1883, 127.0.0.1:18883->8883.
+       simulator container: Exited before this work (no publisher during cleanup).
+approval: user-approved in chat, scope = exactly telemetry-backend-g1, -g2, -g1-sys, -g2-sys. NOT -h2 / -h2-sys.
+
+timeline (UTC)
+13:02:11  01 read-only strings of on-disk db (mtime 12:58:04)
+13:02:22  docker stop telemetry-mosquitto  (broker down ~39 s; backend MQTT "Lost connection" logged)
+13:02:31  backup copy of mosquitto.db out of volume (read-only mount) -> scratchpad (outside repo)
+13:02:40  02 fresh before-snapshot (db mtime 13:02:22)
+13:03:01  docker start telemetry-mosquitto; backend reconnected as telemetry-backend / -sys (c0)
+13:03:3x  03 allowlist refusal test (no connection made for refused ids)
+13:03:38-13:03:53  04 cleanup: 4 clean-session connects (c1), each exit 0
+13:04:10  docker stop telemetry-mosquitto; 05 after-snapshot (db mtime 13:04:11); 13:04:19 docker start
+13:04:26  backend reconnected (broker log)
+13:04:3x  06/07 publish 5 x QoS1 SESSCLN-1009 -> PUBACK 5 -> InfluxDB 0 -> 5
+13:06-13:07  08 PostgreSQL / 09 InfluxDB tags / 10 Grafana panel series (read-only); 11 code reading
+
+backup (NOT in repo): C:\Users\USER\AppData\Local\Temp\claude\D--vehicle-telemetry-platform\d456ac25-a739-4b31-8e65-c5c2cb0ea080\scratchpad\mosq-backup\mosquitto.db.20261007T1302Z-before-g1g2-cleanup
+  size 5,049,590 bytes, sha256 72067d72c5a39b8d917c22680bc07eb7363c02527c4ca4e7cfbd5c93101be652 (== volume file at copy time)
+  NOTE: scratchpad is a session temp dir — move it somewhere durable if it must be kept. File-level restore only
+  (restoring it also rolls back telemetry-backend/-sys and h2 sessions to 13:02:22).
+
+new residue created by this work: InfluxDB vehicle_id SESSCLN-1009, 5 rows at 2026-10-07T13:04:32.001-.005Z (verification publish).

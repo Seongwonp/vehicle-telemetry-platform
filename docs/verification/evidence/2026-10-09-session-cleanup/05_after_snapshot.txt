@@ -1,0 +1,26 @@
+# broker stopped (docker stop telemetry-mosquitto) after cleanup; same read-only strings method as 02
+# collected UTC 2026-10-07 13:04:12
+-rw-------    1 mosquitto mosquitto       969 2026-10-07 13:04:11 +0000 /data/mosquitto.db
+2760b3acf096f3eab01cc66cdece49878edc0c7292461baa24c140e42abfb62a  /data/mosquitto.db
+## A. client-id occurrences
+      5 telemetry-backend-sys
+      4 telemetry-backend-h2-sys
+      1 telemetry-backendvehicle
+      1 telemetry-backend-h2
+      1 telemetry-backend
+## B. session + subscription records
+      1 telemetry-backend
+      1 telemetry-backend-h2
+      1 telemetry-backend-h2-sys
+      1 telemetry-backend-h2-sys$SYS/broker/clients/connected
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-h2-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys
+      1 telemetry-backend-sys$SYS/broker/clients/connected
+      1 telemetry-backend-sys$SYS/broker/publish/messages/dropped
+      1 telemetry-backend-sys$SYS/broker/publish/messages/received
+      1 telemetry-backend-sys$SYS/broker/uptime
+      1 telemetry-backendvehicle/telemetry/#
+## C. bodies per vehicle_id
+## total bodies
+0

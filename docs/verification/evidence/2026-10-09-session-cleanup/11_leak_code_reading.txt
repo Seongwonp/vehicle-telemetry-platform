@@ -1,0 +1,44 @@
+# Code reading: do experiment vehicle rows reach the app list, anomaly history, or aggregates?
+# HEAD 3d6ab2859ac641c23fe37a69852e9696b879668a. Read-only. Paired with 08 (PostgreSQL), 09 (InfluxDB tags), 10 (Grafana panel series).
+# REST endpoints were NOT called (no login performed) — conclusions about REST are from code only.
+
+## Ingest path — no registration filter (why experiment rows exist at all)
+- MQTT/Kafka storage path (backend/src/main/java/com/telemetry/kafka, mqtt) never consults VehicleRepository:
+  any contract-valid vehicle_id is written to InfluxDB and pushed to /topic/vehicle/{id}/... (kafka/TelemetryConsumer.java:219-220, 248-249).
+- anomaly-detector/anomaly_detector.py detects for any vehicle_id; alerts are stored by AnomalyService.save (no registration check).
+
+## (a) App vehicle list
+- GET /api/vehicles -> VehicleService.findAllVisibleTo (service/VehicleService.java:61-80):
+  ids come from PostgreSQL vehicles (findAllByActiveTrue for admin, findAllByOwner_UsernameAndActiveTrue otherwise);
+  InfluxDB latest values / HIGH counts are then fetched ONLY for those ids
+  (TelemetryQueryService.getLatestByVehicleIds filter r.vehicle_id == <each id>, :95-118; AnomalyAlertRepository.countHighByVehicleIds IN :vehicleIds).
+- vehicles table holds only SIM-001, SIM-002 (08). => experiment ids cannot appear in the list. Fleet summary fields
+  (VehicleResponse.summaryStatus) are per listed vehicle, so they do not mix experiment rows either.
+
+## (b) Anomaly history
+- /api/vehicles/{id}/anomalies[/count|/page] (controller/AnomalyController.java) all filter vehicleId == path id
+  (AnomalyService.getRecent/countByVehicleId/search, :147-163).
+- VehicleAccessInterceptor on /api/vehicles/* and /api/vehicles/*/** (config/WebMvcConfig.java:25-26) ->
+  VehicleAccessService.canAccess (security/VehicleAccessService.java:21-30): admin needs existsByVehicleIdAndActiveTrue,
+  others need ownership. Unregistered ids (all experiment ids, and SIM-003) are refused for every user incl. admin.
+- WebSocket /topic/vehicle/{id}/(telemetry|anomalies) subscribe uses the same canAccess (config/WebSocketAuthChannelInterceptor.java:33, 97).
+  The server still PUBLISHES frames for experiment ids, but nobody can subscribe to them.
+- No fleet-wide / admin anomaly listing endpoint exists (only per-vehicle mappings; grep of @GetMapping).
+- Alert rows for unregistered ids exist in PostgreSQL: OPTF-E2E 1, SCHEMA145736-K03/K08/M03 1 each, SIM-003 466 (08) —
+  stored but not reachable through REST/WebSocket.
+- Webhook notifier (anomaly-detector/notifier.py) would send alerts for ANY vehicle_id, unfiltered, when WEBHOOK_URL is set;
+  in the running stack it is unset on all 3 detector containers (checked presence only, value not printed).
+
+## (c) Aggregates
+- Grafana monitoring/grafana/dashboards/vehicle-telemetry.json, 5 InfluxDB panels (lines 16, 39, 62, 83, 106):
+  filter only _measurement and _field — NO vehicle_id filter and NO registered-vehicle join; no template variable.
+  No group() -> aggregateWindow(mean) runs per series (series key = vehicle_id, the only tag), so experiment vehicles are
+  NOT averaged into SIM values; they appear as EXTRA LINES whenever their timestamps fall inside the time range
+  (default now-30m). 10: at 13:07 UTC the panel range returned SESSCLN-1009, SIM-050, STUCK-CTLZ besides SIM-001~003.
+- Grafana pipeline-funnel.json / backend-metrics.json: Prometheus counters/rates without vehicle labels
+  (telemetry_mqtt_messages_received_total, telemetry_influx_points_written_total, ...). Experiment traffic is counted
+  in those rates at the time it was sent; it is not separable afterwards (no vehicle label). Not a stored-row leak.
+- anomaly-detector ML (IsolationForest): one model per Kafka PARTITION, mixing all vehicles hashed to it, sliding window
+  ML_WINDOW_SIZE=2000 samples, state persisted to Redis (anomaly_detector.py:147-188). Experiment messages enter the training
+  window while recent; they roll out after 2,000 newer messages on that partition (inference from code; Redis state blob not read).
+- Backend REST has no fleet-wide aggregate query: every Flux in TelemetryQueryService filters r.vehicle_id == <id> (:104, :148, :178).

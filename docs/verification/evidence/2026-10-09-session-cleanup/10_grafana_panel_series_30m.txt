@@ -1,0 +1,9 @@
+# Grafana "vehicle-telemetry" panel query (no vehicle_id filter, no group()) reduced to which series it returns: from(bucket) |> range(start: -30m) |> filter(_measurement==vehicle_telemetry and _field==speed) |> group(columns:[vehicle_id]) |> count()   (dashboard default time = now-30m)
+# collected UTC 2026-10-07 13:07:08
+_value,vehicle_id
+5,SESSCLN-1009
+548,SIM-001
+548,SIM-002
+548,SIM-003
+1,SIM-050
+5,STUCK-CTLZ

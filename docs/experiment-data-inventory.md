@@ -22,7 +22,7 @@
 
 | 저장소 | 실험 잔여물 | 상태 |
 | --- | --- | --- |
-| Mosquitto 영속 세션 | `telemetry-backend-g1`·`-g1-sys`·`-g2`·`-g2-sys`·`-h2`·`-h2-sys` (6개) | 남아 있음. **g1·g2는 `vehicle/telemetry/#` 구독을 가진 채 오프라인이라 메시지가 쌓이고 있다**(추정, §1) |
+| Mosquitto 영속 세션 | `telemetry-backend-g1`·`-g1-sys`·`-g2`·`-g2-sys`·`-h2`·`-h2-sys` (6개) | **g1·g2·g1-sys·g2-sys 4개는 사용자 승인으로 삭제했다(host 2026-10-07 13:03 UTC, §6-5).** 남은 것은 `-h2`·`-h2-sys`(M5·M6, 요청 범위 밖) |
 | InfluxDB `telemetry` 버킷 | 실험 차량 28개 tag (총 8,222행) + 시뮬레이터 SIM-001~003 (63,581행) | 남아 있음. 버킷 보존 2160h(90일) |
 | Kafka DLQ·운영 토픽 | 6개 토픽 **전부 비어 있음**(earliest = latest) | retention 1시간으로 만료. 09-29 문서의 "RPL DLQ 레코드가 남아 있다"는 **더 이상 사실이 아니다** |
 | Kafka 테스트 토픽 | `itc-220850-*`·`itc-t1-*` (6개) | 토픽은 남음, 레코드는 만료(비어 있음) |
@@ -168,18 +168,20 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 
 #### Mosquitto 영속 세션 (`mosquitto-data` 볼륨의 `mosquitto.db`)
 
+> **갱신(host 2026-10-07 13:03 UTC): M1~M4는 사용자 승인으로 삭제했다. M5·M6은 남아 있다.** 삭제 직전 건수·백업·검증은 [§6-5](#6-5-m1m4-삭제-실행-기록-사용자-승인). 아래 표의 dry-run 수치는 그 이전 값이다.
+
 삭제 방법(실행 안 함): 같은 client ID로 **clean_session=true** 접속 후 즉시 끊기 —
 `docker run --rm --network vehicle-telemetry-platform_telemetry-net eclipse-mosquitto:2.0 mosquitto_sub -h mosquitto -p 1883 -i <CLIENT_ID> -t 'telemetrix/session-cleanup/noop' -q 0 -E`.
 브로커는 clean session CONNECT를 받는 순간 그 ID의 구독과 큐를 **전달 없이 버린다** — **이 접속 자체가 삭제다.** 운영 ID `telemetry-backend`·`-sys`에는 절대 쓰지 않는다 — 실행 중 백엔드가 끊기는 데 그치지 않고, **그 영속 세션의 구독과 아직 PUBACK 안 된 QoS 1 큐가 버려진다.** ADR-029 ACK 경계가 재전달을 기대는 바로 그 메시지라 **실제 유실**이 된다. 스크립트로 만들 경우 위 6개 ID의 **정확한 허용 목록**만 받게 한다(2차 리뷰). `mosquitto.db` 파일 삭제는 운영 세션까지 지우므로 쓰지 않는다. `mosquitto_ctrl`/dynsec kick은 오프라인 세션을 못 지우고 dev 설정엔 dynsec도 없다. 사후 확인은 브로커 정지 뒤 스냅샷으로만 가능하다(`dryrun_02`).
 
 | # | 식별자 | 생성한 실험 | 연관 데이터 | dry-run (같은 대상 읽기 전용) | 삭제 영향 | 복구 가능 여부 |
 | --- | --- | --- | --- | --- | --- | --- |
-| M1 | `telemetry-backend-g1` | [실험 G](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-05-mqtt-session-loss/override_g1.yml`) | `vehicle/telemetry/#` QoS1 구독 + **오프라인 큐 약 10,447건**(차량: OUTAGE-E3·S·R·T·TR·P·U, RECON-PRB·D2·D2B·D2C·ZR·D3·D3Z, SESSLOSS-G2, OPTF-E2E, SIM-001~003 각 1,168). 이 메시지들은 `telemetry-backend` 세션으로 이미 저장 경로를 탄 사본이다 | client ID 문자열 **10,447회**(`dryrun_01`) | 실험 G 주장은 evidence 파일로 닫혀 있다(evidence already in files). **남겨 두면 브로커 가동 중 텔레메트리가 발행될 때마다 큐가 자란다**(정지 중엔 아님, 상한 100,000 — §6-3-b). 누가 이 ID로 백엔드를 띄우면 약 1만 건이 재전달되어 **InfluxDB에서 지운 행이 되살아날 수 있다** — InfluxDB 행을 지운다면 이 세션을 먼저(또는 함께) 지워야 한다 | 큐 내용은 **복구 불가**(사본이라 손실은 없음). 세션 자체는 실험 G 절차(`MQTT_CLIENT_ID=telemetry-backend-g1`, c0)로 다시 만들 수 있으나 큐는 그 뒤 발행분만 쌓인다 |
-| M2 | `telemetry-backend-g2` | 실험 G (`override_g2.yml`) | 같은 구독 + 큐 약 **9,547건**(= g1 − SESSLOSS-G2 900) | **9,547회** | 같음. 본문은 g1과 참조를 나눠 가져 **g1·g2를 둘 다 지워야** 공유 본문이 풀린다 | 같음 |
-| M3 | `telemetry-backend-g1-sys` | 실험 G (백엔드가 `<clientId>-sys`로 자동 생성, `MqttConfig.java:183`; evidence `G2_mosq_before/after.txt`에 기록) | `$SYS` 구독 3개. `$SYS`는 QoS0이라 오프라인 큐 없음 | 문자열 4회(세션 1 + 구독 3) | 없음(큐 없음). 실험 G evidence 파일에 이미 있음 | 실험 G 재실행 시 자동 재생성 |
-| M4 | `telemetry-backend-g2-sys` | 실험 G | 같음 | 4회 | 같음 | 같음 |
-| M5 | `telemetry-backend-h2` | [실험 H-2·H-2a](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-06-timeout-alert/H2_override-h2.yml`) | **구독 기록 없음**(SUBACK 거부 실험) → 큐 없음 | 1회 | 없음. evidence already in files | H-2 재실행으로 재생성 |
-| M6 | `telemetry-backend-h2-sys` | 실험 H-2 (`H2_mosquitto_log.txt`에 기록) | `$SYS` 구독 3개, 큐 없음 | 4회 | 없음 | 같음 |
+| M1 **삭제됨** | `telemetry-backend-g1` | [실험 G](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-05-mqtt-session-loss/override_g1.yml`) | `vehicle/telemetry/#` QoS1 구독 + **오프라인 큐 약 10,447건**(차량: OUTAGE-E3·S·R·T·TR·P·U, RECON-PRB·D2·D2B·D2C·ZR·D3·D3Z, SESSLOSS-G2, OPTF-E2E, SIM-001~003 각 1,168). 이 메시지들은 `telemetry-backend` 세션으로 이미 저장 경로를 탄 사본이다 | client ID 문자열 **10,447회**(`dryrun_01`) | 실험 G 주장은 evidence 파일로 닫혀 있다(evidence already in files). **남겨 두면 브로커 가동 중 텔레메트리가 발행될 때마다 큐가 자란다**(정지 중엔 아님, 상한 100,000 — §6-3-b). 누가 이 ID로 백엔드를 띄우면 약 1만 건이 재전달되어 **InfluxDB에서 지운 행이 되살아날 수 있다** — InfluxDB 행을 지운다면 이 세션을 먼저(또는 함께) 지워야 한다 | 큐 내용은 **복구 불가**(사본이라 손실은 없음). 세션 자체는 실험 G 절차(`MQTT_CLIENT_ID=telemetry-backend-g1`, c0)로 다시 만들 수 있으나 큐는 그 뒤 발행분만 쌓인다 |
+| M2 **삭제됨** | `telemetry-backend-g2` | 실험 G (`override_g2.yml`) | 같은 구독 + 큐 약 **9,547건**(= g1 − SESSLOSS-G2 900) | **9,547회** | 같음. 본문은 g1과 참조를 나눠 가져 **g1·g2를 둘 다 지워야** 공유 본문이 풀린다 | 같음 |
+| M3 **삭제됨** | `telemetry-backend-g1-sys` | 실험 G (백엔드가 `<clientId>-sys`로 자동 생성, `MqttConfig.java:183`; evidence `G2_mosq_before/after.txt`에 기록) | `$SYS` 구독 3개. `$SYS`는 QoS0이라 오프라인 큐 없음 | 문자열 4회(세션 1 + 구독 3) | 없음(큐 없음). 실험 G evidence 파일에 이미 있음 | 실험 G 재실행 시 자동 재생성 |
+| M4 **삭제됨** | `telemetry-backend-g2-sys` | 실험 G | 같음 | 4회 | 같음 | 같음 |
+| M5 남음 | `telemetry-backend-h2` | [실험 H-2·H-2a](verification/2026-10-01-mqtt-ack-boundary.md) (`2026-10-06-timeout-alert/H2_override-h2.yml`) | **구독 기록 없음**(SUBACK 거부 실험) → 큐 없음 | 1회 | 없음. evidence already in files | H-2 재실행으로 재생성 |
+| M6 남음 | `telemetry-backend-h2-sys` | 실험 H-2 (`H2_mosquitto_log.txt`에 기록) | `$SYS` 구독 3개, 큐 없음 | 4회 | 없음 | 같음 |
 
 큐 길이 한계: `mosquitto.db`를 파싱하지 않고 `strings` 출현 횟수로 셌다. g1 10,447 vs 본문 10,445(차이 2)처럼 ±몇 건의 오차가 있다.
 
@@ -255,11 +257,13 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 | --- | --- | --- | ---: | ---: |
 | 1차 목록 | 2026-10-06 14:37:41 | 2026-10-06 05:16:45 | 약 9,899 | 약 8,999 |
 | dry-run | 2026-10-06 15:52:08 | 2026-10-06 15:16:58 | 약 10,447 | 약 9,547 |
+| 삭제 직전(§6-5) | 2026-10-07 13:02:40 | 2026-10-07 13:02:22 (브로커 정지로 갱신) | 약 11,719 | 약 10,819 |
+| 삭제 뒤(§6-5) | 2026-10-07 13:04:12 | 2026-10-07 13:04:11 | **0** (세션 없음) | **0** (세션 없음) |
 
 - **증가는 두 스냅샷 사이(10-06 05:16:45 → 15:16:58 UTC), 브로커가 가동 중이던 구간에서 일어났다.** 그 구간에 `vehicle/telemetry/#`로 발행된 실험 메시지(D3 540 + D3Z 5 + OPTF-E2E 3 = 548)와 증가분 +548이 정확히 같다.
 - **스택이 정지한 동안에는 늘지 않는다**(브로커가 꺼져 있으면 받을 메시지가 없다). 앞선 보고의 "지금도 계속 증가"는 "브로커가 가동되고 누군가 `vehicle/telemetry/#`로 발행하는 동안 늘어난다"로 고친다.
 - 현재 다른 발행자: dry-run 뒤 스택은 `stop` 상태이고, 시뮬레이터 profile은 dry-run 기동에 포함되지 않았다(그 에이전트 보고 기준). 다음에 시뮬레이터를 켜면 초당 발행량만큼 두 큐가 다시 늘어난다(상한 `max_queued_messages` 100,000).
-- **clean session 접속 금지(재확인)**: 두 ID가 실험 전용임은 실험 G 문서·증거의 client ID와 일치하는 것까지만 확인했다. 사용자가 실험 전용임을 확정하기 전에는 어떤 정리 접속도 하지 않는다.
+- **clean session 접속 금지(재확인)**: 두 ID가 실험 전용임은 실험 G 문서·증거의 client ID와 일치하는 것까지만 확인했다. 사용자가 실험 전용임을 확정하기 전에는 어떤 정리 접속도 하지 않는다. **→ 사용자가 g1·g2(+`-sys`)를 확정·승인해 §6-5에서 삭제했다.**
 
 ### 6-3-c. 삭제 후보별 복구 가능한 백업 방법 (실행 안 함)
 
@@ -276,6 +280,69 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 1. Mosquitto M1·M2(큐가 있는 것)를 먼저 — 남겨 둔 채 InfluxDB만 지우면, 이 ID로 누가 접속할 때 OUTAGE-E3 이후 실험 행과 SIM 행이 재전달로 다시 쓰인다.
 2. InfluxDB I1~I15(tag마다 명령 1개), PostgreSQL P1·P2, Kafka K1.
 3. 각 단계 뒤 이 절의 dry-run 조회를 그대로 다시 돌려 0이 되는지 확인. Mosquitto는 브로커 정지 뒤 스냅샷으로만 확인된다.
+
+### 6-5. M1~M4 삭제 실행 기록 (사용자 승인)
+
+상태: **실행 완료.** 범위는 사용자가 지정한 4개 ID뿐이다 — `telemetry-backend-g1`·`-g2`·`-g1-sys`·`-g2-sys`. `-h2`·`-h2-sys`(M5·M6)는 요청에 없어 **건드리지 않았고 남아 있다.** InfluxDB·PostgreSQL·Kafka는 지우지 않았다.
+시각: 호스트 시계 2026-10-07 13:02~13:07 UTC(이 문서의 다른 시각과 같은 호스트 시계 어긋남 주의). HEAD `3d6ab28`. dev compose(평문 1883, `allow_anonymous true`, dev 리스너에 ACL 없음). 시뮬레이터는 시작 전에 이미 종료 상태였다.
+원본: [`docs/verification/evidence/2026-10-09-session-cleanup/`](verification/evidence/2026-10-09-session-cleanup/) (`00_metadata.txt`에 타임라인).
+
+**삭제 직전 기록** (`02_before_snapshot_fresh.txt` — 브로커를 정지해 13:02:22에 새로 쓰인 스냅샷을 읽기 전용 마운트로 `strings`. 정지 직전 디스크 스냅샷(mtime 12:58:04, `01`)과 수치 동일)
+
+| ID | 소유·목적 | 구독 | 큐(스냅샷 문자열 수, 추정) |
+| --- | --- | --- | ---: |
+| `telemetry-backend-g1` | [실험 G](verification/2026-10-01-mqtt-ack-boundary.md#실험-g--세션-없는-재시작과-구독-2026-10-05) (`MQTT_CLIENT_ID` override, `2026-10-05-mqtt-session-loss/override_g1.yml`) | `vehicle/telemetry/#` (QoS1) | **11,719** (본문 11,717 — OUTAGE-E3·P·R·S·T·TR·U, RECON-D2·D2B·D2C·D3·D3Z·PRB·ZR, SESSLOSS-G2 900, OPTF-E2E 3, STUCK-CTL 720·CTLZ 5·WARM 1, SIM-001~003 각 1,350) |
+| `telemetry-backend-g2` | 실험 G (`override_g2.yml`) | `vehicle/telemetry/#` (QoS1) | **10,819** (= g1 − SESSLOSS-G2 900) |
+| `telemetry-backend-g1-sys` | 실험 G (백엔드가 `<clientId>-sys`로 자동 생성) | `$SYS/broker/{publish/messages/received, publish/messages/dropped, clients/connected}` | 0 (`$SYS` QoS0, 큐 없음) |
+| `telemetry-backend-g2-sys` | 실험 G | 같은 `$SYS` 3개 | 0 |
+
+dry-run(10,447 / 9,547) 이후 +1,272 = SIM 3대 × 182 + STUCK-* 726 — 그 사이 시뮬레이터와 다른 실험(STUCK)이 발행한 만큼 두 큐가 같이 자랐다.
+
+**백업(§6-3-c 방식)**: 브로커 정지 상태에서 볼륨을 읽기 전용으로 마운트해 `mosquitto.db`를 저장소 **밖**으로 복사했다.
+위치 `C:\Users\USER\AppData\Local\Temp\claude\D--vehicle-telemetry-platform\d456ac25-…\scratchpad\mosq-backup\mosquitto.db.20261007T1302Z-before-g1g2-cleanup`(전체 경로는 `00_metadata.txt`), → **보존용 사본: `D:ehicle-telemetry-backups\mosquitto.db.20261007T1302Z-before-g1g2-cleanup`**(저장소 밖, 같은 sha256 `72067d72…be652` 확인 — 세션 임시 폴더는 지워질 수 있다).
+**5,049,590 bytes, sha256 `72067d72c5a39b8d917c22680bc07eb7363c02527c4ca4e7cfbd5c93101be652`**(복사 시점 볼륨 파일과 같은 해시).
+**주의**: 세션 임시 디렉터리다 — 보관하려면 다른 곳으로 옮겨야 한다. 파일 단위 복원이라 되돌리면 운영 세션·h2 세션도 13:02:22 상태로 돌아간다.
+
+**삭제 방법**: [`cleanup_sessions.sh`](verification/evidence/2026-10-09-session-cleanup/cleanup_sessions.sh) — 정확히 4개 ID만 받는 하드 허용 목록. 인자 중 하나라도 목록 밖이면 **접속 없이 전체 거부**(종료 코드 3). 각 ID로 일회용 `eclipse-mosquitto:2.0` 컨테이너(compose 네트워크)에서 `mosquitto_sub -h mosquitto -p 1883 -i <ID> -t telemetrix/session-cleanup/noop -q 0 -E` (‑c 없음 = clean session).
+거부 시험(`03`): `telemetry-backend`, `telemetry-backend-sys`, `telemetry-backend-h2`, 허용 ID와 운영 ID 혼합 — 4건 모두 접속 없이 거부. 운영 ID로는 한 번도 접속하지 않았다.
+
+**결과** (`04`, `05`)
+
+| 확인 | 결과 |
+| --- | --- |
+| 4개 접속 | 13:03:38~53, 각각 CONNACK 0 → SUBACK → DISCONNECT, exit 0. 브로커 로그 `as telemetry-backend-g1 (p2, c1, k60)` 등 4줄 |
+| 삭제 뒤 스냅샷(브로커 정지, mtime 13:04:11) | g1·g2·g1-sys·g2-sys 문자열 **0**, 저장된 메시지 본문 **0**, 파일 5,049,590 → 969 bytes |
+| 남은 세션 | `telemetry-backend`(`vehicle/telemetry/#`), `telemetry-backend-sys`($SYS 4개), `telemetry-backend-h2`(구독 없음), `telemetry-backend-h2-sys`($SYS 3개) |
+| 백엔드 재접속 | 브로커 재기동마다 `telemetry-backend`·`-sys` (c0) 재접속(마지막 13:04:26). 브로커 정지 2회(13:02:22~13:03:01, 13:04:10~13:04:19) 동안 백엔드 로그에 `Lost connection` — 의도한 짧은 중단 |
+| 수집 확인(`06`, `07`) | `SESSCLN-1009` QoS1 5건 발행 → PUBACK 5 → InfluxDB 0 → **5** |
+
+**이 작업이 새로 남긴 것**: InfluxDB `SESSCLN-1009` 5행(2026-10-07T13:04:32.001~.005Z, 확인용 발행).
+**한계**: 큐 길이는 여전히 `strings` 추정(파싱 아님). 삭제 뒤 본문 0은 운영 세션 `telemetry-backend`가 그 시점 큐를 비워 둔 상태였다는 뜻이기도 하다(운영 세션 큐를 직접 본 것은 아님).
+
+## 7. 실험 행이 앱·이력·집계에 섞이는지
+
+상태: **읽기 전용 확인(코드 + SQL/Flux).** 삭제 없음. REST는 호출하지 않았다(로그인 없음) — REST 결론은 코드 근거다.
+원본: 같은 디렉터리 `08_postgres_leak_check.txt`(`BEGIN READ ONLY … ROLLBACK`), `09_influx_vehicle_ids.txt`, `10_grafana_panel_series_30m.txt`, `11_leak_code_reading.txt`(파일·줄 참조).
+
+**전제**: 수집 경로는 차량 등록을 확인하지 않는다. 계약을 통과한 `vehicle_id`는 무엇이든 InfluxDB에 저장되고, 감지기 알림도 PostgreSQL에 저장되며, WebSocket 프레임도 발행된다. 그래서 실험 행은 **저장소에는 있다.** 문제는 어디서 **보이느냐**다.
+
+현재 InfluxDB tag 40개(`09`) 중 PostgreSQL `vehicles`에 있는 것은 `SIM-001`·`SIM-002` **둘뿐**이다(`08`). 문서 목록 이후 새로 생긴 tag: `STUCK-CTL` 720·`STUCK-CTLZ` 5·`STUCK-WARM` 1, `SIM-050` 1, `STOR1-CHK` 3, `SESSCLN-1009` 5(이번 확인용) — 출처 문서는 이번에 대조하지 않았다.
+
+| 경로 | 섞이는가 | 근거 |
+| --- | --- | --- |
+| (a) 앱 차량 목록 `GET /api/vehicles` | **섞이지 않는다** | ID 목록을 PostgreSQL `vehicles`(활성, 관리자는 전체·사용자는 소유)에서 만들고, InfluxDB 최신값·HIGH 건수는 **그 ID들로만** 조회한다(`VehicleService.findAllVisibleTo`, `getLatestByVehicleIds`, `countHighByVehicleIds`). 실험 ID는 `vehicles`에 0건 |
+| (b) 이상 이력 REST `/api/vehicles/{id}/anomalies[/count\|/page]` | **보이지 않는다** | 모두 `vehicleId == {id}` 필터 + `VehicleAccessInterceptor` → `canAccess`: 관리자도 **등록된 활성 차량**이어야 통과. 실험 ID는 관리자에게도 거부 |
+| (b) WebSocket `/topic/vehicle/{id}/(telemetry\|anomalies)` | **구독 불가** | 같은 `canAccess`. 서버는 실험 ID 프레임도 발행하지만 받을 수 있는 구독자가 없다 |
+| (b) 전체/관리자용 이상 목록 | **없음** | 차량 단위 매핑만 있다 |
+| (b) PostgreSQL에 저장된 미등록 차량 알림 | **저장은 됨, 노출 경로 없음** | `OPTF-E2E` 1, `SCHEMA145736-K03`·`K08`·`M03` 각 1, 그리고 **`SIM-003` 466**(시뮬레이터지만 미등록) = 470행. STUCK·OUTAGE·RECON 등은 알림 0 |
+| (b) Webhook 알림(`notifier.py`) | **설정되면 섞인다(현재 꺼짐)** | 차량 필터 없이 모든 알림을 보낸다. 실행 중 감지기 3개 모두 `WEBHOOK_URL` 미설정(존재 여부만 확인) |
+| (c) 백엔드 집계·fleet 요약 | **섞이지 않는다** | `TelemetryQueryService`의 Flux는 전부 `r.vehicle_id == <id>`. fleet 요약 필드는 목록 차량별 값 |
+| (c) Grafana `vehicle-telemetry` 대시보드(5개 InfluxDB 패널) | **섞인다 — 별도 선으로** | `_measurement`·`_field`만 거르고 `vehicle_id` 필터·등록 차량 조인·변수가 없다. `group()`이 없어 차량별로 평균하므로 **SIM 값에 평균으로 섞이지는 않지만**, 시간 범위(기본 now-30m) 안에 실험 행이 있으면 **추가 선으로 나타난다.** 13:07 UTC에 범위가 돌려준 시리즈: SIM-001~003 외 `SESSCLN-1009`·`SIM-050`·`STUCK-CTLZ`(`10`) |
+| (c) Grafana `pipeline-funnel`·`backend-metrics` | **실험 당시 트래픽이 합산돼 있다(분리 불가)** | Prometheus 카운터·rate, 차량 라벨 없음. 저장된 행이 아니라 발행 시점의 처리량이다 |
+| (c) 감지기 ML(IsolationForest) | **최근 실험분은 학습 창에 섞인다(일시적)** | 파티션당 모델 1개(그 파티션의 모든 차량), 슬라이딩 창 2,000건, Redis에 상태 저장. 같은 파티션에 새 메시지 2,000건이 들어오면 빠진다(코드 추론, Redis 상태는 읽지 않음) |
+
+**정리**: 앱(목록·상세·이력·WebSocket)에는 등록된 활성 차량만 보이므로 실험 행이 섞이지 않는다. 섞이는 곳은 **Grafana 텔레메트리 대시보드(별도 선)**, **설정 시 Webhook**, **감지기 ML 학습 창(일시적)**, 그리고 실험 당시의 **Prometheus 처리량**이다. `SIM-003`은 실험이 아니지만 미등록이라 앱에서 보이지 않고(알림 466행 포함) Grafana에만 보인다.
+**확인하지 않은 것**: 실제 REST 호출(관리자 로그인 필요), Grafana 화면 렌더링, Redis ML 상태 내용, 앱 저장소 쪽 코드.
 
 ## 보지 않은 것
 

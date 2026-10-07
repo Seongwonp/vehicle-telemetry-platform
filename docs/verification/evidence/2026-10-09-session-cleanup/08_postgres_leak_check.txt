@@ -1,0 +1,40 @@
+# docker exec -i telemetry-postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -X' < leak.sql   (BEGIN READ ONLY ... ROLLBACK; SQL below)
+#   BEGIN READ ONLY;
+#   \echo '## vehicles (all rows)'
+#   SELECT id, vehicle_id, active, owner_id FROM vehicles ORDER BY id;
+#   \echo '## anomaly_alerts by vehicle_id: registered-in-vehicles? (all ids)'
+#   SELECT a.vehicle_id, count(*) AS alerts, min(a.detected_at) AS first, max(a.detected_at) AS last,
+#          EXISTS (SELECT 1 FROM vehicles v WHERE v.vehicle_id = a.vehicle_id) AS registered,
+#          EXISTS (SELECT 1 FROM vehicles v WHERE v.vehicle_id = a.vehicle_id AND v.active) AS registered_active
+#   FROM anomaly_alerts a GROUP BY a.vehicle_id ORDER BY a.vehicle_id;
+#   \echo '## alerts for unregistered vehicle_ids (total)'
+#   SELECT count(*) FROM anomaly_alerts a WHERE NOT EXISTS (SELECT 1 FROM vehicles v WHERE v.vehicle_id = a.vehicle_id AND v.active);
+#   ROLLBACK;
+# collected UTC 2026-10-07 13:06:14
+BEGIN
+## vehicles (all rows)
+ id | vehicle_id | active | owner_id 
+----+------------+--------+----------
+  1 | SIM-001    | t      |        1
+  2 | SIM-002    | t      |        5
+(2 rows)
+
+## anomaly_alerts by vehicle_id: registered-in-vehicles? (all ids)
+    vehicle_id    | alerts |         first          |          last          | registered | registered_active 
+------------------+--------+------------------------+------------------------+------------+-------------------
+ OPTF-E2E         |      1 | 2026-10-06 15:16:14+00 | 2026-10-06 15:16:14+00 | f          | f
+ SCHEMA145736-K03 |      1 | 2026-09-09 06:03:56+00 | 2026-09-09 06:03:56+00 | f          | f
+ SCHEMA145736-K08 |      1 | 2026-09-09 06:03:56+00 | 2026-09-09 06:03:56+00 | f          | f
+ SCHEMA145736-M03 |      1 | 2026-09-09 06:03:55+00 | 2026-09-09 06:03:55+00 | f          | f
+ SIM-001          |    436 | 2026-09-16 12:23:51+00 | 2026-10-07 12:57:30+00 | t          | t
+ SIM-002          |    458 | 2026-09-16 12:23:51+00 | 2026-10-07 12:57:34+00 | t          | t
+ SIM-003          |    466 | 2026-09-16 12:23:51+00 | 2026-10-07 12:57:52+00 | f          | f
+(7 rows)
+
+## alerts for unregistered vehicle_ids (total)
+ count 
+-------
+   470
+(1 row)
+
+ROLLBACK
