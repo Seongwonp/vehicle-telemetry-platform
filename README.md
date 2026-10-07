@@ -22,30 +22,23 @@ flowchart LR
     API --> PROM["Prometheus / Grafana"]
 ```
 
-설계 결정 28건과 이유는 [ADR](docs/architecture-decisions.md).
+설계 결정 30건과 이유는 [ADR](docs/architecture-decisions.md).
 
-## 핵심 결과 5개 — 결과별 재현·원본 보존 범위를 구분한다
+## 대표 사례 3개 — 문제 → 변경 → 검증 결과
 
-초기 72% 유실 등 일부 과거 관찰은 원본 로그가 남아 있지 않다. 수정 후 반복 실행의
-원본은 보존했지만 최초 실패의 원본을 대신하지 않는다. 각 결과 문서의 검증 상태·한계를 함께 본다.
+결과마다 실행 횟수와 검증 상태를 [증거 정책](docs/evidence-policy.md)의 표현으로 적는다. 초기 72% 유실 등 일부 과거 관찰은
+원본 로그가 남아 있지 않다. 수정 후 반복 실행의 원본은 보존했지만 최초 실패의 원본을 대신하지 않는다.
 
-| 무엇을 찾았나 | 원인 | 결과 | 근거 |
+| 문제 | 변경 | 검증 결과 | 근거 |
 | --- | --- | --- | --- |
-| **MQTT 브로커 90초 장애에서 72% 유실** | Paho 재연결 상한 기본값 128초 동안 브로커 큐(10k)가 넘침. 우리 지표는 "받은 것"만 세서 정상으로 보였고, 브로커 `$SYS` dropped만 알고 있었다 | 상한 5초·큐 100k → **유실 0, 90초 장애 반복 관찰 3/3**(평문 dev, 세 회차 모두 dirty 트리라 `검증 완료` 아님. 300초는 1회) | [ADR-021](docs/architecture-decisions.md), [결과](load-test/fault-injection/RESULT_20260905_mqtt_broker.md) |
-| **수집 파이프라인 99.8% 유실** (10,000 → 20 msg/s) | "안전하게" 넣은 메시지당 spool 파일 쓰기 + InfluxDB 건당 HTTP가 직렬 병목. 바꾼 뒤 처리량을 안 재서 4주간 몰랐다 | 배치 쓰기 + spool은 실패 시에만 → 저장 처리량 8.2 → **약 9,600 msg/s**, 안전장치 유지. **1회 관찰, 원시 로그 미보존** — 회복을 보인 값이지 처리량 상한이 아니다. spool "실패 시에만"은 09-29에 드레인 한 번 뒤 깨지는 결함을 찾아 수정했다(실스택 각 1회 관찰). 9,600은 10-01 MQTT 수동 ACK(ADR-029, 콜백이 저장 확인을 기다림) **이전** 구현의 값이라 지금 구현에 쓰지 않는다 | [ADR-011](docs/architecture-decisions.md), [ADR-019](docs/architecture-decisions.md), [측정 기록](docs/load-test-plan.md) |
-| **저장 실패가 조용히 유실되는 구조** | auto-commit + 단건 처리 | InfluxDB 저장 성공 **또는 DLQ 발행 성공 뒤에만** 수동 commit. DLQ 발행 실패면 offset 안 넘김. 재처리 횟수 헤더 전파 | [ADR-012](docs/architecture-decisions.md), [Runbook](docs/runbook/dlq-reprocessing.md) |
-| **단일 이상 감지 인스턴스가 첫 확장 병목** | 감지기 1개가 유입의 약 88%만 처리. 저장과는 Consumer Group이 달라(ADR-002) 서로 막지 않는다 | 1 vs 3 인스턴스 A/B(각 arm 1회, 4~5분)에서 1개는 lag 선형 발산, 3개는 1,500 이하. 3인스턴스 **6시간 soak 1회**(평균 7,497 msg/s) lag 평균 914, 드리프트 없음(이 조건 한정). 초기 24h 관찰은 원본이 없고 당시 저장 lag은 '저장'이 아니라 '소비'였다 — 근거로 쓰지 않는다 | [ADR-016](docs/architecture-decisions.md), [6h soak](load-test/anomaly-detector-scale/AB7_soak_summary_20260903.md) |
-| **같은 초 타임스탬프로 50% 덮어쓰기** | InfluxDB 초 정밀도. Kafka lag은 0이라 정상처럼 보임 | 밀리초 정밀도 → 차량 1대당 200 msg/s 이하에서 충돌 0(각 속도 1회). 차량당 1,000 msg/s부터는 밀리초 충돌로 다시 유실(1,000에서 0.64%, 2,000에서 50%). 초기 50%·회복 수치는 원시 로그 미보존. 이후 입력 계약(필수 필드 누락·범위 밖 거부, 누락이 0으로 저장되던 것 차단 — 숫자 문자열은 허용) | [ADR-014](docs/architecture-decisions.md), [입력 계약](docs/telemetry-schema-decision-table.md) |
+| **MQTT 브로커 90초 장애에서 72% 유실** — Paho 재연결 상한 기본값 128초 동안 브로커 큐(10k)가 넘침. 우리 지표는 "받은 것"만 세서 정상으로 보였고, 브로커 `$SYS` dropped만 알고 있었다 | 상한 5초·큐 100k | **유실 0, 90초 장애 반복 관찰 3/3**(평문 dev, 세 회차 모두 dirty 트리라 `검증 완료` 아님. 300초는 1회) | [ADR-021](docs/architecture-decisions.md), [결과](load-test/fault-injection/RESULT_20260905_mqtt_broker.md) |
+| **저장 실패가 조용히 유실되는 구조** — auto-commit + 단건 처리 | InfluxDB 저장 성공 **또는 DLQ 발행 성공 뒤에만** 수동 commit. DLQ 발행 실패면 offset 안 넘김. 재처리 횟수 헤더 전파 | **회귀 검증** — 단위 2건 + 실제 Kafka(Testcontainers) 계약 4건이 이 경계를 고정, CI가 skip 0 강제. 실스택 InfluxDB 12분 정지는 **1회 관찰**: 원본 258,726 ≤ 저장 252,615 + DLQ 6,158 → 유실 0(47건 초과는 재전달), 리밸런싱 0 | [ADR-012](docs/architecture-decisions.md), [테스트 목록](load-test/schema-contract/RESULT_20260909_contract_e2e.md), [12분 장애](load-test/long-outage/RESULT_20260906_influxdb.md), [Runbook](docs/runbook/dlq-reprocessing.md) |
+| **연료량·전압 미지원 차량은 아무것도 못 보냄** — 숫자 6개가 전부 필수라 PID 하나만 미지원이어도 속도·RPM·온도까지 미전송. 선택으로 바꾸면 fleet 최신값(`last()`+pivot)이 필드별 `last()`로 **옛 포인트의 연료·전압을 최신 행에 섞을** 수 있다 | 두 필드만 선택(없으면 InfluxDB에 **쓰지 않음**, 0 아님), 나머지 넷은 필수 유지. fleet 조회는 최신 `_time` 행만 남겨 그 필드는 null. 배포 순서 감지기 → 백엔드 → 브리지 | 공유 fixture 80칸 Java·Python 같은 판정, 실제 InfluxDB 2.7 계약 테스트로 "옛 값 섞임 없음" 고정(**회귀 검증**). 실스택 E2E **1회 관찰**(차량 1대·3건): 필수 필드 행 3, 선택 필드 행 1, 저전압 알림은 값이 있는 1건만. 실차·앱 화면은 미검증 | [ADR-030](docs/architecture-decisions.md), [E2E](docs/verification/2026-10-08-optional-fields-e2e.md), [계약 테스트](backend/src/test/java/com/telemetry/contract/InfluxDbContractTest.java) |
 
-그 외: Redis 장애 시 조회 fail-open / 로그인·진단 fail-closed 분리(각 1회, 무부하 — 부하 중은 미검증, [정책](docs/redis-failure-policy.md)),
-독성 메시지 1건이 정상 100건을 막지 않음(유형별 1회), REST 소유권 검사(ADR-025, 테스트 수준), MQTT mTLS(ADR-013),
-사용자·소유권 RDB 모델과 200만 행 `EXPLAIN`(1회 관찰)으로 조정한 인덱스·목록 N+1([ADR-027](docs/architecture-decisions.md), [실행계획](docs/verification/2026-09-27-postgres-explain.md)),
-비밀번호 변경·초기화 API(ADR-027, 테스트 수준 — 컨테이너 E2E 미실시),
-한 건 추적 키 `(vehicle_id, timestamp)`가 재전달·spool 드레인·DLQ 재주입·WebSocket 뒤에도 유지되는지 각 1회 관찰(ADR-028, [검증](docs/verification/2026-09-29-trace-redelivery-spool.md)),
-WebSocket 방송 실패가 커밋된 배치를 재시도시키지 않게 함(단위 테스트, 실제 STOMP 예외 재현 없음).
-전체 실험 서사와 수치는 [상세 기록](docs/portfolio-detail.md).
+그 외 결과(수집 99.8% 유실 복구, 이상 감지 확장, 타임스탬프 덮어쓰기, Redis 장애 정책, 추적 키 등)는
+[상세 기록 — README에서 옮긴 결과](docs/portfolio-detail.md#readme에서-옮긴-결과).
 
-2026-10-01: MQTT ACK를 Kafka 또는 spool 기록 뒤로 이동했다([ADR-029](docs/architecture-decisions.md), [부분 검증](docs/verification/2026-10-01-mqtt-ack-boundary.md)). 수신 스레드가 완료를 기다리므로 위 과거 처리량을 현재 구현의 처리량으로 사용하지 않는다. 브로커·호스트 강제 종료까지 보호하는 변경은 아니다.
+2026-10-01: MQTT ACK를 Kafka 또는 spool 기록 뒤로 이동했다([ADR-029](docs/architecture-decisions.md), [부분 검증](docs/verification/2026-10-01-mqtt-ack-boundary.md)). 수신 스레드가 완료를 기다리므로 과거 처리량을 현재 구현의 처리량으로 사용하지 않는다. 브로커·호스트 강제 종료까지 보호하는 변경은 아니다.
 
 ## 검증 방식
 

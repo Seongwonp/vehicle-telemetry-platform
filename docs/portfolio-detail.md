@@ -207,6 +207,26 @@ ML 고도화, 다중 사용자, multi-broker, 배포 롤백은 위 P0/P1을 닫�
 
 ---
 
+## README에서 옮긴 결과
+
+> 2026-10-07에 README의 핵심 결과 표를 대표 사례 3개(MQTT 72% 유실 → 0, 수동 commit·DLQ, 선택 필드 전환)로 줄이면서
+> 빠진 행과 "그 외" 목록을 문구 그대로 옮겼다. 각 실험의 전체 서사는 아래 [성능 (실측)](#성능-실측) 절에 있다.
+
+| 무엇을 찾았나 | 원인 | 결과 | 근거 |
+| --- | --- | --- | --- |
+| **수집 파이프라인 99.8% 유실** (10,000 → 20 msg/s) | "안전하게" 넣은 메시지당 spool 파일 쓰기 + InfluxDB 건당 HTTP가 직렬 병목. 바꾼 뒤 처리량을 안 재서 4주간 몰랐다 | 배치 쓰기 + spool은 실패 시에만 → 저장 처리량 8.2 → **약 9,600 msg/s**, 안전장치 유지. **1회 관찰, 원시 로그 미보존** — 회복을 보인 값이지 처리량 상한이 아니다. spool "실패 시에만"은 09-29에 드레인 한 번 뒤 깨지는 결함을 찾아 수정했다(실스택 각 1회 관찰). 9,600은 10-01 MQTT 수동 ACK(ADR-029, 콜백이 저장 확인을 기다림) **이전** 구현의 값이라 지금 구현에 쓰지 않는다 | [ADR-011](architecture-decisions.md), [ADR-019](architecture-decisions.md), [측정 기록](load-test-plan.md) |
+| **단일 이상 감지 인스턴스가 첫 확장 병목** | 감지기 1개가 유입의 약 88%만 처리. 저장과는 Consumer Group이 달라(ADR-002) 서로 막지 않는다 | 1 vs 3 인스턴스 A/B(각 arm 1회, 4~5분)에서 1개는 lag 선형 발산, 3개는 1,500 이하. 3인스턴스 **6시간 soak 1회**(평균 7,497 msg/s) lag 평균 914, 드리프트 없음(이 조건 한정). 초기 24h 관찰은 원본이 없고 당시 저장 lag은 '저장'이 아니라 '소비'였다 — 근거로 쓰지 않는다 | [ADR-016](architecture-decisions.md), [6h soak](../load-test/anomaly-detector-scale/AB7_soak_summary_20260903.md) |
+| **같은 초 타임스탬프로 50% 덮어쓰기** | InfluxDB 초 정밀도. Kafka lag은 0이라 정상처럼 보임 | 밀리초 정밀도 → 차량 1대당 200 msg/s 이하에서 충돌 0(각 속도 1회). 차량당 1,000 msg/s부터는 밀리초 충돌로 다시 유실(1,000에서 0.64%, 2,000에서 50%). 초기 50%·회복 수치는 원시 로그 미보존. 이후 입력 계약(필수 필드 누락·범위 밖 거부, 누락이 0으로 저장되던 것 차단 — 숫자 문자열은 허용) | [ADR-014](architecture-decisions.md), [입력 계약](telemetry-schema-decision-table.md) |
+
+그 외: Redis 장애 시 조회 fail-open / 로그인·진단 fail-closed 분리(각 1회, 무부하 — 부하 중은 미검증, [정책](redis-failure-policy.md)),
+독성 메시지 1건이 정상 100건을 막지 않음(유형별 1회), REST 소유권 검사(ADR-025, 테스트 수준), MQTT mTLS(ADR-013),
+사용자·소유권 RDB 모델과 200만 행 `EXPLAIN`(1회 관찰)으로 조정한 인덱스·목록 N+1([ADR-027](architecture-decisions.md), [실행계획](verification/2026-09-27-postgres-explain.md)),
+비밀번호 변경·초기화 API(ADR-027, 테스트 수준 — 컨테이너 E2E 미실시),
+한 건 추적 키 `(vehicle_id, timestamp)`가 재전달·spool 드레인·DLQ 재주입·WebSocket 뒤에도 유지되는지 각 1회 관찰(ADR-028, [검증](verification/2026-09-29-trace-redelivery-spool.md)),
+WebSocket 방송 실패가 커밋된 배치를 재시도시키지 않게 함(단위 테스트, 실제 STOMP 예외 재현 없음).
+
+---
+
 ## 장애 시나리오 및 동작
 
 실제 운영에서 발생할 수 있는 장애 상황별로 시스템이 어떻게 동작하는지 정리했다.
