@@ -839,6 +839,7 @@ Kafka 리텐션 1시간 유지, 차량 삭제는 소프트 삭제 유지 + 즉�
 - 배포 롤백 자동화
 - 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증 — 브리지 프로토타입(`obd-bridge/`)까지만, 실장치 미검증
 - 멀티 브로커 Kafka와 replication factor 상향
+- **CRL 만료 대응(백로그)** — 개발 CRL nextUpdate **2027-10-07**. 그 전에 `broker/certs/generate-crl.sh`로 갱신해야 하며, 만료되면 모든 mTLS 클라이언트가 거부될 수 있다(만료 감시 알림 없음, `docs/deployment-guide.md` §9)
 - 문제와 측정 근거가 있는 경우에만 수평 확장 또는 서비스 추가 분리
 
 ## 지금 하지 않는 것

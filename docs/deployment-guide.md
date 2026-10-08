@@ -166,3 +166,12 @@ docker compose up -d backend
 
 시스템의 제외 범위 자체(`netsh int ipv4 add excludedportrange` 등)는 바꾸지 않는다 — 다른 프로그램에 영향이 있다.
 
+## 9. VM 배포 체크리스트 — 인증서·CRL
+
+```
+[ ] broker/certs/generate-certs.sh로 이 VM 전용 CA·인증서 생성(로컬 개발 인증서 복사 금지)
+[ ] CRL nextUpdate 확인: openssl crl -in broker/certs/crl.pem -noout -nextupdate
+    — 현재 개발 CRL은 2027-10-07. 그 전에 bash broker/certs/generate-crl.sh 로 갱신 후 docker compose restart mosquitto.
+      만료되면 모든 mTLS 클라이언트(백엔드·차량)가 거부될 수 있다.
+[ ] 폐기 대상은 broker/certs/revoked-certs.txt에만 추가(CA 지문이 맞는 줄만 반영된다)
+```
