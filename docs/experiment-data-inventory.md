@@ -326,7 +326,7 @@ dry-run(10,447 / 9,547) 이후 +1,272 = SIM 3대 × 182 + STUCK-* 726 — 그 �
 
 **전제**: 수집 경로는 차량 등록을 확인하지 않는다. 계약을 통과한 `vehicle_id`는 무엇이든 InfluxDB에 저장되고, 감지기 알림도 PostgreSQL에 저장되며, WebSocket 프레임도 발행된다. 그래서 실험 행은 **저장소에는 있다.** 문제는 어디서 **보이느냐**다.
 
-현재 InfluxDB tag 40개(`09`) 중 PostgreSQL `vehicles`에 있는 것은 `SIM-001`·`SIM-002` **둘뿐**이다(`08`). 문서 목록 이후 새로 생긴 tag: `STUCK-CTL` 720·`STUCK-CTLZ` 5·`STUCK-WARM` 1, `SIM-050` 1, `STOR1-CHK` 3, `SESSCLN-1009` 5(이번 확인용) — 출처 문서는 이번에 대조하지 않았다.
+현재 InfluxDB tag 40개(`09`) 중 PostgreSQL `vehicles`에 있는 것은 `SIM-001`·`SIM-002` **둘뿐**이다(`08`). 문서 목록 이후 새로 생긴 tag: `STUCK-CTL` 720·`STUCK-CTLZ` 5·`STUCK-WARM` 1, `SIM-050` 1, `STOR1-CHK` 3, `SESSCLN-1009` 5(이번 확인용) — 출처는 아래 §7-1에 보충(2026-10-08).
 
 | 경로 | 섞이는가 | 근거 |
 | --- | --- | --- |
@@ -343,6 +343,21 @@ dry-run(10,447 / 9,547) 이후 +1,272 = SIM 3대 × 182 + STUCK-* 726 — 그 �
 
 **정리**: 앱(목록·상세·이력·WebSocket)에는 등록된 활성 차량만 보이므로 실험 행이 섞이지 않는다. 섞이는 곳은 **Grafana 텔레메트리 대시보드(별도 선)**, **설정 시 Webhook**, **감지기 ML 학습 창(일시적)**, 그리고 실험 당시의 **Prometheus 처리량**이다. `SIM-003`은 실험이 아니지만 미등록이라 앱에서 보이지 않고(알림 466행 포함) Grafana에만 보인다.
 **확인하지 않은 것**: 실제 REST 호출(관리자 로그인 필요), Grafana 화면 렌더링, Redis ML 상태 내용, 앱 저장소 쪽 코드.
+
+### 7-1. 새 tag 출처 보충 (2026-10-08, 삭제 없음)
+
+시각은 InfluxDB의 `speed` 포인트 min/max `_time`(UTC, 읽기 전용 조회 — [`evidence/2026-10-08-experiment-data-inventory/11_new_tags_2026-10-08.txt`](verification/evidence/2026-10-08-experiment-data-inventory/11_new_tags_2026-10-08.txt)).
+
+| tag | 행 | 시각(UTC) | 만든 실험 | 증거 |
+| --- | ---: | --- | --- | --- |
+| `STUCK-WARM` | 1 | 2026-10-07 12:31:30.1 | MqttAckWaitStuck 대조군 — override 실효값 확인용 워밍업 1건 | [`2026-10-09-ack-wait-stuck-control/`](verification/evidence/2026-10-09-ack-wait-stuck-control/) `A_*` |
+| `STUCK-CTL` | 720 | 12:32:25.3 ~ 12:36:24.8 | MqttAckWaitStuck 대조군 본 실행(Kafka pause 150.9초) | 같은 폴더 `C_*`, ack-boundary 문서 D3 "대조군" |
+| `STUCK-CTLZ` | 5 | 12:41:14.2 ~ 12:41:15.0 | 대조군 원복 확인 5건 | 같은 폴더 `Z_*` |
+| `SIM-050` | 1 | 12:50:45.0 | CRL 폐기 검증 — 폐기되지 않은 차량 인증서 1회 발행 | [`2026-10-09-crl-revocation/04_sim050_and_nocert.txt`](verification/evidence/2026-10-09-crl-revocation/04_sim050_and_nocert.txt) |
+| `STOR1-CHK` | 3 | 01:21:57.1 ~ 01:21:57.3 | 인증서 접근 범위 — storage-1 저장 경로 확인(Kafka 직접 주입) | [`2026-10-08-cert-access-scope/14_*`·`15_*`](verification/evidence/2026-10-08-cert-access-scope/) |
+| `SESSCLN-1009` | 5 | 13:04:32.001 ~ .005 | 실험 G 세션 정리 뒤 수집 확인 | [`2026-10-09-session-cleanup/06_*`·`07_*`](verification/evidence/2026-10-09-session-cleanup/) |
+
+모두 **실험이 만든 것이 확실**하다(식별자가 각 증거의 입력 파일에 있다). 사용자 결정(2026-10-08)에 따라 **지우지 않는다** — `-h2`·`-h2-sys` 세션과 PostgreSQL 미등록 차량 알림 470행도 그대로 둔다.
 
 ## 보지 않은 것
 
