@@ -114,6 +114,7 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 다시 만든다. 브리지 장치에는 `ca.crt`와 **그 차량의** `vehicles/<VEHICLE_ID>.crt/.key`만 복사한다
 (`ca.key`·다른 차량 키는 복사하지 않는다). `--mqtt-host`는 스택 PC의 IP, 브로커 인증서 CN은
 `mosquitto`라 호스트명 검증에 걸리면 별도 결정이 필요하다(미검증 — 아래 "미검증").
+스택 PC에서 `MQTT_TLS_PORT`를 바꿨다면(Windows 제외 포트 충돌 등, `docs/deployment-guide.md` §8) 브리지의 `--mqtt-port`/`MQTT_PORT`도 **같은 값으로** 맞춘다.
 공유망(학교·카페)에서는 열지 않는다.
 
 ## 테스트 (하드웨어 없음)

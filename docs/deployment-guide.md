@@ -145,3 +145,24 @@ docker compose up -d backend
 ```
 
 > 랜덤 문자열 생성: `openssl rand -base64 32`
+
+## 8. Windows에서 8883 포트가 바인딩되지 않을 때 (로컬 개발 PC)
+
+`MQTT_TLS_PORT`의 기본값은 **8883 그대로**다. 다만 일부 Windows PC는 Hyper-V/WSL이 잡는 **동적 제외 포트 범위**에 8883이 들어가
+`docker compose up`이 mosquitto 포트 게시에서 실패한다(이 저장소 개발 PC에서 2026-10-07 관찰 — 범위 8875–8974).
+
+1. 확인(관리자 권한 불필요):
+   ```
+   netsh int ipv4 show excludedportrange protocol=tcp
+   ```
+   출력의 시작·끝 포트 사이에 8883이 있으면 충돌이다.
+2. **그 PC에서만** 포트를 바꾼다 — 저장소 기본값·compose 파일은 건드리지 않고, 그 PC의 `.env`에 한 줄:
+   ```
+   MQTT_TLS_PORT=18883
+   ```
+   (제외 범위 밖의 아무 포트). 바뀌는 것은 **호스트에 게시되는 포트**뿐이다 — 컨테이너 안 리스너와 compose 네트워크 안의
+   backend·simulator(`mosquitto:8883`)는 영향이 없다.
+3. 이 PC 밖의 클라이언트(브리지 등)는 바꾼 포트로 접속해야 한다(`obd-bridge/README.md` 참고).
+
+시스템의 제외 범위 자체(`netsh int ipv4 add excludedportrange` 등)는 바꾸지 않는다 — 다른 프로그램에 영향이 있다.
+
