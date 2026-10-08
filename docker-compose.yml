@@ -504,6 +504,9 @@ services:
       INFLUXDB_ORG: ${INFLUXDB_ORG}
       INFLUXDB_BUCKET: ${INFLUXDB_BUCKET}
       INFLUXDB_TOKEN: ${INFLUXDB_TOKEN}
+      # 대시보드 차량 변수용 읽기 전용 PostgreSQL 역할(scripts/grafana-pg-reader.sh)
+      POSTGRES_DB: ${POSTGRES_DB}
+      GRAFANA_PG_READER_PASSWORD: ${GRAFANA_PG_READER_PASSWORD:-}
     volumes:
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/etc/grafana/dashboards:ro

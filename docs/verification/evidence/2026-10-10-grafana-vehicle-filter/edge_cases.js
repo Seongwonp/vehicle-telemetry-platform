@@ -1,0 +1,5 @@
+const auth="Basic "+Buffer.from(process.env.GU+":"+process.env.GP).toString("base64");
+const NL=String.fromCharCode(10);
+const base=s=>`from(bucket: "telemetry")${NL}  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)${NL}  |> filter(fn: (r) => r._measurement == "vehicle_telemetry")${NL}  |> filter(fn: (r) => r._field == "speed")${NL}  |> filter(fn: (r) => contains(value: r.vehicle_id, set: ${s}))${NL}  |> aggregateWindow(every: v.windowPeriod, fn: mean)`;
+(async()=>{for(const s of ['["SIM-002"]','[]']){const r=await (await fetch("http://localhost:3000/api/ds/query",{method:"POST",headers:{Authorization:auth,"Content-Type":"application/json"},body:JSON.stringify({queries:[{refId:"A",datasource:{uid:"P951FEA4DE68E13C5",type:"influxdb"},query:base(s),intervalMs:60000,maxDataPoints:1000}],from:"now-30m",to:"now"})})).json();
+const A=r.results.A; console.log(`set: ${s} -> status ${A.status} error=${A.error||"-"} series=${JSON.stringify((A.frames||[]).map(f=>(f.schema.fields[1]&&f.schema.fields[1].labels||{}).vehicle_id))} points=${JSON.stringify((A.frames||[]).map(f=>f.data&&f.data.values[0]?f.data.values[0].length:0))}`);}})();

@@ -1,0 +1,26 @@
+# Connected as grafana_reader over TCP (password auth) inside telemetry-postgres. Each statement runs separately; errors are the expected result except the first.
+> SELECT vehicle_id, active FROM vehicles WHERE active ORDER BY 1
+ vehicle_id | active 
+------------+--------
+ SIM-001    | t
+ SIM-002    | t
+(2 rows)
+
+> SELECT name FROM vehicles
+ERROR:  permission denied for table vehicles
+> SELECT * FROM vehicles
+ERROR:  permission denied for table vehicles
+> SELECT count(*) FROM users
+ERROR:  permission denied for table users
+> SELECT count(*) FROM anomaly_alerts
+ERROR:  permission denied for table anomaly_alerts
+> UPDATE vehicles SET active = active WHERE false
+ERROR:  cannot execute UPDATE in a read-only transaction
+> CREATE TABLE public.x(i int)
+ERROR:  cannot execute CREATE TABLE in a read-only transaction
+> SHOW default_transaction_read_only
+ default_transaction_read_only 
+-------------------------------
+ on
+(1 row)
+

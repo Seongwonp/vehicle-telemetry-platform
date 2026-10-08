@@ -1,0 +1,8 @@
+# captured 2026-10-08T04:58:30Z  GET /api/dashboards/uid/vehicle-telemetry (as loaded by running Grafana from provisioning)
+meta.provisioned=true provisionedExternalId=vehicle-telemetry.json version=4
+variable: {"name":"vehicle","type":"query","datasource":{"type":"grafana-postgresql-datasource","uid":"telemetry-pg-registry"},"query":"SELECT vehicle_id FROM vehicles WHERE active ORDER BY vehicle_id","multi":true,"includeAll":true,"allValue":null,"refresh":1,"current":{"selected":true,"text":["All"],"value":["$__all"]}}
+panel 1 차량 속도 (km/h): has vehicle filter = true
+panel 2 엔진 온도 (°C): has vehicle filter = true
+panel 3 RPM: has vehicle filter = true
+panel 4 배터리 전압 (V): has vehicle filter = true
+panel 5 연료 잔량 (%): has vehicle filter = true

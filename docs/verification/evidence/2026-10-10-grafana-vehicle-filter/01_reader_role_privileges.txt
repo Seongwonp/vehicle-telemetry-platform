@@ -1,0 +1,40 @@
+## role attributes
+    rolname     | rolsuper | rolcreatedb | rolcreaterole | rolinherit | rolreplication | rolbypassrls | rolconnlimit |             rolconfig              
+----------------+----------+-------------+---------------+------------+----------------+--------------+--------------+------------------------------------
+ grafana_reader | f        | f           | f             | f          | f              | f            |            5 | {default_transaction_read_only=on}
+(1 row)
+
+## table-level grants (expect 0 rows)
+ table_name | privilege_type 
+------------+----------------
+(0 rows)
+
+## column-level grants
+ table_name | column_name | privilege_type 
+------------+-------------+----------------
+ vehicles   | active      | SELECT
+ vehicles   | vehicle_id  | SELECT
+(2 rows)
+
+## effective table privileges in public (table-level SELECT / any write)
+        relname        | sel_all_cols | sel_any_col | write 
+-----------------------+--------------+-------------+-------
+ anomaly_alerts        | f            | f           | f
+ flyway_schema_history | f            | f           | f
+ users                 | f            | f           | f
+ vehicles              | f            | t           | f
+(4 rows)
+
+## database / schema
+ connect | usage | create_in_public 
+---------+-------+------------------
+ t       | t     | f
+(1 row)
+
+## registered vehicles (what the variable should list)
+ vehicle_id | active 
+------------+--------
+ SIM-001    | t
+ SIM-002    | t
+(2 rows)
+

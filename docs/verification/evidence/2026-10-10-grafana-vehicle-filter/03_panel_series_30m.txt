@@ -1,0 +1,28 @@
+# captured 2026-10-08T04:56:53Z (simulator running: SIM-001..003)
+range now-30m .. now
+variable "vehicle" options (PostgreSQL, active): ["SIM-001","SIM-002"]  -> All = ["SIM-001","SIM-002"]
+
+panel 1 "차량 속도 (km/h)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 2 "엔진 온도 (°C)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 3 "RPM"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 4 "배터리 전압 (V)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 5 "연료 잔량 (%)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
