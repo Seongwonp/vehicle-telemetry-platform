@@ -281,6 +281,32 @@ evidence_capture_file() {
   [ -f "$1" ] && cp "$1" "$EVIDENCE_DIR/$2" || true
 }
 
+# manifest를 계산하기 **전에** 텍스트 증거의 CRLF를 LF로 맞춘다.
+#
+# `.gitattributes`가 `load-test/**/evidence/**`를 LF로 커밋하므로, CRLF 바이트로 manifest를 계산하면
+# 커밋된 blob과 어긋나 CI 증거 검사가 깨진다. 2026-09-14 redis-load(Python csv 기본 줄끝)와
+# 2026-10-09 동글 리허설(Windows 콘솔 캡처·명령 출력)에서 두 번 그랬고, 두 번 다 폴더별 `-text` 예외로 막았다.
+# 만드는 쪽을 하나씩 고치면 다음 도구에서 또 뚫리므로, **manifest를 만드는 이 한 곳에서** 맞춘다.
+#
+# 바뀌는 것은 줄끝뿐이다. 바이너리(`grep -I`가 거르는 파일)·숨김 파일·`*.log`·하위 디렉터리는 건드리지 않는다.
+# 무엇을 바꿨는지는 `eol_normalized.txt`에 남긴다 — manifest보다 먼저 쓰므로 그 파일도 manifest에 들어간다.
+_evidence_normalize_eol() {
+  local dir="$1" f name changed=()
+  for f in "$dir"/*; do                                # 글롭은 숨김 파일을 포함하지 않는다
+    [ -f "$f" ] || continue                            # 하위 디렉터리 제외
+    name="${f##*/}"
+    case "$name" in checksums.txt|*.log) continue ;; esac
+    grep -Iq . "$f" 2>/dev/null || continue            # 바이너리·빈 파일 제외
+    # CR 유무는 바이트로 센다 — Git Bash의 grep은 패턴 $'\r'에 CR 없는 파일도 맞는다고 답했다(2026-10-09 확인).
+    [ -n "$(tr -cd '\r' < "$f" | head -c 1)" ] || continue
+    sed -i 's/\r$//' "$f" && changed+=("$name")
+  done
+  if [ "${#changed[@]}" -gt 0 ]; then
+    { echo "# evidence_finish가 manifest 계산 전에 CRLF → LF로 바꾼 파일(줄끝만 변경)";
+      printf '%s\n' "${changed[@]}"; } > "$dir/eol_normalized.txt"
+  fi
+}
+
 # $1 = 성공 기준 문장, $2 = 판정(예: PASS/FAIL/관찰)
 evidence_finish() {
   _evidence_ready || return 0
@@ -307,6 +333,7 @@ evidence_finish() {
   # **Windows clean checkout에서 세 실행의 manifest가 깨졌다.**
   # 규칙(`.gitattributes`)으로도 막았지만, **애초에 작업 파일을 증거에 섞지 않는 게 맞다** —
   # `.prev_offsets`의 내용은 `partition_lag.csv`에서 전부 다시 계산할 수 있어 증거 가치가 없다.
+  _evidence_normalize_eol "$EVIDENCE_DIR"
   (
     cd "$EVIDENCE_DIR" &&
       find . -maxdepth 1 -type f \

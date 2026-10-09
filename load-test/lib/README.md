@@ -60,6 +60,12 @@ evidence_finish "성공 기준" "PASS"
 `evidence_*` 함수는 실패해도 0을 반환한다 — **증거 수집이 실험을 죽이면 안 된다.**
 대상이 안 떠 있으면 그 파일만 빠지고 실험은 계속된다.
 
+`evidence_finish`는 manifest를 계산하기 **전에** 최상위 텍스트 증거의 CRLF를 LF로 바꾸고, 바꾼 파일을
+`eol_normalized.txt`에 적는다. `.gitattributes`가 evidence를 LF로 커밋하므로 CRLF로 계산한 manifest는 커밋된 blob과
+어긋난다 — 2026-09-14 redis-load와 2026-10-09 동글 리허설에서 두 번 CI 증거 검사가 깨졌다. Windows 콘솔 캡처·명령 출력을
+그대로 저장해도 된다. 바이너리·`*.log`·숨김 파일·하위 디렉터리는 건드리지 않는다(하위 디렉터리에 manifest를 따로 만들면 그쪽은
+직접 LF로 써야 한다).
+
 ## `repeat.sh` / `summarize.sh` — 반복 실행과 회차별 집계
 
 `docs/roadmap.md` P0-2를 코드로 옮긴 것이다.
