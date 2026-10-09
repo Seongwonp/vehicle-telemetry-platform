@@ -1,4 +1,4 @@
-# Python 3.11. 2026-10-06 Windows 11 venv에서 설치·테스트한 버전으로 고정한다.
+# Python 3.11 이상. 2026-10-06 Windows 11 venv(3.11.9)에서 설치·테스트한 버전으로 고정한다. 2026-10-09 3.12.10에서도 같은 버전으로 설치·테스트 통과.
 # 설치 시 Windows(cp949)에서는 ELM327-emulator sdist 빌드가 UnicodeDecodeError로 실패한다 →
 #   PYTHONUTF8=1 을 켜고 설치한다(README 참고).
 

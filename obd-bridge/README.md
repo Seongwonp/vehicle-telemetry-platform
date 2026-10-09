@@ -82,14 +82,29 @@ ELM327 계열 OBD-II 어댑터에서 PID 6개를 읽어 **기존 입력 계약 �
 
 ## 실행
 
+Python **3.11 이상**. 3.11.9(데스크톱, 2026-10-06)와 3.12.10(노트북, 2026-10-09)에서 같은 `requirements.txt`로 설치·테스트했다.
+
 ```powershell
 cd obd-bridge
-py -3.11 -m venv .venv
+py -3.11 -m venv .venv            # 3.11이 없으면 아래 3.12 판
 $env:PYTHONUTF8 = "1"   # Windows cp949에서 ELM327-emulator sdist 빌드가 UnicodeDecodeError로 실패한다
 .\.venv\Scripts\python -m pip install -r requirements.txt
 .\.venv\Scripts\python -m pytest -q
 .\.venv\Scripts\python -m obd_bridge --help
 ```
+
+3.12(노트북 LAPTOP-MV7C23S3, 2026-10-09에 실제로 쓴 명령 — Git Bash):
+
+```bash
+cd obd-bridge
+python -m venv .venv              # python = 3.12.10
+PYTHONUTF8=1 ./.venv/Scripts/python -m pip install -r requirements.txt
+PYTHONUTF8=1 ./.venv/Scripts/python -m pytest -q
+```
+
+- `.venv/`는 루트 `.gitignore`(`obd-bridge/.venv/`)로 추적하지 않는다.
+- 노트북에서 첫 pytest가 tmp_path를 쓰는 테스트 42건에서 `PermissionError: [WinError 5] ... pytest-of-<사용자>`로 **setup 오류**가 났다.
+  Python 3.12 문제가 아니라 예전(9/27)에 만들어진 `%TEMP%\pytest-of-<사용자>` 폴더 권한 문제다 — `--basetemp=<쓰기 가능한 폴더>`를 주면 전부 통과했다.
 
 설정(CLI 인자 또는 환경변수 — **이름만** 적는다):
 
@@ -120,6 +135,7 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 ## 테스트 (하드웨어 없음)
 
 `.\.venv\Scripts\python -m pytest -q` → **82 passed, skip 0** (2026-10-06, Windows 11, Python 3.11.9).
+2026-10-09 노트북(Windows 11, Python 3.12.10): `5561d98` 그대로 **90 passed, skip 0**(82 이후 추가된 테스트 포함), D4 수정 후 **94 passed, skip 0**(`test_measure_polling.py` 4건 추가).
 
 | 파일 | 무엇 |
 | --- | --- |
@@ -129,6 +145,7 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 | `tests/test_publisher.py` | PUBACK 전 미삭제(메모리·디스크), 끊김 중 쌓인 것 timestamp 순 재전송, 일부만 ack된 뒤 끊기면 나머지만 새 클라이언트로 재전송, 옛 클라이언트 늦은 PUBACK 무시, backlog 뒤에 새 메시지, rc 오류·PUBACK timeout 재연결, v5 PUBACK 실패 코드는 ack 아님(경계 0x80, 0x10은 ack — 실제 `ReasonCode`), 두 번째 끊김 알림에 이중 폐기 없음, `on_connect_fail` → 폐기·자체 백오프, mTLS 없으면 거부 |
 | `tests/test_publisher_real_paho.py` | **실제 paho 2.1.0** + 순수 Python stub 브로커(CONNACK·PINGRESP만, PUBACK 없음): PUBACK timeout 폐기가 5초 안에 끝나고 3건이 spool(메모리·디스크)에 남음, paho 스레드 종료·DISCONNECT 수신, 미확인분 있는 `close()`도 5초 안. 닫힌 포트: 연결 실패마다 우리 쪽 새 클라이언트, 옛 paho 스레드 잔존 없음, paho 로그가 `obd_bridge.paho`로 |
 | `tests/test_bridge_overrun.py` | pump가 0.55초 멈추면(주기 0.1초) 건너뛴 예정 주기를 `skipped_overrun`으로 셈 |
+| `tests/test_measure_polling.py` | `tools/measure_polling.py`의 `--note`가 필수이고 결과 `note`에 그대로 들어감(상수 없음), 어댑터 정보(`ATI`·`STI`·포트·프로토콜) 수집은 `force=True`로 보내고, 하나가 실패해도 나머지를 남기며 무응답은 None |
 
 **테스트가 실제로 막는지 변이로 확인했다**(각 1회, 되돌림, **출력 원본 미보존** — 70건 시점의 테스트 세트 기준):
 reader가 None 대신 0.0을 넣게 바꾸면 18건 실패, `publish()` 직후 spool에서 지우게 바꾸면 6건 실패.
@@ -148,7 +165,7 @@ reader가 None 대신 0.0을 넣게 바꾸면 18건 실패, `publish()` 직후 s
 | 패키지 | obd 0.7.3, ELM327-emulator 4.0.0, pyserial 3.5 |
 | 연결 | 에뮬레이터 `python -m elm -n 35000 -s car -b <파일>`(TCP, 127.0.0.1) ↔ python-OBD `socket://127.0.0.1:35000`, baudrate 38400 |
 | 프로토콜 | ISO 15765-4 (CAN 11/500) — 에뮬레이터가 보고한 값 |
-| 측정 도구 | `tools/measure_polling.py`, 회당 300주기, 회차마다 에뮬레이터 새로 기동 |
+| 측정 도구 | `tools/measure_polling.py`, 회당 300주기, 회차마다 에뮬레이터 새로 기동 (당시 `note`는 도구 상수였다 — 아래) |
 | 원본 | `measurements/20261006-emu-*.json` (주기별·PID별 원시 ms 포함) |
 
 | 회차 | python-OBD `fast` | n | median | p95 | max | 미완성 주기 |
@@ -164,6 +181,15 @@ reader가 None 대신 0.0을 넣게 바꾸면 18건 실패, `publish()` 직후 s
 - 연결 초기화(`obd.OBD()` 생성)는 회마다 약 4.0초.
 - 회차 2의 원본 JSON은 `protocol`이 빈 문자열이다 — 연결을 닫은 뒤 읽는 도구 버그였고 이후 회차에서 고쳤다.
 - 300주기 전부 6개 PID가 응답했고, 값은 전부 계약 범위 안이었다(`incomplete_cycles` 0 = `build_payload` 성공).
+
+**`--note` 필수(2026-10-09, 동글 계획 D4 해결)**: 예전에는 결과 JSON의 `note`가 "실차 아님 — ELM327-emulator"로 **도구에 박혀** 실차 결과에도 찍혔다.
+이제 `--note "<무엇을 쟀나>"`가 없으면 도구가 시작하지 않고, 결과 JSON에 `adapter`(python-OBD의 `port_name`·`protocol_id`·`protocol_name`·`status`,
+`ATI`(ELM 버전)·`STI`(OBDLink/STN 펌웨어) 응답 — 실패하면 `"error: <예외>"`, 무응답은 null)가 같이 남는다. 측정 루프 **전에** 읽어 주기 시간에 섞이지 않는다.
+위 2026-10-06 원본 JSON들은 그 이전 형식이다(`adapter` 없음).
+
+```
+python tools/measure_polling.py --port COM5 --baudrate <OBDwiz 값> -n 300 --note "실차 — 코나 2017 가솔린, OBDLink EX, 공회전" --out measure_polling_<run>.json
+```
 
 **이 숫자가 말하지 않는 것**: 에뮬레이터는 응답을 즉시 돌려준다. 즉 이 값은 python-OBD + pyserial 소켓 +
 에뮬레이터의 소프트웨어 오버헤드다. **실제 ELM327의 UART/블루투스 지연과 차량 CAN 응답 시간은 들어 있지 않다.**

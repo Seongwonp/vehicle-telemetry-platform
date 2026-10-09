@@ -1,7 +1,13 @@
-"""PID 6개 한 주기를 연속으로 읽는 데 걸리는 시간을 잰다. **실차 아님 — ELM327-emulator용.**
+"""PID 6개 한 주기를 연속으로 읽는 데 걸리는 시간을 잰다. 에뮬레이터·실동글 공용.
+
+`--note`는 **필수**다 — 결과 JSON의 `note`에 그대로 들어가 "무엇을 쟀는지"를 남긴다
+(예전에는 "실차 아님 — ELM327-emulator"가 상수로 박혀 실차 결과에도 찍혔다 — 동글 계획 D4).
+어댑터 정보(python-OBD가 아는 포트·프로토콜, `ATI`/`STI` 응답)도 `adapter`에 남긴다.
 
 사용(에뮬레이터를 먼저 띄운다 — README 참고):
-    python tools/measure_polling.py --port socket://127.0.0.1:35000 --baudrate 38400 -n 300
+    python tools/measure_polling.py --port socket://127.0.0.1:35000 --baudrate 38400 -n 300         --note "실차 아님 — ELM327-emulator"
+실동글:
+    python tools/measure_polling.py --port COM5 --baudrate <OBDwiz 값> -n 300         --note "실차 — 코나 2017 가솔린, OBDLink EX, 공회전" --out measure_polling_<run>.json
 
 주의: ELM327-emulator 4.0.0(Windows, TCP)은 클라이언트가 끊은 뒤 오류 로그를 무한히 쏟아냈다.
 그래서 한 번 연결해서 끝까지 재고, 측정마다 에뮬레이터를 새로 띄운다.
@@ -37,14 +43,51 @@ def summarize(vals_ms):
             "max_ms": round(s[-1], 2), "min_ms": round(s[0], 2), "mean_ms": round(statistics.fmean(s), 2)}
 
 
-def main():
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", required=True)
     ap.add_argument("--baudrate", type=int, default=38400)
     ap.add_argument("-n", type=int, default=300)
     ap.add_argument("--fast", action="store_true", help="python-OBD fast 모드")
     ap.add_argument("--out", help="원시 측정값 JSON 저장 경로")
-    a = ap.parse_args()
+    ap.add_argument("--note", required=True,
+                    help='결과 JSON의 note. 예: "실차 아님 — ELM327-emulator" / "실차 — <차종>, <동글>"')
+    return ap
+
+
+def _pkg_version(name):
+    import importlib.metadata as md
+    try:
+        return md.version(name)
+    except md.PackageNotFoundError:
+        return None
+
+
+# OBDLink(STN 칩) 펌웨어 문자열. ELM327 클론·에뮬레이터는 "?"나 빈 응답을 줄 수 있다 — 그대로 남긴다.
+STI = obd.OBDCommand("STI", "STN firmware version", b"STI", 0, obd.decoders.raw_string, obd.ECU.UNKNOWN, False)
+
+
+def adapter_info(conn) -> dict:
+    """python-OBD 연결에서 어댑터 정보를 모은다. 하나가 실패해도 나머지는 남기고, 실패는 문자열로 적는다."""
+    info = {}
+    for key, fn in (("port_name", conn.port_name), ("protocol_id", conn.protocol_id),
+                    ("protocol_name", conn.protocol_name), ("status", conn.status)):
+        try:
+            v = fn()
+            info[key] = v if isinstance(v, (str, int, float, type(None))) else str(v)
+        except Exception as e:  # noqa: BLE001 — 정보 수집 실패가 측정을 막으면 안 된다
+            info[key] = f"error: {type(e).__name__}"
+    for key, cmd in (("elm_version_ATI", obd.commands.ELM_VERSION), ("stn_version_STI", STI)):
+        try:
+            r = conn.query(cmd, force=True)
+            info[key] = None if r.is_null() else str(r.value)
+        except Exception as e:  # noqa: BLE001
+            info[key] = f"error: {type(e).__name__}"
+    return info
+
+
+def main(argv=None):
+    a = build_parser().parse_args(argv)
 
     t0 = time.perf_counter()
     conn = obd.OBD(a.port, baudrate=a.baudrate, fast=a.fast, timeout=5)
@@ -54,6 +97,7 @@ def main():
         return 1
 
     protocol = conn.protocol_name()
+    adapter = adapter_info(conn)  # 측정 루프 전에 — 루프 시간에 섞이지 않게
     reader = PidReader(conn)
     per_pid = {s.field: [] for s in PID_SPECS}
     cycles, incomplete = [], 0
@@ -71,15 +115,15 @@ def main():
             incomplete += 1
     conn.close()
 
-    import importlib.metadata as md
     result = {
-        "note": "실차 아님 — ELM327-emulator",
+        "note": a.note,
         "when_utc": format_timestamp(datetime.now(timezone.utc)),
         "env": {"os": platform.platform(), "python": platform.python_version(),
-                "obd": md.version("obd"), "ELM327-emulator": md.version("ELM327-emulator"),
-                "pyserial": md.version("pyserial")},
+                "obd": _pkg_version("obd"), "ELM327-emulator": _pkg_version("ELM327-emulator"),
+                "pyserial": _pkg_version("pyserial")},
         "port": a.port, "baudrate": a.baudrate, "fast": a.fast,
         "protocol": protocol,
+        "adapter": adapter,
         "connect_ms": round(connect_ms, 1),
         "unsupported": list(reader.unsupported),
         "incomplete_cycles": incomplete,
