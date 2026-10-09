@@ -1,0 +1,1 @@
+# backend 로그 중 KONA17-01/GRDR24H-01/거부·DLQ 관련 줄 (since 2026-10-09T11:30:09Z)

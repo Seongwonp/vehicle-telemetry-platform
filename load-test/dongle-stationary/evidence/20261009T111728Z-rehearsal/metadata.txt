@@ -1,0 +1,16 @@
+run_id           : 20261009T111728Z-rehearsal
+scenario         : dongle-stationary
+started_at       : 2026-10-09T20:17:00+09:00
+command          : bash rehearsal.sh (R1=60s KONA17-01 v5, R2=20s GRDR24H-01 cert -> KONA17-01 topic v5)
+git_branch       : main
+git_commit       : 5561d98a7a43dba2ad631ae7265bc913f65183fa
+git_dirty        : yes (7개 변경)
+docker           : Docker version 29.8.0, build 88096ef
+docker_compose   : 5.5.1
+host_os          : Windows_NT / MINGW64_NT-10.0-26200 3.6.9-b4195d69.x86_64
+machine_spec     : docs/verification/2026-09-05-environment.md 참고
+finished_at      : 2026-10-09T20:29:20+09:00
+exec_images      : 시작·종료에 공통인 컨테이너의 이미지 동일 (시작 13개 / 종료 13개)
+success_criteria : 리허설 1·2 (계획 4단계 기준)
+verdict          : 무효 — 측정 도구 결함(INVALID.txt), MQTT 발행 0
+verification     : 부분 검증 (1회 실행) — 반복은 docs/roadmap.md P0-2

@@ -1,0 +1,8 @@
+# spool-r1/
+records_lines=60
+records_unique_ts=60
+acks_lines=60
+gps_count=0
+sha256:
+cd0a6cb6d4176558a28e9b2569fab1563cebfdb4d3139dc84acaebc17f9ec7fa *acks.log
+9b3ad3fc52cfcad088ae3ac3ba608951fa95396f667f43baad57f4c8146996db *records.log

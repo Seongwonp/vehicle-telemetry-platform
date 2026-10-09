@@ -1,0 +1,3 @@
+9b3ad3fc52cfcad088ae3ac3ba608951fa95396f667f43baad57f4c8146996db *spool-r1/records.log
+cd0a6cb6d4176558a28e9b2569fab1563cebfdb4d3139dc84acaebc17f9ec7fa *spool-r1/acks.log
+15e7717be56439a342aad1a3d5b5ada22ac0cb99cb14cdbd98b3b9d678ed6eeb *spool-neg/records.log

@@ -1,0 +1,5 @@
+r1_vt_before=173765 r1_vt_after=173825
+r2_vt_before=173825 r2_vt_after=173825
+r1_kafka_records=60 r1_kafka_unique_ts=60 r1_kafka_dup_ts=0
+r2_kafka_records=0
+R1 2026-10-09T11:30:09Z ~ 2026-10-09T11:31:48Z / R2 2026-10-09T11:31:52Z ~ 2026-10-09T11:32:43Z

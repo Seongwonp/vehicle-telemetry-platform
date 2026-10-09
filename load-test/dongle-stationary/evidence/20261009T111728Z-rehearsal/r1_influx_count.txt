@@ -1,0 +1,4 @@
+# range(start: 2026-10-09T11:16:39Z) — run 2026-10-09T11:17:39Z ~ 2026-10-09T11:27:42Z, vehicle_id=KONA17-01, count() = 고유 _time 수
+speed: 
+fuel_level: 
+battery_voltage: 

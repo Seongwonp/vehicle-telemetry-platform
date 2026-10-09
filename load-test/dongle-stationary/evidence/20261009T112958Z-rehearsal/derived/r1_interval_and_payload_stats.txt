@@ -1,0 +1,6 @@
+# 리허설 1 발행 간격(records.log 연속 ts_ms 차이) — 에뮬레이터, 1회
+n=59 median=1001 p95(nearest-rank)=1020 min=959 max=1049 (ms)
+payload_keys(합집합)=['battery_voltage', 'engine_temp', 'fuel_level', 'rpm', 'speed', 'throttle_position', 'timestamp', 'vehicle_id']
+speed>0&rpm==0: 4/60 (에뮬레이터 car 시나리오 값 — 차량 관측 아님)
+speed==0: 5
+ts 역행/같음: 0

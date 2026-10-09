@@ -2,7 +2,7 @@
 
 ## 실행 상태
 
-- 상태: **미실행.** 이 문서는 실행 전에 가설·대조군·성공 기준을 고정하기 위한 것이다(실험 규칙 1).
+- 상태: **실차 미실행.** 집 리허설 1·2(에뮬레이터)만 2026-10-09 각 1회 통과 — 아래 "노트북 준비 상태". 이 문서는 실행 전에 가설·대조군·성공 기준을 고정하기 위한 것이다(실험 규칙 1).
 - 범위: **정차·시동 공회전(또는 READY)·주차 브레이크 상태의 수집만.** 주행 시험은 이 계획 밖이다.
 - 장비: OBDLink EX(USB) → Windows 노트북의 `obd-bridge` → mTLS MQTT → 기존 스택.
 - 차량 순서: **1차 코나 2017 가솔린**, 1차가 5단계까지 판정된 뒤 **2차 그랜저 2024 하이브리드**.
@@ -48,11 +48,93 @@
 - **D2 — 차량 ID.** (a) 폐기되지 않은 기존 인증서 하나(예: `SIM-099`, 시뮬레이터 `VEHICLE_COUNT` 범위 밖) — 즉시 가능하지만
   실차 데이터가 `SIM-` 이름으로 저장·집계된다 (b) 기존 CA로 실차 전용 CN(예: `KONA17-01`, `GRDR24H-01`, 정규식 `^[A-Z0-9-]{4,20}$`)
   하나씩 발급 — 스크립트 전체가 아니라 4단계 openssl 두 줄만 기존 CA로. 어느 쪽이든 `vehicle_id`와 CN이 같아야 한다.
-- **D3 — MQTT 프로토콜.** 기본 3.1.1(ACL 거부 시 조용한 유실 가능) 그대로 갈지 `--mqtt-protocol 5`로 갈지. 이 계획은 **기본값(3.1.1)**으로
-  쓰고, 바꾸면 환경 기록에 남긴다.
-- **D4 — `measure_polling.py`의 고정 문자열.** 출력 JSON의 `note`가 "실차 아님 — ELM327-emulator"로 박혀 있다. 이 계획은 코드를 고치지 않는다 —
-  실차 결과 파일에는 `00_metadata.txt`에 "note 필드는 도구 상수, 이 파일은 실차"라고 적는다. 고칠지는 별도 결정.
+- ~~**D3 — MQTT 프로토콜.**~~ — **v5로 확정(2026-10-09 리허설 2, 1회 관찰).** v5에서 CN 불일치 발행이 PUBACK 0x87로 브리지에 드러났고
+  (`rejected_by_broker=18`, `acked=0`) 거부분은 spool에 남았다 — 조용한 유실 아님. 실차 회차는 `MQTT_PROTOCOL=5`(노트북 `.env`)로 하고 환경 기록에 남긴다.
+  3.1.1 쪽 동작(조용한 PUBACK 여부)은 여전히 미측정.
+- ~~**D4 — `measure_polling.py`의 고정 문자열.**~~ — **해결(2026-10-09).** `--note`가 **필수 인자**가 되어 결과 JSON `note`에 그대로 들어가고(상수 삭제),
+  `adapter`(포트·프로토콜·`ATI`·`STI` 응답)를 함께 남긴다(`tests/test_measure_polling.py`). 3단계 명령에 `--note "실차 — <차종>, OBDLink EX, <시동 상태>"`를 붙인다.
 - **D5 — ML 오프라인 채점 도구.** 아래 가설 H의 ML 칸은 저장된 payload를 시뮬레이터 학습 모델로 채점하는 도구가 필요하다(미작성).
+
+## 노트북 준비 상태 (2026-10-09)
+
+노트북 `LAPTOP-MV7C23S3`(Windows 11 Pro 10.0.26200), 저장소 `5561d98`(태그 `v0.9-pre-vehicle` 그대로). **실차·동글은 아직 연결하지 않았다.**
+
+### 끝난 것
+
+| 항목 | 결과 |
+| --- | --- |
+| Python | `obd-bridge/.venv` = Python 3.12.10(`python -m venv`). `requirements.txt` 그대로 설치(`PYTHONUTF8=1`). pytest **90 passed**(수정 전) → D4 수정 후 **94 passed, skip 0**. 3.12 고유 실패 0. 첫 실행의 setup 오류 42건은 `%TEMP%\pytest-of-<사용자>` 폴더 권한 문제(`--basetemp`로 해결, README) |
+| D4 | 해결 — 위 "결정 대기" |
+| 인증서 | 이 노트북에서 `generate-certs.sh` **1회** 실행 → **이 노트북 전용 새 CA**(데스크톱 CA와 다름). 차량 `SIM-001~003`, `KONA17-01`, `GRDR24H-01`. `openssl verify -crl_check`: KONA17-01 **OK**, GRDR24H-01 **OK**, 서버 `CN=mosquitto` **OK**. 이 노트북에서는 D2를 (b) "실차 전용 CN"으로, 단 **기존 CA가 아니라 새 CA로** 닫았다 |
+| CRL | `generate-crl.sh` → **폐기 0건**(예상대로 — `revoked-certs.txt`의 `SIM-024`·`SIM-088` 줄은 데스크톱 CA 지문이라 이 CA에 해당 없음). `crl.pem` 존재, nextUpdate 2027-10-09 |
+| 포트 | `netsh int ipv4 show excludedportrange protocol=tcp`: 제외 범위 50000–50059, 50836–50935, 51390–51489, 53872–53971, 56298–56397, 59386–59485, 59744–59843, 61014–61113 — **8883은 걸리지 않는다.** `MQTT_TLS_PORT=8883` 그대로, 게시 `127.0.0.1:8883` |
+| 스택 | 기본 compose(mTLS, simulator 프로파일 없음) `docker compose up -d --build`. backend `/actuator/health` UP. **`kafka-init`이 첫 기동에서 실패**(`kafka/init-topics.sh`가 `core.autocrlf=true`로 CRLF 체크아웃 → `$'\r': command not found`). 작업 트리 파일만 LF로 바꿔(내용 diff 0) 재실행 → 토픽 6개 생성. **새로 클론하면 재발한다**(`.gitattributes`에 `*.sh` LF 규칙 없음 — 미수정) |
+| Grafana | `.env`에 `GRAFANA_PG_READER_PASSWORD` 생성·추가(값 비공개) → `scripts/grafana-pg-reader.sh` OK → grafana 재생성. 대시보드 변수 쿼리(`telemetry-pg-registry`)가 `GRDR24H-01`·`KONA17-01` 포함 9대를 반환 |
+| 차량 등록 | 관리자 로그인 200, `POST /api/vehicles` `KONA17-01`("코나 2017 가솔린") **201**, `GRDR24H-01`("그랜저 2024 하이브리드") **201**, 소유자 = 관리자. `GET /api/vehicles`에 둘 다 `active` |
+| 브리지 설정 | `obd-bridge/.env`(추적 안 함): `VEHICLE_ID=KONA17-01`, `MQTT_HOST=mosquitto`, `MQTT_PORT=8883`, **`MQTT_PROTOCOL=5`**(D3을 이 노트북 설정에서는 5로 — 환경 기록에 남긴다), TLS 경로 3개(이 노트북 `broker/certs`의 `ca.crt`·`vehicles/KONA17-01.crt/.key`), `OBD_BAUDRATE=0`. `OBD_PORT`·`SPOOL_DIR`은 비워 두고 회차마다 CLI로 준다. 브리지는 dotenv를 읽지 않으므로 셸로 올린다(파일 머리 주석) |
+| 호스트명 검증(사전 확인) | `--mqtt-host localhost`로 브리지 기동 → `connect_failures=4`, `published=0`, 브로커 로그 `tls/alert bad certificate`(클라이언트가 서버 인증서를 거부). 같은 인증서로 Python ssl 핸드셰이크만 따로: `server_hostname=localhost` → **`Hostname mismatch, certificate is not valid for 'localhost'`**, `server_hostname=mosquitto`(127.0.0.1로 TCP) → **OK, TLSv1.3, peer CN mosquitto**. 즉 **검증은 켜져 있고, 이 Python 3.12.10/OpenSSL 3.0.16은 SAN 없는 CN 대체 매칭을 받아준다**(`hostname_checks_common_name=True`). paho·브로커 ACL까지 포함한 최종 확인은 `hosts` 뒤 리허설에서 → **리허설 1에서 연결·발행 성공(1회, 아래 4번)** |
+| 에뮬레이터 폴링·store-and-forward(**에뮬레이터, 실차 아님**) | ELM327-emulator(`socket://127.0.0.1:35000`, 38400) + MQTT 닿지 않는 곳(`127.0.0.1:1`) 34초: `cycles=30 spooled=30 skipped_*=0 connect_failures=5 published=0 spool 미전송=30`. `records.log` 발행 간격 n=29, median 1003 ms, p95 1017 ms, min 974, max 1017. `"gps"` 0건. `measure_polling.py --note ...` 50주기 스모크: median 5.86 ms, p95 7.26 ms, max 24.93 ms, `adapter` = `ELM327 v1.5` / `STN1100 v1.2.3`(에뮬레이터 응답) |
+
+이 숫자들은 리허설 전 점검용이며 증거 폴더(`load-test/dongle-stationary/evidence/`)에 넣지 않았다(원본은 작업용 임시 폴더, 각 1회).
+
+### 남은 수동 단계 (사용자)
+
+1. **hosts 한 줄(관리자 PowerShell)** — 에이전트는 hosts를 건드리지 않았다.
+   ```powershell
+   Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value "127.0.0.1 mosquitto"
+   Resolve-DnsName mosquitto -Type A    # 127.0.0.1 확인
+   ```
+2. **스택 기동**(시뮬레이터 없이, 볼륨 유지): 저장소 루트에서
+   ```powershell
+   docker compose up -d
+   docker compose ps
+   curl.exe --fail http://localhost:8080/actuator/health
+   ```
+   `telemetry-kafka-init`이 `Exited (0)`인지 본다(작업 트리 `kafka/init-topics.sh`는 LF로 바꿔 둠).
+3. **브리지 환경 올리기**(각 PowerShell 창에서, `obd-bridge` 폴더):
+   ```powershell
+   cd obd-bridge
+   $env:PYTHONUTF8 = "1"
+   Get-Content .env | Where-Object { $_ -match '^[A-Z_]+=' } | ForEach-Object { $k,$v = $_ -split '=',2; Set-Item "env:$k" $v }
+   ```
+4. **리허설 1 — 정상 경로(에뮬레이터, 60초)**. 창 A에서 에뮬레이터, 창 B에서 브리지. 끝나면 **에뮬레이터도 반드시 종료**(끊긴 뒤 `WinError 10053` 로그를 무한 반복한다 — README).
+   ```powershell
+   # 창 A
+   .\.venv\Scripts\python -m elm -n 35000 -s car -b elm-batch-r1.out
+   # 창 B — 전/후 Kafka end offset을 함께 남긴다
+   docker exec telemetry-kafka kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic vehicle-telemetry --time -1
+   .\.venv\Scripts\python -m obd_bridge --obd-port socket://127.0.0.1:35000 --obd-baudrate 38400 --spool-dir spool-rehearsal-r1 2>&1 | Tee-Object bridge-r1.log
+   #   60초 뒤 Ctrl+C
+   docker exec telemetry-kafka kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic vehicle-telemetry --time -1
+   ```
+   기대: 종료 줄 `connect_failures=0`, `acked` = `published` = `cycles`, `rejected_by_broker=0`, `spool 미전송=0`, end offset 합 증가 = `acked`(재전송 없을 때).
+   여기서 연결이 거부되면(호스트명·인증서) **출발하지 않는다**(D1).
+   - **결과(2026-10-09, 1회 관찰, 에뮬레이터 수치 — 실차 아님): 통과.** v5, `--mqtt-host mosquitto`(호스트명 검증 켬) mTLS 연결 성공.
+     `cycles=60 published=60 acked=60 rejected_by_broker=0 connect_failures=0 skipped_*=0`, 미전송 0. Kafka end offset 합 +60(p0만), KONA17-01 레코드 60·고유 ts 60·중복 0,
+     InfluxDB `speed` 60(`fuel_level`·`battery_voltage`도 60 — 에뮬레이터는 012F·0142 응답, `omitted_by_field` 0), DLQ 변화 0, 표본 5/5 일치. 발행 간격 median 1001·p95 1020·max 1049 ms.
+     증거 `load-test/dongle-stationary/evidence/20261009T112958Z-rehearsal/`. 첫 시도(`20261009T111728Z-rehearsal`)는 측정 도구 결함으로 **무효**(준비 확인용 TCP 접속이 에뮬레이터를 망가뜨림 — `INVALID.txt`).
+5. **리허설 2 — v5 음성 ACL 시험(필수)**: GRDR24H-01 인증서로 `KONA17-01` 토픽에 쓰기 → 브로커가 거부해야 한다. 에뮬레이터를 새로 띄운 뒤:
+   ```powershell
+   .\.venv\Scripts\python -m obd_bridge --obd-port socket://127.0.0.1:35000 --obd-baudrate 38400 `
+     --vehicle-id KONA17-01 --mqtt-protocol 5 `
+     --tls-client-cert ..\broker\certs\vehicles\GRDR24H-01.crt --tls-client-key ..\broker\certs\vehicles\GRDR24H-01.key `
+     --spool-dir spool-rehearsal-neg 2>&1 | Tee-Object bridge-neg.log
+   #   20초 뒤 Ctrl+C
+   ```
+   **판정: `rejected_by_broker > 0`, `acked = 0`, `spool 미전송` = `cycles`, Kafka `vehicle-telemetry` end offset 변화 0.**
+   `rejected_by_broker = 0`이고 `acked > 0`이면 v5에서도 조용한 유실이 가능하다는 뜻 — **출발하지 않고** 결과로 기록한다.
+   이 회차의 `spool-rehearsal-neg`는 정상 회차에 재사용하지 않는다(다시 띄우면 재전송을 시도한다).
+   - **결과(2026-10-09, 1회 관찰, 에뮬레이터 수치): 통과.** `cycles=18 published=18 acked=0 rejected_by_broker=18`(PUBACK reason **0x87 Not authorized** ×18),
+     미전송 18(= cycles, 증거 폴더 `spool-neg/`에 보존), Kafka end offset 변화 0, InfluxDB 0행, DLQ 변화 0.
+     **예상과 다른 점**: mosquitto 로그에 ACL 거부 줄이 없다 — `log_type`이 error·warning·notice뿐이라 거부(디버그 수준)가 안 찍힌다. 접속 줄의 `u'GRDR24H-01'`만 보인다. 브로커 거부의 근거는 PUBACK reason code다.
+6. **리허설 3 — 브로커 정지 시험(5단계 리허설, 선택)**: 새 `--spool-dir`로 정상 1분 → `docker stop telemetry-mosquitto` 1분 → `docker start telemetry-mosquitto` 후 2분.
+   기대: 정지 중 `records.log`−`acks.log` 차이가 약 1건/초로 증가, 재연결 후 0, `reconnects ≥ 1`.
+7. 리허설이 끝나면 `docker compose stop`(볼륨 유지 — `down -v` 금지). 실차 당일에는 2단계 "사전"부터.
+
+### 스택 상태
+
+준비 작업 뒤 **`docker compose stop`으로 정지**(볼륨·등록 차량·Grafana 역할 유지). 리허설은 hosts 추가가 먼저라 위 2번에서 다시 띄운다.
+2026-10-09 리허설 1·2(hosts 추가 뒤, 시뮬레이터 없이) 후 다시 `docker compose stop`. 리허설 3(브로커 정지)은 미실행.
 
 ## 환경 기록 (`00_metadata.txt`, 회차마다)
 
@@ -93,7 +175,7 @@
 | 무엇 | 출처 | 통계 |
 | --- | --- | --- |
 | **발행 간격** — 브리지가 실제로 낸 주기 | 2단계 `spool-<run>/records.log`의 연속 `ts_ms` 차이(주기 시작 시각) | n, median, p95, max (+`skipped_overrun`) |
-| **한 주기 읽기 시간** — PID 6개 연속 query | 2단계 직후 같은 상태에서 `tools/measure_polling.py --port COMn --baudrate <1단계 값> -n 300 --out ...` | n, median, p95, max, PID별 median, `unsupported`, `incomplete_cycles` |
+| **한 주기 읽기 시간** — PID 6개 연속 query | 2단계 직후 같은 상태에서 `tools/measure_polling.py --port COMn --baudrate <1단계 값> -n 300 --note "실차 — ..." --out ...` | n, median, p95, max, PID별 median, `unsupported`, `incomplete_cycles` |
 
 - 비교 기준(에뮬레이터, README): `fast=off` 3회 median 8.3~9.4 ms, p95 12.6~16.4 ms, max 21~35 ms. **실차 값으로 이 범위를 예측하지 않는다** — 에뮬레이터에는 UART·CAN 응답 지연이 없다.
 - 판정(사전 등록):
@@ -123,11 +205,12 @@
   - 무효: D ≠ E.records인데 다른 생산자가 있었음이 확인된 경우.
 - 표본 대조(실험 규칙 3): 무작위 5개 timestamp를 `records.log` 원문 → Kafka 레코드 → Influx 값까지 손으로 맞춰 `derived/sample_trace.txt`에 남긴다.
 
-## 5단계 — 핫스팟 끊김 · store-and-forward
+## 5단계 — 브로커 정지 시험 · store-and-forward
 
 새 `SPOOL_DIR`로 별도 회차: **정상 2분 → 핫스팟 OFF 2분 → ON 후 4분**(총 약 480건, compaction 전).
 스택이 같은 노트북이면 핫스팟을 꺼도 브로커가 닿는다 — **그 경우 이 단계가 성립하지 않는다.** 5단계는 브로커가 다른 장치(D1·D2 확정 후)이거나,
 같은 노트북이면 `docker stop telemetry-mosquitto` 2분으로 대체하고 **"핫스팟 시험 아님, 브로커 정지"**로 이름을 바꿔 기록한다.
+**이 계획은 스택을 같은 노트북에 띄우므로(아래 "노트북 준비 상태") 5단계는 브로커 정지 시험이다** — 핫스팟 끊김 시험이 아니다.
 
 - 관찰: 5초마다 `records.log`·`acks.log` 줄 수를 찍어 spool 깊이(= 차이)를 시계열로 저장(PowerShell 루프, 시각은 UTC).
 - 판정(사전 등록):

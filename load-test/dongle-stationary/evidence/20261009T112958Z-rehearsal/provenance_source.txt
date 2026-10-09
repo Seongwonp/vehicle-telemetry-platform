@@ -1,0 +1,16 @@
+# 소스 상태 — 실행 시작 시점
+commit 5561d98a7a43dba2ad631ae7265bc913f65183fa
+
+## dirty 파일 — 상태<TAB>sha256<TAB>경로 (삭제된 파일은 sha256 '-')
+ M	92deca5585382002b16045a8766e2d73faf3bf2fea6a302d8757401ebd5f2de2	.gitattributes
+ M	260255926062751f3936ee0061f7c00e8e452da1e1a1c865a1424f96a712e9e8	docs/plans/2026-10-10-dongle-stationary-collection.md
+ M	680b502b6aa063b92071e597cf1fe7dfc25bba570d7969cfdf87d8cd6b7f37cc	obd-bridge/README.md
+ M	e66721f3abe964a2dae4c7fb941de25f7cbc1b5134d1aee7cba57c8c27425350	obd-bridge/requirements.txt
+ M	9476b3a5b203d525ddb659dbb0f78dc5a69f530a7f161379e2d2c5c8fddc218a	obd-bridge/tools/measure_polling.py
+??	e8f196c5a58a4fbd948fe6e02b33caeb53f7c5c494f358dc39ce89c7408d5aef	obd-bridge/tests/test_measure_polling.py
+(evidence 디렉터리 안의 변경 38건은 실행 입력이 아니라 목록에서 뺐다)
+
+## 이미지 밖 실행 입력 checksum
+814826539e5117be2b7134ca74a98a8c602a0b6824ee166917f358806f1fa4fa *docker-compose.dev.yml
+11bc4e909acdd3fa364867906677a0e239b3df74d1c958c807388955a4a384dc *docker-compose.yml
+7a33233af1f0b012ce70ab16306c736cbfea7f5d5c010ab84606e9cf404f9ccf *load-test/lib/evidence.sh

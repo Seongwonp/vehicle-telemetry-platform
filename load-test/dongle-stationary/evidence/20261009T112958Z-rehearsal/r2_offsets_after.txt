@@ -1,0 +1,8 @@
+# vehicle-telemetry @ 2026-10-09T11:32:33.818Z
+vehicle-telemetry:0:60
+vehicle-telemetry:1:115844
+vehicle-telemetry:2:57921
+# vehicle-telemetry-mqtt-dlq @ 2026-10-09T11:32:35.970Z
+vehicle-telemetry-mqtt-dlq:0:1
+# vehicle-telemetry-dlq @ 2026-10-09T11:32:37.835Z
+vehicle-telemetry-dlq:0:0

@@ -1,0 +1,24 @@
+2026-10-09 20:32:01,473 WARNING pint.util Redefining 'percent' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+2026-10-09 20:32:01,477 WARNING pint.util Redefining '%' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+2026-10-09 20:32:01,477 WARNING pint.util Redefining 'ppm' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+2026-10-09 20:32:05,552 INFO obd_bridge spool 미전송 0건으로 시작
+2026-10-09 20:32:05,705 ERROR obd_bridge.publisher 브로커가 seq=0를 거부했다 — spool에 남긴다
+2026-10-09 20:32:06,627 ERROR obd_bridge.publisher 브로커가 seq=1를 거부했다 — spool에 남긴다
+2026-10-09 20:32:07,646 ERROR obd_bridge.publisher 브로커가 seq=2를 거부했다 — spool에 남긴다
+2026-10-09 20:32:08,621 ERROR obd_bridge.publisher 브로커가 seq=3를 거부했다 — spool에 남긴다
+2026-10-09 20:32:09,679 ERROR obd_bridge.publisher 브로커가 seq=4를 거부했다 — spool에 남긴다
+2026-10-09 20:32:10,627 ERROR obd_bridge.publisher 브로커가 seq=5를 거부했다 — spool에 남긴다
+2026-10-09 20:32:11,678 ERROR obd_bridge.publisher 브로커가 seq=6를 거부했다 — spool에 남긴다
+2026-10-09 20:32:12,646 ERROR obd_bridge.publisher 브로커가 seq=7를 거부했다 — spool에 남긴다
+2026-10-09 20:32:13,672 ERROR obd_bridge.publisher 브로커가 seq=8를 거부했다 — spool에 남긴다
+2026-10-09 20:32:14,646 ERROR obd_bridge.publisher 브로커가 seq=9를 거부했다 — spool에 남긴다
+2026-10-09 20:32:15,626 ERROR obd_bridge.publisher 브로커가 seq=10를 거부했다 — spool에 남긴다
+2026-10-09 20:32:16,707 ERROR obd_bridge.publisher 브로커가 seq=11를 거부했다 — spool에 남긴다
+2026-10-09 20:32:17,677 ERROR obd_bridge.publisher 브로커가 seq=12를 거부했다 — spool에 남긴다
+2026-10-09 20:32:18,625 ERROR obd_bridge.publisher 브로커가 seq=13를 거부했다 — spool에 남긴다
+2026-10-09 20:32:19,622 ERROR obd_bridge.publisher 브로커가 seq=14를 거부했다 — spool에 남긴다
+2026-10-09 20:32:20,640 ERROR obd_bridge.publisher 브로커가 seq=15를 거부했다 — spool에 남긴다
+2026-10-09 20:32:21,646 ERROR obd_bridge.publisher 브로커가 seq=16를 거부했다 — spool에 남긴다
+2026-10-09 20:32:22,639 ERROR obd_bridge.publisher 브로커가 seq=17를 거부했다 — spool에 남긴다
+2026-10-09 20:32:23,301 INFO obd_bridge 종료 — stats=CycleStats(cycles=18, spooled=18, skipped_missing=0, skipped_out_of_range=0, skipped_overrun=0, missing_by_field={}, omitted_by_field={}) publisher=PublisherStats(published=18, acked=0, rejected_by_broker=18, reconnects=1, ack_timeouts=0, connect_failures=0) spool 미전송=18
+STATS_JSON {"argv": ["--obd-port", "socket://127.0.0.1:35000", "--obd-baudrate", "38400", "--vehicle-id", "KONA17-01", "--mqtt-protocol", "5", "--tls-client-cert", "C:/Users/삼성/Desktop/Dev/Telemetrix/vehicle-telemetry-platform/broker/certs/vehicles/GRDR24H-01.crt", "--tls-client-key", "C:/Users/삼성/Desktop/Dev/Telemetrix/vehicle-telemetry-platform/broker/certs/vehicles/GRDR24H-01.key", "--spool-dir", "C:/Users/삼성/Desktop/Dev/Telemetrix/vehicle-telemetry-platform/load-test/dongle-stationary/evidence/20261009T112958Z-rehearsal/spool-neg"], "exit_code": 0, "wrapper_start_utc": "2026-10-09T11:32:00.964613+00:00", "wrapper_end_utc": "2026-10-09T11:32:23.301226+00:00", "bridge_stats": {"cycles": 18, "spooled": 18, "skipped_missing": 0, "skipped_out_of_range": 0, "skipped_overrun": 0, "missing_by_field": {}, "omitted_by_field": {}}, "publisher_stats": {"published": 18, "acked": 0, "rejected_by_broker": 18, "reconnects": 1, "ack_timeouts": 0, "connect_failures": 0}, "spool_unsent": 18, "rejected_seqs": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17], "reason_codes_seen": {"on_connect:0:Success": 1, "on_publish:135:Not authorized": 18}}

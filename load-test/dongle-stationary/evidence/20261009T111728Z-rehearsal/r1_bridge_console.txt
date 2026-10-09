@@ -1,0 +1,38 @@
+2026-10-09 20:17:49,763 WARNING pint.util Redefining 'percent' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+2026-10-09 20:17:49,763 WARNING pint.util Redefining '%' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+2026-10-09 20:17:49,763 WARNING pint.util Redefining 'ppm' (<class 'pint.delegates.txt_defparser.plain.UnitDefinition'>)
+[obd.elm327] Failed to read port
+2026-10-09 20:18:00,823 WARNING obd.elm327 Failed to read port
+[obd.elm327] Failed to read port
+2026-10-09 20:18:10,837 WARNING obd.elm327 Failed to read port
+[obd.elm327] Failed to read port
+2026-10-09 20:18:20,938 WARNING obd.elm327 Failed to read port
+[obd.elm327] Failed to read port
+2026-10-09 20:18:31,041 WARNING obd.elm327 Failed to read port
+[obd.elm327] Failed to read port
+2026-10-09 20:18:41,171 WARNING obd.elm327 Failed to read port
+Traceback (most recent call last):
+  File "C:\Users\삼성\AppData\Local\Temp\claude\C--Users----Desktop-Dev-Telemetrix\401906c5-6872-4df2-a3dd-79c3197fef2a\scratchpad\run_bridge.py", line 48, in <module>
+    rc = b.main(args)
+         ^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\obd_bridge\bridge.py", line 143, in main
+    conn = obd.OBD(a.obd_port, baudrate=a.obd_baudrate or None, fast=False)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\obd\obd.py", line 63, in __init__
+    self.__connect(portstr, baudrate, protocol,
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\obd\obd.py", line 93, in __connect
+    self.interface = ELM327(portstr, baudrate, protocol,
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\obd\elm327.py", line 159, in __init__
+    r = self.__send(b"ATE0")
+        ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\obd\elm327.py", line 494, in __send
+    r = self.__read(end_marker=end_marker)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\obd\elm327.py", line 535, in __read
+    data = self.__port.read(self.__port.in_waiting or 1)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\삼성\Desktop\Dev\Telemetrix\vehicle-telemetry-platform\obd-bridge\.venv\Lib\site-packages\serial\urlhandler\protocol_socket.py", line 160, in read
+    ready, _, _ = select.select([self._socket], [], [], timeout.time_left())
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt

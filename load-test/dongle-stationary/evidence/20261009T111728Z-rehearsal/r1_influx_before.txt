@@ -1,0 +1,3 @@
+speed before(range>=2026-10-09T11:16:39Z): 
+fuel_level before(range>=2026-10-09T11:16:39Z): 
+battery_voltage before(range>=2026-10-09T11:16:39Z): 

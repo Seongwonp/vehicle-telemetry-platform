@@ -1,0 +1,36 @@
+{
+  "argv": [
+    "--obd-port",
+    "socket://127.0.0.1:35000",
+    "--obd-baudrate",
+    "38400",
+    "--spool-dir",
+    "C:/Users/삼성/Desktop/Dev/Telemetrix/vehicle-telemetry-platform/load-test/dongle-stationary/evidence/20261009T112958Z-rehearsal/spool-r1"
+  ],
+  "exit_code": 0,
+  "wrapper_start_utc": "2026-10-09T11:30:20.516147+00:00",
+  "wrapper_end_utc": "2026-10-09T11:31:24.961343+00:00",
+  "bridge_stats": {
+    "cycles": 60,
+    "spooled": 60,
+    "skipped_missing": 0,
+    "skipped_out_of_range": 0,
+    "skipped_overrun": 0,
+    "missing_by_field": {},
+    "omitted_by_field": {}
+  },
+  "publisher_stats": {
+    "published": 60,
+    "acked": 60,
+    "rejected_by_broker": 0,
+    "reconnects": 1,
+    "ack_timeouts": 0,
+    "connect_failures": 0
+  },
+  "spool_unsent": 0,
+  "rejected_seqs": [],
+  "reason_codes_seen": {
+    "on_connect:0:Success": 1,
+    "on_publish:0:Success": 60
+  }
+}

@@ -1,0 +1,73 @@
+# ë™ê¸€ ì •ì°¨ ìˆ˜ì§‘ ë¦¬í—ˆì„¤ (ELM327-emulator â€” ì‹¤ì°¨ ì•„ë‹˜)
+utc_started        : 2026-10-09T11:17:28Z
+host               : LAPTOP-MV7C23S3
+git_head           : 5561d98a7a43dba2ad631ae7265bc913f65183fa
+git_describe       : v0.9-pre-vehicle-6-g5561d98-dirty
+## git status --porcelain (íŒŒì¼ë³„ sha256ëŠ” provenance_source.txt)
+ M .gitattributes
+ M docs/plans/2026-10-10-dongle-stationary-collection.md
+ M obd-bridge/README.md
+ M obd-bridge/requirements.txt
+ M obd-bridge/tools/measure_polling.py
+?? obd-bridge/tests/test_measure_polling.py
+## ì»¨í…Œì´ë„ˆ image ID (containers_start.csv ì „ì²´)
+telemetry-alertmanager prom/alertmanager:v0.27.0 sha256:e13b6ed5cb929eeaee733479dce55e10eb3bc2e9c4586c705a4e8da41e5eacf5
+telemetry-backend vehicle-telemetry-platform-backend sha256:3aa65afe4d82cec4b3c93e02b5b975a8546c58cda4bf4f4415cf0d54f825c373
+telemetry-grafana grafana/grafana:10.4.0 sha256:f9811e4e687ffecf1a43adb9b64096c50bc0d7a782f8608530f478b6542de7d5
+telemetry-influxdb influxdb:2.7 sha256:b8d940ca9376f85118260f5b6bd236b8a00b1749c3350c5578d4cde8e27f31f2
+telemetry-kafka confluentinc/cp-kafka:7.6.1 sha256:620734d9fc0bb1f9886932e5baf33806074469f40e3fe246a3fdbb59309535fa
+telemetry-mosquitto eclipse-mosquitto:2.0 sha256:199ea8ef2e35ec2b1b37e59cfd1dbae538ed4dfa4a2251a121a52215a6248a21
+telemetry-postgres postgres:16-alpine sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+telemetry-prometheus prom/prometheus:v2.51.0 sha256:5ccad477d0057e62a7cd1981ffcc43785ac10c5a35522dc207466ff7e7ec845f
+telemetry-redis redis:7.2-alpine sha256:29e8589c3f9ba699b5f7aa4b3c7733c58852a3626439e619aa0ee78de08c6ca0
+telemetry-zookeeper confluentinc/cp-zookeeper:7.6.1 sha256:4dc780642bfc5ec3a2d4901e2ff1f9ddef7f7c5c0b793e1e2911cbfb4e3a3214
+vehicle-telemetry-platform-anomaly-detector-1 vehicle-telemetry-platform-anomaly-detector sha256:4b324f2b5d376d233b32670ee9b7163281bcfa154c66a6d12b69b2b014759b34
+vehicle-telemetry-platform-anomaly-detector-2 vehicle-telemetry-platform-anomaly-detector sha256:4b324f2b5d376d233b32670ee9b7163281bcfa154c66a6d12b69b2b014759b34
+vehicle-telemetry-platform-anomaly-detector-3 vehicle-telemetry-platform-anomaly-detector sha256:4b324f2b5d376d233b32670ee9b7163281bcfa154c66a6d12b69b2b014759b34
+simulator_running  : 0
+## ë¸Œë¦¬ì§€ ì„¤ì • (ê°’ ëŒ€ì‹  ì´ë¦„Â·CN â€” í‚¤ ë‚´ìš© ì—†ìŒ)
+VEHICLE_ID         : KONA17-01 (R1 .env, R2 CLI --vehicle-id)
+OBD_PORT           : socket://127.0.0.1:35000 (ELM327-emulator -s car), baud 38400
+MQTT               : host mosquitto (hosts 127.0.0.1), port 8883, protocol 5 (.env MQTT_PROTOCOL=5, R2ëŠ” CLIë¡œë„ 5)
+POLL_INTERVAL      : 1.0
+SPOOL_DIR          : R1 spool-r1/, R2 spool-neg/ (ì´ í´ë” ì•ˆ, íšŒì°¨ë§ˆë‹¤ ìƒˆ í´ë”)
+cert_R1            : subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=KONA17-01 serial=73B7459CB8137FC445646CF6EE85F6F309D92DCC notAfter=Oct  6 10:33:57 2036 GMT 
+cert_R2            : subject=C=KR, ST=Seoul, O=VehicleTelemetry, CN=GRDR24H-01 serial=73B7459CB8137FC445646CF6EE85F6F309D92DCD notAfter=Oct  6 10:33:58 2036 GMT 
+## ë…¸íŠ¸ë¶
+platform           : Windows-11-10.0.26200-SP0
+python             : 3.12.10
+openssl            : OpenSSL 3.0.16 11 Feb 2025
+pip                : ELM327-emulator==4.0.0 obd==0.7.3 paho-mqtt==2.1.0 pyserial==3.5 
+mosquitto          : mosquitto version 2.0.22
+## ì „ì›(Win32_Battery: BatteryStatus 2=AC ì—°ê²°)
+ÀÌ ½Ã½ºÅÛ¿¡¼­ ½ºÅ©¸³Æ®¸¦ ½ÇÇàÇÒ ¼ö ¾øÀ¸¹Ç·Î C:\Users\»ï¼º\AppData\Local\Temp\claude\C--Users----Desktop-Dev-Telemetrix\
+401906c5-6872-4df2-a3dd-79c3197fef2a\scratchpad\battery.ps1 ÆÄÀÏÀ» ·ÎµåÇÒ ¼ö ¾ø½À´Ï´Ù. ÀÚ¼¼ÇÑ ³»¿ëÀº about_Execution_Po
+licies(https://go.microsoft.com/fwlink/?LinkID=135170)¸¦ ÂüÁ¶ÇÏ½Ê½Ã¿À.
+    + CategoryInfo          : º¸¾È ¿À·ù: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : UnauthorizedAccess
+## hosts í•´ì„
+mosquitto 127.0.0.1
+## w32tm /query /status
+À±ÃÊ Á¶Á¤: 3(µ¿±âÈ­µÇÁö ¾ÊÀ½)
+°èÃş: 0(ÁöÁ¤µÇÁö ¾ÊÀ½)
+Á¤¹Ğµµ: -23(Æ½´ç 119.209ns)
+·çÆ® Áö¿¬: 0.0072384s
+·çÆ® ºĞ»ê: 8.2098546s
+ÂüÁ¶ ID: 0x00000000(ÁöÁ¤µÇÁö ¾ÊÀ½)
+¸¶Áö¸·À¸·Î µ¿±âÈ­ÇÑ ½Ã°£: 2026-10-09 ¿ÀÈÄ 7:28:29
+¿øº»: time.windows.com,0x9 
+Æú¸µ °£°İ: 10(1024s)
+
+## netsh ì œì™¸ í¬íŠ¸ ë²”ìœ„
+í”„ë¡œí† ì½œ tcp í¬íŠ¸ ì œì™¸ ë²”ìœ„
+ì‹œì‘ í¬íŠ¸    ë í¬íŠ¸      
+----------    --------      
+     50000       50059     *
+     50836       50935      
+     51390       51489      
+     53872       53971      
+     56298       56397      
+     59386       59485      
+     59744       59843      
+     61014       61113      
+* - ê´€ë¦¬ í¬íŠ¸ ì œì™¸ì…ë‹ˆë‹¤.

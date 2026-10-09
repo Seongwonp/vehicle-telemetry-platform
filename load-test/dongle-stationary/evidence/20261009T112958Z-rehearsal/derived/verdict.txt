@@ -1,0 +1,32 @@
+# 리허설 판정 (ELM327-emulator — 실차 아님, 각 1회 관찰). 기준은 계획 문서 "노트북 준비 상태" 4·5번과 4단계(사전 등록).
+
+## 리허설 1 — KONA17-01 인증서, mosquitto:8883, MQTT v5, 64초 타이머(OBD 초기화 포함)
+| 항목 | 기준 | 관찰 | 판정 |
+| cycles | — | 60 | |
+| skipped_missing / out_of_range / overrun | 0 | 0 / 0 / 0 | OK |
+| omitted_by_field(012F·0142) | 기록만 | {} — 에뮬레이터가 둘 다 응답, 키 생략 0 | 기록 |
+| connect_failures | 0 | 0 | OK |
+| published = acked = cycles | 60 | 60 = 60 = 60 | OK |
+| rejected_by_broker | 0 | 0 (on_publish reason 0 Success x60) | OK |
+| spool 미전송 | 0 | 0 (records 60, acks 60) | OK |
+| A records.log 고유 ts | = acked | 60 | OK |
+| D Kafka vehicle-telemetry end offset 합 차이 | = acked | 173765 → 173825 = +60 (p0 0→60, p1·p2 변화 0) | OK |
+| E Kafka 레코드(KONA17-01) records/unique_ts/dup_ts | D = records, unique = acked | 60 / 60 / 0 | OK |
+| F InfluxDB count() speed (range 11:29:09Z~) | = acked | 60 (fuel_level 60, battery_voltage 60) | OK |
+| DLQ 차이(mqtt-dlq, dlq) | 0 | 0, 0 | OK |
+| backend 로그 KONA17-01 거부 | 0 | 0줄 | OK |
+| gps 키(records.log) | 0 | 0 | OK |
+| 표본 5개 records→Kafka→Influx | 일치 | 5/5 일치(derived/sample_trace.txt) | OK |
+| 발행 간격 | 참고 | n=59 median 1001 p95 1020 max 1049 ms, ts 역행 0 | 기록 |
+결론: 성공 기준 전부 충족(1회). paho + mosquitto 경로에서 hosts `mosquitto` 호스트명 검증 켜진 채 mTLS 연결 성공.
+
+## 리허설 2 — v5 음성 ACL: GRDR24H-01 인증서 + --vehicle-id KONA17-01, 22초 타이머
+| 항목 | 기준 | 관찰 | 판정 |
+| rejected_by_broker | > 0 | 18 (PUBACK reason 135 = 0x87 Not authorized x18) | OK |
+| acked | 0 | 0 | OK |
+| spool 미전송 = cycles | 18 | 18 (records 18, acks.log 없음) — spool-neg/ 보존 | OK |
+| Kafka vehicle-telemetry end offset 차이 | 0 | 173825 → 173825 = 0 | OK |
+| InfluxDB KONA17-01 행(R2 구간) | 0 | 0 | OK |
+| DLQ 차이 | 0 | 0 | OK |
+| mosquitto 로그 ACL 거부 줄 | 있음(기대) | **없음** — 접속 줄에 u'GRDR24H-01'만. 이 설정 log_type은 error/warning/notice뿐이라 Denied PUBLISH(디버그 수준) 줄이 안 찍힘 | 기대와 다름(브로커 거부의 근거는 PUBACK reason code) |
+결론: v5에서 ACL 거부가 브리지에 드러났고(조용한 유실 아님), 거부분은 spool에 남았다. → D3 = v5.

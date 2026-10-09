@@ -1,0 +1,2 @@
+1791545425: New client connected from 172.18.0.1:45796 as obd-bridge-KONA17-01 (p5, c1, k30, u'KONA17-01').
+1791545484: Client obd-bridge-KONA17-01 disconnected.

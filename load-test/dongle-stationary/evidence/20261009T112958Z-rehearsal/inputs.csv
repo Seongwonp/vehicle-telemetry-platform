@@ -1,0 +1,5 @@
+key,value
+r1_duration_timer_s,64
+r2_duration_timer_s,22
+mqtt_protocol,5
+obd_port,socket://127.0.0.1:35000

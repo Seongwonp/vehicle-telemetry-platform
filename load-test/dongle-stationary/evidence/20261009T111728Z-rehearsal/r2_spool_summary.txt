@@ -1,0 +1,6 @@
+# spool-neg/
+records_lines=NA
+records_unique_ts=0
+acks_lines=0
+gps_count=
+sha256:

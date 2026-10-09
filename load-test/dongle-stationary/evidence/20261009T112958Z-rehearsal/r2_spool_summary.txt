@@ -1,0 +1,7 @@
+# spool-neg/
+records_lines=18
+records_unique_ts=18
+acks_lines=0
+gps_count=0
+sha256:
+15e7717be56439a342aad1a3d5b5ada22ac0cb99cb14cdbd98b3b9d678ed6eeb *records.log
