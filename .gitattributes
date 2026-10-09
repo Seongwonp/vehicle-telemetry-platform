@@ -20,6 +20,10 @@ load-test/**/evidence/** text eol=lf
 # 새 실행에는 이 예외가 필요 없다.
 load-test/redis-load/evidence/20260914-132129/** -text
 load-test/redis-load/evidence/20260914-stallprobe/** -text
+# 같은 이유: 2026-10-09 동글 리허설 두 실행의 콘솔 캡처(`00_metadata.txt`·`r*_bridge_console.txt`)가 Windows에서 CRLF로
+# 쓰였고 manifest는 그 바이트로 계산됐다. LF 정규화로 커밋하자 CI 증거 검사가 깨졌다 — 바이트를 그대로 보존한다.
+load-test/dongle-stationary/evidence/20261009T111728Z-rehearsal/** -text
+load-test/dongle-stationary/evidence/20261009T112958Z-rehearsal/** -text
 
 # 운영 스크립트도 같은 이유로 LF 고정 — CRLF로 체크아웃되면 Linux에서 실행이 깨진다.
 scripts/**/*.sh text eol=lf
