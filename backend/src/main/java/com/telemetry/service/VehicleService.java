@@ -12,6 +12,7 @@ import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.UserRepository;
 import com.telemetry.repository.VehicleRepository;
 import com.telemetry.security.VehicleAccessService;
+import com.telemetry.config.WebSocketSessionRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
@@ -34,6 +35,7 @@ public class VehicleService {
     private final TelemetryQueryService telemetryQueryService;
     private final VehicleAccessService vehicleAccessService;
     private final UserRepository userRepository;
+    private final WebSocketSessionRegistry webSocketSessionRegistry;
 
     @Transactional
     public VehicleResponse register(VehicleRegisterRequest request, Authentication authentication) {
@@ -132,6 +134,7 @@ public class VehicleService {
         // 물리 삭제 대신 active 플래그를 내린다.
         // 차량 ID는 InfluxDB 텔레메트리 데이터와 연결되어 있어 행을 지우면 이력 조회가 깨질 수 있다.
         vehicle.setActive(false);
+        webSocketSessionRegistry.closeVehicleSessions(vehicleId);
         // TODO: 변경 주체(사용자/시스템) 추적이 필요하다. 현재는 admin 단일이지만 다중 사용자 지원 시 로그에 포함해야 한다.
         log.info("차량 비활성화 완료 — vehicleId={}", vehicleId);
     }

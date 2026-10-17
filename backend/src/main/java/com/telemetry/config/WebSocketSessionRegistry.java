@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 public class WebSocketSessionRegistry {
 
     private final Map<String, WebSocketSession> sessions = new ConcurrentHashMap<>();
+    private final Map<String, String> sessionUsers = new ConcurrentHashMap<>();
+    private final Map<String, String> sessionVehicles = new ConcurrentHashMap<>();
     private final Map<String, ScheduledFuture<?>> expirationTasks = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
         Thread thread = new Thread(r, "websocket-jwt-expiration");
@@ -34,8 +36,30 @@ public class WebSocketSessionRegistry {
 
     public void unregister(String sessionId) {
         sessions.remove(sessionId);
+        sessionUsers.remove(sessionId);
+        sessionVehicles.remove(sessionId);
         ScheduledFuture<?> task = expirationTasks.remove(sessionId);
         if (task != null) task.cancel(false);
+    }
+
+    public void registerUser(String sessionId, String username) {
+        sessionUsers.put(sessionId, username);
+    }
+
+    public void registerSubscription(String sessionId, String vehicleId) {
+        sessionVehicles.put(sessionId, vehicleId);
+    }
+
+    public void closeVehicleSessions(String vehicleId) {
+        sessionVehicles.forEach((sessionId, subscribedVehicle) -> {
+            if (vehicleId.equals(subscribedVehicle)) close(sessionId, "Vehicle access revoked");
+        });
+    }
+
+    public void closeUserSessions(String username) {
+        sessionUsers.forEach((sessionId, sessionUser) -> {
+            if (username.equals(sessionUser)) close(sessionId, "User authorization revoked");
+        });
     }
 
     public void scheduleExpiration(String sessionId, Instant expiresAt) {
@@ -46,12 +70,16 @@ public class WebSocketSessionRegistry {
     }
 
     public void closeExpired(String sessionId) {
+        close(sessionId, "JWT expired");
+    }
+
+    private void close(String sessionId, String reason) {
         WebSocketSession session = sessions.get(sessionId);
         if (session == null || !session.isOpen()) return;
         try {
-            session.close(CloseStatus.POLICY_VIOLATION.withReason("JWT expired"));
+            session.close(CloseStatus.POLICY_VIOLATION.withReason(reason));
         } catch (IOException e) {
-            log.warn("만료된 WebSocket 세션 종료 실패 session={}", sessionId, e);
+            log.warn("WebSocket 세션 종료 실패 session={} reason={}", sessionId, reason, e);
         } finally {
             unregister(sessionId);
         }

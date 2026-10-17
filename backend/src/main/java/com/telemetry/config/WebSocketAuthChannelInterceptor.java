@@ -69,6 +69,9 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
         }
         UserDetails user = userDetailsService.loadUserByUsername(jwtTokenProvider.getUsername(token));
         accessor.setUser(new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities()));
+        if (accessor.getSessionId() != null) {
+            sessionRegistry.registerUser(accessor.getSessionId(), user.getUsername());
+        }
 
         Instant expiresAt = jwtTokenProvider.getExpiration(token);
         Map<String, Object> attributes = accessor.getSessionAttributes();
@@ -96,6 +99,9 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
         if (!(accessor.getUser() instanceof Authentication connectPrincipal)
             || !vehicleAccessService.canAccess(currentAuthentication(connectPrincipal), matcher.group(1))) {
             throw new AccessDeniedException("차량 WebSocket 구독 권한이 없습니다");
+        }
+        if (accessor.getSessionId() != null) {
+            sessionRegistry.registerSubscription(accessor.getSessionId(), matcher.group(1));
         }
     }
 

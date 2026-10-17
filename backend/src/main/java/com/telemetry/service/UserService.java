@@ -7,6 +7,7 @@ import com.telemetry.exception.CurrentPasswordMismatchException;
 import com.telemetry.exception.ResourceConflictException;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.security.RefreshTokenService;
+import com.telemetry.config.WebSocketSessionRegistry;
 import com.telemetry.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokenService;
+    private final WebSocketSessionRegistry webSocketSessionRegistry;
 
     @Transactional
     public UserResponse create(UserCreateRequest request) {
@@ -56,6 +58,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         refreshTokenService.revokeAll(username);
+        webSocketSessionRegistry.closeUserSessions(username);
         log.info("비밀번호 변경 — username={}", username);
     }
 
@@ -70,6 +73,7 @@ public class UserService {
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         refreshTokenService.revokeAll(username);
+        webSocketSessionRegistry.closeUserSessions(username);
         log.info("비밀번호 초기화(관리자) — username={}", username);
     }
 
