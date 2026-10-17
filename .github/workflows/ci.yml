@@ -101,6 +101,7 @@ jobs:
       JWT_SECRET: ci-jwt-secret-must-be-at-least-thirty-two-bytes-long
       ADMIN_USERNAME: admin
       ADMIN_PASSWORD: ci-admin-password
+      GRAFANA_PASSWORD: ci-grafana-password
       MQTT_TLS_STORE_PASSWORD: ci-mqtt-password
     steps:
       - uses: actions/checkout@v4
