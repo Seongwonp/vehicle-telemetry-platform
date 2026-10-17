@@ -9,6 +9,7 @@ import com.telemetry.exception.CurrentPasswordMismatchException;
 import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.UserRepository;
 import com.telemetry.security.RefreshTokenService;
+import com.telemetry.config.WebSocketSessionRegistry;
 import org.springframework.security.authentication.BadCredentialsException;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
@@ -33,6 +34,7 @@ class UserServiceTest {
     @Mock UserRepository userRepository;
     @Mock PasswordEncoder passwordEncoder;
     @Mock RefreshTokenService refreshTokenService;
+    @Mock WebSocketSessionRegistry webSocketSessionRegistry;
     @InjectMocks UserService userService;
 
     @Test

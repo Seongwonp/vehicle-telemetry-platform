@@ -13,6 +13,7 @@ import com.telemetry.exception.ResourceNotFoundException;
 import com.telemetry.repository.AnomalyAlertRepository;
 import com.telemetry.repository.VehicleRepository;
 import com.telemetry.security.VehicleAccessService;
+import com.telemetry.config.WebSocketSessionRegistry;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,6 +58,8 @@ class VehicleServiceTest {
     private VehicleAccessService vehicleAccessService;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private WebSocketSessionRegistry webSocketSessionRegistry;
 
     @InjectMocks
     private VehicleService vehicleService;
