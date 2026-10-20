@@ -28,6 +28,10 @@
 > 인증서는 서버에서 `broker/certs/generate-certs.sh`로 새로 만들고, 각 서비스에는 필요한 파일만
 > 마운트된다(`ca.key`는 어떤 컨테이너에도 안 들어간다) — `docs/verification/2026-10-08-cert-access-scope.md`.
 
+> **2026-10-17부터(`5ac5008`) Kafka·InfluxDB·PostgreSQL·Redis·Prometheus·Alertmanager·Grafana 포트도 호스트 `127.0.0.1`에만 게시한다.**
+> 외부에 열린 기본 게시는 백엔드 8080뿐이다. 위 표의 Grafana 3000을 밖에서 보려면 compose 포트를 바꾸거나 SSH 터널·리버스 프록시를 쓴다.
+> 같은 커밋부터 `MQTT_TLS_STORE_PASSWORD`·`GRAFANA_PASSWORD`는 기본값이 없어(`:?`) `.env`에 없으면 `docker compose`가 시작하지 않는다.
+
 > `/actuator/prometheus`는 애플리케이션 레벨에선 인증 없이 열려있다(Prometheus 스크레이핑용, `SecurityConfig.java`).
 > 운영 배포 시엔 보안그룹/리버스프록시로 `/actuator/**` 전체를 내부망(모니터링 서버)에서만 접근 가능하도록 제한할 것.
 
@@ -141,7 +145,8 @@ docker compose up -d backend
 [ ] REDIS_PASSWORD         — 강력한 비밀번호로 변경
 [ ] JWT_SECRET             — 최소 32자 랜덤 문자열
 [ ] ADMIN_PASSWORD         — 기본값 changeme 반드시 변경
-[ ] GRAFANA_PASSWORD       — 기본값 changeme 반드시 변경
+[ ] GRAFANA_PASSWORD       — 필수(2026-10-17부터 compose 기본값 없음). .env.example 자리표시값을 바꾼다
+[ ] MQTT_TLS_STORE_PASSWORD — 필수(2026-10-17부터 compose 기본값 없음). 인증서 p12 저장소 비밀번호
 ```
 
 > 랜덤 문자열 생성: `openssl rand -base64 32`

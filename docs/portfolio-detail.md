@@ -1,6 +1,8 @@
 # 차량 텔레메트리 플랫폼 — 상세 기록
 
 > 요약은 [`README.md`](../README.md). 이 문서는 실험 서사·수치·한계를 전부 담은 긴 판이다(2026-09-27에 README에서 분리).
+>
+> **현재 상태(2026-10-20)**: OBD-II 동글 도착 전까지 일시 중지, 실차 수집 미검증 — [`RESUME.md`](RESUME.md). 아래 "현재 우선순위"는 2026-09 기준 이력이다.
 
 > 차량 데이터가 장애 중 어디까지 도달했고 무엇이 유실·중복됐는지를 증명하는
 > 백엔드/서버 엔지니어 포트폴리오 프로젝트
@@ -170,7 +172,7 @@ vehicle-telemetry-platform/
 | 성능 | 배치화로 병목을 개선했고(1회 관찰, 원시 로그 미보존) InfluxDB write latency 증가를 관찰 | 반복 결과가 크게 흔들려 최대 처리량 숫자 주장은 철회 |
 | 앱 | 반응형·테마·WebSocket stale/out-of-order 방어와 Flutter CI | 실제 기기 E2E와 스크린샷 증거는 미완료 |
 
-### 현재 우선순위
+### 현재 우선순위 (2026-09 기준 — 지금 순서는 [`RESUME.md`](RESUME.md))
 
 1. ~~evidence checksum의 clean-checkout 재현성 복구~~ — **완료(2026-09-09)**.
    clean clone 전수 검사에서 39개 중 3개가 CRLF 변환으로 깨져 있었다. 증거 자체는
@@ -584,6 +586,9 @@ print(response.value)  # 예: 87 kph
 
 > OBD-II 동글은 읽기 전용 — 차량 제어 불가, 데이터 수집만 가능
 
+위는 python-OBD 사용 예시다. 실제 수집 경로는 [`obd-bridge/`](../obd-bridge/README.md)(프로토타입 — ELM327-emulator 리허설만,
+**실동글·실차 미검증**)이고, 실차 절차는 [동글 정차 수집 계획](plans/2026-10-10-dongle-stationary-collection.md)에 있다.
+
 ---
 
 ## 개발 원칙
@@ -599,7 +604,8 @@ print(response.value)  # 예: 87 kph
 
 | 문서 | 내용 |
 |------|------|
-| [현재 상태 감사 및 8주 실행 계획](current-state-audit-2026-09-09.md) | 냉정한 점수, 위험 목록, 주장-증거 매트릭스, 테스트 전략, 다음 작업 |
+| [재개 문서](RESUME.md) | 지금 상태(2026-10-20), 동글이 오면 할 일, 하지 말 것 |
+| [현재 상태 감사 및 8주 실행 계획](current-state-audit-2026-09-09.md) | 2026-09-09 시점의 점수, 위험 목록, 주장-증거 매트릭스, 테스트 전략 |
 | [아키텍처 결정 기록 (ADR)](architecture-decisions.md) | 기술 선택의 이유 — "무엇을 썼냐"가 아니라 "왜 이걸 골랐냐" |
 | [DB 스키마](db-schema.md) | PostgreSQL(메타데이터/이상 이력) + InfluxDB(시계열) 스키마 |
 | [배포 가이드](deployment-guide.md) | AWS EC2 배포 절차 |
@@ -608,6 +614,7 @@ print(response.value)  # 예: 87 kph
 | [Runbook — 저장 경로 수평 확장](runbook/storage-scale-out.md) | 저장 전용 인스턴스를 언제·어떻게 늘리고 줄이는지. **줄일 때 45초가 든다** |
 | [검증 증거 정책](evidence-policy.md) | 어떤 증거가 있어야 어떤 표현을 쓸 수 있는지 |
 | [고도화 로드맵](roadmap.md) | 다음 작업을 고르는 기준과 의도적으로 미룬 것 |
+| [obd-bridge](../obd-bridge/README.md) · [동글 정차 수집 계획](plans/2026-10-10-dongle-stationary-collection.md) | OBD-II → MQTT 브리지 프로토타입과 실차 수집 계획 |
 | [개발 일지](devlog.md) | 날짜별 작업 내용, 결정 사항, 막힌 부분 기록 |
 
 ---

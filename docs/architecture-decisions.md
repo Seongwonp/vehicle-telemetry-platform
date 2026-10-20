@@ -1264,6 +1264,13 @@ ADR-006은 "포트폴리오 단계에서 DB 기반 사용자 관리는 과도하
   보내고 그 연결을 닫는다. **이미 맺은 구독으로의 전달은 그대로다** — 클라이언트가 아무 프레임도 보내지 않으면 **JWT 만료 시각**까지 받고, 그 시각에
   `WebSocketSessionRegistry`의 스케줄러가 WebSocket 연결 자체를 닫아(1008 "JWT expired") 브로커 구독도 사라진다(실제 Tomcat·STOMP 클라이언트 통합 테스트
   `WebSocketExpiryIntegrationTest`). 즉시 종료는 구현하지 않았다 — 설계안은 `docs/verification/2026-10-08-websocket-subscribe-auth.md` §4.
+  **2026-10-17 갱신(`5ac5008`) — 위 "끊지 않는다"를 뒤집었다.** `WebSocketSessionRegistry`가 세션→사용자(CONNECT 시)·세션→차량(SUBSCRIBE 시)을
+  기록하고, `VehicleService.deactivate`가 `closeVehicleSessions`(1008 "Vehicle access revoked"), `UserService`의 비밀번호 변경·관리자 초기화가
+  `closeUserSessions`(1008 "User authorization revoked")를 부른다. 사용자 비활성화 API는 없어서 사용자 쪽 종료 경로는 이 둘뿐이다.
+  **한계**: 등록부는 인스턴스별 메모리라 **다른 백엔드 인스턴스의 세션은 닫지 않는다**. 세션당 차량을 하나만 기록해(마지막 SUBSCRIBE가 덮어씀)
+  한 세션이 여러 차량을 구독하면 앞선 차량의 비활성화로는 닫히지 않는다. 종료는 트랜잭션 커밋 전에 일어난다(롤백돼도 이미 끊김).
+  **검증**: `ac15c05`는 `UserServiceTest`·`VehicleServiceTest`에 등록부 mock만 추가했다 — 종료 호출을 `verify`하는 테스트도,
+  `closeVehicleSessions`/`closeUserSessions` 자체의 테스트도, 실제 STOMP 통합 테스트도 없다(2026-10-20 코드 확인). **미검증**이다.
 - **비활성화도 관리자만 한다(2026-09-29).** 등록만 관리자고 `DELETE /api/vehicles/{id}`는 소유자도 되던 비대칭이었다 —
   비활성 차량은 관리자도 접근할 수 없고 같은 ID 재등록은 409라, 일반 사용자가 **되돌릴 수 없는 삭제**를 할 수 있었다(외부 리뷰).
   URL 규칙 + `@PreAuthorize` 이중. 재활성화 API는 여전히 없다 — 관리자가 DB에서 `active`를 되돌린다.

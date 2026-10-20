@@ -12,7 +12,7 @@
 | 토큰 | Access 기본 600,000ms(10분), 환경변수로 변경 가능. Redis refresh rotation | RedisRefreshTokenContractTest, RefreshInactiveUserTest. 로그아웃은 해당 refresh 폐기; Access 즉시 폐기가 아님 |
 | 비밀번호 | 본인 변경·관리자 초기화, 성공 시 사용자 refresh 전부 폐기 | PasswordApiSecurityTest. 기존 Access는 자체 만료까지 유효 |
 | 차량 인가 | 활성 차량에 소유자 또는 관리자 접근. 차량 등록·비활성화와 사용자 관리 ADMIN 전용 | VehicleAccessService, VehicleAccessInterceptor, SecurityBoundaryTest, [다중 사용자 E2E](verification/2026-09-27-multi-user-e2e.md) |
-| WebSocket | CONNECT 인증, SUBSCRIBE 차량 권한 검사, 클라이언트 SEND 차단, 만료 세션 정리 | WebSocketAuthChannelInterceptorTest. 차량 비활성화가 열린 구독을 즉시 끊지는 않음(ADR-027) |
+| WebSocket | CONNECT 인증, SUBSCRIBE 차량 권한 검사, 클라이언트 SEND 차단, 만료 세션 정리 | WebSocketAuthChannelInterceptorTest. 2026-10-17부터 차량 비활성화·비밀번호 변경/초기화 시 그 인스턴스의 세션을 닫음 — 테스트 없음, 다른 인스턴스 세션은 그대로(ADR-027) |
 | MQTT | 운영 8883 mTLS, 인증서 CN 기반 ACL, topic/payload 차량 ID 일치 검사 | broker/config/mosquitto.conf, broker/config/acl, MqttMessageHandlerTest. dev override는 평문 1883; dev 부하 실험을 TLS 검증으로 쓰지 않음 |
 | 로그인 방어 | 실패 누적 IP 차단, 로그인 rate limit, 신뢰 프록시 조건부 IP 해석 | BruteForceDetectorTest, LoginRateLimiterTest, ClientIpResolverTest |
 | SQL·응답 | 저장소 파라미터 바인딩, 401/403 JSON | 구현을 전체 SQL Injection 침투 테스트 완료로 확대하지 않음 |

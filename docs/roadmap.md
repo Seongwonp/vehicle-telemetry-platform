@@ -16,9 +16,34 @@ Telemetrix의 목표는 기술을 많이 붙이는 것이 아니라 차량 데�
 4. 처리량 하나만 보지 않고 성공률, lag, p95/p99 지연, 복구 시간과 정합성을 함께 본다.
 5. 결과가 예상과 다르면 실패를 지우지 않고 측정 도구의 한계까지 기록한다.
 
-## 2026-10-01 실행 순서
+## 현재 다음 단계 (2026-10-20)
 
-현재 우선순위는 [ACK 경계 작업 계획](plans/2026-10-01-mqtt-ack-boundary.md)의 문서 정리 → 수정 전 유실 재현 → 장애 범위를 정한 ACK 수정 → 동글 실측이다. 아래 09-09 계획은 이전 이력이며 이 순서를 대체하지 않는다.
+**OBD-II 동글(OBDLink EX) 도착 전까지 일시 중지.** 순서와 로컬 상태는 [`RESUME.md`](RESUME.md)가 기준이다.
+
+| 순서 | 작업 | 상태 |
+| ---: | --- | --- |
+| 1 | 동글 정차 수집 — 코나 2017 가솔린 → 그랜저 2024 하이브리드 | **미실행.** 계획: [`plans/2026-10-10-dongle-stationary-collection.md`](plans/2026-10-10-dongle-stationary-collection.md). 노트북 리허설 2회(ELM327-emulator, 2026-10-09 각 1회 관찰)만 통과, 결정 D1~D4 확정·D5 보류 |
+| 2 | 주행 수집 계획 | 정차 수집 결과를 본 뒤 작성 |
+| 3 | 1-VM 배포 | 사람이 직접(클라우드 계정·예산 알림·Terraform·SAN 포함 서버 인증서) — `RESUME.md` §5 |
+| 4 | 포트폴리오 마무리 | 전/후 그래프, 실차 영상, README 실차 결과 한 줄 |
+
+항목별 현재 상태(2026-10-20):
+
+| 항목 | 상태 |
+| --- | --- |
+| MQTT 수동 ACK(ADR-029) | 구현·실스택 각 1회 관찰, `MqttAckWaitStuck` 대조군 1회 firing. 결함 후보(실험 D2, Paho 수신 큐)와 ACK 구조 변경(C안)은 **보류** |
+| 선택 필드 fuel_level·battery_voltage(ADR-030) | 회귀 검증(공유 fixture 80칸, 실제 InfluxDB 계약 테스트로 `last()` 옛 값 섞임 없음 고정) + 실스택 E2E 1회 관찰(2026-10-08). 실차 PID 지원은 미검증 |
+| OBD-II 브리지(`obd-bridge/`) | 프로토타입. 에뮬레이터 리허설 2회: 60/60 acked = Kafka = InfluxDB, v5 ACL 음성 시험 0x87×18 spool 보존. **실동글·실차 미검증**, compose·CI 미포함 |
+| 이벤트 상관관계(ADR-028) | 1단계 완료(2026-09-28), 추적 각 1회(2026-09-29). 2단계(`message_id`) 미착수 — 변화 없음 |
+| 인증서 접근 제한·CRL, Grafana 등록 차량 필터 | 완료(2026-10-08~10). CRL 만료(nextUpdate) 대응은 아래 백로그 |
+| WebSocket 세션 즉시 종료 | 2026-10-17 `5ac5008`: 차량 비활성화·비밀번호 변경/초기화 시 **그 인스턴스의** 세션을 닫는다(ADR-027 갱신). 다른 인스턴스 세션·세션당 여러 차량 구독은 닫지 못함. 종료 동작 테스트·통합 테스트 없음 — **미검증** |
+| 인프라 포트·필수 비밀값 | 2026-10-17 `5ac5008`: Kafka·InfluxDB·PostgreSQL·Redis·Prometheus·Alertmanager·Grafana를 `127.0.0.1`에만 게시, `MQTT_TLS_STORE_PASSWORD`·`GRAFANA_PASSWORD` 필수(`deployment-guide.md` §1·§7) |
+| Flutter 실기기 E2E | 미검증(비밀번호 변경·메뉴 노출만 에뮬레이터 + 로컬 백엔드로 1회 확인) |
+| 테스트 | 백엔드 447건·실패 0·skip 0(2026-10-20), 감지기 pytest 232, obd-bridge pytest 94 |
+
+## 2026-10-01 실행 순서 (이력)
+
+당시 우선순위는 [ACK 경계 작업 계획](plans/2026-10-01-mqtt-ack-boundary.md)의 문서 정리 → 수정 전 유실 재현 → 장애 범위를 정한 ACK 수정 → 동글 실측이다. 아래 09-09 계획은 이전 이력이며 이 순서를 대체하지 않는다.
 
 **2026-10-09 상태** — 범위 닫기: MqttAckWaitStuck 대조군 1회(덮어쓴 delivery.timeout으로 firing 확인), SIM-024·SIM-088 CRL 폐기, 실험 G 세션 정리, README 대표 사례 3개, 기준점 태그 `v0.9-pre-vehicle`(상세 `docs/HANDOFF_2026-10-09.md`).
 
@@ -837,7 +862,7 @@ Kafka 리텐션 1시간 유지, 차량 삭제는 소프트 삭제 유지 + 즉�
 - schema 버전과 호환성 정책
 - 성능 회귀 기준선 및 정기 soak test
 - 배포 롤백 자동화
-- 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증 — 브리지 프로토타입(`obd-bridge/`)까지만, 실장치 미검증
+- 실제 OBD-II 장치 연동과 장치 timestamp 정밀도 검증 — 브리지 프로토타입(`obd-bridge/`)과 ELM327-emulator 리허설 2회(2026-10-09)까지만, 실장치 미검증(동글 대기)
 - 멀티 브로커 Kafka와 replication factor 상향
 - **CRL 만료 대응(백로그)** — 개발 CRL nextUpdate **2027-10-07**. 그 전에 `broker/certs/generate-crl.sh`로 갱신해야 하며, 만료되면 모든 mTLS 클라이언트가 거부될 수 있다(만료 감시 알림 없음, `docs/deployment-guide.md` §9)
 - 문제와 측정 근거가 있는 경우에만 수평 확장 또는 서비스 추가 분리

@@ -4,8 +4,12 @@
 > **기능 수보다 "장애 중 무엇이 유실·중복·역전됐는지를 증명할 수 있는가"에 집중한** 백엔드 포트폴리오.
 
 - Java 17 · Spring Boot 3 · Kafka · MQTT(Mosquitto, mTLS) · InfluxDB · PostgreSQL · Redis · Python(이상 감지) · Docker Compose
+- OBD-II → MQTT 브리지 프로토타입(Python, [`obd-bridge/`](obd-bridge/README.md))
 - 모바일 앱(Flutter): https://github.com/Seongwonp/vehicle-telemetry-app
 - 개발: 2026.01 ~ · 박성원
+
+**현재 상태(2026-10-20)**: OBD-II 동글(OBDLink EX) 도착 전까지 일시 중지. 브리지는 ELM327 에뮬레이터로만 확인했고
+**실차 수집은 미검증**이다 — [재개 문서](docs/RESUME.md).
 
 ## 아키텍처
 
@@ -22,7 +26,7 @@ flowchart LR
     API --> PROM["Prometheus / Grafana"]
 ```
 
-설계 결정 30건과 이유는 [ADR](docs/architecture-decisions.md).
+설계 결정 30건(ADR-001~030)과 이유는 [ADR](docs/architecture-decisions.md).
 
 ## 대표 사례 3개 — 문제 → 변경 → 검증 결과
 
@@ -39,18 +43,24 @@ flowchart LR
 [상세 기록 — README에서 옮긴 결과](docs/portfolio-detail.md#readme에서-옮긴-결과).
 
 2026-10-01: MQTT ACK를 Kafka 또는 spool 기록 뒤로 이동했다([ADR-029](docs/architecture-decisions.md), [부분 검증](docs/verification/2026-10-01-mqtt-ack-boundary.md)). 수신 스레드가 완료를 기다리므로 과거 처리량을 현재 구현의 처리량으로 사용하지 않는다. 브로커·호스트 강제 종료까지 보호하는 변경은 아니다.
+ACK 대기가 멈추면 울리는 `MqttAckWaitStuck` 알림은 대조군 1회로 firing을 확인했다. 그 뒤 인증서 접근 제한(서비스별 최소 마운트, CA 키 런타임 제외)·CRL 폐기,
+Grafana 등록 차량 필터, 인프라 포트 localhost 게시를 더했다. 차량 비활성화·비밀번호 변경 시 WebSocket 세션 종료(2026-10-17)는 단일 인스턴스 한정이고
+종료 동작 테스트가 없어 미검증이다([ADR-027](docs/architecture-decisions.md)).
 
 ## 검증 방식
 
-- **테스트**: Java 300+건(Testcontainers 계약 7종, CI가 skip 0 강제) · Python pytest · Java/Python이 **같은 fixture 61건**으로 입력 계약 판정 일치 확인
+- **테스트**: 백엔드 447건·실패 0·skip 0(2026-10-20, Testcontainers 계약 8종 — CI가 결과 파일 8개와 skip 0 강제) ·
+  이상 감지 pytest 232건(2026-10-08) · obd-bridge pytest 94건(2026-10-09) · Java/Python이 **같은 fixture 80칸**으로 입력 계약 판정 일치 확인
+- **동글 리허설(에뮬레이터, 실차 아님, 각 1회 관찰)**: mTLS·MQTT v5로 60주기 발행 = PUBACK 60 = Kafka 60 = InfluxDB 60.
+  다른 차량 인증서로 쓴 18건은 브로커가 PUBACK 0x87로 거부해 브리지 spool에 남음 — [동글 계획](docs/plans/2026-10-10-dongle-stationary-collection.md)
 - **실험 규칙**: 가설·대조군·성공 기준을 먼저 적고, 발행 시도 수가 아니라 **PUBACK·Kafka offset·InfluxDB 행 수를 대조**한다. 안정성 주장은 같은 조건 3회 이상에서만 — [증거 정책](docs/evidence-policy.md)
 - **증거 보존**: 실행마다 `load-test/<시나리오>/evidence/<run-id>/`에 commit SHA·명령·원본 로그·checksum. CI가 checksum 전수 검사
 
 ## 말하지 않는 것
 
-- exactly-once, 모든 조건에서 무손실, 고가용성(broker 1대, RF=1)
+- exactly-once, 모든 조건에서 무손실, 고가용성(broker 1대, RF=1), 운영 준비 완료
 - 최대 처리량 수치(반복 결과가 크게 흔들려 철회)
-- 실제 OBD-II 연결, 운영 배포, 앱 실기기 E2E — 전부 **미검증**
+- 실차 OBD-II 수집(브리지는 에뮬레이터로만 확인), 운영 배포, 앱 실기기 E2E — 전부 **미검증**
 
 ## 실행
 
@@ -67,8 +77,10 @@ cd backend && ./gradlew test                        # Docker 필요(Testcontaine
 
 | | |
 | --- | --- |
+| [재개 문서](docs/RESUME.md) | 지금 상태, 동글이 오면 할 일, 하지 말 것 |
 | [상세 기록](docs/portfolio-detail.md) | 장애 시나리오별 동작, 실측 서사 전체 |
 | [ADR](docs/architecture-decisions.md) | 왜 이렇게 골랐고 무엇을 포기했는지 |
-| [로드맵](docs/roadmap.md) · [현재 상태 감사](docs/current-state-audit-2026-09-09.md) | 완료/미검증 경계와 다음 작업 |
+| [로드맵](docs/roadmap.md) | 완료/미검증 경계와 다음 작업 |
+| [obd-bridge](obd-bridge/README.md) · [동글 정차 수집 계획](docs/plans/2026-10-10-dongle-stationary-collection.md) | 실차 수집 준비 — 계약 매핑, 가설·성공 기준·안전 규칙 |
 | [Runbook](docs/runbook/) | DLQ 재처리, Redis 장애, 저장 스케일아웃, 사용자 스키마 전환, 한 건 끝까지 찾기 |
 | [개발 일지](docs/devlog.md) | 어디서 틀렸고 무엇이 그걸 드러냈는지 |
