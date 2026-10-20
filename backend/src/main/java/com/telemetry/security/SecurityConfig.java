@@ -32,7 +32,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
-    // DB 기반(DbUserDetailsService). 2026-09-27까지는 InMemory admin 한 명이었다(ADR-006 → ADR-027).
+    // DB 기반(DbUserDetailsService). ADR-027
     private final UserDetailsService userDetailsService;
 
     @Value("${admin.password}")
@@ -41,9 +41,7 @@ public class SecurityConfig {
     @Value("${cors.allowed-origin-patterns}")
     private String allowedOriginPatterns;
 
-    // application.yml의 기본값(ADMIN_PASSWORD 미설정 시 "changeme")이 그대로
-    // 배포되면 관리자 계정이 공개 기본 비밀번호로 열려버린다. .env 없이 실수로
-    // 띄우는 걸 배포 전에 바로 드러내기 위한 fail-fast 검증이다.
+    // 기본 비밀번호 그대로 뜨면 관리자 계정이 공개 비밀번호로 열린다. 기동 시 fail-fast로 막는다.
     private static final String INSECURE_DEFAULT_PASSWORD = "changeme";
 
     @PostConstruct
@@ -60,8 +58,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             // ── CORS ────────────────────────────────────────────────
-            // Flutter web(브라우저)에서 호출할 때만 필요 — 네이티브 앱/curl은 브라우저가
-            // 아니라 CORS 검사 자체를 안 받아서 이 설정 없이도 지금까지는 문제가 안 보였다.
+            // Flutter web(브라우저) 호출용. 네이티브 앱/curl은 CORS 검사를 받지 않는다.
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
             // ── CSRF 비활성화 (Stateless JWT 방식) ─────────────────
@@ -72,11 +69,9 @@ public class SecurityConfig {
             .exceptionHandling(errors -> errors
                 .authenticationEntryPoint((request, response, exception) ->
                     writeJson(response, 401, "UNAUTHORIZED", "인증이 필요합니다"))
-                // 403도 직접 쓴다. 기본 AccessDeniedHandlerImpl은 sendError(403)를 부르고, 그러면 Tomcat이
-                // /error로 ERROR 디스패치를 한다 — 그 디스패치에는 JWT 필터가 돌지 않아(OncePerRequestFilter는
-                // ERROR 디스패치를 건너뛴다) /error가 anyRequest().authenticated()에 걸려 위 entry point의
-                // **401로 바뀌어 나갔다.** MockMvc는 ERROR 디스패치를 하지 않아 테스트는 403을 봤고, 실제
-                // 컨테이너 E2E(2026-09-28)에서만 401이 나왔다.
+                // 403도 직접 쓴다. 기본 핸들러의 sendError(403)는 /error ERROR 디스패치를 타는데, 거기선
+                // JWT 필터가 돌지 않아 실제 컨테이너에서 401로 바뀐다(MockMvc에선 재현 안 됨).
+                // 경위: docs/verification/2026-09-28-multi-user-e2e.md
                 .accessDeniedHandler((request, response, exception) ->
                     writeJson(response, 403, "FORBIDDEN", "접근 권한이 없습니다")))
 
@@ -98,20 +93,15 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/me", "/api/auth/password").authenticated()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/vehicles").hasRole("ADMIN")
-                // 비활성화도 관리자만. 등록만 관리자고 비활성화는 소유자도 되던 비대칭이었다 — 비활성 차량은 관리자도
-                // 접근할 수 없고 같은 ID 재등록은 409라, 일반 사용자가 되돌릴 수 없는 삭제를 할 수 있었다(2026-09-29 리뷰).
+                // 비활성화도 관리자만. 소유자가 하면 되돌릴 수 없는 삭제가 된다(재등록 409). ADR-027
                 .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/vehicles/*").hasRole("ADMIN")
-                // WebSocket 핸드셰이크(HTTP 업그레이드) 자체는 열어두고, 실제 인증은
-                // STOMP CONNECT 프레임에서 WebSocketConfig의 인터셉터가 검사한다.
+                // 핸드셰이크는 열어두고 인증은 STOMP CONNECT에서 인터셉터가 검사한다.
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
-                // /actuator/prometheus는 Prometheus 스크레이핑용 — 별도 인증 없이 접근해야 정상 수집됨.
-                // 운영 배포 시엔 애플리케이션 레벨 인증 대신 보안그룹/리버스프록시로 내부망만 접근 허용해야 한다.
-                // /actuator/health/** 는 liveness·readiness 그룹까지 포함한다.
-                // show-details: never라서 세 경로 모두 status 한 줄만 나간다 —
-                // 오케스트레이터가 probe할 수 있어야 하므로 인증을 요구하지 않는다.
+                // probe·스크레이핑용이라 인증 없이 연다(show-details: never).
+                // 운영에서는 보안그룹/리버스 프록시로 내부망에서만 접근하게 해야 한다.
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/prometheus").permitAll()
-                // 사용자 관리는 관리자만. 컨트롤러의 @PreAuthorize와 이중이다 — 한쪽이 빠져도 열리지 않게.
+                // 컨트롤러 @PreAuthorize와 이중 검사. 한쪽이 빠져도 열리지 않게 둘 다 둔다.
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
@@ -135,9 +125,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // 콤마로 구분된 패턴 목록. 포트가 매번 바뀌는 로컬 개발 편의를 위해
-        // setAllowedOrigins가 아닌 setAllowedOriginPatterns를 쓴다 — 후자만 "localhost:*"
-        // 같은 포트 와일드카드를 지원한다.
+        // 콤마 구분 패턴. "localhost:*" 같은 포트 와일드카드는 Patterns 쪽만 지원한다.
         configuration.setAllowedOriginPatterns(Arrays.asList(allowedOriginPatterns.split(",")));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));

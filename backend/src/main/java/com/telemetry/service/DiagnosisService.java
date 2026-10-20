@@ -27,9 +27,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * 최근 텔레메트리 + 이상 이력을 프롬프트로 구성해 Gemini API에 던지고 진단 텍스트를 받아온다.
- * 단발성 블로킹 HTTP 호출 하나뿐이라 WebFlux/WebClient 의존성을 새로 추가하지 않고
- * JDK 내장 java.net.http.HttpClient를 사용한다.
+ * 최근 텔레메트리와 이상 이력으로 프롬프트를 만들어 Gemini API에서 진단 텍스트를 받는다.
+ * 블로킹 호출 하나뿐이라 WebClient 대신 JDK HttpClient를 쓴다.
  */
 @Slf4j
 @Service
@@ -181,8 +180,7 @@ public class DiagnosisService {
 
             if (response.statusCode() != 200) {
                 log.error("[Gemini] API 호출 실패 status={} body={}", response.statusCode(), response.body());
-                // 업스트림(Gemini) 오류 — "리소스 없음"이 아니므로 IllegalStateException(404 매핑)은 쓰지 않는다.
-                // GlobalExceptionHandler의 범용 Exception 핸들러가 받아 500으로 응답한다.
+                // 업스트림 오류는 404가 아니므로 범용 핸들러(500)로 보낸다.
                 throw new RuntimeException("AI 진단 호출 실패 (status=" + response.statusCode() + ")");
             }
 
@@ -193,7 +191,7 @@ public class DiagnosisService {
                 throw new RuntimeException("AI 진단 응답을 해석할 수 없습니다");
             }
 
-            // responseSchema 지정 시 text 필드 안에 JSON 문자열이 들어온다 (JSON-in-JSON).
+            // responseSchema를 쓰면 text 필드 안에 JSON 문자열이 들어온다.
             JsonNode structured = objectMapper.readTree(textNode.asText());
             String grade = structured.path("grade").asText("C");
             int score = structured.path("score").asInt(50);

@@ -41,7 +41,6 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         MDC.put("traceId", traceId);
         MDC.put("clientIp", ip);
 
-        // 클라이언트가 요청 추적할 수 있도록 응답 헤더에도 포함
         response.addHeader("X-Trace-Id", traceId);
 
         long start = System.currentTimeMillis();

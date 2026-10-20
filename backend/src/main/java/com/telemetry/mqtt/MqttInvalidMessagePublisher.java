@@ -29,8 +29,7 @@ public class MqttInvalidMessagePublisher {
                 "reason", reason,
                 "payload", payload
             ));
-            // **시도 시점**에 올린다. 직렬화 실패는 시도 전이라 여기 안 온다 —
-            // 그것도 실패로는 세지만 "발행 시도"는 아니다.
+            // 직렬화 실패는 실패로는 세지만 발행 시도는 아니다.
             com.telemetry.metrics.ContractMetrics.dlqPublishAttempt(meterRegistry, TOPIC);
             kafkaTemplate.send(TOPIC, mqttTopic, envelope).get(10, TimeUnit.SECONDS);
             com.telemetry.metrics.ContractMetrics.dlqPublished(meterRegistry, TOPIC);
@@ -38,7 +37,7 @@ public class MqttInvalidMessagePublisher {
             com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, TOPIC, e);
             throw new IllegalStateException("MQTT DLQ 메시지 직렬화 실패", e);
         } catch (Exception e) {
-            // timeout이면 브로커가 받았는지 **모른다**. dlqPublishFailed가 그걸 따로 센다.
+            // 던져야 호출자가 MQTT ACK를 하지 않는다. timeout은 발행 여부 불명으로 따로 센다.
             com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, TOPIC, e);
             throw new IllegalStateException("MQTT DLQ 전송 실패", e);
         }

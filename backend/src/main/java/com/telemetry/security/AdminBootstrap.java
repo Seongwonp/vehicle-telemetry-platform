@@ -15,9 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 관리자 계정을 {@code ADMIN_USERNAME}/{@code ADMIN_PASSWORD}와 맞춘다(ADR-027).
  *
- * <p>V4 마이그레이션이 관리자 행을 만들지만 BCrypt 해시는 SQL로 만들 수 없어 여기서 채운다.
- * <b>env가 관리자 비밀번호의 단일 기준</b>이다 — 해시가 env와 다르면 env 쪽으로 덮어쓴다. 그래야
- * InMemory 시절과 같은 운영 절차(.env 수정 후 재기동)가 유지된다. 일반 사용자 비밀번호는 건드리지 않는다.
+ * <p>BCrypt 해시는 SQL 마이그레이션으로 만들 수 없어 기동 시 채운다. env가 관리자 비밀번호의
+ * 단일 기준이라 해시가 다르면 env 쪽으로 덮어쓴다(.env 수정 후 재기동). 일반 사용자는 건드리지 않는다.
  */
 @Slf4j
 @Component

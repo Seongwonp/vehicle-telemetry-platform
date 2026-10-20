@@ -25,8 +25,8 @@ public class Vehicle {
     private String name;
 
     /**
-     * 소유자(users FK, V4). 응답에는 항상 username이 나가므로 조회 메서드가 {@code @EntityGraph}로 함께
-     * 읽는다 — 트랜잭션 밖에서 {@code getOwnerUsername()}을 부르는 서비스가 있기 때문이다(VehicleService).
+     * 소유자(users FK, V4). 트랜잭션 밖에서 {@code getOwnerUsername()}을 부르므로 조회 메서드가
+     * {@code @EntityGraph}로 함께 읽어야 한다.
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id", nullable = false)

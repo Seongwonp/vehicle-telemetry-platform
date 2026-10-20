@@ -28,21 +28,15 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /** Redis가 안 될 때 오르는 카운터. 라벨은 **경로 템플릿**이라 카디널리티가 유한하다. */
+    /** Redis 사용 불가 카운터. 라벨은 경로 템플릿이라 카디널리티가 유한하다. */
     public static final String REDIS_UNAVAILABLE_METRIC = RedisMetrics.UNAVAILABLE;
 
     private final MeterRegistry meterRegistry;
 
     /**
-     * <b>{@code MeterRegistry}를 필수 의존으로 걸지 않는다.</b>
-     *
-     * <p>처음에 생성자 인자로 그냥 받았더니 {@code @WebMvcTest} 슬라이스의 컨텍스트가
-     * 통째로 못 떴다 — 슬라이스는 Micrometer 자동 구성을 안 올리는데 이 advice는
-     * 슬라이스에 포함되기 때문이다. <b>지표 하나 때문에 예외 처리 전체가 사라지는 것</b>은
-     * 맞는 교환이 아니다.
-     *
-     * <p>그래서 없으면 버리는 registry로 대신한다. 다만 <b>조용히</b> 넘어가지 않는다 —
-     * 운영에서 이 분기를 타면 지표가 Prometheus에 안 올라간다는 뜻이고 그건 보여야 한다.
+     * {@code MeterRegistry}를 필수 의존으로 걸지 않는다. {@code @WebMvcTest} 슬라이스에는
+     * Micrometer가 없어서, 필수로 걸면 이 advice 때문에 컨텍스트가 뜨지 않는다.
+     * 없으면 임시 registry로 대신하되 WARN을 남긴다.
      */
     @Autowired
     public GlobalExceptionHandler(ObjectProvider<MeterRegistry> meterRegistryProvider) {
@@ -53,7 +47,7 @@ public class GlobalExceptionHandler {
             found = new SimpleMeterRegistry();
         }
         this.meterRegistry = found;
-        // 알림용 합계 카운터를 기동 시 0으로 둔다 — 첫 실패가 increase()에 보이게(RedisMetrics.UNAVAILABLE_ALL).
+        // 합계 카운터를 기동 시 0으로 등록해야 첫 실패가 increase()에 잡힌다.
         RedisMetrics.preRegister(this.meterRegistry);
     }
 
@@ -64,28 +58,11 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * Redis에 못 닿았다 — <b>503으로 명시한다.</b>
+     * Redis 사용 불가는 코드 버그가 아니라 의존성 장애이므로 500이 아닌 503으로 응답한다.
      *
-     * <h3>왜 500이 아니라 503인가</h3>
-     *
-     * 지금까지는 이 예외가 {@code handleGeneral}로 떨어져 <b>정체불명의 500</b>이 됐다.
-     * 실제로는 <b>우리 코드의 버그가 아니라 의존 서비스가 없는 상태</b>이고, 그건
-     * 클라이언트와 운영자가 다르게 대응해야 하는 일이다 — 503은 재시도 가능함을 뜻한다.
-     *
-     * <h3>여기 오는 것과 안 오는 것</h3>
-     *
-     * 이 핸들러는 <b>거부하기로 정한 경로</b>의 표현만 담당한다 — 로그인 보호,
-     * 진단 제한, refresh 토큰이다(전부 fail-closed).
-     * <b>일반 조회는 여기 오지 않는다</b> — {@code RateLimitInterceptor}가
-     * fail-open으로 통과시키고 {@code telemetry.ratelimit.failopen}을 올린다.
-     * 두 지표가 <b>같이 오르지 않는 것이 정상</b>이다
-     * ({@code docs/redis-failure-policy.md} §3-2).
-     *
-     * <h3>조용히 지나가지 않게 한다</h3>
-     *
-     * 지표를 올리고 WARN을 남긴다. 어느 경로가 막히는지 알아야 "Redis가 죽어서 조회가
-     * 안 된다"와 "그 API가 원래 깨졌다"를 가를 수 있다.
-     * <b>차량 ID 같은 값은 라벨에 안 들어간다</b> — 경로 <b>템플릿</b>을 쓴다.
+     * <p>fail-closed 경로(로그인 보호, 진단 제한, refresh 토큰)만 여기 온다. 일반 조회는
+     * {@code RateLimitInterceptor}가 fail-open으로 통과시킨다.
+     * 정책: {@code docs/redis-failure-policy.md} §3-2
      */
     @ExceptionHandler({DataAccessResourceFailureException.class, QueryTimeoutException.class})
     public ResponseEntity<ErrorResponse> handleRedisUnavailable(
@@ -128,10 +105,8 @@ public class GlobalExceptionHandler {
     }
 
     /**
-     * 비밀번호 변경에서 현재 비밀번호가 틀렸다 — <b>401이 아니라 400</b>이다.
-     * 이 요청은 access token으로 이미 인증을 통과했다. 401을 주면 클라이언트가 "세션 만료"로 읽어
-     * refresh를 시도하거나 로그아웃시킨다. 세션은 멀쩡하고 입력만 틀렸다.
-     * 코드를 {@code UNAUTHORIZED}와 분리해 화면이 "현재 비밀번호를 확인하세요"를 보여줄 수 있게 한다.
+     * 현재 비밀번호 불일치는 401이 아니라 400이다. 401이면 클라이언트가 세션 만료로 보고
+     * refresh나 로그아웃을 시도한다.
      */
     @ExceptionHandler(CurrentPasswordMismatchException.class)
     public ResponseEntity<ErrorResponse> handleCurrentPasswordMismatch(CurrentPasswordMismatchException e) {

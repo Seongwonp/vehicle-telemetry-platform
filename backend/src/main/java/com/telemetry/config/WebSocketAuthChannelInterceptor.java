@@ -49,9 +49,8 @@ public class WebSocketAuthChannelInterceptor implements ChannelInterceptor {
         }
 
         if (StompCommand.SEND.equals(accessor.getCommand())) {
-            // 클라이언트는 아무것도 발행하지 않는다. 서버 브로드캐스트(SimpMessagingTemplate)는 이 채널을
-            // 거치지 않으므로 여기서 막아도 정상 경로는 그대로다. 열어두면 일반 사용자가 남의
-            // /topic/vehicle/{id}/telemetry로 서버 발행처럼 프레임을 주입할 수 있었다(2026-09-27 제3자 리뷰).
+            // 클라이언트 SEND는 막는다. 열어두면 남의 차량 토픽에 서버 발행처럼 프레임을 넣을 수 있다.
+            // 서버 브로드캐스트는 이 채널을 거치지 않으므로 영향이 없다.
             throw new AccessDeniedException("클라이언트 발행은 허용되지 않습니다");
         }
         if (StompCommand.SUBSCRIBE.equals(accessor.getCommand())) {

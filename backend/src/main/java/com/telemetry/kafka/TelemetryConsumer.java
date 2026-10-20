@@ -47,18 +47,8 @@ public class TelemetryConsumer {
     private final MeterRegistry meterRegistry;
 
     /**
-     * Consumer 그룹을 두 개로 분리한 이유:
-     * 같은 그룹으로 묶으면 하나의 파티션을 한 Consumer만 읽게 되어 InfluxDB 저장과 이상 탐지 중 하나가 메시지를 못 받는다.
-     * 그룹을 분리하면 각 그룹이 토픽을 독립적으로 구독하므로 두 처리 경로가 모든 메시지를 각자 수신한다.
-     */
-
-    /**
-     * poll 한 번에 받은 레코드를 묶어서 InfluxDB 요청 1건 + offset 커밋 1건으로 처리한다.
-     *
-     * <p>메시지마다 {@code writePoint()} + {@code acknowledge()}를 하던 구조에서는 건당
-     * HTTP 요청 1회(= InfluxDB WAL fsync 1회) + Kafka 커밋 1회가 발생해, ~2,400 msg/s
-     * 부하에서 처리량이 8 msg/s까지 떨어졌다. 배치로 묶으면 이 건당 오버헤드가
-     * {@code max.poll.records}배만큼 줄어든다.
+     * poll 한 번의 레코드를 InfluxDB 요청 1건 + offset 커밋 1건으로 처리한다(ADR-011).
+     * 저장과 이상 감지는 consumer group이 달라야 둘 다 모든 메시지를 받는다(ADR-002).
      */
     @KafkaListener(
         topics = "vehicle-telemetry",
@@ -72,22 +62,15 @@ public class TelemetryConsumer {
 
         for (ConsumerRecord<String, String> record : records) {
             try {
-                // **MQTT 입구와 같은 decoder를 쓴다.** 예전에는 여기서 readValue만 해서
-                // Bean Validation을 통째로 우회했다 — 부하 도구와 다른 producer가 그 경로다.
-                // 검증 실패도 역직렬화 실패와 **같은 레코드별 catch**로 처리한다.
-                // 배치 전체를 먼저 검증하는 구조로 바꾸면 안 된다 — 그러면 아직 저장하지
-                // 않은 앞쪽 정상 레코드까지 처리 완료로 간주될 수 있다.
+                // MQTT 입구와 같은 decoder를 써야 이 경로로 계약을 우회할 수 없다.
+                // 검증·변환 실패는 레코드별 catch로 그 건만 DLQ로 보낸다(배치 전체를 실패시키지 않는다).
                 VehicleTelemetry telemetry = telemetryDecoder.decode(record.value());
-                // 포인트 변환(타임스탬프 파싱 포함)까지 레코드별로 처리한다 — 여기서 실패하는 건
-                // 메시지 자체가 영구적으로 처리 불가능한 경우라, 배치 전체를 실패시키지 않고
-                // 그 한 건만 DLQ로 격리해야 정상 메시지가 재시도에 휘말리지 않는다.
                 points.add(telemetryRepository.toPoint(telemetry));
                 converted.add(telemetry);
             } catch (com.telemetry.domain.TelemetryContractException e) {
-                // **계약 위반만** 사유별로 센다. 아래 일반 catch는 변환 실패 등이라
-                // 계약 오류가 아니고, 섞으면 "거부가 늘었다"의 뜻이 흐려진다.
+                // 사유별 거부 지표에는 계약 위반만 센다. 변환 실패와 섞으면 지표 뜻이 흐려진다.
                 com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_KAFKA_STORAGE, e.getReason());
-                // 거부 경로의 추적 키는 payloadSha256 — MQTT 거부 로그·DLQ value와 같은 함수로 같은 값이다(ADR-028).
+                // 추적 키는 payloadSha256 — MQTT 거부 로그와 같은 함수다(ADR-028).
                 log.warn("[Kafka→InfluxDB] 계약 위반 {} — DLQ로 이동 vehicle={} partition={} offset={} payloadSha256={}",
                     e.getReason(), record.key(), record.partition(), record.offset(),
                     com.telemetry.domain.PayloadDigest.sha256(record.value()));
@@ -100,24 +83,11 @@ public class TelemetryConsumer {
             }
         }
 
-        // InfluxDB 쓰기 실패는 여기서 잡지 않는다. 예전엔 역직렬화 실패와 같은 catch에
-        // 묶여 있어서, InfluxDB 장애 중에도 원본 메시지를 DLQ로 옮기고 offset을 커밋해버렸다
-        // — 12시간 soak test에서 InfluxDB 쓰기가 테스트 시작 26초 만에 멈췄는데도
-        // telemetry-storage-group의 Kafka lag은 끝까지 낮게 유지된 채(offset은 계속 커밋됨)
-        // 텔레메트리가 12시간 내내 조용히 유실된 걸로 이 버그를 찾았다. 여기서 예외를
-        // 그대로 던지면 offset이 커밋되지 않아 배치가 재시도되고, 계속 실패하면 Kafka
-        // lag이 올라가 KafkaConsumerLagHigh/InfluxDbOperationFailures 알림으로 드러난다
-        // — "장애가 나면 눈에 띄어야 한다"가 여기선 맞는 동작이다. 재시도까지 소진되면
-        // KafkaConfig의 DeadLetterPublishingRecoverer가 DLQ로 보내므로 어느 경로로도
-        // 조용히 사라지지 않는다.
-        //
-        // 트레이드오프: 배치가 재시도되면 위 루프에서 이미 DLQ로 보낸 역직렬화 실패
-        // 레코드가 중복 발행된다. DLQ는 조사/재처리용이라 중복이 유실보다 낫다고 판단.
-        // 실패를 **로그에도** 남긴다. 알림 경로(consumeAnomalyAlerts)는 배치 실패마다
-        // ERROR를 남기는데 이 경로는 아무것도 안 남겨서, InfluxDB 12분 장애 동안
-        // 로그만 보면 정상으로 보였다(load-test/long-outage/RESULT_20260906_influxdb.md).
-        // 지표는 있었지만 사고 후 로그를 되짚는 경로가 비어 있었다. 두 경로의 관측
-        // 가능성을 같게 맞춘다.
+        // InfluxDB 쓰기 실패는 DLQ로 보내지 않고 그대로 던진다 — offset이 커밋되지 않아 재시도되고,
+        // 계속 실패하면 lag 알림으로 드러난다. 여기서 DLQ+커밋하면 장애 중 데이터가 조용히 빠져나간다.
+        // 재시도 소진은 KafkaConfig의 DeadLetterPublishingRecoverer가 받는다.
+        // 배치 재시도 시 위에서 DLQ로 보낸 레코드가 중복 발행될 수 있다(유실보다 낫다).
+        // 경위: devlog, load-test/long-outage/RESULT_20260906_influxdb.md
         try {
             telemetryRepository.saveAll(points);
         } catch (RuntimeException e) {
@@ -128,23 +98,13 @@ public class TelemetryConsumer {
         log.debug("[Kafka→InfluxDB] 배치 저장 완료 — 수신 {}건 중 {}건 저장",
             records.size(), points.size());
         acknowledgment.acknowledge();
-        // 방송은 커밋 **뒤**이고 실패해도 던지지 않는다 — 아래 broadcastAnomaly 주석.
+        // 방송은 커밋 뒤, 실패해도 던지지 않는다(broadcastAnomaly 참고).
         converted.forEach(this::broadcastTelemetry);
     }
 
     /**
-     * poll 한 번에 받은 알림을 묶어서 <b>PostgreSQL 트랜잭션 1건 + offset 커밋 1건</b>으로
-     * 처리한다.
-     *
-     * <p>레코드 단위 리스너 + {@code MANUAL_IMMEDIATE}였을 때 이 경로의 처리량은
-     * <b>49 msg/s</b>였다. 알림 한 건마다 PostgreSQL 커밋(=fsync) 1회와 Kafka offset
-     * 커밋(브로커 왕복) 1회가 붙기 때문이다. 100대 부하의 유입(200건/s 이상)을 못 따라가
-     * lag이 계속 쌓였고, 부하를 끊은 뒤 따라잡는 데 13분이 걸렸다
-     * ({@code load-test/anomaly-storage-throughput/}).
-     *
-     * <p>저장 경로(InfluxDB)에서 같은 이유로 배치화해 처리량을 회복시킨 적이 있다(ADR-011).
-     * 여기도 같은 모양이다 — 역직렬화와 엔티티 변환은 레코드별로 격리하고(실패 시 그 한
-     * 건만 DLQ), DB 쓰기만 배치로 묶는다.
+     * 알림을 PostgreSQL 트랜잭션 1건 + offset 커밋 1건으로 처리한다(ADR-022).
+     * 파싱·변환은 레코드별로 격리하고(실패 시 그 건만 DLQ), DB 쓰기만 배치로 묶는다.
      */
     @KafkaListener(
         topics = "vehicle-anomaly-alerts",
@@ -160,12 +120,9 @@ public class TelemetryConsumer {
                 Map<String, Object> payload = objectMapper.readValue(
                     record.value(), new TypeReference<>() {}
                 );
-                // 파싱·변환은 트랜잭션 밖에서 끝낸다. 잘못된 타임스탬프 하나가 트랜잭션
-                // 안에서 터지면 같은 배치의 정상 알림 수천 건까지 롤백되기 때문이다.
+                // 변환은 트랜잭션 밖에서 끝낸다 — 안에서 터지면 배치 전체가 롤백된다.
                 toSave.add(anomalyService.toEntity(payload));
             } catch (Exception e) {
-                // Python anomaly-detector가 발행한 이벤트가 저장 안 된 경우 —
-                // 알림 누락으로 이어질 수 있어 DLQ로 격리한다.
                 log.error("[Kafka→Anomaly] 변환 실패 — DLQ로 이동 vehicle={} partition={} offset={} payloadSha256={}",
                     record.key(), record.partition(), record.offset(),
                     com.telemetry.domain.PayloadDigest.sha256(record.value()), e);
@@ -177,24 +134,16 @@ public class TelemetryConsumer {
         try {
             results = anomalyService.saveAll(toSave);
         } catch (Exception e) {
-            // DB 장애로 배치 전체가 실패한 경우. 예전(레코드 단위)에는 여기서 곧바로
-            // DLQ로 보내고 offset을 커밋했는데, 배치에서는 그러면 수천 건이 한꺼번에
-            // DLQ로 간다. offset을 커밋하지 않고 예외를 던져 재시도(KafkaConfig의
-            // 180초 예산)에 맡기고, 소진되면 DeadLetterPublishingRecoverer가 처리한다.
+            // DB 장애는 DLQ로 보내지 않는다. offset 미커밋으로 재시도에 맡기고,
+            // 소진되면 DeadLetterPublishingRecoverer가 처리한다.
             log.error("[Kafka→Anomaly] 배치 저장 실패 {}건 — offset 미커밋, 재시도한다",
                 toSave.size(), e);
             throw e;
         }
 
         acknowledgment.acknowledge();
-        // 이미 저장돼 있던 이벤트면 알림을 보내지 않는다.
-        //
-        // 재처리는 "이미 저장된 알림"을 반드시 다시 넣게 된다. PostgreSQL 60초 장애를
-        // 주입해 재보니 DLQ 9건 중 3건은 이미 저장된 것이었고(서버 커밋은 끝났는데
-        // 연결이 끊겨 클라이언트만 실패로 본 경우), 재처리를 한 번 더 돌리면 9건 전부가
-        // 그렇게 된다. 행은 UNIQUE(event_id) + ON CONFLICT DO NOTHING이 막지만
-        // 브로드캐스트는 막을 것이 없어서, 예전 코드는 이 9건을 매번 다시 밀어냈다
-        // (load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md).
+        // 새로 insert된 알림만 방송한다. 재처리는 이미 저장된 알림을 다시 넣게 되고,
+        // 행 중복은 UNIQUE(event_id)가 막지만 방송 중복은 이 조건만 막는다(ADR-020).
         for (AnomalyService.SaveResult result : results) {
             if (!result.inserted()) continue;
             broadcastAnomaly(result.alert());
@@ -203,16 +152,9 @@ public class TelemetryConsumer {
             records.size(), toSave.size());
     }
 
-    // REST의 TelemetryResponse와 동일한 JSON 형태로 만들어 보낸다 — 앱이
-    // 폴링 응답과 스트리밍 응답을 같은 모델(Telemetry.fromJson)로 파싱할 수 있도록.
     /**
-     * WebSocket 방송은 offset 커밋 <b>뒤</b>에 하므로 여기서 던지면 안 된다.
-     *
-     * <p>던지면 에러 핸들러가 <b>이미 저장·커밋된 배치</b>를 실패로 보고 다시 돌린다 —
-     * 저장 경로는 InfluxDB point identity가 흡수하지만 재시도 예산을 소진하면 정상 레코드
-     * 전체가 DLQ로 간다. 알림 경로는 더 나쁘다: 재시도에서 {@code inserted=false}가 되어
-     * <b>방송이 영구히 빠진다</b>(2026-09-29 외부 평가 지적, 코드로 확인). 방송은 저장의
-     * 부수 효과이고 구독자가 없으면 원래 사라지는 것이라, 실패는 세고 로그만 남긴다.
+     * 방송은 offset 커밋 뒤라 여기서 던지면 안 된다. 던지면 이미 저장·커밋된 배치가 재시도되고,
+     * 알림은 재시도에서 inserted=false가 되어 방송이 영구히 빠진다. 실패는 세고 로그만 남긴다.
      */
     private void broadcastAnomaly(AnomalyAlert saved) {
         try {
@@ -230,6 +172,7 @@ public class TelemetryConsumer {
         meterRegistry.counter("telemetry.websocket.broadcast.failures", "channel", channel).increment();
     }
 
+    // REST TelemetryResponse와 같은 JSON 형태 — 앱이 폴링·스트리밍을 같은 모델로 파싱한다.
     private void broadcastTelemetry(VehicleTelemetry t) {
         TelemetryResponse response = TelemetryResponse.builder()
             .vehicleId(t.getVehicleId())
@@ -255,30 +198,18 @@ public class TelemetryConsumer {
     }
 
     /**
-     * 저장 실패한 원본 메시지를 DLQ 토픽으로 옮긴다. key(vehicle_id)와 payload는 원본
-     * 그대로 두고, <b>왜 실패했는지를 헤더로 함께 남긴다.</b>
-     *
-     * <p>헤더가 없으면 재처리를 결정할 수가 없다. 깨진 JSON은 몇 번을 다시 넣어도
-     * 같은 자리에서 실패하는 영구 실패고(재처리하면 DLQ→원본→DLQ 무한 루프가 된다),
-     * InfluxDB 장애로 재시도가 소진된 건은 DB가 살아나면 그냥 성공한다. 둘을 가르는
-     * 유일한 근거가 실패 원인이라, payload만 보고는 판단이 불가능하다.
-     *
-     * <p>재시도 소진 경로({@link org.springframework.kafka.listener.DeadLetterPublishingRecoverer})는
-     * Spring이 {@code kafka_dlt-*} 헤더를 자동으로 붙인다. 여기(레코드 단위 격리)는
-     * 우리가 직접 붙여야 해서, 같은 정보를 {@code x-dlq-*}로 남긴다 — 두 경로가 같은
-     * DLQ 토픽에 섞이므로 재처리 도구는 둘 다 읽을 수 있어야 한다
-     * ({@code dlq-tools/dlq.py}, {@code docs/runbook/dlq-reprocessing.md}).
+     * 원본 key·payload는 그대로 두고 실패 원인을 {@code x-dlq-*} 헤더로 남긴다. 재처리 도구가
+     * 영구 실패와 일시 실패를 가르는 유일한 근거다. 재시도 소진 경로의 {@code kafka_dlt-*}와
+     * 같은 토픽에 섞이므로 도구는 둘 다 읽는다({@code dlq-tools/dlq.py}).
+     * 발행이 확인되지 않으면 던진다 — 원본 offset을 커밋하면 안 된다.
      */
     private void sendToDlq(String dlqTopic, ConsumerRecord<String, String> record, Exception cause) {
         try {
             ProducerRecord<String, String> dlqRecord =
                 new ProducerRecord<>(dlqTopic, null, record.key(), record.value());
             Headers headers = dlqRecord.headers();
-            // 재처리 이력은 반드시 이어받아야 한다. 재처리 도구가 DLQ 레코드를 원본
-            // 토픽으로 되돌릴 때 x-dlq-replay-count를 올려서 보내는데, 여기서 그걸
-            // 버리고 새 헤더만 만들면 카운터가 매번 0으로 리셋된다 — 그러면 영구 실패
-            // 메시지가 DLQ→원본→DLQ를 무한히 돌고, 돌 때마다 DLQ 레코드가 배로 늘어난다
-            // (실제로 재처리 4회에 2→4→8→16건으로 증식하는 걸 확인하고 고쳤다).
+            // replay-count는 반드시 이어받는다. 버리면 매번 0으로 리셋되어 영구 실패 메시지가
+            // DLQ→원본→DLQ를 무한히 돌며 증식한다. 경위: devlog
             copyHeader(record, headers, "x-dlq-replay-count");
             addHeader(headers, "x-dlq-origin-topic", record.topic());
             addHeader(headers, "x-dlq-origin-partition", String.valueOf(record.partition()));
@@ -286,17 +217,16 @@ public class TelemetryConsumer {
             addHeader(headers, "x-dlq-failed-at", Instant.now().toString());
             if (cause != null) {
                 addHeader(headers, "x-dlq-failure-class", cause.getClass().getName());
-                // 예외 메시지에는 원본 payload 조각이 섞여 들어올 수 있어(Jackson이 그렇게 한다)
-                // 길이를 잘라 둔다 — Kafka 헤더는 메시지 크기 제한에 함께 잡힌다.
+                // Jackson 예외 메시지에 payload 조각이 섞이고, 헤더도 메시지 크기 제한에 들어가므로 자른다.
                 addHeader(headers, "x-dlq-failure-message", truncate(cause.getMessage(), 512));
             }
 
-            // **시도 시점**에 올린다 — 성공/실패와 별개의 수다.
+            // 시도·성공·실패는 별개로 센다(docs/rejection-metrics-design.md).
             com.telemetry.metrics.ContractMetrics.dlqPublishAttempt(meterRegistry, dlqTopic);
             kafkaTemplate.send(dlqRecord).get(10, TimeUnit.SECONDS);
             com.telemetry.metrics.ContractMetrics.dlqPublished(meterRegistry, dlqTopic);
         } catch (Exception e) {
-            // timeout이면 발행 여부를 **알 수 없다** — dlqPublishFailed가 그 경우를 따로 센다.
+            // timeout은 발행 여부를 알 수 없다 — dlqPublishFailed가 따로 센다.
             com.telemetry.metrics.ContractMetrics.dlqPublishFailed(meterRegistry, dlqTopic, e);
             log.error("[DLQ] {} 전송 실패 — 원본 offset을 커밋하지 않음 vehicle={} partition={} offset={}",
                 dlqTopic, record.key(), record.partition(), record.offset(), e);

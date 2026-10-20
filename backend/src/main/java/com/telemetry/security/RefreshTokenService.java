@@ -12,10 +12,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Redis에 opaque refresh token을 저장한다 (JWT 서명 방식이 아닌 랜덤 문자열 + 서버 측 조회).
- * Access Token은 Stateless JWT라 발급 후 서버가 강제로 무효화할 수 없다.
- * Refresh Token을 Redis에 두면 로그아웃 시 해당 키를 지워 재발급을 막을 수 있어,
- * 사실상 "로그아웃 후 토큰 무효화" 요구사항을 이 방식으로 충족한다.
+ * Redis에 opaque refresh token을 저장한다. 키를 지우면 재발급이 막혀 로그아웃 시
+ * 토큰을 무효화할 수 있다. 이유: ADR-010
  */
 @Slf4j
 @Component
@@ -34,13 +32,12 @@ public class RefreshTokenService {
     }
 
     /**
-     * 토큰을 검증하고 즉시 폐기한다 (rotation). 탈취된 refresh token이 재사용되는 창구를
-     * 최소화하기 위함 — 정상 사용자가 재발급받으면 이전 토큰은 더 이상 쓸 수 없다.
-     * 호출자는 반환된 username으로 새 access/refresh token을 발급해야 한다.
+     * 토큰을 검증하고 즉시 폐기한다(rotation). 탈취 토큰의 재사용 창을 줄인다.
+     * 호출자는 반환된 username으로 새 토큰을 발급해야 한다.
      */
     public Optional<String> rotate(String token) {
         String key = PREFIX + token;
-        // Redis GETDEL: 검증과 폐기를 단일 원자 연산으로 수행해 동시 재사용을 막는다.
+        // GETDEL로 검증과 폐기를 원자적으로 해서 동시 재사용을 막는다.
         String username = redisTemplate.opsForValue().getAndDelete(key);
         if (username == null) {
             log.warn("[RefreshToken] 유효하지 않거나 만료된 토큰으로 재발급 시도");
@@ -54,11 +51,8 @@ public class RefreshTokenService {
     }
 
     /**
-     * 한 사용자의 refresh token을 전부 폐기한다(비밀번호 변경·초기화). 저장 구조가 {@code token -> username}
-     * 단방향이라 사용자별 색인이 없다 — {@code SCAN}으로 prefix 키를 훑어 값이 일치하는 것을 지운다.
-     * 키 수에 비례하는 비용이라 대량 사용자에는 맞지 않지만, 사용자별 색인을 추가하면 색인 도입 전에 발급된
-     * 토큰이 남는다. 이 프로젝트 규모(사용자 소수, 14일 TTL)에서는 색인 없이 확실히 지우는 쪽을 골랐다.
-     * Redis 오류는 그대로 전파한다 — 호출자가 비밀번호 변경을 되돌리도록.
+     * 한 사용자의 refresh token을 전부 폐기한다(비밀번호 변경·초기화). 사용자별 색인이 없어
+     * {@code SCAN}으로 훑는다(ADR-027). Redis 오류는 전파해야 호출자가 비밀번호 변경을 되돌린다.
      *
      * @return 지운 토큰 수
      */

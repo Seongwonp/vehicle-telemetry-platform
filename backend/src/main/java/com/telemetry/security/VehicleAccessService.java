@@ -6,11 +6,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 /**
- * 차량 단위 접근 권한 — <b>관리자는 등록된 활성 차량 전부, 그 외 사용자는 자기 소유 차량만.</b>
- *
- * <p>2026-09-16까지 이 규칙은 <b>WebSocket 구독에만</b> 걸려 있었다. REST는 아무 검사도 하지 않아서
- * 인증만 하면 남의 차량 텔레메트리·이상 이력·진단을 읽을 수 있었다. 같은 규칙을 REST에도 건다
- * ({@link com.telemetry.config.VehicleAccessInterceptor}).
+ * 차량 단위 접근 권한. 관리자는 활성 차량 전부, 그 외 사용자는 자기 소유 차량만.
+ * WebSocket 구독과 REST({@link com.telemetry.config.VehicleAccessInterceptor})가 같은 규칙을 쓴다(ADR-025).
  */
 @Service
 @RequiredArgsConstructor

@@ -31,9 +31,7 @@ public class TelemetryQueryService {
 
     private static final Pattern VEHICLE_ID_PATTERN = Pattern.compile("^[A-Z0-9-]{4,20}$");
 
-    // 트립 조회 파라미터 — hours는 검증된 int(자유 문자열 아님)라 Flux 문자열에
-    // 직접 삽입해도 injection 위험이 없다(파라미터 바인딩은 값 리터럴만 지원하고
-    // range() duration 인자에는 쓸 수 없어 다른 쿼리들과 달리 String.format을 쓴다).
+    // hours는 범위를 자른 int라 Flux에 직접 넣어도 injection 위험이 없다.
     private static final int MAX_TRIP_HOURS = 6;
     private static final double EARTH_RADIUS_KM = 6371.0;
 
@@ -72,10 +70,7 @@ public class TelemetryQueryService {
     @Value("${telemetry.trip.max-gps-speed-kmh:250}")
     private double maxGpsSpeedKmh;
 
-    // fleet 요약/AI 진단이 "차량이 마지막으로 언제 신호를 보냈는지" 알아야
-    // 하는데, 대시보드 추이 조회(getRecent)는 OOM 가드로 최근 1시간만 본다.
-    // 1시간 넘게 정지한 차량은 실제로는 과거 데이터가 있어도 lastSeenAt이
-    // null로 나오던 버그가 있어, getLatest 전용으로 더 넓은 창을 둔다.
+    // getRecent는 1시간만 보므로, 오래 정지한 차량의 lastSeenAt이 null이 되지 않게 최신값 조회는 창을 넓힌다.
     private static final int LATEST_LOOKBACK_HOURS = 24;
 
     public List<TelemetryResponse> getRecent(String vehicleId, int limit) {
@@ -95,19 +90,14 @@ public class TelemetryQueryService {
     public Map<String, TelemetryResponse> getLatestByVehicleIds(List<String> vehicleIds) {
         if (vehicleIds.isEmpty()) return Map.of();
         vehicleIds.forEach(this::validateVehicleId);
-        // 등호 OR 체인이다 — contains(value:, set:)이 아니다. contains()는 스토리지 푸시다운이 안 돼
-        // InfluxDB가 24시간치 전 시리즈를 메모리로 올린 뒤 Flux에서 걸렀고, 시뮬레이터 3대·95k 포인트에서
-        // 7.8초(read timeout 5초 초과)가 나 목록 전체가 UNAVAILABLE이었다. 등호 OR은 푸시다운되어 1.1초,
-        // 여기에 last()를 먼저 걸면 0.44초다(2026-09-28, docs/verification/2026-09-28-multi-user-e2e.md).
+        // contains() 대신 등호 OR을 쓴다. contains()는 스토리지 푸시다운이 안 돼 read timeout을 넘긴다.
+        // 경위: docs/verification/2026-09-28-multi-user-e2e.md
         String idFilter = vehicleIds.stream()
             .distinct()
             .map(id -> "r.vehicle_id == \"" + id + "\"")
             .collect(Collectors.joining(" or "));
-        // last()는 시리즈(vehicle_id, _field)별 마지막 값이다. 필수 필드는 한 포인트에 같은 _time으로
-        // 저장되므로 보통 pivot 뒤 차량당 한 행이 된다. **선택 필드(fuel_level·battery_voltage, ADR-030)는
-        // 최신 포인트에 없을 수 있다** — 그러면 그 필드의 last()가 더 오래된 _time을 가리켜 pivot 뒤
-        // 행이 둘이 된다. 아래 sort+limit가 최신 _time 행만 남기므로 그 필드는 **null**(= 이번 값에 없음)이 된다.
-        // 옛 값을 최신 값에 섞어 보여주지 않는 쪽이 맞다 — InfluxDbContractTest(실제 InfluxDB 2.7)가 고정한다.
+        // 선택 필드(ADR-030)가 최신 포인트에 없으면 pivot 뒤 행이 둘이 된다. sort+limit로 최신 행만 남겨
+        // 그 필드는 null이 된다. 옛 값을 섞지 않으려는 의도다(InfluxDbContractTest).
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -%dh)
@@ -130,16 +120,9 @@ public class TelemetryQueryService {
         return Map.copyOf(latest);
     }
 
-    // InfluxDB는 기본적으로 필드마다 별도 행을 반환한다.
-    // pivot으로 _time 기준으로 묶어야 한 타임스탬프 = 한 레코드 구조가 만들어진다.
-    // range(start: -Nh)는 전체 스캔 방지용 가드 — 없으면 전 기간을 읽어 OOM 위험이 있다.
-    //
-    // vehicleId는 이미 validateVehicleId()로 ^[A-Z0-9-]{4,20}$ 형식만 통과시킨
-    // 뒤라 따옴표/역슬래시/개행 등 Flux 구문을 깨뜨릴 문자가 들어올 수 없어
-    // 문자열 삽입이 안전하다(injection 여지 없음). bucket도 애플리케이션
-    // 설정값이라 사용자 입력이 아니다. InfluxDB 2.7 서버가 클라이언트의
-    // 파라미터 바인딩(`params.xxx`) 기능을 지원하지 않아("undefined identifier
-    // params" 컴파일 에러로 모든 조회가 깨졌었다) 검증된 값 직접 삽입 방식으로 되돌렸다.
+    // range()는 전체 스캔(OOM) 방지 가드라 빼지 말 것.
+    // InfluxDB 2.7은 Flux 파라미터 바인딩을 지원하지 않아 문자열로 넣는다. vehicleId는
+    // validateVehicleId()를 통과한 값만 와야 한다(injection 방지).
     private List<TelemetryResponse> getRecent(String vehicleId, int limit, int rangeHours) {
         String flux = String.format("""
             from(bucket: "%s")
@@ -154,9 +137,7 @@ public class TelemetryQueryService {
         return executeQuery(vehicleId, flux);
     }
 
-    // 연속 수신 구간을 시간 간격(TRIP_GAP_THRESHOLD) 기준으로 트립으로 나눈다.
-    // 시뮬레이터처럼 끊김 없이 계속 송신하는 소스는 트립 하나로 합쳐지는 게
-    // 맞는 동작이다 — 실제 OBD-II 동글처럼 시동이 꺼지며 송신이 끊기는 경우를
+    // 수신 간격이 gap-threshold를 넘으면 트립을 나눈다. 끊김 없이 송신하는 시뮬레이터는 트립 하나가 맞다.
     public List<TripResponse> getTrips(String vehicleId, Integer hours) {
         validateVehicleId(vehicleId);
         if (!vehicleRepository.existsByVehicleIdAndActiveTrue(vehicleId)) {
@@ -166,11 +147,7 @@ public class TelemetryQueryService {
             ? defaultTripHours
             : Math.min(Math.max(hours, 1), MAX_TRIP_HOURS);
 
-        // 내림차순으로 최신 TRIP_POINT_LIMIT개를 먼저 자른 다음 Java에서 다시
-        // 오름차순으로 뒤집는다 — 오름차순 정렬 후 limit을 걸면 "가장 오래된"
-        // N개만 남아 최근 트립이 통째로 잘려나가는 버그가 있었다(6시간 구간을
-        // 1초 간격으로 수집하면 21,600개인데 10,000개로 자르면 앞쪽 10,000개만
-        // 남아 방금 끝난 트립이 사라졌다).
+        // 내림차순으로 최신 N개를 자른 뒤 Java에서 뒤집는다. 오름차순 후 limit이면 최근 트립이 잘린다.
         String flux = String.format("""
             from(bucket: "%s")
               |> range(start: -%dh)
@@ -209,8 +186,7 @@ public class TelemetryQueryService {
         return trips;
     }
 
-    // 포인트 1~2개짜리 구간(신호가 잠깐 끊겼다 바로 돌아온 경우 등)은 실제
-    // 주행으로 보기 어려워 트립 목록에서 제외한다.
+    // 포인트가 너무 적은 구간(잠깐 끊겼다 돌아온 경우)은 주행으로 보지 않는다.
     private void addTripIfMeaningful(List<TripResponse> trips, List<TelemetryResponse> points) {
         if (points.size() < tripMinPoints) return;
 

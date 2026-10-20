@@ -17,8 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-// @Component를 붙이지 않는다. SecurityConfig에서 직접 new로 주입하는데,
-// Bean으로 등록하면 서블릿 필터체인에 중복 등록되어 요청당 두 번 실행되는 버그가 생긴다.
+// @Component를 붙이지 말 것. Bean으로 등록하면 서블릿 필터체인에도 들어가 요청당 두 번 실행된다.
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -45,8 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (UsernameNotFoundException e) {
                 SecurityContextHolder.clearContext();
-                // 토큰은 유효하지만 계정이 사라졌거나 비활성이다(DB 기반 사용자, ADR-027).
-                // 인증을 세우지 않고 지나가면 entry point가 401을 만든다 — 500으로 새지 않게.
+                // 토큰은 유효하지만 계정이 없거나 비활성이다. 인증 없이 넘겨 entry point가 401을 내게 한다.
                 log.warn("유효한 JWT지만 로그인할 수 없는 계정: {}", username);
             }
         }

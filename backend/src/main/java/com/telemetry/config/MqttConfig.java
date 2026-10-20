@@ -39,9 +39,7 @@ public class MqttConfig {
     @Value("${mqtt.client-id:telemetry-backend}")
     private String clientId;
 
-    // 평소 로컬 개발 사이클은 인증서 없이 평문(1883)으로 돌리고,
-    // 데모/보안 검증 때만 이 플래그를 켜서 mTLS(8883)로 전환한다.
-    // broker/certs/generate-certs.sh 실행 후 mosquitto.conf의 TLS 섹션 주석을 해제해야 실제로 연결된다.
+    // 로컬 개발은 평문(1883), 켜면 mTLS(8883). broker/certs/generate-certs.sh로 인증서를 먼저 만든다.
     @Value("${mqtt.tls.enabled:false}")
     private boolean tlsEnabled;
 
@@ -67,22 +65,9 @@ public class MqttConfig {
         options.setCleanSession(false);
         options.setConnectionTimeout(10);
         options.setKeepAliveInterval(KEEP_ALIVE_SECONDS);
-        // 브로커 재시작이나 네트워크 단절 시 자동 재연결 — 수동 복구 없이 파이프라인 유지
         options.setAutomaticReconnect(true);
-        // 재연결 백오프의 상한을 반드시 낮춰야 한다. Paho는 1초에서 시작해 매번 두 배로
-        // 늘리고 기본 상한이 **128초**인데, 그 시간은 그냥 기다리는 시간이 아니다 —
-        // cleanSession=false라 브로커가 우리 세션 앞으로 오는 메시지를 대신 쌓아두다가
-        // max_queued_messages를 넘기면 **말없이 버린다**(현재 100,000, broker/config/).
-        //
-        // 브로커를 90초 정지시켰다 살리는 실험에서, 브로커가 살아난 뒤에도 백오프가
-        // 이미 커져 있어 백엔드가 한참 뒤에야 붙었다. 그 틈에 시뮬레이터는 밀렸던 것을
-        // 한꺼번에 쏟아냈고, 브로커는 10,000건만 큐에 담고 **129,447건을 버렸다.**
-        // 백엔드가 재연결 후 실제로 받은 건 10,002건 — 큐 크기와 정확히 일치한다.
-        // 유실을 아는 유일한 지표가 브로커의 $SYS dropped였다
-        // (load-test/fault-injection/RESULT_20260905_mqtt_broker.md).
-        //
-        // 상한을 낮추면 브로커가 죽어 있는 동안 재연결 시도가 잦아지지만, 5초 간격은
-        // 초당 0.2회라 브로커 부하로는 무시할 수준이다. 유실 위험과 바꿀 것이 못 된다.
+        // 재연결 상한을 낮게 유지할 것. Paho 기본 상한(128초) 동안 브로커는 세션 큐가 넘친
+        // 메시지를 말없이 버린다(cleanSession=false). 이유: ADR-021
         options.setMaxReconnectDelay(maxReconnectDelayMs);
 
         if (tlsEnabled) {
@@ -94,9 +79,8 @@ public class MqttConfig {
     }
 
     /**
-     * client.p12(클라이언트 인증서+키)와 truststore.p12(CA 인증서)로 mTLS 소켓 팩토리를 만든다.
-     * openssl이 만드는 PEM/PKCS#1 키는 Java가 직접 못 읽기 때문에, generate-certs.sh가
-     * PKCS12로 미리 변환해둔 파일을 표준 javax.net.ssl API로 로드한다.
+     * client.p12(클라이언트 인증서+키)와 truststore.p12(CA)로 mTLS 소켓 팩토리를 만든다.
+     * Java가 PEM 키를 직접 못 읽어 generate-certs.sh가 PKCS12로 변환해 둔다.
      */
     private SSLSocketFactory buildSslSocketFactory() {
         try {
@@ -130,21 +114,13 @@ public class MqttConfig {
 
     @Bean
     public MessageChannel mqttInputChannel() {
-        // DirectChannel: 발행 스레드가 곧 소비 스레드 — 별도 스레드풀 없이 낮은 지연으로 메시지 전달
         return new DirectChannel();
     }
 
     /**
-     * MQTT 수집 어댑터. <b>인스턴스마다 켜고 끌 수 있어야 한다.</b>
-     *
-     * <p>이 애플리케이션은 <b>MQTT 수집</b>과 <b>Kafka→InfluxDB 저장</b>을 겸한다. 저장
-     * 처리량을 늘리려고 통째로 복제하면 수집까지 이중화되는데, MQTT client-id가 고정이라
-     * 같은 id로 두 번 붙어 브로커가 앞 세션을 끊는다 — 두 인스턴스가 서로를 끊는 상태가 된다
-     * (2026-09-06 실측: 원본 인스턴스에서 연결 끊김 44건).
-     *
-     * <p>그래서 <b>수집 1대 + 저장 N대</b>로 역할을 나눌 수 있게 스위치를 뺐다.
-     * 기본값은 {@code true}라 단일 인스턴스 구성은 그대로 동작한다.
-     * {@code $SYS} 구독도 같이 꺼진다 — 브로커 통계는 수집 담당 인스턴스가 대표로 센다.
+     * MQTT 수집 어댑터. 인스턴스마다 켜고 끌 수 있다(수집 1대 + 저장 N대).
+     * client-id가 고정이라 수집 인스턴스가 둘이면 서로의 세션을 끊는다. 이유: ADR-023
+     * {@code $SYS} 구독도 같이 꺼진다.
      */
     @Bean
     @ConditionalOnProperty(name = "mqtt.ingest.enabled", havingValue = "true", matchIfMissing = true)
@@ -167,14 +143,9 @@ public class MqttConfig {
     }
 
     /**
-     * 브로커 자체 통계(`$SYS`) 구독 — 텔레메트리 경로와 완전히 분리한다.
-     *
-     * <p>같은 어댑터에 `$SYS` 토픽을 얹으면 `MqttMessageHandler`가 이 메시지들을 받아
-     * 차량 토픽 패턴에 안 맞는다며 전부 거부 카운터와 DLQ로 보낸다. 별도 어댑터·채널로
-     * 분리해 그런 오염을 막는다.
-     *
-     * <p>QoS 0인 이유: mosquitto는 이 값들을 기본 10초마다 최신값으로 다시 발행한다.
-     * 한 번 놓쳐도 다음 주기에 정확한 누적값이 오므로 재전송 보장이 필요 없다.
+     * 브로커 통계(`$SYS`) 구독. 텔레메트리 어댑터와 섞으면 MqttMessageHandler가
+     * 거부/DLQ로 보내므로 별도 어댑터·채널로 둔다.
+     * QoS 0: 다음 주기에 누적값이 다시 오므로 재전송이 필요 없다.
      */
     @Bean
     @ConditionalOnProperty(name = "mqtt.ingest.enabled", havingValue = "true", matchIfMissing = true)
@@ -184,8 +155,7 @@ public class MqttConfig {
             "$SYS/broker/publish/messages/dropped",
             "$SYS/broker/publish/messages/received",
             "$SYS/broker/clients/connected",
-            // 위 셋은 값이 바뀔 때만 온다 — 유휴 스택에서 갱신 시각이 멈춰 MqttBrokerMetricsStale이 거짓으로 떴다
-            // (2026-10-06 실험 U0). uptime은 매 sys_interval 바뀌므로 $SYS 수신의 심장 박동으로 쓴다.
+            // 위 셋은 값이 바뀔 때만 와서 유휴 시 stale 알림이 거짓으로 뜬다. uptime을 심장 박동으로 쓴다.
             MqttBrokerMetricsHandler.HEARTBEAT_TOPIC);
 
         adapter.setCompletionTimeout(5000);

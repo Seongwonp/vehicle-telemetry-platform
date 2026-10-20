@@ -34,34 +34,13 @@ public class TelemetryProducer {
     private final TelemetrySpool telemetrySpool;
     private final Set<Path> inFlight = ConcurrentHashMap.newKeySet();
     private final AtomicBoolean backlog = new AtomicBoolean();
-    /** 한 주기에 spool을 비우려고 도는 최대 바퀴 수. 유입이 드레인보다 빠르면 여기서 멈추고 backlog를 유지한다. */
+    /** 한 주기의 최대 드레인 바퀴 수. 유입이 더 빠르면 여기서 멈추고 backlog를 유지한다. */
     private static final int MAX_DRAIN_PASSES = 20;
 
     /**
-     * 한 번의 스캔에 집어 보내는 spool 파일 수.
-     *
-     * <p>2026-09-29부터 한 주기는 spool이 빌 때까지(최대 {@link #MAX_DRAIN_PASSES}바퀴) 배치를 이어 보내므로
-     * 이 값은 주기당 상한이 아니라 "배치 하나의 크기"다. 그 전에는 이 값과 {@code telemetry.spool.retry-ms}가
-     * 곱해져 드레인 속도의 <b>상한</b>이었다 —
-     * 부하나 브로커 용량과 무관하다. 예전 값(100 / 5초)은 20 msg/s였는데, 유입이
-     * 약 1,700 msg/s라 90초 장애가 약 35분의 복구 시간을 만들었다
-     * ({@code load-test/fault-injection/RESULT_20260904_fault_injection.md}).
-     *
-     * <p>주기를 줄이는 것보다 배치를 키우는 쪽이 낫다 — {@link TelemetrySpool#pending(int)}이
-     * limit과 무관하게 디렉터리 전체를 정렬하므로, 호출 횟수를 늘리면 그 비용이 그대로 늘어난다.
-     * 실측하면 파일 15만 개에서 스캔 1회가 약 121ms라, 5초 주기의 2.4%다 — 스캔은 병목이 아니고
-     * 배치 크기가 그대로 상한이 된다.
-     *
-     * <p>측정값(유입 약 1,700 msg/s, 180초 장애):
-     * <pre>
-     *   배치    100 →  19 msg/s   (잔여 드레인 105분)
-     *   배치  2,000 → 387 msg/s   (잔여 드레인 5분)
-     *   배치 10,000 → 부하 정지 후 약 1분 내 완전 드레인
-     * </pre>
-     *
-     * <p><b>주의</b>: 드레인 중에는 {@code backlog} 플래그 때문에 새 메시지도 spool로 가므로,
-     * 부하가 계속되는 동안 백로그가 줄어드는 속도는 <i>드레인 속도 − 유입 속도</i>다.
-     * 즉 유입과 같은 속도로는 부족하고 <b>넘어서야</b> 줄어든다.
+     * 드레인 배치 하나의 크기. 드레인 속도가 유입을 넘어야 backlog가 줄어든다(드레인 중엔 새 메시지도
+     * spool로 가므로). 스캔은 limit과 무관하게 디렉터리 전체를 정렬하므로 주기를 줄이기보다 배치를 키운다.
+     * 경위: load-test/fault-injection/RESULT_20260904_fault_injection.md
      */
     private final int retryBatchSize;
 
@@ -81,9 +60,8 @@ public class TelemetryProducer {
         this.retryBatchSize = retryBatchSize;
         this.spoolScanTimer = meterRegistry.timer("telemetry.spool.scan");
         this.spoolDrainedCounter = meterRegistry.counter("telemetry.spool.drained");
-        // 0이 아니면 사람이 .corrupt 파일을 봐야 한다 — 유실 후보다.
+        // 0이 아니면 .corrupt 파일을 사람이 봐야 한다(유실 후보).
         this.spoolCorruptCounter = meterRegistry.counter("telemetry.spool.corrupt");
-        // 백로그가 쌓이는데 안 줄어드는 상황을 알림으로 잡으려면 깊이가 지표로 있어야 한다.
         meterRegistry.gauge("telemetry.spool.pending", spoolDepth, AtomicLong::get);
     }
 
@@ -93,29 +71,17 @@ public class TelemetryProducer {
     }
 
     /**
-     * vehicle_id를 파티션 키로 사용한다.
-     * 같은 차량의 메시지가 항상 동일 파티션에 쌓이기 때문에, Consumer가 순서를 보장한 채로 처리할 수 있다.
-     * 키 없이 라운드로빈으로 보내면 시계열 순서가 뒤섞여 InfluxDB 저장 시 이상 탐지가 오동작할 수 있다.
+     * vehicle_id를 파티션 키로 쓴다 — 같은 차량의 순서를 유지하기 위해서다(ADR-003).
      *
-     * <p><b>정상 경로에서는 디스크를 거치지 않는다.</b> 예전에는 메시지마다 spool 파일을 먼저
-     * 쓰고(디렉터리 생성 → 파일 쓰기 → rename, 전송 성공 후 삭제까지 파일시스템 연산 약 5회)
-     * Kafka로 보냈는데, 이 메서드가 MQTT Paho 콜백 단일 스레드에서 {@code synchronized}로
-     * 호출되다 보니 수집 전체가 디스크 지연에 직렬로 묶였다. 실측 결과 시뮬레이터가
-     * 초당 약 10,000건을 발행하고 mosquitto가 전량 PUBACK하는 동안 Kafka에는 초당 20건만
-     * 도착했다 — 백엔드가 못 받아가 브로커 큐가 넘치면서 나머지가 조용히 버려지고 있었다.
-     *
-     * <p>spool의 목적은 <i>Kafka 브로커 장애 시 유실 방지</i>인데, Kafka 프로듀서 자체가
-     * 내부 버퍼와 재시도(acks=all, retries=3)를 갖고 있다. 그래서 전송에 실패했을 때만
-     * spool에 적는다. 반환 future는 Kafka 또는 spool 기록 성공 뒤 완료된다.
-     * MQTT 입구는 이 완료를 기다려 ACK한다(ADR-029). 직렬화 실패는 다시 보내도 같으므로
-     * {@link UnsendableTelemetryException}으로 구분한다 — 입구가 DLQ로 격리한 뒤 ACK한다.
+     * <p>정상 경로는 디스크를 거치지 않고, 전송 실패 시에만 spool에 적는다(ADR-019).
+     * 반환 future는 Kafka 또는 spool 기록 성공 뒤에만 완료되고, MQTT 입구는 이를 기다려 ACK한다(ADR-029).
+     * 직렬화 실패는 재시도해도 같으므로 {@link UnsendableTelemetryException}으로 구분한다.
      */
     public CompletableFuture<Void> send(VehicleTelemetry telemetry) {
         String payload;
         try {
             payload = objectMapper.writeValueAsString(telemetry);
         } catch (Exception e) {
-            // 직렬화 실패는 도메인 객체 자체의 문제일 가능성이 높아 데이터 내용을 남긴다
             log.error("[Kafka] 직렬화 실패로 전송 불가 — vehicle={} ts={} speed={} rpm={}",
                 telemetry.getVehicleId(),
                 telemetry.getTimestamp(),
@@ -125,8 +91,7 @@ public class TelemetryProducer {
             return CompletableFuture.failedFuture(new UnsendableTelemetryException(e));
         }
 
-        // 이미 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 그래야 retryPending()이
-        // 파일명(타임스탬프+시퀀스) 순서대로 드레인하면서 차량별 순서가 유지된다.
+        // 밀린 spool이 있으면 새 메시지도 spool로 보낸다 — 파일명 순 드레인으로 차량별 순서를 지킨다.
         if (backlog.get()) {
             return storeForRetry(telemetry.getVehicleId(), telemetry.getTimestamp(), payload, null);
         }
@@ -134,22 +99,14 @@ public class TelemetryProducer {
     }
 
     /**
-     * spool에 남은 실패분을 주기적으로 재전송한다.
-     *
-     * <p>자기 자신에 대해서만 {@code synchronized}다 — 예전에는 {@link #send}와 같은 락을
-     * 공유해서, 5초마다 도는 이 스케줄러가 spool 디렉터리를 스캔하는 동안 MQTT 수집
-     * 스레드까지 멈춰 세웠다. 대신 브로커 복구 직후 아주 짧은 구간에서는 새 메시지가
-     * spool 드레인보다 먼저 Kafka에 닿아 같은 차량 메시지의 순서가 뒤집힐 수 있다
-     * (backlog 플래그가 best-effort라서). 각 메시지가 자체 timestamp를 갖고 있어
-     * 저장/조회는 영향받지 않는다.
+     * spool 실패분을 재전송한다. {@link #send}와 락을 공유하지 않는다 — 공유하면 스캔 동안 MQTT 수집이 멈춘다.
+     * 그 대가로 복구 직후 짧은 구간에 순서가 뒤집힐 수 있다(backlog는 best-effort). 저장은 timestamp 기준이라 영향 없다.
      */
     @Scheduled(fixedDelayString = "${telemetry.spool.retry-ms:5000}")
     public synchronized void retryPending() {
-        // **한 주기 안에서 spool이 빌 때까지 돈다.** backlog를 "다음 5초 스캔이 빈 것을 볼 때"만 풀면 유입이 있는 한
-        // 스캔은 영원히 비지 않고(2026-09-29 실측: pending 10 고정, 정상 경로가 5초 디스크 왕복에 갇힘),
-        // 반대로 드레인이 끝나기 전에 풀면 드레인 중 spool에 들어간 것보다 새 직접 전송이 먼저 나가 같은 차량 순서가
-        // 뒤집힌다(같은 날 수정 후 실측: 완료 로그 기준 역전 132쌍). 그래서 배치를 보내고 **끝나기를 기다린 뒤** 다시 스캔해,
-        // 빈 스캔을 본 그 자리에서만 backlog를 푼다. 드레인 중 유입은 배치 한 번의 시간만큼이라 몇 바퀴면 따라잡는다.
+        // 배치 전송이 끝나기를 기다린 뒤 다시 스캔하고, 빈 스캔을 본 자리에서만 backlog를 푼다.
+        // 드레인 완료 전에 풀면 새 직접 전송이 spool보다 먼저 나가 차량별 순서가 뒤집히고,
+        // 다음 주기까지 미루면 유입이 있는 한 영원히 안 풀린다. 경위: docs/verification/2026-09-29-spool-backlog-fix.md
         for (int pass = 0; pass < MAX_DRAIN_PASSES; pass++) {
             var pending = telemetrySpool.pending(retryBatchSize);
             spoolScanTimer.record(telemetrySpool.lastScanNanos(), TimeUnit.NANOSECONDS);
@@ -159,17 +116,15 @@ public class TelemetryProducer {
                 return;
             }
             backlog.set(true);
-            // 배치를 가득 채워 왔다면 아직 더 남았다는 뜻이다. 정확한 깊이는 별도 스캔이
-            // 필요해서 비싸므로, 게이지에는 "최소 이만큼"을 넣는다 — 알림 목적에는 충분하다.
+            // 정확한 깊이는 비싸므로 "최소 이만큼"만 넣는다. 알림에는 충분하다.
             spoolDepth.set(pending.size());
             if (!drainBatch(pending)) {
-                return; // 실패·손상·읽기 실패가 있었다 — 파일이 남았으니 backlog를 유지하고 다음 주기에 본다.
+                return; // 파일이 남았으니 backlog 유지
             }
         }
-        // MAX_DRAIN_PASSES를 다 써도 안 비었다면 유입이 드레인 속도를 넘는 것이다. backlog는 켜진 채로 둔다.
     }
 
-    /** 배치 하나를 보내고 끝나기를 기다린다. 전부 성공했으면 true. */
+    /** 배치 하나를 보내고 완료를 기다린다. 전부 성공했으면 true. */
     private boolean drainBatch(List<Path> pending) {
         boolean clean = true;
         List<CompletableFuture<Boolean>> sends = new ArrayList<>(pending.size());
@@ -179,7 +134,7 @@ public class TelemetryProducer {
             try {
                 payload = telemetrySpool.read(spoolFile);
             } catch (Exception e) {
-                // 읽기 실패는 일시적일 수 있다(잠금 등) — 다음 주기에 다시 본다.
+                // 일시적일 수 있다(잠금 등).
                 inFlight.remove(spoolFile);
                 clean = false;
                 log.error("[Kafka] spool 읽기 실패 — 다음 주기에 재시도 path={}", spoolFile, e);
@@ -192,10 +147,8 @@ public class TelemetryProducer {
                     throw new IllegalArgumentException("vehicle_id 없음");
                 }
             } catch (Exception e) {
-                // **내용을 해석할 수 없는 파일은 몇 번을 다시 읽어도 같다.** 예전엔 여기서 로그만 남기고 파일을 뒀다 —
-                // pending이 영원히 비지 않아 backlog가 켜진 채로 모든 새 메시지가 디스크를 거쳤다(ADR-019가 고친 병목).
-                // 격리하고 센다. 0바이트·잘린 JSON이 전형이다(전원 차단 — TelemetrySpool.store의 force 참고).
-                // 격리는 spool에서 빠진 것이므로 이 배치의 "깨끗함"을 깨지 않는다.
+                // 해석 불가 파일은 다시 읽어도 같다. 남겨두면 spool이 영원히 안 비어 backlog가 안 풀리므로
+                // 격리하고 센다. 격리는 spool에서 빠진 것이라 clean을 깨지 않는다.
                 inFlight.remove(spoolFile);
                 spoolCorruptCounter.increment();
                 Path moved = telemetrySpool.quarantine(spoolFile);
@@ -206,13 +159,12 @@ public class TelemetryProducer {
             sends.add(sendSpooled(spoolFile, telemetry.getVehicleId(), telemetry.getTimestamp(), payload));
         }
         for (CompletableFuture<Boolean> send : sends) {
-            // 브로커 왕복을 기다린다 — 스케줄러 스레드이고 send()와 락을 공유하지 않으므로 수집은 막히지 않는다.
+            // 스케줄러 스레드라 기다려도 수집은 막히지 않는다.
             if (!Boolean.TRUE.equals(send.join())) clean = false;
         }
         return clean;
     }
 
-    /** 정상 경로 — spool 파일 없이 바로 보내고, 실패했을 때만 spool에 남긴다. */
     private CompletableFuture<Void> sendDirect(String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
@@ -225,7 +177,7 @@ public class TelemetryProducer {
             if (ex != null) {
                 return storeForRetry(vehicleId, ts, payload, ex);
             } else {
-                // vehicle·ts가 (partition, offset)과 한 줄에 있어야 로그에서 Kafka 좌표로 건너갈 수 있다(ADR-028).
+                // vehicle·ts와 (partition, offset)을 한 줄에 — 추적 키(ADR-028).
                 log.debug("[Kafka] 전송 완료 — vehicle={} ts={} partition={} offset={}",
                     vehicleId, ts,
                     result.getRecordMetadata().partition(),
@@ -235,7 +187,7 @@ public class TelemetryProducer {
         }).thenCompose(receipt -> receipt);
     }
 
-    /** spool에서 꺼낸 메시지 재전송 — 성공해야만 파일을 지운다. 성공 여부를 돌려준다(backlog 해제 판단용). */
+    /** 전송 성공 뒤에만 파일을 지운다. */
     private CompletableFuture<Boolean> sendSpooled(Path spoolFile, String vehicleId, String ts, String payload) {
         CompletableFuture<SendResult<String, String>> future;
         try {
@@ -255,22 +207,19 @@ public class TelemetryProducer {
                     vehicleId, ts, TOPIC, ex);
                 return false;
             } else {
-                // 드레인된 메시지는 새 offset을 받는다 — 추적할 때 이 줄이 원래 좌표와 새 좌표를 잇는다.
+                // 드레인된 메시지는 새 offset을 받는다 — 추적 시 이 줄이 좌표를 잇는다.
                 log.debug("[Kafka] spool 드레인 완료 — vehicle={} ts={} partition={} offset={}",
                     vehicleId, ts,
                     result.getRecordMetadata().partition(),
                     result.getRecordMetadata().offset());
                 telemetrySpool.delete(spoolFile);
-                // 선택된 파일이 아니라 **실제로 빠져나간 파일**을 센다. 선택 시점에 세면
-                // 이전 주기의 전송이 아직 안 끝난 파일을 다음 주기가 또 집어 중복 계산된다
-                // (실측에서 drained 379,536 > MQTT 수신 261,340으로 드러났다).
+                // 선택 시점이 아니라 삭제 뒤에 센다 — 선택 시점에 세면 중복 계산된다.
                 spoolDrainedCounter.increment();
                 return true;
             }
         });
     }
 
-    /** 전송 실패분을 spool에 적어 재전송 대상으로 남긴다. */
     private CompletableFuture<Void> storeForRetry(String vehicleId, String ts, String payload, Throwable cause) {
         backlog.set(true);
         try {
@@ -288,8 +237,8 @@ public class TelemetryProducer {
     }
 
     /**
-     * 재시도해도 결과가 같은 실패(직렬화 실패). 일시 실패(Kafka·spool)와 구분해야 MQTT 입구가
-     * 이 메시지를 ACK 없이 두지 않는다 — 두면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다.
+     * 재시도해도 같은 실패(직렬화). 일시 실패와 구분해야 MQTT 입구가 DLQ 후 ACK한다 —
+     * ACK 없이 두면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다.
      */
     public static class UnsendableTelemetryException extends RuntimeException {
         public UnsendableTelemetryException(Throwable cause) {

@@ -29,35 +29,10 @@ public class KafkaConfig {
     private static final String TELEMETRY_TOPIC = "vehicle-telemetry";
     private static final String ANOMALY_TOPIC = "vehicle-anomaly-alerts";
 
-    // @KafkaListener 메서드가 예외를 던지면(예: telemetryRepository.saveAll() 실패) 이 핸들러가
-    // 받는다. Spring Boot가 자동 구성하는 기본값은 FixedBackOff(0, 9) — 즉 재시도 사이 간격
-    // 없이 최대 10번을 리스너 스레드 안에서 그대로 다시 호출한다.
-    //
-    // 예전에는 FixedBackOff(1000L, 2L)(3회 시도 / 약 2초)로 좁게 잡았다. "한 레코드가 계속
-    // 실패하면 그 파티션이 오래 막힌다"는 걱정 때문이었는데, **그 걱정은 이 코드에
-    // 해당하지 않는다** — consumeForStorage는 레코드별 역직렬화·변환 실패를 이미 개별
-    // catch로 DLQ 처리하므로, 여기까지 올라오는 건 saveAll() 실패 = 의존성 장애다.
-    // 개별 메시지가 나빠서가 아니라 InfluxDB가 죽어서 오는 것이다.
-    //
-    // 그런데 2초짜리 예산으로는 어떤 현실적인 장애도 못 견딘다. InfluxDB를 90초 정지시키자
-    // 전체 트래픽의 47.6%(76,878건)가 DLQ로 갔다 — DLQ가 예외 경로가 아니라 주 경로가 됐고,
-    // 복구가 사람이 Runbook 보고 돌리는 수동 절차가 됐다
-    // (load-test/fault-injection/RESULT_20260904_fault_injection.md).
-    //
-    // 그래서 지수 백오프로 바꿨다. 앞쪽 재시도는 짧아서 순간적인 blip은 빠르게 넘기고,
-    // 뒤로 갈수록 간격이 벌어져 긴 장애를 견딘다. 재시도는 멱등이라 안전하고
-    // (load-test/storage-integrity/ — 재전달 68건에 InfluxDB 행 증가 0),
-    // 재시도 중 쌓이는 lag은 이미 KafkaConsumerLagHigh 알림으로 드러난다.
-    //
-    // 예산은 재시도 횟수가 아니라 시간(budget-ms)으로 잡는다 — "몇 번 재시도하느냐"보다
-    // "몇 초짜리 장애까지 견디느냐"가 실제로 정하고 싶은 값이다.
-    // **다만 이 값은 벽시계 시간이 아니다** — 자세한 내용은 buildBackOff 주석 참고.
-    //
-    // recoverer를 지정하지 않으면 재시도 소진 시 DefaultErrorHandler는 그 레코드를 로그만
-    // 남기고 **버린다**(실제로 로그에 "Backoff FixedBackOff{...} exhausted for
-    // vehicle-telemetry-0@1383"가 찍혔고 그 메시지는 DLQ에도 없었다). InfluxDB 쓰기 실패를
-    // 조용히 커밋하던 버그를 고쳐놓고 같은 유형의 유실이 이 경로로 남아 있던 셈이라,
-    // DeadLetterPublishingRecoverer로 원본을 DLQ에 남긴다.
+    // 여기까지 올라오는 예외는 saveAll() 실패, 즉 의존성 장애다(레코드별 변환 실패는 리스너가 DLQ로 보낸다).
+    // 그래서 짧은 고정 재시도 대신 시간 예산을 둔 지수 백오프로 장애를 견딘다. 재시도는 멱등이라 안전하다.
+    // recoverer가 없으면 재시도 소진 시 레코드를 로그만 남기고 버리므로 DLQ recoverer는 필수다.
+    // 경위: load-test/fault-injection/RESULT_20260904_fault_injection.md
     @Bean
     public DefaultErrorHandler kafkaErrorHandler(
             KafkaOperations<String, String> kafkaOperations,
@@ -68,32 +43,22 @@ public class KafkaConfig {
             @Value("${telemetry.kafka.retry.budget-ms:180000}") long budgetMs) {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
             kafkaOperations,
-            // 이 핸들러는 두 리스너가 공유하므로 원본 토픽별로 DLQ를 갈라야 한다. 기본
-            // 규칙(<topic>-dlt)을 쓰면 이미 운영 중인 DLQ 토픽/알림과 어긋난다.
-            // 파티션 -1은 "프로듀서가 정한다" — DLQ 파티션 수가 바뀌어도 안전하다.
+            // 두 리스너가 공유하므로 원본 토픽별로 DLQ를 가른다(기본 <topic>-dlt는 기존 토픽/알림과 다름).
+            // 파티션 -1은 프로듀서가 고른다는 뜻이라 DLQ 파티션 수가 바뀌어도 안전하다.
             (record, exception) -> new TopicPartition(resolveDlqTopic(record.topic()), -1));
 
-        // DLQ 발행 결과를 실제로 확인한다. 기본값대로 두면 발행이 실패해도 recoverer가
-        // 성공으로 간주해 원본 offset을 커밋해버린다 — 메시지가 DLQ에도 없고 원본도
-        // 지나가버리는 조용한 유실이다(계약 테스트 KafkaStorageFailureContractTest로 발견).
+        // 발행 결과를 확인하지 않으면 DLQ 발행이 실패해도 원본 offset이 커밋돼 조용히 유실된다.
+        // (KafkaStorageFailureContractTest)
         recoverer.setFailIfSendResultIsError(true);
         recoverer.setWaitForSendResultTimeout(Duration.ofSeconds(5));
 
         return new DefaultErrorHandler((record, exception) -> {
-            // alerts.yml의 DLQ 알림이 보는 메트릭 — 컨슈머 내부 sendToDlq()와 같은 이름으로
-            // 올려야 이 경로로 나간 것도 같이 잡힌다.
-            // 재시도 소진 경로. recoverer.accept()가 아래에서 실제 발행을 하고, setFailIfSendResultIsError(true)라
-            // 실패하면 예외를 던진다. **성공 카운터는 그 뒤에만 올린다** — 2026-09-27까지는 accept() 전에 올려서
-            // 발행 실패도 성공으로 셌다(제3자 리뷰가 잡음). 컨슈머 내부 sendToDlq()와 같은 이름·의미다.
+            // alerts.yml의 DLQ 알림이 보는 메트릭. 컨슈머 내부 sendToDlq()와 이름·의미를 맞춘다.
+            // 성공 카운터는 accept()가 예외 없이 끝난 뒤에만 올린다.
             String dlqTopic = resolveDlqTopic(record.topic());
             com.telemetry.metrics.ContractMetrics.dlqPublishAttempt(meterRegistry, dlqTopic);
-            // 재시도 소진은 **로그에 아무 흔적을 남기지 않고 있었다.** 저장소는 실패를
-            // 카운터로만 세고 예외를 다시 던지고(TelemetryRepository), Spring Kafka의
-            // 재시도·복구 로그는 DEBUG인데 logging.level.org.springframework.kafka가 WARN이다.
-            // InfluxDB 12분 장애에서 6,158건이 DLQ로 갔는데 로그에는 한 줄도 없었다
-            // (load-test/long-outage/RESULT_20260906_influxdb.md). Runbook은 운영자에게
-            // "DLQ를 조사하라"고 하는데 DLQ가 생겼다는 사실 자체가 로그에 없으면,
-            // 사고 후 로그를 되짚는 경로가 비어 있는 것이다.
+            // Spring Kafka의 재시도·복구 로그는 DEBUG라 현재 로그 레벨(WARN)에선 안 보인다.
+            // DLQ 이동 흔적을 남기려면 여기서 직접 찍어야 한다.
             log.warn("[DLQ 이동] 재시도 예산 소진 — {}-{}@{} → {} ({}: {})",
                 record.topic(), record.partition(), record.offset(),
                 resolveDlqTopic(record.topic()),
@@ -109,36 +74,15 @@ public class KafkaConfig {
     }
 
     /**
-     * 지수 백오프. 예산을 재시도 <b>횟수</b>가 아니라 <b>시간</b>으로 잡는다 —
-     * 정하고 싶은 값이 "몇 번 재시도하느냐"가 아니라 "몇 초짜리 장애까지 견디느냐"이기
-     * 때문이다.
+     * 지수 백오프. 예산은 재시도 횟수가 아니라 시간으로 잡는다.
      *
-     * <p><b>주의 — 이 예산은 벽시계 시간이 아니다.</b>
-     * {@link ExponentialBackOff#setMaxElapsedTime}이 세는 것은 <b>백오프로 쉰 시간의
-     * 합</b>이고, 리스너가 실패하는 데 쓴 시간은 포함되지 않는다. 그래서 실제로 견디는
-     * 시간은 예산보다 훨씬 길 수 있다.
+     * <p>주의: {@link ExponentialBackOff#setMaxElapsedTime}은 백오프로 쉰 시간의 합만 센다.
+     * 리스너가 실패하는 데 쓴 시간은 빠지므로 실제로 견디는 시간은 예산보다 길다.
+     * 재시도 중에는 retryBatch가 파티션을 pause한 채 poll을 계속 부르므로
+     * {@code max.poll.interval.ms} 초과로 리밸런싱되지 않는다.
+     * 근거: {@code load-test/long-outage/RESULT_20260906_influxdb_repeat.md}
      *
-     * <p>PostgreSQL을 <b>300초</b> 정지시켜 재보니 DLQ가 <b>0건</b>이었다. 예산이 180초인데도
-     * 그렇다. 시도마다 HikariCP {@code connectionTimeout}(30초)을 기다리느라 실패 자체에
-     * 30초씩 쓰였고, 백오프 합(1+2+4+8+16+30…)은 그 사이 180초에 도달하지 못했기 때문이다.
-     * 기본값 기준 실효 내성은 대략 <b>8분</b> 수준이다
-     * ({@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}).
-     *
-     * <p>따라서 "예산 &lt; {@code max.poll.interval.ms}"라는 관계도 그대로 성립하지 않는다.
-     * 컨슈머가 쫓겨나는 기준은 <b>poll 사이의 벽시계 시간</b>이지만, <b>이 경로에서는
-     * 그것 때문에 리밸런싱이 돌지 않는다.</b> 배치 리스너가 던지면
-     * {@code FallbackBatchErrorHandler}가 받는데, 그 안의 {@code ErrorHandlingUtils.retryBatch}가
-     * 백오프로 쉬는 동안 <b>파티션을 pause한 채 {@code poll(Duration.ZERO)}를 계속 호출한다</b>
-     * (spring-kafka 3.1.4 바이트코드로 확인). poll이 계속 불리므로
-     * {@code max.poll.interval.ms}가 만료되지 않는다.
-     *
-     * <p>실측도 같다 — PostgreSQL 720초 장애에서 재시도 주기가 약 8분(poll 간격의 2배 이상)
-     * 이었는데 리밸런싱 0건, 파티션 재할당 0건이었다
-     * ({@code load-test/long-outage/RESULT_20260906_influxdb_repeat.md}).
-     * 다만 정적 멤버십을 끈 대조군은 돌리지 않았다.
-     *
-     * <p>{@code budgetMs <= 0}이면 재시도 없이 곧바로 recoverer로 보낸다
-     * (설정으로 예전 동작에 가깝게 되돌릴 수 있어야 A/B 측정이 된다).
+     * <p>{@code budgetMs <= 0}이면 재시도 없이 바로 recoverer로 보낸다(A/B 비교용).
      */
     private static BackOff buildBackOff(long initialIntervalMs, double multiplier,
                                         long maxIntervalMs, long budgetMs) {
@@ -151,11 +95,7 @@ public class KafkaConfig {
         return backOff;
     }
 
-    /**
-     * 원인 예외의 메시지. 에러 핸들러가 받는 예외는 대개
-     * {@code ListenerExecutionFailedException}으로 한 겹 싸여 있어, 그대로 찍으면
-     * "Listener failed"만 남고 <b>정작 왜 실패했는지가 안 보인다</b>.
-     */
+    /** ListenerExecutionFailedException 안쪽 원인의 메시지. 바깥 것만 찍으면 실패 이유가 안 보인다. */
     private static String rootMessage(Throwable e) {
         Throwable cause = e;
         while (cause.getCause() != null && cause.getCause() != cause) {
@@ -177,24 +117,14 @@ public class KafkaConfig {
      * 배치 리스너 팩토리. <b>두 리스너가 모두 이것을 쓴다</b>
      * ({@code consumeForStorage}, {@code consumeAnomalyAlerts}).
      *
-     * <p>전역 {@code spring.kafka.listener.type: batch}를 쓰지 않고 명시적 팩토리를 두는
-     * 이유는, 어떤 리스너가 배치인지가 {@code @KafkaListener}에서 바로 보여야 하기
-     * 때문이다. 전역 설정은 리스너를 하나 추가할 때 조용히 따라붙는다.
+     * 전역 {@code listener.type: batch} 대신 명시적 팩토리를 둬서 배치 여부가 리스너에서 보이게 한다.
      *
-     * <p><b>{@code configurer}로 Spring Boot의 listener 설정을 물려받는다.</b>
-     * 예전에는 {@code new ConcurrentKafkaListenerContainerFactory<>()}만 만들고
-     * concurrency와 ack-mode를 여기 하드코딩했는데, 그러면 {@code application.yml}의
-     * {@code spring.kafka.listener.*}가 <b>아무 효과 없는 설정</b>이 된다 —
-     * 값을 바꿔도 동작이 안 바뀌는데 읽는 사람은 바뀔 거라고 믿는다.
-     * 팩토리를 쓰는 리스너가 둘뿐이라 지금은 우연히 같은 값이었지만, 한쪽만 고치면
-     * 문서와 구현이 갈린다.
+     * <p>{@code configurer}로 {@code spring.kafka.listener.*}를 물려받는다. 여기서 하드코딩하면
+     * yml 값이 아무 효과 없는 설정이 된다.
      *
-     * <p>순서가 중요하다: {@code configure()} 다음에 배치 여부와 에러 핸들러를 덮어쓴다.
-     * configurer는 {@code listener.type}(기본 single)과 Boot 기본 에러 핸들러를 넣기 때문이다.
-     *
-     * <p>제네릭이 {@code <Object, Object>}인 것은 Boot의 configurer 시그니처에 맞추기
-     * 위해서다. Boot가 만드는 {@code ConsumerFactory}도 {@code <Object, Object>}이고,
-     * 실제 타입은 {@code value-deserializer}(StringDeserializer)가 정한다.
+     * <p>순서 주의: {@code configure()} 뒤에 배치 여부와 에러 핸들러를 덮어써야 한다
+     * (configurer가 single 타입과 Boot 기본 에러 핸들러를 넣는다).
+     * 제네릭 {@code <Object, Object>}는 Boot configurer 시그니처에 맞춘 것이다.
      */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<Object, Object> telemetryBatchListenerContainerFactory(
@@ -212,27 +142,8 @@ public class KafkaConfig {
     /**
      * {@code group.instance.id}가 빈 값이면 그 속성을 <b>아예 제거</b>한다 — 즉 정적 멤버십을 끈다.
      *
-     * <p><b>왜 필요한가</b>: Kafka는 {@code group.instance.id}에 빈 문자열을 허용하지 않는다
-     * ({@code NonEmptyString} 검증에 걸려 기동이 실패한다). 그래서 설정만으로는 정적 멤버십을
-     * 끌 방법이 없었다 — 끄려면 {@code application.yml}에서 줄을 지우고 다시 빌드해야 했다.
-     *
-     * <p>이게 문제가 되는 지점이 둘이다.
-     * <ol>
-     *   <li><b>대조군을 만들 수 없다.</b> "정적 멤버십 덕분에 리밸런싱 폭풍을 피한다"는 것이
-     *       이 프로젝트의 근거 중 하나인데(12시간 soak test), 끈 상태와 비교한 적이 없었다.</li>
-     *   <li><b>운영에서 되돌릴 수 없다.</b> 정적 멤버십은 스케일 다운을 45초짜리로 만드는
-     *       대가가 있다(2026-09-07~08 실측). 그 대가가 문제가 되는 상황에서 재빌드 없이
-     *       끌 수 있어야 한다.</li>
-     * </ol>
-     *
-     * <p>그래서 <b>빈 값 = 끄기</b>로 정한다. {@code GROUP_INSTANCE_ID_BASE=}로 띄우면
-     * 정적 멤버십 없이 동작하고, 값을 주면 켜진다. 기본값은 켜짐이다.
-     *
-     * <p>끄면 컨슈머가 종료할 때 LeaveGroup을 보내 <b>즉시</b> 재할당된다(45초 대기 없음).
-     * 대신 GC 정지나 순단으로 {@code max.poll.interval.ms}를 넘기면 그룹을 완전히 떠났다가
-     * 재가입해야 하고, concurrency=3에서 여러 컨슈머가 동시에 그 경로를 타면
-     * "MemberIdRequiredException → group is already rebalancing"에 갇힐 수 있다.
-     * <b>그 위험을 피하려고 켠 것이므로 끌 때는 근거가 있어야 한다.</b>
+     * Kafka는 빈 문자열을 거부해 기동이 실패하므로, 재빌드 없이 끌 수 있게 빈 값을 끄기로 해석한다.
+     * 기본값은 켜짐. 끄면 리밸런싱 폭풍 위험이 돌아오므로 근거 없이 끄지 않는다. 이유: ADR-024
      */
     @Bean
     public DefaultKafkaConsumerFactoryCustomizer staticMembershipOffWhenBlank() {
@@ -246,7 +157,7 @@ public class KafkaConfig {
         };
     }
 
-    // init-topics.sh에서 이미 생성하지만, 백엔드 단독 실행 시 자동 생성 보장
+    // init-topics.sh와 겹치지만 백엔드 단독 실행을 위해 둔다.
     @Bean
     public NewTopic vehicleTelemetryTopic() {
         return TopicBuilder.name("vehicle-telemetry")
@@ -280,10 +191,8 @@ public class KafkaConfig {
             .build();
     }
 
-    // 이상 감지(Python anomaly-detector) 처리 실패 원본 메시지 격리용.
-    // vehicle-telemetry-dlq는 Java 저장 경로 전용이라 재사용하면 어느 경로가
-    // 실패했는지 구분이 안 돼 별도 토픽을 둔다. 발행 주체는 Python이지만, Python
-    // 쪽엔 이 자동 생성 안전망이 없어 백엔드가 대신 보장한다.
+    // Python 이상 감지기의 DLQ. 실패 경로를 구분하려고 저장 DLQ와 분리한다.
+    // Python 쪽엔 토픽 자동 생성이 없어 백엔드가 대신 만든다.
     @Bean
     public NewTopic vehicleTelemetryAnomalyDlqTopic() {
         return TopicBuilder.name("vehicle-telemetry-anomaly-dlq")

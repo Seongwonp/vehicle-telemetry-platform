@@ -42,21 +42,18 @@ public class MqttMessageHandler {
     private final Counter missingAckCallbackCounter;
     private final Counter decodeFailedCounter;
     /**
-     * 연결 끊김 인터럽트를 **대기 구간 안에서만** 보내기 위한 잠금. 인터럽트를 보내는 쪽과 대기 구간을 닫는 쪽이
-     * 같은 잠금을 쓰므로, 구간을 닫은 뒤(ACK·다음 메시지·Paho 내부 코드)에 인터럽트가 닿지 않는다.
+     * 연결 끊김 인터럽트가 대기 구간 안에서만 닿게 하는 잠금. 구간을 닫은 뒤(ACK·다음 메시지·Paho 내부)에
+     * 인터럽트가 새면 안 된다. 아래 세 필드는 이 잠금으로 보호한다.
      */
     private final Object waitLock = new Object();
-    /** 지금 저장 확인을 기다리는 Paho 콜백 스레드. {@link #waitLock}으로 보호. */
     private Thread awaitingThread;
-    /** 이번 대기 구간의 인터럽트가 연결 끊김 때문인지 — 아니면 플래그를 복원한다. {@link #waitLock}으로 보호. */
     private boolean interruptedByConnectionLoss;
-    /** 이번 대기 구간 시작(System.nanoTime). {@link #awaitingThread}가 null이면 의미 없다. {@link #waitLock}으로 보호. */
     private long waitStartNanos;
-    /** 끝난 대기 시간 — 결과별. 진행 중인 대기는 게이지가 본다(끝난 대기만으로는 막혀 있는 순간이 안 보인다). */
+    /** 끝난 대기만 잰다. 막혀 있는 순간은 진행 중 게이지가 보여준다. */
     private final Timer ackWaitAcked;
     private final Timer ackWaitFailed;
     private final Timer ackWaitInterrupted;
-    /** 버킷 경계: producer 최악 대기(40초)·알림 문턱(45초)·keepAlive(60초)·get 상한(150초)을 포함한다. */
+    /** producer 최악 대기(40s)·알림 문턱(45s)·keepAlive(60s)·get 상한(150s)을 경계에 둔다. */
     private static final Duration[] ACK_WAIT_BUCKETS = {
         Duration.ofMillis(10), Duration.ofMillis(50), Duration.ofMillis(100), Duration.ofMillis(500),
         Duration.ofSeconds(1), Duration.ofSeconds(5), Duration.ofSeconds(10), Duration.ofSeconds(30),
@@ -74,14 +71,14 @@ public class MqttMessageHandler {
         this.receivedCounter = meterRegistry.counter("telemetry.mqtt.messages.received");
         this.invalidCounter = meterRegistry.counter("telemetry.mqtt.messages.invalid");
         this.invalidMessagePublisher = invalidMessagePublisher;
-        // 0이 아니면 manualAcks가 꺼진 것이다 — ACK가 저장 확인을 기다리지 않는다(ADR-029 보장 소실).
+        // 0이 아니면 manualAcks가 꺼진 것이다(ADR-029 보장 소실).
         this.missingAckCallbackCounter = meterRegistry.counter("telemetry.mqtt.ack.callback.missing");
-        // 계약 예외가 아닌 decode 실패로 격리한 수. 0이 아니면 validator·매퍼 회귀를 의심한다(사유별 계약 지표에는 안 잡힌다).
+        // 계약 예외가 아닌 decode 실패. 0이 아니면 validator·매퍼 회귀를 의심한다.
         this.decodeFailedCounter = meterRegistry.counter("telemetry.mqtt.decode.failed");
         this.ackWaitAcked = ackWaitTimer(meterRegistry, "acked");
         this.ackWaitFailed = ackWaitTimer(meterRegistry, "failed");
         this.ackWaitInterrupted = ackWaitTimer(meterRegistry, "interrupted");
-        // 게이지는 기동 때 등록한다 — 시계열 부재(배포·설정 문제)와 0(대기 없음)을 구분하려고.
+        // 기동 때 등록해야 시계열 부재(설정 문제)와 0(대기 없음)이 구분된다.
         Gauge.builder("telemetry.mqtt.ack.wait.in.progress", this, h -> h.waitInProgress() ? 1 : 0)
             .description("Paho 콜백 스레드가 지금 저장 확인을 기다리는 중이면 1")
             .register(meterRegistry);
@@ -98,24 +95,20 @@ public class MqttMessageHandler {
             .register(registry);
     }
 
-    // @ServiceActivator는 MqttConfig에서 선언한 mqttInputChannel과 이 메서드를 연결한다.
-    // Spring Integration 채널 기반이라 별도 스레드 풀 없이 메시지 도착 즉시 호출된다.
     @ServiceActivator(inputChannel = "mqttInputChannel")
     public void handle(Message<String> message) {
         receivedCounter.increment();
         var acknowledgment = message.getHeaders().get(
             IntegrationMessageHeaderAccessor.ACKNOWLEDGMENT_CALLBACK, SimpleAcknowledgment.class);
-        // 헤더가 없으면 어댑터가 자동 ACK다(manualAcks 꺼짐) — 기다려도 ACK 시점을 바꿀 수 없다.
-        // 자동 ACK 대조 실험과 decoder 단위 테스트가 이 경로를 쓴다. 운영에서 0이 아니면 설정 회귀다.
+        // 헤더가 없으면 자동 ACK(manualAcks 꺼짐)다. 대조 실험·단위 테스트용이며 운영에서는 설정 회귀다.
         if (acknowledgment == null) {
             missingAckCallbackCounter.increment();
             process(message);
             return;
         }
 
-        // Paho 단일 콜백 스레드에서 기다린다 — ACK가 수신 순서로 나가고 Kafka 완료 스레드가 ACK하지 않는다.
-        // 동시성을 내주고 작고 검토 가능한 경계를 샀다(ADR-029). 대기 구간은 처리 전체(DLQ 발행 get(10s)·
-        // Kafka send의 max.block 포함)를 덮는다 — 어디서 막혀 있든 연결 끊김이 깨울 수 있게.
+        // ACK는 저장 확인(Kafka·spool·DLQ) 뒤에만 보낸다(ADR-029). Paho 콜백 스레드에서 기다려야
+        // ACK가 수신 순서로 나간다. 대기 구간은 처리 전체를 덮어 어디서 막혀도 연결 끊김이 깨울 수 있다.
         boolean interrupted = false;
         Exception failure = null;
         long started = enterWait();
@@ -130,12 +123,11 @@ public class MqttMessageHandler {
             boolean ours = exitWait();
             (interrupted ? ackWaitInterrupted : failure != null ? ackWaitFailed : ackWaitAcked)
                 .record(System.nanoTime() - started, TimeUnit.NANOSECONDS);
-            // 연결 끊김 인터럽트는 여기서 끝낸다(Paho 스레드는 재연결을 이어가야 한다). 다른 출처의 인터럽트는 복원한다.
+            // 연결 끊김 인터럽트는 여기서 삼킨다(Paho 스레드는 재연결을 이어가야 한다). 다른 출처는 복원한다.
             if (interrupted && !ours) Thread.currentThread().interrupt();
         }
         if (failure != null) {
-            // DirectChannel로 Paho까지 던진다 — 연결이 끊기고 재접속 뒤 재전달되는 것을 기대한다
-            // (실제 브로커에서의 재전달은 ADR-029 검증 범위 참고).
+            // Paho까지 던져 ACK 없이 끝낸다 — 재접속 뒤 브로커 재전달에 맡긴다(ADR-029).
             throw new IllegalStateException(interrupted
                 ? "MQTT 저장 확인 중단 — ACK하지 않음" : "MQTT 저장 확인 실패 — ACK하지 않음", failure);
         }
@@ -143,16 +135,14 @@ public class MqttMessageHandler {
     }
 
     /**
-     * 메시지를 저장 경로로 넘기고, ACK해도 되는 시점에 완료되는 future를 돌려준다.
-     * 거부는 DLQ 발행 성공 뒤 완료(실패하면 이 메서드가 던진다), 정상은 Kafka 또는 spool 기록 뒤 완료.
+     * ACK해도 되는 시점에 완료되는 future를 돌려준다.
+     * 거부는 DLQ 발행 성공 뒤(실패하면 던진다), 정상은 Kafka 또는 spool 기록 뒤.
      */
     private CompletableFuture<Void> process(Message<String> message) {
         String payload = message.getPayload();
         String topic = (String) message.getHeaders().get("mqtt_receivedTopic");
 
-        // **두 입구가 같은 decoder를 쓴다.** 예전에는 여기서만 역직렬화 + Bean Validation을
-        // 했고 Kafka 직접 주입은 검증이 없었다 — 같은 payload가 입구에 따라 통과하기도
-        // 거부되기도 했다(2026-09-09 감사).
+        // Kafka 저장 입구와 같은 decoder를 쓴다 — 입구에 따라 판정이 갈리면 안 된다.
         VehicleTelemetry telemetry;
         try {
             telemetry = telemetryDecoder.decode(payload);
@@ -160,9 +150,8 @@ public class MqttMessageHandler {
             reject(topic, payload, e.getReason(), null);
             return CompletableFuture.completedFuture(null);
         } catch (RuntimeException e) {
-            // 계약 예외가 아닌 decode 실패도 같은 payload면 매번 같다(decoder는 Jackson·Validator뿐, 외부 의존 없음).
-            // ACK 없이 던지면 브로커가 재접속마다 맨 앞에서 재전달해 구독 전체가 막힌다(poison 루프).
-            // 격리하고 ACK한다 — DLQ 실패면 ACK하지 않는다. 원인 예외는 로그에 남긴다(DLQ 사유는 한 단어뿐이다).
+            // decoder는 외부 의존이 없어 같은 payload면 매번 같은 실패다. ACK 없이 던지면 재접속마다
+            // 맨 앞에서 재전달되어 구독 전체가 막힌다. 격리 후 ACK한다(DLQ 실패면 ACK하지 않는다).
             log.warn("[MQTT] decode 중 계약 예외가 아닌 실패 — 격리 topic={} payloadSha256={}",
                 topic, sha256(payload), e);
             decodeFailedCounter.increment();
@@ -181,7 +170,7 @@ public class MqttMessageHandler {
             return CompletableFuture.completedFuture(null);
         }
 
-        // 추적 키는 전 구간 같은 이름이다 — vehicle=, ts=(원본 timestamp 문자열). ADR-028.
+        // 추적 키 vehicle=, ts=는 전 구간 같은 이름이다(ADR-028).
         log.debug("[MQTT→Kafka] vehicle={} ts={} speed={} engine_temp={} battery_voltage={}",
             telemetry.getVehicleId(),
             telemetry.getTimestamp(),
@@ -189,9 +178,8 @@ public class MqttMessageHandler {
             telemetry.getEngineTemp(),
             telemetry.getBatteryVoltage());
 
-        // 직렬화 실패(Unsendable)는 send() 안에서 **동기적으로** 실패 future가 된다 — 아래 reject()의 DLQ get은
-        // 이 콜백 스레드(대기 구간 안)에서 돈다. Kafka I/O 스레드에서 돌면 send().get()이 자기 교착이므로
-        // 비동기 실패를 여기서 격리하지 않는다(일시 실패로 남겨 재전달).
+        // Unsendable은 send() 안에서 동기적으로 실패하므로 아래 reject()의 DLQ get이 이 콜백 스레드에서 돈다.
+        // 비동기 실패를 여기서 격리하면 Kafka I/O 스레드에서 get()이 자기 교착된다 — 일시 실패로 남긴다.
         return telemetryProducer.send(telemetry)
             .exceptionallyCompose(e -> {
                 Throwable cause = e instanceof java.util.concurrent.CompletionException && e.getCause() != null
@@ -199,7 +187,7 @@ public class MqttMessageHandler {
                 if (!(cause instanceof TelemetryProducer.UnsendableTelemetryException)) {
                     return CompletableFuture.failedFuture(cause); // 일시 실패 — ACK하지 않고 재전달을 기다린다
                 }
-                // 재시도해도 같은 실패 — 격리 뒤 ACK. DLQ 발행 실패는 그대로 실패로 남아 ACK하지 않는다.
+                // 격리 뒤 ACK. DLQ 발행 실패면 그대로 실패로 남아 ACK하지 않는다.
                 reject(topic, payload, "SERIALIZATION_FAILED", telemetry);
                 return CompletableFuture.completedFuture(null);
             });
@@ -221,40 +209,35 @@ public class MqttMessageHandler {
         }
     }
 
-    /** 진행 중인 대기의 경과 초 — scrape 때 계산하므로 막혀 있는 동안에도 자란다. */
+    /** scrape 때 계산하므로 막혀 있는 동안에도 자란다. */
     private double currentWaitSeconds() {
         synchronized (waitLock) {
             return awaitingThread == null ? 0.0 : (System.nanoTime() - waitStartNanos) / 1e9;
         }
     }
 
-    /** 대기 구간을 닫는다. 연결 끊김 인터럽트가 걸렸었으면 true — 남은 플래그도 여기서 지운다. */
+    /** 연결 끊김 인터럽트가 걸렸었으면 true. 남은 인터럽트 플래그도 여기서 지운다. */
     private boolean exitWait() {
         synchronized (waitLock) {
             awaitingThread = null;
             boolean ours = interruptedByConnectionLoss;
             interruptedByConnectionLoss = false;
-            // 저장 완료와 경합해 get()이 정상 반환한 뒤 닿은 인터럽트 — 구간 밖으로 새지 않게 지운다.
+            // get()이 정상 반환한 뒤 닿은 인터럽트가 구간 밖으로 새지 않게 한다.
             if (ours) Thread.interrupted();
             return ours;
         }
     }
 
     /**
-     * 저장 확인을 기다리는 Paho 콜백 스레드를 연결 끊김 때 깨운다.
-     *
-     * <p>Paho의 재연결(ConnectBG)은 옛 콜백 스레드가 끝날 때까지 기다린다(CommsCallback.start).
-     * 콜백 스레드가 {@code receipt.get}에서 최대 150초 막혀 있으면 브로커가 살아 있어도 그동안 재연결이
-     * 멈춘다(실험 D, ADR-029). 옛 연결 기준 ACK는 어차피 쓸 수 없으니 기다림을 끝내고 ACK 없이 빠져나온다.
-     * Kafka 완료를 기다리던 중이면 저장 경로는 그대로 진행되어 재전달이 중복이 된다. 콜백 스레드 자신이 spool에 쓰는 경우 —
-     * 백로그 경로, 또는 {@code kafka.send()}의 동기 구간(max.block)에서 인터럽트되어 {@code InterruptException}이 플래그를
-     * 다시 세운 채 spool로 넘어간 경우 — 그 쓰기가 {@code ClosedByInterruptException}으로 실패한다. 영속되지 않았으므로
-     * ACK하지 않고 회복은 브로커 재전달에 달린다(실험 D3, {@code docs/verification/2026-10-08-spool-interrupt-durability.md}).
-     * {@code $SYS} 어댑터의 연결 끊김은 텔레메트리 ACK와 무관하다.
+     * 연결 끊김 때 저장 확인을 기다리는 Paho 콜백 스레드를 깨운다. Paho 재연결은 옛 콜백 스레드가
+     * 끝날 때까지 기다리므로, 깨우지 않으면 브로커가 살아 있어도 최대 150초 재연결이 멈춘다(ADR-029).
+     * 옛 연결의 ACK는 어차피 쓸 수 없으니 ACK 없이 빠져나와 재전달에 맡긴다(중복은 허용).
+     * 콜백 스레드가 spool에 쓰던 중이면 쓰기가 실패하고 ACK하지 않는다
+     * ({@code docs/verification/2026-10-08-spool-interrupt-durability.md}).
      */
     @EventListener
     public void onConnectionLost(MqttConnectionFailedEvent event) {
-        // $SYS 어댑터 판별은 토픽 문자열에 기댄다 — 어댑터가 더 생기면 다시 본다.
+        // $SYS 어댑터의 연결 끊김은 텔레메트리 ACK와 무관하다. 판별은 토픽 문자열에 기댄다.
         if (event.getSource() instanceof MqttPahoMessageDrivenChannelAdapter adapter
             && java.util.Arrays.stream(adapter.getTopic()).anyMatch(t -> t.startsWith("$SYS"))) {
             return;
@@ -269,18 +252,17 @@ public class MqttMessageHandler {
     }
 
     /**
-     * @param decoded 계약은 통과했지만 MQTT 고유 검사에서 걸린 경우의 도메인 객체. 계약 위반이면 null.
-     *                추적 키(vehicle·ts)를 남기되 <b>신뢰하지 않는다</b> — 거부된 메시지의 필드다.
+     * @param decoded MQTT 고유 검사에서 걸린 경우의 객체, 계약 위반이면 null.
+     *                추적 키로만 쓰고 신뢰하지 않는다.
      */
     private void reject(String topic, String payload, String reason, VehicleTelemetry decoded) {
-        // 기존 지표 — MQTT 입구의 **모든** 거부를 센다. 이름·의미를 바꾸지 않는다.
+        // 모든 거부를 센다. 기존 지표라 이름·의미를 바꾸지 않는다.
         invalidCounter.increment();
-        // 사유별 지표는 **계약 사유일 때만** 올린다. `TOPIC_VEHICLE_MISMATCH`는 MQTT 고유
-        // 검사라 계약 사유가 아니다 — 섞으면 세 입구를 나란히 놓을 수 없다.
+        // 사유별 지표는 계약 사유만. MQTT 고유 사유를 섞으면 세 입구를 비교할 수 없다.
         if (TelemetryContractException.isContractReason(reason)) {
             com.telemetry.metrics.ContractMetrics.rejected(meterRegistry, com.telemetry.metrics.ContractMetrics.ENTRANCE_MQTT, reason);
         }
-        // 거부 경로의 추적 키는 payloadSha256이다 — DLQ value와 대조한다. 값은 남기지 않는다.
+        // payload 값은 로그에 남기지 않고 해시로 DLQ value와 대조한다.
         log.warn("[MQTT] 메시지 거부 — topic={} reason={} vehicle={} ts={} payloadLength={} payloadSha256={}",
             topic, reason,
             decoded == null ? "-" : decoded.getVehicleId(),

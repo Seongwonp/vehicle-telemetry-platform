@@ -35,8 +35,7 @@ public class TelemetrySpool {
                 System.currentTimeMillis(), sequence.getAndIncrement(), UUID.randomUUID());
             Path temporary = spoolDirectory.resolve(id + ".tmp");
             Path target = spoolDirectory.resolve(id + ".json");
-            // force() 뒤에 rename한다. 예전에는 writeString만 하고 rename해서, 전원이 끊기면 이름은 .json인데
-            // 내용이 비었거나 잘린 파일이 남을 수 있었다 — 그 파일 하나가 드레인을 영원히 막았다(quarantine 참고).
+            // force() 뒤에 rename한다. 아니면 전원 차단 시 비었거나 잘린 .json이 남아 드레인을 막는다.
             FileChannel channel = FileChannel.open(temporary,
                 StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             try {
@@ -51,9 +50,8 @@ public class TelemetrySpool {
                     return Files.move(temporary, target);
                 }
             } catch (IOException | RuntimeException e) {
-                // 실패한 쓰기의 .tmp를 지운다. 이 메시지는 영속되지 않았으므로 호출자는 실패를 받고 ACK하지 않는다 —
-                // 실패를 삼키지 않는다. 연결 끊김 인터럽트가 write/force에 닿으면(ClosedByInterruptException) 0바이트·
-                // 내용만 있는 .tmp가 남았고 정리 주체가 없었다(실험 D3, docs/verification/2026-10-08-spool-interrupt-durability.md).
+                // 남은 .tmp를 지우고 실패를 그대로 던진다 — 영속되지 않았으니 호출자가 ACK하면 안 된다.
+                // 경위: docs/verification/2026-10-08-spool-interrupt-durability.md
                 discardTemporary(temporary, e);
                 throw e;
             }
@@ -62,7 +60,7 @@ public class TelemetrySpool {
         }
     }
 
-    /** .json으로 옮겨지지 않은 자기 .tmp만 지운다. 지우지 못하면 원래 실패에 붙여 남긴다(드레인은 .tmp를 읽지 않는다). */
+    /** 지우지 못하면 원래 실패에 suppressed로 붙인다(드레인은 .tmp를 읽지 않는다). */
     static void discardTemporary(Path temporary, Exception failure) {
         try {
             Files.deleteIfExists(temporary);
@@ -73,17 +71,8 @@ public class TelemetrySpool {
     }
 
     /**
-     * 재전송 대상 파일을 파일명(=시간) 순으로 최대 {@code limit}개 돌려준다.
-     *
-     * <p><b>비용 주의</b>: `sorted()`가 limit과 무관하게 디렉터리 전체를 훑어 정렬한다.
-     * spool에 파일이 수만 개면 이 호출 하나가 비싸지므로, 호출 횟수를 줄이는 쪽
-     * (배치를 키우는 쪽)이 주기를 줄이는 쪽보다 유리하다. 정렬을 뺄 수는 없다 —
-     * 파일명이 `밀리초-시퀀스-uuid`라 이 순서가 곧 차량별 메시지 순서다.
-     *
-     * <p>스캔에 걸린 시간과 실제 파일 수를 계측해서 남긴다. 드레인이 느릴 때
-     * "스캔이 비싼가, 전송이 느린가"를 추측하지 않고 가를 수 있어야 하기 때문이다
-     * (실측: 유입 1,700 msg/s에 드레인 19 msg/s였다 —
-     * `load-test/fault-injection/RESULT_20260904_fault_injection.md`).
+     * 파일명 순으로 최대 {@code limit}개. 정렬을 빼면 안 된다 — 파일명(밀리초-시퀀스-uuid) 순서가
+     * 곧 차량별 메시지 순서다. limit과 무관하게 전체를 정렬하므로 호출 횟수를 줄이는 편이 낫다.
      */
     public List<Path> pending(int limit) {
         long startedAt = System.nanoTime();
@@ -101,15 +90,12 @@ public class TelemetrySpool {
         }
     }
 
-    /** 마지막 {@link #pending(int)} 호출에 걸린 시간(ns). 드레인 병목 진단용. */
+    /** 드레인 병목 진단용(스캔 vs 전송). */
     public long lastScanNanos() {
         return lastScanNanos.get();
     }
 
-    /**
-     * spool에 남은 파일 수. 게이지로 노출하기 위한 것이라 {@link #pending(int)}와 달리
-     * 정렬하지 않는다 — 세기만 하면 되므로 훨씬 싸다.
-     */
+    /** 게이지용이라 정렬하지 않는다. */
     public long depth() {
         try {
             Files.createDirectories(spoolDirectory);
@@ -131,12 +117,10 @@ public class TelemetrySpool {
     }
 
     /**
-     * 내용을 해석할 수 없는 spool 파일을 {@code .corrupt}로 옮겨 드레인 대상에서 뺀다. <b>지우지 않는다</b> — 사람이 볼 증거다.
+     * 해석 불가 파일을 {@code .corrupt}로 옮겨 드레인에서 뺀다. 지우지 않는다 — 사람이 볼 증거다.
+     * 남겨두면 backlog가 꺼지지 않아 모든 새 메시지가 디스크를 거친다(ADR-019).
      *
-     * <p>이게 없던 때는 해석 실패 파일이 {@link #pending}에 영원히 남아 backlog가 꺼지지 않았고, 그 뒤의
-     * <b>모든 메시지가 MQTT 콜백 스레드에서 디스크를 거쳤다</b> — ADR-019의 99.8% 유실을 만든 그 경로다(2026-09-29 리뷰).
-     *
-     * @return 옮긴 경로. 옮기지 못하면 null — 호출자는 계속 막혀 있다는 뜻이라 크게 남겨야 한다.
+     * @return 옮긴 경로. 실패하면 null — 드레인이 계속 막혀 있다는 뜻이다.
      */
     public Path quarantine(Path path) {
         Path target = path.resolveSibling(path.getFileName() + ".corrupt");

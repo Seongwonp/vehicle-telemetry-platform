@@ -12,10 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * users 테이블 기반 인증(ADR-027). 2026-09-27까지는 {@code InMemoryUserDetailsManager}의 admin 한 명이었다.
+ * users 테이블 기반 인증(ADR-027).
  *
- * <p>비활성이거나 비밀번호 해시가 없는 계정은 <b>없는 계정과 같은 예외</b>를 던진다 — 로그인 실패 응답에서
- * "계정은 있는데 비활성"을 구분해 주면 사용자 이름 탐색에 쓰인다.
+ * <p>비활성이거나 해시가 없는 계정은 없는 계정과 같은 예외를 던진다. 구분해 주면 사용자 이름 탐색에 쓰인다.
  */
 @Service
 @RequiredArgsConstructor

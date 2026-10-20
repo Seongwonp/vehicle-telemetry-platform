@@ -40,9 +40,8 @@ public class UserService {
     }
 
     /**
-     * 본인 비밀번호 변경. 로그인할 수 없는 계정(비활성·해시 없음)은 없는 계정과 같이 거절한다(로그인·refresh와 같은 규칙).
-     * refresh 폐기가 같은 트랜잭션 안이라 Redis 오류가 나면 비밀번호 변경도 되돌아간다 — 비밀번호는 바뀌었는데
-     * 옛 세션이 살아 있는 상태를 만들지 않는다.
+     * 본인 비밀번호 변경. 로그인할 수 없는 계정은 없는 계정과 같이 거절한다.
+     * refresh 폐기가 같은 트랜잭션 안이라 Redis 오류 시 변경도 롤백된다(옛 세션이 남지 않게).
      */
     @Transactional
     public void changePassword(String username, String currentPassword, String newPassword) {
@@ -63,8 +62,7 @@ public class UserService {
     }
 
     /**
-     * 관리자 초기화. 대상이 비활성이어도 해시는 바꾼다(비활성 백필 계정의 비밀번호를 미리 정해 둘 수 있다) —
-     * {@code active}는 건드리지 않으므로 로그인 가능 여부는 그대로다.
+     * 관리자 초기화. 비활성 계정도 해시는 바꾸지만 {@code active}는 건드리지 않는다.
      */
     @Transactional
     public void resetPassword(String username, String newPassword) {

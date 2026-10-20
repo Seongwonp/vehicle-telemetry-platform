@@ -39,15 +39,14 @@ public class VehicleService {
 
     @Transactional
     public VehicleResponse register(VehicleRegisterRequest request, Authentication authentication) {
-        // 등록은 관리자만(ADR-027). 일반 사용자가 미등록 차량 ID를 자기 소유로 먼저 등록하면 그 차량의
-        // 텔레메트리를 가져가는 선점 경로가 된다 — 인증서는 "누가 보내는가"를 검증하지 "누구 차인가"는 모른다.
+        // 등록은 관리자만(ADR-027). 열어두면 남의 차량 ID를 먼저 등록해 텔레메트리를 가져갈 수 있다.
         if (!vehicleAccessService.isAdmin(authentication)) {
             throw new AccessDeniedException("차량 등록은 관리자만 할 수 있습니다");
         }
         String ownerName = request.getOwner() == null || request.getOwner().isBlank()
             ? authentication.getName()
             : request.getOwner().trim();
-        // 소유자는 users 행이어야 한다(V4 FK). 문자열이던 시절엔 오타 소유자가 조용히 들어갔다.
+        // 소유자는 users 행이어야 한다(V4 FK).
         User owner = userRepository.findByUsername(ownerName)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다: " + ownerName));
         if (vehicleRepository.existsByVehicleId(request.getVehicleId())) {
@@ -61,9 +60,8 @@ public class VehicleService {
     }
 
     public List<VehicleResponse> findAllVisibleTo(Authentication authentication) {
-        // 단건 조회를 막아도 목록이 전부 보이면 차량 ID가 그대로 새어 나간다 — 목록도 같은 기준으로 자른다.
-        // Spring Data repository 호출의 read-only 트랜잭션은 이 줄에서 종료된다.
-        // 이후 InfluxDB 외부 호출이 PostgreSQL 트랜잭션/커넥션을 붙잡지 않는다.
+        // 목록도 단건과 같은 접근 기준으로 자른다. 안 그러면 차량 ID가 새어 나간다.
+        // 이후 InfluxDB 호출이 PostgreSQL 커넥션을 붙잡지 않도록 DB 조회는 여기서 끝낸다.
         List<Vehicle> vehicles = vehicleAccessService.isAdmin(authentication)
             ? vehicleRepository.findAllByActiveTrue()
             : vehicleRepository.findAllByOwner_UsernameAndActiveTrue(
@@ -93,10 +91,8 @@ public class VehicleService {
             .toList();
     }
 
-    // 목록 화면에서 차량마다 대시보드에 들어가지 않고도 상태를 비교할 수 있게
-    // InfluxDB 최근 텔레메트리 + HIGH 이상 누적 건수를 함께 붙인다. 아직 데이터가
-    // 없는 차량(방금 등록됨)은 조용히 null/0으로 둔다 — 목록 조회 자체가
-    // 실패하면 안 되므로 텔레메트리 조회 실패를 전체 요청 실패로 전파하지 않는다.
+    // 목록에 최근 텔레메트리와 HIGH 이상 건수를 붙인다. 텔레메트리 조회 실패로
+    // 목록 전체가 실패하면 안 되므로 데이터가 없으면 null/0으로 둔다.
     private VehicleResponse withFleetSummary(
         Vehicle vehicle,
         Map<String, TelemetryResponse> latestByVehicle,
@@ -131,8 +127,7 @@ public class VehicleService {
         Vehicle vehicle = vehicleRepository.findByVehicleId(vehicleId)
             .orElseThrow(() -> new ResourceNotFoundException("등록되지 않은 차량입니다: " + vehicleId));
 
-        // 물리 삭제 대신 active 플래그를 내린다.
-        // 차량 ID는 InfluxDB 텔레메트리 데이터와 연결되어 있어 행을 지우면 이력 조회가 깨질 수 있다.
+        // 물리 삭제 대신 active를 내린다. 행을 지우면 InfluxDB 이력과의 연결이 끊긴다(ADR-008).
         vehicle.setActive(false);
         webSocketSessionRegistry.closeVehicleSessions(vehicleId);
         // TODO: 변경 주체(사용자/시스템) 추적이 필요하다. 현재는 admin 단일이지만 다중 사용자 지원 시 로그에 포함해야 한다.

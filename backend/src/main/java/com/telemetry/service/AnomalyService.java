@@ -40,23 +40,12 @@ public class AnomalyService {
     /**
      * Kafka 페이로드를 엔티티로 옮긴다. <b>DB를 건드리지 않는다.</b>
      *
-     * <p>파싱을 저장에서 떼어낸 이유는 {@link #saveAll}이 배치를 한 트랜잭션으로
-     * 묶기 때문이다. 잘못된 타임스탬프({@link Instant#parse} 실패) 하나가 트랜잭션
-     * 안에서 터지면 **정상 알림 수천 건까지 함께 롤백된다.** 파싱을 먼저 끝내고
-     * 레코드별로 격리해야(호출자가 catch → DLQ) 배치화가 안전해진다 —
-     * 텔레메트리 경로에서 {@code TelemetryRepository.toPoint()}를 따로 뺀 것과 같은 이유다.
+     * <p>{@link #saveAll}이 배치를 한 트랜잭션으로 묶으므로, 파싱 실패 하나가 정상 알림까지
+     * 롤백시키지 않도록 파싱을 먼저 레코드별로 끝낸다(실패는 호출자가 DLQ로).
      *
-     * <p><b>{@code NOT_SUPPORTED}가 반드시 필요하다.</b> 이 클래스에는 클래스 레벨로
-     * {@code @Transactional(readOnly = true)}가 붙어 있어서, 명시하지 않으면 DB를 전혀
-     * 건드리지 않는 이 메서드도 트랜잭션을 연다. 그러면 PostgreSQL 장애 중에
-     * {@code Could not open JPA EntityManager} 로 <b>변환 단계에서 실패</b>하고,
-     * 호출자는 그것을 "이 메시지가 잘못됐다"로 오해해 레코드를 하나씩 DLQ로 보낸다 —
-     * 배치화로 없애려던 바로 그 동작이다.
-     *
-     * <p>실제로 5분 장애를 주입해 발견했다: 저장할 것이 하나도 없는
-     * "배치 저장 실패 <b>0건</b>" 로그가 반복해서 찍혔고, DLQ에는 8건의 알림이
-     * 19개 레코드로 불어나 있었다
-     * ({@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}).
+     * <p>{@code NOT_SUPPORTED}를 지우지 말 것. 클래스 레벨 readOnly 트랜잭션을 물려받으면
+     * DB 장애 중 변환 단계에서 실패하고, 호출자가 이를 잘못된 메시지로 보고 DLQ로 보낸다.
+     * 경위: {@code load-test/anomaly-dlq-idempotency/RESULT_20260905_alert_replay.md}
      */
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public AnomalyAlert toEntity(Map<String, Object> payload) {
@@ -83,19 +72,11 @@ public class AnomalyService {
     /**
      * 배치를 <b>한 트랜잭션</b>으로 저장한다.
      *
-     * <p>레코드마다 트랜잭션을 열면 알림 한 건당 PostgreSQL 커밋(=fsync)이 한 번씩 돈다.
-     * 실측으로 이 경로의 처리량이 <b>49 msg/s</b>였다 — 100대 부하의 유입(200건/s 이상)을
-     * 못 따라가서 lag이 계속 쌓였고, 부하를 끊은 뒤 따라잡는 데 13분이 걸렸다
-     * ({@code load-test/anomaly-storage-throughput/}).
-     *
-     * <p>배치를 한 트랜잭션으로 묶으면 커밋이 배치당 1회가 된다. 저장 경로(InfluxDB)에서
-     * 같은 이유로 배치화해 처리량을 회복시킨 적이 있다(ADR-011).
+     * 건별 트랜잭션은 알림마다 커밋(fsync)이 돌아 유입을 못 따라간다. 이유: ADR-022
      */
     @Transactional
     public List<SaveResult> saveAll(List<AnomalyAlert> alerts) {
-        // 빈 배치에 트랜잭션을 열지 않는다. 열면 DB가 죽어 있을 때 "저장할 것이
-        // 하나도 없는데 저장 실패"가 나고, 그 예외 때문에 offset이 커밋되지 않아
-        // 같은 배치가 계속 되돌아온다.
+        // 빈 배치로 트랜잭션을 열면 DB 장애 중 실패해 offset이 커밋되지 않고 같은 배치가 계속 돌아온다.
         if (alerts.isEmpty()) return List.of();
 
         List<SaveResult> results = new ArrayList<>(alerts.size());
@@ -117,15 +98,13 @@ public class AnomalyService {
         meterRegistry.counter("telemetry.anomaly.stored",
             "result", isNew ? "new" : "duplicate").increment();
         if (isNew) {
-            // 원본 추적 키(vehicle·ts = 원본 timestamp)와 알림 키(event)를 한 줄에 — msg가 원인, event가 결과(ADR-028).
+            // 원본 추적 키(vehicle·ts)와 알림 키(event)를 한 줄에 남긴다(ADR-028).
             log.info("[이상 저장] vehicle={} ts={} type={} severity={} event={}",
                 alert.getVehicleId(), alert.getVehicleTimestamp(), alert.getAnomalyType(),
                 alert.getSeverity(), alert.getEventId());
         } else {
-            // 재처리에서는 정상적인 결과다. 로그를 나누는 이유는 두 가지다 —
-            // (1) 예전엔 중복도 "[이상 저장]"으로 찍혀서, 재처리 후 로그를 세면 실제
-            //     저장된 건수보다 많이 나왔다(실측: 9건 재처리에 행 증가는 6건).
-            // (2) 중복 비율이 높으면 재처리 범위가 필요 이상으로 넓다는 신호다.
+            // 재처리에서는 정상. 로그를 나눠야 로그 건수가 실제 저장 건수와 맞고,
+            // 중복 비율로 재처리 범위가 너무 넓은지 볼 수 있다.
             log.info("[이상 중복] 이미 저장된 이벤트라 건너뜀 vehicle={} ts={} type={} event={}",
                 alert.getVehicleId(), alert.getVehicleTimestamp(), alert.getAnomalyType(), alert.getEventId());
         }
@@ -133,14 +112,9 @@ public class AnomalyService {
     }
 
     /**
-     * 저장 결과. <b>새로 들어갔는지</b>가 호출자에게 필요하다.
-     *
-     * <p>DLQ 재처리는 이미 저장된 알림을 필연적으로 다시 넣는다 — PostgreSQL 60초 장애를
-     * 주입해 재보니 DLQ 9건 중 <b>3건은 이미 저장돼 있었다</b>(서버에서는 커밋이 끝났는데
-     * 연결이 끊겨 클라이언트만 실패로 본 경우). 행 중복은
-     * {@code ON CONFLICT (event_id) DO NOTHING}이 막아주지만, 호출자가 이 구분을 모르면
-     * <b>알림은 그대로 다시 나간다.</b>
-     * ({@code load-test/anomaly-dlq-idempotency/})
+     * 저장 결과. 호출자는 {@code inserted}가 true일 때만 알림을 보내야 한다.
+     * DLQ 재처리는 이미 저장된 알림을 다시 넣으므로, 행 중복은 ON CONFLICT가 막아도
+     * 알림 중복은 이 플래그로 막는다. 이유: ADR-020
      */
     public record SaveResult(AnomalyAlert alert, boolean inserted) {}
 
