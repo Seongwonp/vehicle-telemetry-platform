@@ -14,10 +14,8 @@ Kafka Consumer → 룰 기반 + ML 이상 감지 → vehicle-anomaly-alerts 발�
        ↓
   notifier.py (Webhook)
 
-신뢰성: 메시지 처리(또는 발행)가 실패하면 원본을 vehicle-telemetry-anomaly-dlq로 격리하고,
-성공/DLQ 어느 쪽이든 "처리 완료"로 취급한 뒤에만 오프셋을 커밋한다. auto-commit을 쓰면
-처리 도중 예외가 나도 주기적으로 오프셋이 넘어가 실패한 메시지가 조용히 유실된다 —
-이 문제를 막기 위해 수동 커밋으로 바꿨다 (자세한 이유는 ADR-017 참고).
+실패한 메시지는 vehicle-telemetry-anomaly-dlq로 격리하고, 발행 또는 DLQ 성공 뒤에만
+오프셋을 수동 커밋한다. auto-commit은 실패 메시지를 조용히 넘긴다(ADR-017).
 """
 import os
 import json
@@ -46,8 +44,7 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
 )
-# 컨테이너 hostname을 로거 이름에 포함 — 인스턴스를 여러 개(--scale) 띄웠을 때
-# 로그에서 어느 인스턴스가 처리했는지 구분하기 위함.
+# 여러 인스턴스를 띄웠을 때 로그에서 인스턴스를 구분하려고 hostname을 넣는다.
 logger = logging.getLogger(f"anomaly-detector[{socket.gethostname()}]")
 
 # ── 설정 ────────────────────────────────────────────────────────
@@ -58,30 +55,22 @@ DLQ_TOPIC               = "vehicle-telemetry-anomaly-dlq"
 METRICS_PORT            = int(os.getenv("METRICS_PORT", "9101"))
 ML_ENABLED              = os.getenv("ML_ENABLED", "false").lower() == "true"
 ML_MIN_SAMPLES          = int(os.getenv("ML_MIN_SAMPLES", "200"))
-# 학습 윈도우 크기(건수). 이 값이 시간으로 몇 초를 덮는지는 처리량에 따라 달라진다 —
-# 파티션당 약 500 msg/s에서 2000건은 약 4초치다. 재학습 간격(60초)보다 훨씬 짧으면
-# "4초를 배워 60초를 채점"하는 셈이 되므로, 측정해서 정할 수 있게 밖으로 뺐다.
+# 학습 윈도우(건수). 덮는 시간이 처리량에 따라 달라지므로 환경 변수로 뺐다(ADR-018).
 ML_WINDOW_SIZE          = int(os.getenv("ML_WINDOW_SIZE", "2000"))
-# 이상 판정 점수 임계값. 비워두면 모델의 offset_을 쓰고, 그러면 데이터와 무관하게
-# 항상 contamination 비율(5%)만큼 알림이 뜬다. 값을 주면 알림 수가 실제 데이터에
-# 따라 움직인다 — 값은 정상 구간 데이터로 score_ml.py --sweep을 돌려 정한다(ADR-018).
+# 비우면 offset_을 써서 데이터와 무관하게 항상 contamination 비율만큼 알림이 뜬다.
+# 값은 score_ml.py --sweep으로 정한다(ADR-018).
 _threshold_raw          = os.getenv("ML_SCORE_THRESHOLD", "").strip()
 ML_SCORE_THRESHOLD      = float(_threshold_raw) if _threshold_raw else None
-# 측정 전용: 모든 메시지의 ML 이상 점수를 stdout에 남긴다(기본 off).
-# 켜면 메시지 1건당 한 줄이 나가므로 처리량이 떨어진다 — 탐지 품질을 재는 용도이지
-# 상시 운영용이 아니다. score_ml.py --sweep이 이 줄을 읽어 임계값별 recall/오탐을 낸다.
+# 측정 전용(score_ml.py --sweep 입력). 메시지마다 한 줄이라 처리량이 떨어진다.
 ML_SCORE_DUMP           = os.getenv("ML_SCORE_DUMP", "false").lower() == "true"
 
-# 커밋을 메시지마다 하면(동기 왕복) 부하 테스트로 이미 빠듯한 것을 확인한 처리량에
-# 부담을 더한다 — 개수/시간 중 먼저 차는 조건으로 배치 커밋한다.
+# 메시지마다 동기 커밋하면 처리량이 떨어져 개수/시간 기준으로 배치 커밋한다.
 COMMIT_INTERVAL_MESSAGES = 100
 COMMIT_INTERVAL_SECONDS  = 5.0
 
 
 def make_consumer() -> KafkaConsumer:
-    # value_deserializer를 두지 않고 원본 바이트를 그대로 받는다 — JSON 파싱 실패도
-    # 우리가 직접 잡아서 DLQ로 보내기 위함(Java TelemetryConsumer와 동일한 방식:
-    # 역직렬화는 컨슈머가 아니라 애플리케이션 코드가 하고, 실패하면 원본 바이트를 보존한다).
+    # 원본 바이트로 받는다 — 파싱 실패도 직접 잡아 원본 그대로 DLQ에 보내야 한다.
     return KafkaConsumer(
         INPUT_TOPIC,
         bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
@@ -112,11 +101,10 @@ def make_dlq_producer() -> KafkaProducer:
 
 
 def make_redis_client():
-    """ML이 꺼져 있으면(기본값) Redis 연결 자체를 만들지 않는다 — 기본 동작에 새
-    의존성/실패 지점을 추가하지 않기 위함."""
+    """ML이 꺼져 있으면 Redis를 만들지 않는다 — 기본 경로에 실패 지점을 늘리지 않는다."""
     if not ML_ENABLED:
         return None
-    import redis  # 지연 임포트 — ML 비활성화 시 이 모듈을 아예 건드리지 않는다.
+    import redis
     return redis.Redis(
         host=os.getenv("REDIS_HOST", "localhost"),
         port=int(os.getenv("REDIS_PORT", "6379")),
@@ -131,17 +119,9 @@ def ml_state_key(partition: int) -> str:
 class PartitionedMLDetectors:
     """파티션마다 별도 MLAnomalyDetector를 둔다.
 
-    vehicle_id가 Kafka 파티션 키(ADR-003)라 파티션마다 담당하는 차량 집합이 사실상
-    고정적이다 — 그래서 "어느 컨테이너/인스턴스가 떴는지"가 아니라 "어느 파티션인지"를
-    기준으로 학습 상태를 나누는 게 훨씬 안정적이다. Redis에 파티션 ID로 저장해두면,
-    인스턴스가 재시작되거나 리밸런싱으로 다른 인스턴스가 그 파티션을 넘겨받아도 학습
-    상태를 이어받을 수 있다(ADR-018).
-
-    한계: 파티션이 이 프로세스에서 빠져나가는(리밸런싱으로 다른 인스턴스에 넘어가는)
-    시점을 별도로 감지하지 않는다 — 마지막 저장 이후 몇 초치 학습분은 넘겨받는 쪽이
-    못 받을 수 있다(저장 주기는 커밋 주기와 같음, 기본 100건/5초). 완벽한 정합성이
-    필요하면 Kafka Consumer Rebalance Listener로 파티션 반납 시점에 즉시 저장해야
-    하는데, 이번 범위에서는 하지 않았다.
+    vehicle_id가 파티션 키라 학습 상태를 인스턴스가 아닌 파티션 기준으로 Redis에 저장하면
+    재시작·리밸런싱 뒤에도 이어받는다(ADR-018).
+    한계: 파티션 반납 시점을 감지하지 않아 마지막 저장 이후 학습분은 잃을 수 있다.
     """
 
     def __init__(self, redis_client, min_samples: int, window_size: int,
@@ -182,7 +162,7 @@ class PartitionedMLDetectors:
             return
         for partition, detector in self._detectors.items():
             if not detector.is_trained:
-                continue  # 아직 학습 전이면 저장해봐야 복원할 때 다시 처음부터 모으므로 의미 없다.
+                continue
             try:
                 self._redis.set(ml_state_key(partition), detector.get_state())
             except Exception:
@@ -190,11 +170,10 @@ class PartitionedMLDetectors:
 
 
 def dump_scores(batch: list[dict], flags: list[bool], scores: list[float]) -> None:
-    """ML_SCORE_DUMP가 켜졌을 때 배치 전체의 이상 점수를 한 번에 stdout으로 흘린다.
+    """배치의 ML 점수를 stdout에 한 번에 쓴다.
 
-    채점 스크립트가 정답 로그와 같은 키 (vehicle_id, timestamp)로 조인할 수 있게
-    그 두 값을 그대로 쓴다. 줄마다 logger를 부르면 포맷팅 비용이 메시지 수만큼 붙어
-    측정 자체가 느려지므로, 배치당 한 번만 write한다.
+    채점 스크립트가 (vehicle_id, timestamp)로 조인한다. logger 대신 배치당 한 번 write해
+    측정 오버헤드를 줄인다.
     """
     sys.stdout.writelines(
         f"[SCORE] vehicle={d.get('vehicle_id', 'UNKNOWN')} ts={d.get('timestamp', '')} "
@@ -206,16 +185,13 @@ def dump_scores(batch: list[dict], flags: list[bool], scores: list[float]) -> No
 def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> None:
     """한 메시지에 대해 룰 기반 탐지 + 이벤트 발행을 수행한다.
 
-    ML 예측 결과는 `ml_anomaly`로 받는다 — 예측 자체는 호출자가 파티션 배치 단위로
-    한 번에 수행한다(ml_detector.update_batch). sklearn predict는 호출 횟수가 비용을
-    지배해서, 메시지마다 부르면 처리량이 약 25배 떨어진다(ADR-018).
+    ML 예측은 호출자가 파티션 배치 단위로 끝내고 결과만 넘긴다 — sklearn predict는
+    호출 횟수가 비용을 좌우한다(ADR-018).
     """
     vehicle_id = data.get("vehicle_id", "UNKNOWN")
 
-    # ── 1. 룰 기반 이상 감지 ────────────────────────────────────
     detected = rules.detect(data)
 
-    # ── 2. ML 기반 이상 감지 (예측은 배치로 이미 끝났다) ─────────
     if ML_ENABLED:
         if ml_anomaly:
             from rules import AnomalyEvent
@@ -233,21 +209,22 @@ def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> No
     if not detected:
         return
 
-    # ── 3. Kafka + Webhook 발행 ─────────────────────────────────
     futures = []
     for event in detected:
         payload = {
             **asdict(event),
             "detected_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
-        event_key = "|".join(str(payload.get(field, "")) for field in (
+        # detected_at을 키에 넣으면 안 된다 — 재처리 때 같은 event_id가 나와야
+        # UNIQUE(event_id)가 중복을 막는다(ADR-020).
+        event_key ="|".join(str(payload.get(field, "")) for field in (
             "vehicle_id", "timestamp", "anomaly_type", "field", "detector"
         ))
         payload["event_id"] = hashlib.sha256(event_key.encode("utf-8")).hexdigest()
 
         futures.append(producer.send(OUTPUT_TOPIC, key=vehicle_id, value=payload))
 
-        # 추적 키는 백엔드와 같은 이름이다 — vehicle=, ts=(원본 timestamp), event=(알림 키). ADR-028.
+        # 추적 키 이름은 백엔드와 같아야 한다(ADR-028).
         logger.warning(
             f"[이상 감지] vehicle={vehicle_id} "
             f"ts={data.get('timestamp')} "
@@ -262,14 +239,13 @@ def process(data: dict, producer: KafkaProducer, ml_anomaly: bool = False) -> No
         notifier.send_webhook(payload)
 
     producer.flush()
-    # flush()는 전송 완료까지 기다리지만 실패를 예외로 다시 던지진 않는다 — 각 future를
-    # 확인해야 발행 실패(예: 브로커 다운)를 이 메시지의 처리 실패로 잡아 DLQ로 보낼 수 있다.
+    # flush()는 실패를 던지지 않는다. future를 확인해야 발행 실패가 DLQ로 간다.
     for future in futures:
         future.get(timeout=10)
 
 
 def should_commit(handled_since_commit: int, elapsed_seconds: float, force: bool = False) -> bool:
-    """개수/시간 중 하나라도 기준을 넘으면 커밋할 시점이라고 판단한다(순수 함수, 테스트용으로 분리)."""
+    """개수/시간 중 하나라도 기준을 넘으면 True."""
     if handled_since_commit == 0:
         return False
     return (
@@ -279,30 +255,14 @@ def should_commit(handled_since_commit: int, elapsed_seconds: float, force: bool
     )
 
 
-# ── 계약 위반 사유별 집계 ──────────────────────────────────────
-#
-# **왜 사유별로 세나**: 사유가 4종인데 한 카운터로 뭉치면 "거부가 늘었다"까지만 보인다.
-# `UNKNOWN_FIELD`가 느는 것은 **발행 측 스펙이 우리보다 앞서갔다**는 신호이고
-# `PAYLOAD_VALIDATION_FAILED`가 느는 것과 대응이 정반대다.
-#
-# **라벨에 차량 ID·payload·예외 메시지를 넣지 않는다.** 카디널리티도 문제지만
-# 지표는 보존 기간 내내 남아 개인정보가 새는 경로가 된다(docs/data-retention.md).
-# 필드별로 보고 싶으면 지표가 아니라 DLQ를 봐야 한다 —
-# 절차는 docs/runbook/dlq-reprocessing.md 2-1절.
+# 계약 위반은 사유별로 센다 — 사유마다 대응이 다르다(docs/rejection-metrics-design.md).
 CONTRACT_REJECTED = {reason: 0 for reason in contract.REASONS}
-# 계약 위반이 아닌 처리 실패(구현 버그일 수 있다). 위와 **분리해서** 센다.
+# 계약 위반이 아닌 실패(구현 버그일 수 있다)는 분리해서 센다.
 PROCESSING_FAILED = 0
 
-# Prometheus 지표. 라벨은 **사유 코드 4종뿐**이다(시계열 4개).
-#
-# **차량 ID·payload·예외 메시지는 라벨에 넣지 않는다.** 차량 ID는 카디널리티가 차량 수만큼
-# 폭발하고, payload와 예외 메시지에는 좌표·식별자가 섞인다. Prometheus 라벨은 보존 기간
-# 내내 남으므로 docs/data-retention.md의 정책 밖으로 개인정보가 새는 경로가 된다.
-# 어느 필드가 문제인지는 지표가 아니라 DLQ에서 본다 —
-# 절차는 docs/runbook/dlq-reprocessing.md 2-1절.
-# **Java 저장 경로와 같은 이름·같은 라벨**이어야 세 입구를 나란히 조회할 수 있다
-# (`com.telemetry.metrics.ContractMetrics`). 이름에 `attempts`가 있는 이유는
-# **거부 판정 횟수이지 고유 메시지 수가 아니기 때문**이다 — 재전달되면 다시 오른다.
+# 라벨에 차량 ID·payload·예외 메시지를 넣지 않는다 — 카디널리티와 개인정보 보존
+# (docs/data-retention.md). 이름·라벨은 Java ContractMetrics와 같아야 한다.
+# 재전달되면 다시 오르는 판정 횟수다(고유 메시지 수 아님).
 CONTRACT_REJECTED_TOTAL = Counter(
     "telemetry_contract_rejected_attempts",
     "입력 계약 위반으로 거부한 **판정 횟수**(재전달 포함, 고유 메시지 수가 아니다)",
@@ -310,30 +270,23 @@ CONTRACT_REJECTED_TOTAL = Counter(
 )
 ENTRANCE = "anomaly-detector"
 
-# DLQ 발행의 세 단계를 나눠 센다. **빼서 다른 뜻을 만들지 않는다** —
-# 단계가 다르고 집계 대상도 다르다.
+# 시도/성공/실패는 단계가 달라 서로 빼서 다른 뜻을 만들면 안 된다.
 DLQ_PUBLISH_ATTEMPTS = Counter(
     "telemetry_kafka_dlq_publish_attempts", "DLQ 발행 **시도** 횟수", ["topic"])
 DLQ_PUBLISHED = Counter(
     "telemetry_kafka_dlq_published", "DLQ 발행 **성공을 확인한** 횟수", ["topic"])
 DLQ_PUBLISH_FAILURES = Counter(
     "telemetry_kafka_dlq_publish_failures", "DLQ 발행 **실패·timeout을 관찰한** 횟수", ["topic"])
-# 위 실패 중 **우리가 timeout으로 알아본** 것. failures의 부분집합이다.
-# timeout이면 브로커가 받았는지 모른다 — "발행되지 않았다"로 읽으면 안 된다.
-#
-# **0이라고 모든 발행 결과가 확정됐다는 뜻이 아니다.** `_is_indeterminate`가 아는
-# 예외 이름만 판별하고, 그 밖의 실패 중에도 실제로는 브로커에 닿은 것이 있을 수 있다.
-# 주장하는 것은 "이만큼은 확실히 불명"이지 "나머지는 확실하다"가 아니다.
+# failures 중 timeout으로 판별한 부분집합. 브로커가 받았는지 모르는 건이다.
+# 0이어도 나머지 실패가 "미발행 확정"이라는 뜻은 아니다.
 DLQ_PUBLISH_INDETERMINATE = Counter(
     "telemetry_kafka_dlq_publish_indeterminate",
     "DLQ 발행 실패 중 **발행 여부 불명**(timeout)", ["topic"])
-# 계약을 통과한 뒤의 실패. **계약 위반과 섞으면 안 된다** — 이쪽은 구현 버그일 수 있다.
 PROCESSING_FAILED_TOTAL = Counter(
     "telemetry_anomaly_processing_failed_total",
     "계약을 통과했으나 처리(룰 판정·알림 발행)에서 실패한 레코드 수",
 )
-# 선택 필드(ADR-030)가 없어 **ML 채점을 건너뛴** 레코드 수. 룰 판정은 받았다 — 처리 실패가 아니다.
-# 이 값이 처리량과 같이 오르면 그 차량들에는 ML이 사실상 꺼져 있다는 뜻이다(조용히 0을 채우던 예전과 달리 보인다).
+# 선택 필드(ADR-030)가 없어 ML만 건너뛴 건. 처리량과 같이 오르면 그 차량들은 ML이 꺼진 셈이다.
 ML_SKIPPED_MISSING_FEATURES = Counter(
     "telemetry_anomaly_ml_skipped_missing_features_total",
     "ML 피처(연료량·전압 등)가 없어 ML 채점을 건너뛴 레코드 수 — 룰 판정은 수행됨",
@@ -355,10 +308,8 @@ def _metrics_snapshot() -> str:
 def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
     """DLQ 레코드에 붙일 실패 원인 헤더.
 
-    Java 쪽 TelemetryConsumer.sendToDlq()와 **같은 이름**을 쓴다 — 재처리 도구
-    (`dlq-tools/dlq.py`)가 두 언어의 DLQ를 구분 없이 읽어야 하기 때문이다.
-    이 헤더가 없으면 "다시 넣으면 되는 실패"와 "몇 번을 넣어도 실패하는 메시지"를
-    가를 수가 없고, 후자를 재처리하면 DLQ→원본→DLQ 무한 루프가 된다.
+    헤더 이름은 Java TelemetryConsumer.sendToDlq()와 같아야 한다 — dlq.py가 두 경로를
+    같이 읽고, 이 헤더로 재처리 가능 여부를 가른다(없으면 DLQ→원본 무한 루프).
     """
     headers = [
         ("x-dlq-origin-topic", INPUT_TOPIC.encode("utf-8")),
@@ -366,44 +317,34 @@ def dlq_headers(message, cause: Exception | None) -> list[tuple[str, bytes]]:
         ("x-dlq-origin-offset", str(message.offset).encode("utf-8")),
         ("x-dlq-failed-at", datetime.now(timezone.utc).isoformat().encode("utf-8")),
     ]
-    # **재처리 이력은 이어받는다.** `dlq.py replay`가 원본 토픽으로 되돌릴 때 이 헤더를 올려 보내는데,
-    # 여기서 새 헤더만 만들면 다시 실패할 때마다 0으로 돌아가 `--max-replays`가 멈추지 못한다.
-    # Java `TelemetryConsumer.sendToDlq`는 이미 이어받는다 — 같은 계약이다.
-    # 2026-09-13 실제 Kafka 재현에서 이 경로만 헤더를 잃었다(load-test/dlq-replay-count).
-    # 다른 x-dlq-* 헤더는 복사하지 않는다 — 이번 실패의 위치·원인을 새로 적어야 한다.
+    # replay-count는 이어받아야 한다 — 안 그러면 실패마다 0이 되어 --max-replays가 멈추지 못한다.
+    # 나머지 x-dlq-* 헤더는 이번 실패 기준으로 새로 쓴다. 경위: load-test/dlq-replay-count.
     carried = None
     for key, value in (getattr(message, "headers", None) or []):
         if key == "x-dlq-replay-count":
-            carried = value          # 마지막 값을 쓴다(Java lastHeader와 같다)
+            carried = value          # Java lastHeader처럼 마지막 값
     if carried is not None:
         headers.append(("x-dlq-replay-count", carried))
     if cause is not None:
         headers.append(("x-dlq-failure-class", type(cause).__name__.encode("utf-8")))
-        # 예외 메시지에 원본 payload 조각이 섞여 들어올 수 있어 길이를 자른다 —
-        # Kafka 헤더도 메시지 크기 제한에 함께 잡힌다.
+        # payload 조각이 섞일 수 있고 헤더도 메시지 크기 제한에 포함되어 자른다.
         text = str(cause)
         if len(text) > 512:
             text = text[:512] + "...(truncated)"
         headers.append(("x-dlq-failure-message", text.encode("utf-8")))
-        # **계약 위반은 사유 코드를 따로 싣는다.** 예외 이름만으로는 재처리 판단이 안 된다 —
-        # ContractViolation은 네 사유를 다 담으므로 이름이 같다.
+        # ContractViolation은 사유가 넷이라 예외 이름만으로는 재처리 판단이 안 된다.
         if isinstance(cause, contract.ContractViolation):
             headers.append(("x-dlq-contract-reason", cause.reason.encode("utf-8")))
-    # 어느 경로에서 격리됐는지. 저장 경로(Java)와 감지 경로(Python)가 서로 다른 토픽을
-    # 쓰지만, 재처리 도구가 토픽 이름에 의존하지 않도록 헤더로도 남긴다.
+    # 재처리 도구가 토픽 이름에 기대지 않도록 격리 경로를 헤더로도 남긴다.
     headers.append(("x-dlq-source-path", b"anomaly-detector"))
     return headers
 
 
 def _is_indeterminate(error: BaseException) -> bool:
-    """**우리가 알아볼 수 있는** timeout인가.
+    """브로커 도달 여부가 불확실한 timeout인가.
 
-    timeout은 요청이 브로커에 닿았는지 자체가 불확실하다. 반면 크기 초과처럼
-    클라이언트에서 확정적으로 실패한 것은 여기 해당하지 않는다.
-    Java 쪽 `ContractMetrics.isIndeterminate`와 같은 판단이어야 한다.
-
-    **False라고 "발행되지 않은 것이 확실"하다는 뜻은 아니다.** 아는 이름만 판별한다 —
-    목록을 넓히는 것은 실제로 다른 예외를 관찰한 뒤에 한다.
+    Java ContractMetrics.isIndeterminate와 같은 판단이어야 한다. 아는 예외 이름만 보므로
+    False가 "미발행 확정"을 뜻하지는 않는다.
     """
     seen = set()
     cur: BaseException | None = error
@@ -416,10 +357,8 @@ def _is_indeterminate(error: BaseException) -> bool:
 
 
 def send_to_dlq(dlq_producer: KafkaProducer, message, cause: Exception | None = None) -> None:
-    """처리 실패한 원본 메시지를 DLQ로 옮긴다. key/value를 원본 바이트 그대로 보존하고,
-    왜 실패했는지는 헤더로 남긴다(재처리 판단 근거)."""
+    """원본 바이트 그대로 DLQ에 옮기고 실패 원인은 헤더로 남긴다."""
     try:
-        # **시도 시점**에 올린다 — 성공/실패와 별개의 수다.
         DLQ_PUBLISH_ATTEMPTS.labels(topic=DLQ_TOPIC).inc()
         future = dlq_producer.send(DLQ_TOPIC, key=message.key, value=message.value,
                                    headers=dlq_headers(message, cause))
@@ -428,10 +367,9 @@ def send_to_dlq(dlq_producer: KafkaProducer, message, cause: Exception | None = 
         DLQ_PUBLISHED.labels(topic=DLQ_TOPIC).inc()
     except Exception as send_error:
         DLQ_PUBLISH_FAILURES.labels(topic=DLQ_TOPIC).inc()
-        # timeout이면 브로커가 받았는지 **모른다**. 따로 센다.
         if _is_indeterminate(send_error):
             DLQ_PUBLISH_INDETERMINATE.labels(topic=DLQ_TOPIC).inc()
-        # 이 예외를 메인 루프 밖으로 전파해야 현재 offset이 처리 완료로 집계되지 않는다.
+        # 반드시 다시 던진다 — 삼키면 이 offset이 처리 완료로 커밋된다.
         logger.error(
             f"[DLQ] {DLQ_TOPIC} 전송 실패 — 원본 offset을 커밋하지 않음 "
             f"partition={message.partition} offset={message.offset}",
@@ -470,9 +408,7 @@ def main() -> None:
     signal.signal(signal.SIGINT, handle_signal)
     signal.signal(signal.SIGTERM, handle_signal)
 
-    # 지표 엔드포인트. **인스턴스마다 뜬다**(replicas: 3) — 포트를 호스트에 매핑하지 않고
-    # Prometheus가 compose DNS로 세 인스턴스를 다 찾는다(monitoring/prometheus/prometheus.yml).
-    # 실패해도 감지는 계속한다 — 계측이 죽어서 처리가 멈추면 안 된다(2026-09-07 교훈).
+    # 지표 서버가 실패해도 감지는 계속한다 — 계측이 처리를 멈추게 하면 안 된다.
     try:
         start_http_server(METRICS_PORT)
         logger.info(f"  지표: :{METRICS_PORT}/metrics")
@@ -498,8 +434,7 @@ def main() -> None:
         nonlocal handled_since_commit, last_commit_time
         elapsed = time.time() - last_commit_time
         if should_commit(handled_since_commit, elapsed, force=force):
-            # consumer.commit()에 인자를 생략하면 DLQ 전송에 실패한 현재 position까지
-            # 커밋될 수 있다. 성공/DLQ 성공으로 표시한 offset만 명시적으로 커밋한다.
+            # 인자 없는 commit()은 DLQ 실패 건의 position까지 넘긴다 — 처리 완료로 표시한 offset만 커밋한다.
             consumer.commit(offsets=dict(safe_offsets))
             safe_offsets.clear()
             if ML_ENABLED:
@@ -509,9 +444,7 @@ def main() -> None:
 
     try:
         while running:
-            # poll()로 파티션별 묶음을 받는다. ML 예측을 파티션 배치당 1회로 묶기
-            # 위해서다 — 파티션마다 학습 상태가 다르므로(ADR-018) 배치도 파티션 단위여야
-            # 한다. 메시지별 DLQ 격리와 커밋 정책은 그대로 유지한다.
+            # ML 예측을 파티션 배치당 1회로 묶는다. 학습 상태가 파티션별이라 배치도 파티션 단위다(ADR-018).
             records = consumer.poll(timeout_ms=1000)
             if not records:
                 maybe_commit()
@@ -521,16 +454,8 @@ def main() -> None:
                 if not running:
                     break
 
-                # ── 1) 역직렬화: 실패는 메시지 단위로 DLQ 격리 ──────────────
-                # 정책은 **공통 입력 계약**이다 — 정상 필드만 골라 부분 감지하지 않는다.
-                # 예전에는 여기서 `json.loads`만 했고, 그래서 저장 경로가 거부하는 payload가
-                # 감지기에는 그대로 들어왔다. `rules.py`의 `data.get(field)`가 None을 만나면
-                # **그 룰이 통째로 건너뛰어진다** — 알림도 로그도 지표도 없이 조용히.
-                # 발행 측이 speed를 빠뜨리면 그 차량은 과속 감지가 영원히 안 되는데 밖에서
-                # 알 방법이 없었다(2026-09-09 실측, 21칸 중 5칸).
-                #
-                # `contract.validate`는 저장 경로(TelemetryDecoder)와 같은 판정을 하고 같은
-                # 사유 코드를 쓴다. 어긋나지 않는지는 contract-fixtures/cases.json을 양쪽이 읽어 본다.
+                # 1) 계약 검증. 저장 경로와 같은 계약으로 감지 전에 거부한다 — 필드가 빠지면
+                # 해당 룰이 조용히 건너뛰어지기 때문이다. 경위: docs/anomaly-path-contract.md.
                 parsed: list[tuple] = []
                 for message in messages:
                     try:
@@ -538,7 +463,7 @@ def main() -> None:
                     except contract.ContractViolation as e:
                         CONTRACT_REJECTED[e.reason] += 1
                         CONTRACT_REJECTED_TOTAL.labels(entrance=ENTRANCE, reason=e.reason).inc()
-                        # 값은 남기지 않는다 — 사유 코드와 위치, 그리고 원본의 SHA-256(DLQ value와 대조용).
+                        # 값은 남기지 않는다. SHA-256은 DLQ value와 대조용이다.
                         logger.warning(
                             f"[계약 위반] {e.reason} — DLQ로 이동 "
                             f"vehicle={message.key.decode('utf-8', 'replace') if message.key else '-'} "
@@ -550,8 +475,8 @@ def main() -> None:
                         safe_offsets[TopicPartition(message.topic, message.partition)] =                             OffsetAndMetadata(message.offset + 1, "")
                         handled_since_commit += 1
                     except Exception as e:
-                        # 계약 위반이 아닌 실패 — **구현 버그일 수 있다.** 그래서 계약 위반과
-                        # 분리해서 세고, dlq.py도 자동으로 영구 처리하지 않는다.
+                        # 계약 위반이 아니면 구현 버그일 수 있다 — 분리해서 세고,
+                        # dlq.py도 영구 실패로 분류하지 않는다(unknown).
                         PROCESSING_FAILED += 1
                         PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
@@ -566,13 +491,13 @@ def main() -> None:
                             OffsetAndMetadata(message.offset + 1, "")
                         handled_since_commit += 1
 
-                # ── 2) ML 예측: 이 파티션 배치에 대해 단 1회 ────────────────
+                # 2) ML 예측: 파티션 배치당 1회
                 ml_flags = [False] * len(parsed)
                 if ML_ENABLED and parsed:
                     try:
                         detector = ml_detectors.get(topic_partition.partition)
                         batch_data = [data for _, data in parsed]
-                        # 피처가 빠진 레코드는 detector가 건너뛴다(0으로 채우지 않는다, ADR-030). 여기서는 센다.
+                        # 피처가 빠진 레코드는 0으로 채우지 않고 건너뛴다(ADR-030).
                         skipped = sum(1 for d in batch_data if missing_features(d))
                         if skipped:
                             ML_SKIPPED_MISSING_FEATURES.inc(skipped)
@@ -582,10 +507,7 @@ def main() -> None:
                         else:
                             ml_flags = detector.update_batch(batch_data)
                     except Exception:
-                        # ML은 룰 위에 얹는 보조 탐지다. 여기서 배치 전체를 DLQ로 보내면
-                        # sklearn 문제 하나로 정상 메시지 수백 건이 격리된다. 룰 기반
-                        # 탐지는 그대로 살리고 이 배치의 ML 판정만 포기하되,
-                        # 조용히 넘어가지 않도록 ERROR로 남긴다.
+                        # ML은 보조 탐지다. 배치를 DLQ로 보내지 않고 ML 판정만 포기한다.
                         logger.error(
                             f"[ML] 배치 예측 실패 — partition={topic_partition.partition} "
                             f"{len(parsed)}건은 룰 기반으로만 판정합니다",
@@ -593,7 +515,7 @@ def main() -> None:
                         )
                         ml_flags = [False] * len(parsed)
 
-                # ── 3) 룰 판정 + 이벤트 발행: 실패는 메시지 단위로 DLQ ──────
+                # 3) 룰 판정 + 발행. 실패는 메시지 단위로 DLQ
                 for (message, data), ml_flag in zip(parsed, ml_flags):
                     try:
                         process(data, producer, ml_flag)
@@ -603,8 +525,7 @@ def main() -> None:
                             logger.info(f"처리 누적: {processed}건 "
                                         f"(계약 거부 사유별: {_metrics_snapshot()})")
                     except Exception as e:
-                        # 여기 오는 것은 **계약을 통과한 payload**다. 입력 문제가 아니라
-                        # 알림 발행 실패이거나 우리 코드의 버그다 — 계약 위반과 섞지 않는다.
+                        # 계약을 통과한 payload다 — 발행 실패나 버그이므로 계약 위반과 섞지 않는다.
                         PROCESSING_FAILED += 1
                         PROCESSING_FAILED_TOTAL.inc()
                         logger.error(
@@ -616,8 +537,8 @@ def main() -> None:
                         send_to_dlq(dlq_producer, message, e)
                         dlq_count += 1
 
-                    # 성공이든 DLQ로 격리했든 "처리 완료"다 — 재시도 없이 넘어가되,
-                    # 실패분은 원본이 DLQ에 남아 나중에 조사/재처리할 수 있다.
+                    # 여기까지 오면 발행 또는 DLQ 발행이 성공한 것이라 커밋 대상이다.
+                    # (send_to_dlq가 실패하면 예외로 이 줄에 오지 않는다.)
                     safe_offsets[TopicPartition(message.topic, message.partition)] = \
                         OffsetAndMetadata(message.offset + 1, "")
                     handled_since_commit += 1
