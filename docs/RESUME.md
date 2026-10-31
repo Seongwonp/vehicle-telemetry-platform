@@ -1,7 +1,7 @@
 # 재개 문서 — 다음에 이 프로젝트를 여는 사람(또는 도구)이 처음 읽는다
 
 > 마지막 갱신: 2026-10-20. **프로젝트는 OBD-II 동글이 도착할 때까지 일시 중지 상태다.**
-> 사람이든 AI 도구든 이 문서 → `.claude/CLAUDE.md`(작업 규칙) → 아래 "다음 할 일"의 계획 문서 순서로 읽는다.
+> 사람이든 AI 도구든 이 문서 → [`CONTRIBUTING.md`](../CONTRIBUTING.md)(작업 규칙) → 아래 "다음 할 일"의 계획 문서 순서로 읽는다.
 
 ## 1. 지금 어디인가
 
@@ -21,7 +21,7 @@
 계획 문서 [`docs/plans/2026-10-10-dongle-stationary-collection.md`](plans/2026-10-10-dongle-stationary-collection.md)를 그대로 따른다.
 가설·성공 기준·안전 규칙·증거 경로가 실행 전에 고정돼 있다. 순서만 요약하면:
 
-1. 노트북 로컬 상태 확인(아래 §3 표) — 하나라도 없으면 복구부터.
+1. 로컬 상태 확인(§3) — 하나라도 없으면 복구부터.
 2. 스택을 **mTLS 모드·시뮬레이터 없이** 기동(계획 문서 "노트북 준비 상태 → 남은 수동 단계").
 3. 리허설 1을 한 번 더 돌려 연결이 살아 있는지 확인(에뮬레이터 60초).
 4. 차에서: OBDwiz로 지원 PID 비트맵 → 정차 수집 10분 → 폴링 간격 → 발행·PUBACK·Kafka·InfluxDB 대조 → 브로커 정지 시험.
@@ -31,21 +31,10 @@
 D1 호스트명 = hosts 매핑 `127.0.0.1 mosquitto`(검증 끄기 금지) · D2 차량 ID = `KONA17-01`, `GRDR24H-01` ·
 D3 MQTT = v5 · D4 `measure_polling.py --note` 필수 인자(해결) · D5 ML 오프라인 채점 = 보류.
 
-## 3. 저장소에 없는 노트북 로컬 상태 (`LAPTOP-MV7C23S3`)
+## 3. 저장소에 없는 로컬 상태
 
-git이 추적하지 않는다. 다른 PC나 재설치 뒤에는 없다.
-
-| 무엇 | 확인 | 잃었을 때 |
-| --- | --- | --- |
-| `broker/certs/` — **노트북 전용 CA**와 `KONA17-01`·`GRDR24H-01` 인증서 | `ls broker/certs/vehicles` | `MSYS_NO_PATHCONV=1 MQTT_VEHICLE_IDS="SIM-001,SIM-002,SIM-003,KONA17-01,GRDR24H-01" bash broker/certs/generate-certs.sh` **한 번만**. 그 뒤 `generate-crl.sh` |
-| `.env`의 `MQTT_TLS_STORE_PASSWORD`·`GRAFANA_PASSWORD`(`5ac5008`부터 필수) | 키 이름만 확인(값 출력 금지) | 없으면 `docker compose`가 시작하지 않는다. `MQTT_TLS_STORE_PASSWORD`는 `generate-certs.sh`가 p12를 만들 때 쓴 값(그때 환경변수가 없었으면 스크립트 기본값)과 같아야 한다 |
-| `.env`의 `GRAFANA_PG_READER_PASSWORD` | 키 이름만 확인(값 출력 금지) | 새 값을 넣고 스택 기동 → `sh scripts/grafana-pg-reader.sh` → grafana만 재생성 |
-| PostgreSQL에 실차 등록(`KONA17-01`, `GRDR24H-01`, 소유자 admin) | `GET /api/vehicles` | 관리자로 `POST /api/vehicles` |
-| `obd-bridge/.venv`(Python 3.12) | `obd-bridge/.venv/Scripts/python --version` | `obd-bridge/README.md`의 3.12 venv 명령 |
-| `obd-bridge/.env`(TLS 경로·`mosquitto:8883`·v5·`KONA17-01`) | 파일 존재 | 계획 문서 "노트북 준비 상태"의 항목으로 다시 작성 |
-| Windows hosts의 `127.0.0.1 mosquitto` | `Select-String -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Pattern mosquitto` | 관리자 PowerShell: `Add-Content -Path "$env:SystemRoot\System32\drivers\etc\hosts" -Value "`r`n127.0.0.1 mosquitto" -Encoding ASCII` |
-
-데스크탑은 별도 CA·포트 18883·SIM-024/088 폐기 상태를 가진다. **두 PC의 인증서는 서로 호환되지 않는다.**
+인증서(`broker/certs/`)·`.env`·로컬 DB의 차량 등록·`obd-bridge` 가상환경·hosts 설정은 git이 추적하지 않아 PC마다 다르다.
+확인과 복구 절차는 비공개 기록에 있다. **환경마다 CA가 달라 인증서는 서로 호환되지 않는다.**
 
 ## 4. 하지 말 것
 
