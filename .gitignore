@@ -60,3 +60,6 @@ monitoring/prometheus/targets/*.json
 obd-bridge/.venv/
 obd-bridge/spool/
 obd-bridge/elm.log*
+
+# 세션 인계 기록 — 저장소에서 제외하고 로컬에만 둔다
+docs/handoff/

@@ -9,12 +9,12 @@
 | --- | --- |
 | 기준점 | 태그 `v0.9-pre-vehicle` — 백엔드 `911c2e4`, 앱 `0a4e1b4`. 실차 작업 전 마지막 기준 |
 | 그 뒤에 바뀐 것 | 문서·증거 도구·주석 정리(주석만)·셸 스크립트 줄끝 규칙, 그리고 **동작 변경 1건**: 2026-10-17 `5ac5008`(테스트 `ac15c05`, CI `5be75bc`) — 차량 비활성화·비밀번호 변경/초기화 시 그 인스턴스의 WebSocket 세션 종료(ADR-027 갱신, 종료 동작 테스트 없음), Kafka·InfluxDB·PostgreSQL·Redis·Prometheus·Alertmanager·Grafana 포트 `127.0.0.1` 게시, `MQTT_TLS_STORE_PASSWORD`·`GRAFANA_PASSWORD` 필수. 노트북 리허설(10-09)은 이 변경 **전** 코드로 돌았다. 확인: `git diff --stat v0.9-pre-vehicle HEAD -- backend/src/main anomaly-detector obd-bridge/obd_bridge docker-compose.yml` |
-| 테스트 | 백엔드 전체 **447건, 실패 0, skip 0**(2026-10-20 HEAD, Docker 실행 중). 감지기 pytest 232(2026-10-08, `HANDOFF_2026-10-08.md`), obd-bridge pytest 94(2026-10-09, `obd-bridge/README.md`) |
+| 테스트 | 백엔드 전체 **447건, 실패 0, skip 0**(2026-10-20 HEAD, Docker 실행 중). 감지기 pytest 232(2026-10-08, 비공개 인계 기록), obd-bridge pytest 94(2026-10-09, `obd-bridge/README.md`) |
 | 끝난 것 | 파이프라인 견고화(수동 ACK·spool·DLQ·관측), 선택 필드(ADR-030), 인증서 접근 제한·CRL, 노트북 리허설 2회(에뮬레이터, MQTT v5 확정) |
 | 다음 | 동글 정차 수집(코나 2017 가솔린 → 그랜저 2024 하이브리드) → 주행 계획 → VM 배포 → 포트폴리오 마무리 |
 | 일부러 안 하는 것 | ACK 구조 변경(C안), WebSocket 종료의 다중 인스턴스 확장·통합 테스트, 알림 재측정 같은 새 경계 사례. 실차 한 사이클 완성이 먼저다 |
 
-최근 결정과 상태는 `docs/HANDOFF_2026-10-10.md`, 그 이전 맥락은 같은 폴더의 이전 인계 문서.
+최근 결정의 공개 근거는 `docs/roadmap.md`, `docs/verification/`, `docs/architecture-decisions.md`에 있다.
 
 ## 2. 동글이 오면 할 일
 

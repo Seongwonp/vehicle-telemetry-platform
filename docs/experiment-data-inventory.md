@@ -39,11 +39,11 @@
 
 | client ID | DB에서 본 구독 | 출처 실험 | 시각(UTC) | 문서 | evidence | 삭제 영향 |
 | --- | --- | --- | --- | --- | --- | --- |
-| `telemetry-backend-g1` | `vehicle/telemetry/#` + 메시지 참조 **9,899회** | 실험 G(세션 없는 재시작) | 2026-10-05 13:07 연결 | [ack-boundary §실험 G](verification/2026-10-01-mqtt-ack-boundary.md), [HANDOFF_2026-10-05](HANDOFF_2026-10-05.md) | [`2026-10-05-mqtt-session-loss/`](verification/evidence/2026-10-05-mqtt-session-loss/) (`override_g1.yml`, `G1_start.txt`) | evidence already in files |
-| `telemetry-backend-g1-sys` | `$SYS/broker/{publish/messages/received,dropped,clients/connected}` | 실험 G (백엔드가 client ID + `-sys`로 자동 생성) | 같은 시기 | **문서에 없음** — HANDOFF는 g1·g2만 적었다 | 같음 | evidence already in files |
+| `telemetry-backend-g1` | `vehicle/telemetry/#` + 메시지 참조 **9,899회** | 실험 G(세션 없는 재시작) | 2026-10-05 13:07 연결 | [ack-boundary §실험 G](verification/2026-10-01-mqtt-ack-boundary.md) | [`2026-10-05-mqtt-session-loss/`](verification/evidence/2026-10-05-mqtt-session-loss/) (`override_g1.yml`, `G1_start.txt`) | evidence already in files |
+| `telemetry-backend-g1-sys` | `$SYS/broker/{publish/messages/received,dropped,clients/connected}` | 실험 G (백엔드가 client ID + `-sys`로 자동 생성) | 같은 시기 | **공개 문서에 없음** — 비공개 인계 기록은 g1·g2만 적었다 | 같음 | evidence already in files |
 | `telemetry-backend-g2` | `vehicle/telemetry/#` + 메시지 참조 **8,999회** | 실험 G | 2026-10-05 13:08:44 연결 | 같음 | 같음 (`G2_*`, `override_g2.yml`) | evidence already in files |
 | `telemetry-backend-g2-sys` | `$SYS` 3종 | 실험 G | 같은 시기 | **문서에 없음** | 같음 | evidence already in files |
-| `telemetry-backend-h2` | **구독 기록 없음** (SUBACK 0x80 거부 실험이라 정상) | 실험 H-2·H-2a | 2026-10-05 22:11 경 | [ack-boundary §실험 H](verification/2026-10-01-mqtt-ack-boundary.md), [HANDOFF_2026-10-06](HANDOFF_2026-10-06.md) | [`2026-10-06-timeout-alert/`](verification/evidence/2026-10-06-timeout-alert/) (`H2_*`, `H2a_*`) | evidence already in files |
+| `telemetry-backend-h2` | **구독 기록 없음** (SUBACK 0x80 거부 실험이라 정상) | 실험 H-2·H-2a | 2026-10-05 22:11 경 | [ack-boundary §실험 H](verification/2026-10-01-mqtt-ack-boundary.md) | [`2026-10-06-timeout-alert/`](verification/evidence/2026-10-06-timeout-alert/) (`H2_*`, `H2a_*`) | evidence already in files |
 | `telemetry-backend-h2-sys` | `$SYS` 3종 | 실험 H-2 | 같은 시기 | 같음 | 같음 (`H2_mosquitto_log.txt`) | evidence already in files |
 | `telemetry-backend`, `telemetry-backend-sys` | `vehicle/telemetry/#`, `$SYS` 4종(uptime 포함) | **운영 기본 ID** — 실험 잔여물 아님 | — | `application.yml` | — | (대상 아님) |
 
@@ -74,11 +74,11 @@
 | `OUTAGE-R` | 300 | 2026-10-05 22:17:19 ~ 22:18:58 | 실험 H 복구 확인 | §실험 H 복구 | 같은 디렉터리 (`R_*`) | evidence already in files |
 | `OUTAGE-P` | 720 | 2026-10-05 22:44:28 ~ 22:48:27 | 실험 P | §실험 P | [`2026-10-06-pause-alert-timing/`](verification/evidence/2026-10-06-pause-alert-timing/) (`P_*`) | evidence already in files |
 | `OUTAGE-T` / `OUTAGE-TR` | 767 / 5 | 2026-10-05 22:58:37 ~ 23:08:00 / 23:11:01~02 | 실험 T / 복구 확인 | §실험 T, §실험 P 한계 | 같은 디렉터리 (`T_*`, `R_pub.log`) | evidence already in files |
-| `RECON-PRB` | 1 | 2026-10-06 03:52:16.001 | 실험 D2 사전 프로브 | §실험 D2, [HANDOFF_2026-10-07](HANDOFF_2026-10-07.md) | [`2026-10-07-recheck-2aba182/`](verification/evidence/2026-10-07-recheck-2aba182/) (`R_probe_*`) | evidence already in files |
+| `RECON-PRB` | 1 | 2026-10-06 03:52:16.001 | 실험 D2 사전 프로브 | §실험 D2 | [`2026-10-07-recheck-2aba182/`](verification/evidence/2026-10-07-recheck-2aba182/) (`R_probe_*`) | evidence already in files |
 | `RECON-D2` / `D2B` / `D2C` | 360 / 240 / 63 | 2026-10-06 03:52:33 ~ 04:01:48 | 실험 D2·D2b·D2c | §실험 D2 | 같은 디렉터리 (`D2*_after_*`, `D2*_kafka_records.txt`) | evidence already in files |
 | `OUTAGE-U` | 1,592 | 2026-10-06 04:10:59 ~ 04:27:41 | 실험 U | §실험 U | 같은 디렉터리 (`U_*`) | evidence already in files |
-| `RECON-ZR` | 5 | 2026-10-06 04:31:29~30 | 실험 U 뒤 복구 확인 | HANDOFF_2026-10-07 | 같은 디렉터리 (`Z_restore_*`) | evidence already in files |
-| `SIM-001` / `SIM-002` / `SIM-003` | 20,037 / 21,772 / 21,772 | 2026-09-16 12:18:05 ~ 2026-10-06 05:16:37 | 시뮬레이터(특정 실험 아님). 09-29 추적(WebSocket `SIM-001 ts=…09:00:02.123Z`, `19_influx_query_sanity_SIM-002.txt`), 10-07 앱 확인 기간 포함 | HANDOFF_2026-10-07 §4, 2026-09-29-trace-redelivery-spool §4 | 09-29 추적 결과는 [`2026-09-29-trace-websocket/`](verification/evidence/2026-09-29-trace-websocket/)·`trace-dlq-replay/` 파일에 있음 | **unknown** — 앱·대시보드 확인에 쓰는 일상 데이터라 어떤 주장이 라이브 행에 기대는지 전수 확인하지 않았다 |
+| `RECON-ZR` | 5 | 2026-10-06 04:31:29~30 | 실험 U 뒤 복구 확인 | 비공개 인계 기록(2026-10-07) | 같은 디렉터리 (`Z_restore_*`) | evidence already in files |
+| `SIM-001` / `SIM-002` / `SIM-003` | 20,037 / 21,772 / 21,772 | 2026-09-16 12:18:05 ~ 2026-10-06 05:16:37 | 시뮬레이터(특정 실험 아님). 09-29 추적(WebSocket `SIM-001 ts=…09:00:02.123Z`, `19_influx_query_sanity_SIM-002.txt`), 10-07 앱 확인 기간 포함 | 비공개 인계 기록(2026-10-07), 2026-09-29-trace-redelivery-spool §4 | 09-29 추적 결과는 [`2026-09-29-trace-websocket/`](verification/evidence/2026-09-29-trace-websocket/)·`trace-dlq-replay/` 파일에 있음 | **unknown** — 앱·대시보드 확인에 쓰는 일상 데이터라 어떤 주장이 라이브 행에 기대는지 전수 확인하지 않았다 |
 
 **`SESSLOSS-G2` 900 vs 523**: 실험 G 직후 측정(`G2_after_influx.txt`)은 523(구독 이후분)이었다. 지금은 900 = 발행 전량이다.
 실험 G 문서가 적은 "원래 ID 복귀 기동 시 `telemetry-backend` 세션에 쌓인 실험 중 메시지 재전달"로 나머지 377건이 나중에 저장된 것으로 보인다(추정, 이번에 확인하지 않음).
@@ -115,7 +115,7 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 | `telemetry-storage-group` | Stable, 3 members | vehicle-telemetry 전 파티션 lag 0 | 운영 | `application.yml` | (대상 아님) |
 | `anomaly-detector-group` | Stable, 3 members | 같음, lag 0 | 운영 | — | (대상 아님) |
 | `anomaly-storage-group` | Stable, 3 members | vehicle-anomaly-alerts lag 0 | 운영 | — | (대상 아님) |
-| `dlq-replay-trace-20260929` | **Empty**, 0 members | `vehicle-telemetry-dlq` p0 = 19 (끝) | 실험(DLQ 재주입 커서) | [2026-09-29-trace-redelivery-spool §3](verification/2026-09-29-trace-redelivery-spool.md), [HANDOFF_2026-09-29](HANDOFF_2026-09-29.md) | evidence already in files (`09_cursor_setup.txt`, `12_…`, `23_…`). 커서가 이미 DLQ 끝이고 DLQ는 비어 있다. 7일 offsets 보존으로 **자동 만료될 수 있다**(마지막 커밋 시각을 보지 않아 시점 미확인) |
+| `dlq-replay-trace-20260929` | **Empty**, 0 members | `vehicle-telemetry-dlq` p0 = 19 (끝) | 실험(DLQ 재주입 커서) | [2026-09-29-trace-redelivery-spool §3](verification/2026-09-29-trace-redelivery-spool.md) | evidence already in files (`09_cursor_setup.txt`, `12_…`, `23_…`). 커서가 이미 DLQ 끝이고 DLQ는 비어 있다. 7일 offsets 보존으로 **자동 만료될 수 있다**(마지막 커밋 시각을 보지 않아 시점 미확인) |
 
 `itc-*-group`·`-replay` 같은 load-test 전용 그룹은 목록에 **없다**(스크립트가 지웠거나 만료됨).
 
@@ -129,7 +129,7 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 | `users` id 4 `qa-admin` | ADMIN, **비활성** | 2026-10-06 04:57:19 | 앱 역할 확인(10-07) | [qa-account-deactivation](verification/2026-10-08-qa-account-deactivation.md), 앱 저장소 `docs/verification/2026-10-07-android-emulator-auth-roles.md` | [`2026-10-08-qa-account-deactivation/`](verification/evidence/2026-10-08-qa-account-deactivation/) | evidence already in files |
 | `users` id 5 `qa-user` | USER, **비활성** | 2026-10-06 04:58:09 | 같음 | 같음 | 같음 | evidence already in files. **단, `vehicles.owner_id` FK가 이 행을 참조한다**(SIM-002) — 사용자 행만 지우면 FK 위반 |
 | `vehicles` id 2 `SIM-002` | 이름 "QA User Car", 활성, 소유자 `qa-user` | 2026-10-06 05:03:37 | 앱 역할 확인에서 qa-admin이 등록 | 같음 | 앱 저장소 스크린샷(`04-admin-register-sim002.png` 등) | evidence already in files. 시뮬레이터 SIM-002 발행 자체와는 무관(차량 등록 행일 뿐) |
-| `vehicles` id 1 `SIM-001` | 이름 "IONIQ 5 Long Range AWD Calligraphy 2024 Sales Team 3 Shared", 소유자 `admin` | 2026-09-16 12:54:54 | 앱 에뮬레이터 긴 이름 확인 | 앱 저장소 `docs/verification/2026-09-16-android-emulator.md`, [HANDOFF_2026-09-29](HANDOFF_2026-09-29.md) | 앱 저장소 | unknown — 실험용 이름이지만 SIM-001은 관리자 화면·WebSocket 확인에 계속 쓰이는 유일한 admin 소유 차량이다 |
+| `vehicles` id 1 `SIM-001` | 이름 "IONIQ 5 Long Range AWD Calligraphy 2024 Sales Team 3 Shared", 소유자 `admin` | 2026-09-16 12:54:54 | 앱 에뮬레이터 긴 이름 확인 | 앱 저장소 `docs/verification/2026-09-16-android-emulator.md` | 앱 저장소 | unknown — 실험용 이름이지만 SIM-001은 관리자 화면·WebSocket 확인에 계속 쓰이는 유일한 admin 소유 차량이다 |
 | `anomaly_alerts` `SCHEMA145736-K03`·`K08`·`M03` | 각 1행(엔진 과열 2, 과속 1), detector RULE | 2026-09-09 06:03:55~56 | 스키마 계약 E2E `20260909-145736`(106°C 양쪽 이상 알림 등) | [RESULT_20260909_contract_e2e](../load-test/schema-contract/RESULT_20260909_contract_e2e.md) | `load-test/schema-contract/evidence/20260909-145736/` | evidence already in files |
 | `anomaly_alerts` `SIM-001`~`003` | 404 / 440 / 452행 (6종 유형) | vehicle_timestamp 2026-09-16 12:18 ~ 2026-10-06 05:16 | 시뮬레이터의 주입 이상값 | — | — | unknown (§2 SIM과 같은 이유) |
 
@@ -245,7 +245,7 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 | `vehicles` id 1 `SIM-001`(긴 이름, 소유자 admin) | PostgreSQL | 보류 | 그대로 | admin 소유 유일 차량. 긴 이름 확인은 앱 저장소 문서 |
 | `counter:__rand_int__`, `key:__rand_int__` | Redis | 보류 | 2키, TTL 없음 | redis-benchmark의 고정 키 이름이고 테스트 종류(SET/GET/INCR)가 `load-test/redis-outage/evidence/20260912-115730/redis-normal-latency.csv`와 맞는다. 하지만 **키 이름이 evidence에 적혀 있지 않다**(기준 미달). 지우는 영향은 없다 |
 | admin refresh token 3개 | Redis | 보존 | 값이 `admin` | 운영 계정 |
-| spool `1791298387712-…-11c1b58d-….tmp` (0바이트) | `backend-spool` 볼륨 | **보존(증거)** | 1개, 2026-10-06 14:53:07 UTC(dryrun_07) | 실험 D3 결함 후보의 현물 증거. 처리 방식은 HANDOFF_2026-10-08 §3-1 결정 대기 |
+| spool `1791298387712-…-11c1b58d-….tmp` (0바이트) | `backend-spool` 볼륨 | **보존(증거)** | 1개, 2026-10-06 14:53:07 UTC(dryrun_07) | 실험 D3 결함 후보의 현물 증거. 처리 방식은 결정 대기(비공개 인계 기록 2026-10-08) |
 | compose 볼륨 12개 | Docker 볼륨 | 보존 | 목록(dryrun_07) | 볼륨 삭제·`down -v` 금지 |
 | Grafana·Prometheus TSDB | 볼륨 | 범위 밖 | — | 이번에 보지 않음 |
 
