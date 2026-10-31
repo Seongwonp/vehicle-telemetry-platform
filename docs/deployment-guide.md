@@ -16,8 +16,8 @@
 | 포트 | 프로토콜 | 허용 대상 | 용도 |
 |------|----------|----------|------|
 | 22 | TCP | 내 IP만 | SSH |
-| 8080 | TCP | 0.0.0.0/0 | Spring Boot API |
-| 3000 | TCP | 0.0.0.0/0 | Grafana |
+| 8080 | TCP | 내 IP만 | Spring Boot API |
+| 3000 | TCP | 내 IP만 | Grafana |
 | 8883 | TCP | 차량/시뮬레이터 IP | MQTT TLS (운영) |
 
 > 기본 Compose는 8883/mTLS만 노출한다. 1883 평문은 `docker-compose.dev.yml`을 명시한
@@ -144,7 +144,7 @@ docker compose up -d backend
 [ ] POSTGRES_PASSWORD      — 강력한 비밀번호로 변경
 [ ] REDIS_PASSWORD         — 강력한 비밀번호로 변경
 [ ] JWT_SECRET             — 최소 32자 랜덤 문자열
-[ ] ADMIN_PASSWORD         — 기본값 changeme 반드시 변경
+[ ] ADMIN_PASSWORD         — 필수. 강력한 비밀번호로 설정(없으면 compose가 시작하지 않는다)
 [ ] GRAFANA_PASSWORD       — 필수(2026-10-17부터 compose 기본값 없음). .env.example 자리표시값을 바꾼다
 [ ] MQTT_TLS_STORE_PASSWORD — 필수(2026-10-17부터 compose 기본값 없음). 인증서 p12 저장소 비밀번호
 ```
