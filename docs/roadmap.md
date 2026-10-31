@@ -404,7 +404,7 @@ poll을 계속하는 것인지. 가르려면 `group.instance.id`를 빼고 같�
 ### P1-4. 앱 자동 검증과 실제 기기 확인 — **CI 완료(2026-09-06), 실기기는 남음**
 
 앱 저장소에 `.github/workflows/ci.yml`을 넣었다(`Seongwonp/vehicle-telemetry-app@6adca8a`).
-AGENTS.md "데스크톱 필수 검증"의 앞 세 단계와 **같은 명령**을 돌린다 —
+앱 저장소 `CONTRIBUTING.md` "검증"의 앞 세 단계와 **같은 명령**을 돌린다 —
 `dart format --set-exit-if-changed`, `flutter analyze`, `flutter test`.
 Flutter 버전은 3.41.6으로 **고정**했다(`channel: stable`만 주면 앱 코드가 그대로인데
 어느 날 러너가 받은 최신 stable 때문에 깨져 CI 실패가 잡음이 된다).
