@@ -56,6 +56,15 @@ Grafana 등록 차량 필터, 인프라 포트 localhost 게시를 더했다. �
 - **실험 규칙**: 가설·대조군·성공 기준을 먼저 적고, 발행 시도 수가 아니라 **PUBACK·Kafka offset·InfluxDB 행 수를 대조**한다. 안정성 주장은 같은 조건 3회 이상에서만 — [증거 정책](docs/evidence-policy.md)
 - **증거 보존**: 실행마다 `load-test/<시나리오>/evidence/<run-id>/`에 commit SHA·명령·원본 로그·checksum. CI가 checksum 전수 검사
 
+## AI 도구 사용
+
+이 프로젝트는 AI 코딩 도구(Claude Code)를 많이 썼습니다. 코드·실험 스크립트·문서의 상당 부분을 AI가 작성했고,
+무엇을 고칠지, 범위와 우선순위, 위험한 작업의 승인은 제가 정했습니다.
+
+AI의 설명을 근거로 삼지 않습니다. 주장은 테스트(CI가 skip 0 강제)와 실행 원본 증거, 실행 전에 적은 성공 기준으로만 남기고,
+별도 AI 리뷰로 교차 검토합니다. AI의 판단이 틀린 경우도 기록합니다 — 예: 불가능하다고 본 오류 코드가 CI에서 실제로 나온 사례
+([기록](docs/verification/2026-10-07-mqtt-ack-contract-flake.md)).
+
 ## 말하지 않는 것
 
 - exactly-once, 모든 조건에서 무손실, 고가용성(broker 1대, RF=1), 운영 준비 완료
