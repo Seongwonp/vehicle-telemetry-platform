@@ -299,7 +299,7 @@ DLQ 이름 출처: `vehicle-telemetry-dlq`(`dlq-tools/dlq.py`), `vehicle-telemet
 dry-run(10,447 / 9,547) 이후 +1,272 = SIM 3대 × 182 + STUCK-* 726 — 그 사이 시뮬레이터와 다른 실험(STUCK)이 발행한 만큼 두 큐가 같이 자랐다.
 
 **백업(§6-3-c 방식)**: 브로커 정지 상태에서 볼륨을 읽기 전용으로 마운트해 `mosquitto.db`를 저장소 **밖**으로 복사했다.
-위치 `C:\Users\USER\AppData\Local\Temp\claude\D--vehicle-telemetry-platform\d456ac25-…\scratchpad\mosq-backup\mosquitto.db.20261007T1302Z-before-g1g2-cleanup`(전체 경로는 `00_metadata.txt`), → **보존용 사본: `D:ehicle-telemetry-backups\mosquitto.db.20261007T1302Z-before-g1g2-cleanup`**(저장소 밖, 같은 sha256 `72067d72…be652` 확인 — 세션 임시 폴더는 지워질 수 있다).
+위치: 작업 당시 임시 폴더, → **보존용 사본: 저장소 밖 로컬 백업 폴더의 `mosquitto.db.20261007T1302Z-before-g1g2-cleanup`**(저장소 밖, 같은 sha256 `72067d72…be652` 확인 — 세션 임시 폴더는 지워질 수 있다).
 **5,049,590 bytes, sha256 `72067d72c5a39b8d917c22680bc07eb7363c02527c4ca4e7cfbd5c93101be652`**(복사 시점 볼륨 파일과 같은 해시).
 **주의**: 세션 임시 디렉터리다 — 보관하려면 다른 곳으로 옮겨야 한다. 파일 단위 복원이라 되돌리면 운영 세션·h2 세션도 13:02:22 상태로 돌아간다.
 

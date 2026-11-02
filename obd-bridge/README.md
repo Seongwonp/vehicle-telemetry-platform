@@ -93,7 +93,7 @@ $env:PYTHONUTF8 = "1"   # Windows cp949에서 ELM327-emulator sdist 빌드가 Un
 .\.venv\Scripts\python -m obd_bridge --help
 ```
 
-3.12(노트북 LAPTOP-MV7C23S3, 2026-10-09에 실제로 쓴 명령 — Git Bash):
+3.12(노트북, 2026-10-09에 실제로 쓴 명령 — Git Bash):
 
 ```bash
 cd obd-bridge
@@ -130,7 +130,7 @@ TLS 변수 이름은 시뮬레이터와 같다. 기본이 mTLS 8883이고 평문
 (`ca.key`·다른 차량 키는 복사하지 않는다). `--mqtt-host`는 스택 PC의 IP, 브로커 인증서 CN은
 `mosquitto`라 호스트명 검증에 걸리면 별도 결정이 필요하다(미검증 — 아래 "미검증").
 스택 PC에서 `MQTT_TLS_PORT`를 바꿨다면(Windows 제외 포트 충돌 등, `docs/deployment-guide.md` §8) 브리지의 `--mqtt-port`/`MQTT_PORT`도 **같은 값으로** 맞춘다.
-공유망(학교·카페)에서는 열지 않는다.
+공유망에서는 열지 않는다.
 
 ## 테스트 (하드웨어 없음)
 
