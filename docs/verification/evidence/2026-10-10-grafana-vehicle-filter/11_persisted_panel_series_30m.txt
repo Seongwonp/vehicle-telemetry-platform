@@ -1,0 +1,30 @@
+# captured 2026-10-08T05:53:30Z — after persisting GRAFANA_PG_READER_PASSWORD in .env and recreating grafana from it (no shell override). Simulator running. intervalMs=2000 (30m/1000=1.8s rounded as the frontend does; a first try with a raw 1800 made Grafana render a non-integer windowPeriod and Flux rejected it — measurement-tool error, not a dashboard error).
+datasource telemetry-pg-registry health: {"message":"Database Connection OK","status":"OK"}
+grafana container started: 2026-10-08T05:51:25.380742857Z
+range now-30m .. now  intervalMs=2000 maxDataPoints=1000
+variable "vehicle" options (PostgreSQL, active): ["SIM-001","SIM-002"]  -> All = ["SIM-001","SIM-002"]
+
+panel 1 "차량 속도 (km/h)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 2 "엔진 온도 (°C)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 3 "RPM"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 4 "배터리 전압 (V)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]
+
+panel 5 "연료 잔량 (%)"
+  before (no vehicle filter): 3 series ["SIM-001","SIM-002","SIM-003"]
+  after  (vehicle=All):       2 series ["SIM-001","SIM-002"]
+  hidden by filter: ["SIM-003"]

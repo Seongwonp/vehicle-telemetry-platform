@@ -1,0 +1,11 @@
+# captured 2026-10-08T05:53:52Z — now-30d, ONE load via Grafana /api/ds/query (time_panels.js), simulator running, no repeat.
+# The dashboard sets no per-panel maxDataPoints/interval, so the browser derives them from panel pixel width. Used maxDataPoints=1000 and 30d/1000=43.2m rounded to 30m (1800000 ms), Grafana-style.
+# host: 16 logical CPUs; InfluxDB v2.7.12
+range now-30d .. now  intervalMs=1800000 maxDataPoints=1000  auto-refresh: none (single load)
+variable query: 59 ms, HTTP 200, options ["SIM-001","SIM-002"]
+panel 1 "차량 속도 (km/h)": 537 ms, HTTP 200, 2 series ["SIM-001","SIM-002"], 2882 points
+panel 2 "엔진 온도 (°C)": 550 ms, HTTP 200, 2 series ["SIM-001","SIM-002"], 2882 points
+panel 3 "RPM": 568 ms, HTTP 200, 2 series ["SIM-001","SIM-002"], 2882 points
+panel 4 "배터리 전압 (V)": 563 ms, HTTP 200, 2 series ["SIM-001","SIM-002"], 2882 points
+panel 5 "연료 잔량 (%)": 566 ms, HTTP 200, 2 series ["SIM-001","SIM-002"], 2882 points
+5 panels in parallel: wall 568 ms; variable + panels: 628 ms

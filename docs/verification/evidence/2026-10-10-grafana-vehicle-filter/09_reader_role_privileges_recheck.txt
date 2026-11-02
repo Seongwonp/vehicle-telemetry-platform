@@ -1,0 +1,45 @@
+# captured 2026-10-08T05:52:49Z — grafana_reader privileges, queried as the container admin (POSTGRES_USER, local socket). PostgreSQL 16.15
+-- role attributes
+    rolname     | rolsuper | rolinherit | rolcreaterole | rolcreatedb | rolcanlogin | rolreplication | rolbypassrls | rolconnlimit |             rolconfig              
+----------------+----------+------------+---------------+-------------+-------------+----------------+--------------+--------------+------------------------------------
+ grafana_reader | f        | f          | f             | f           | t           | f              | f            |            5 | {default_transaction_read_only=on}
+(1 row)
+
+-- role memberships (expect 0 rows)
+ member_of 
+-----------
+(0 rows)
+
+-- database privileges (effective; TEMP and CONNECT also come from the PostgreSQL default PUBLIC grant)
+  datname  | connect | create | temp 
+-----------+---------+--------+------
+ telemetry | t       | f      | t
+(1 row)
+
+-- schema public
+ usage | create 
+-------+--------
+ t     | f
+(1 row)
+
+-- table-level grants (expect 0 rows)
+ table_schema | table_name | privilege_type 
+--------------+------------+----------------
+(0 rows)
+
+-- column-level grants
+ table_name | column_name | privilege_type 
+------------+-------------+----------------
+ vehicles   | active      | SELECT
+ vehicles   | vehicle_id  | SELECT
+(2 rows)
+
+-- sequence / function grants explicitly to grafana_reader (expect 0 rows)
+ relname 
+---------
+(0 rows)
+
+ proname 
+---------
+(0 rows)
+

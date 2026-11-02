@@ -1,0 +1,48 @@
+# captured 2026-10-08T05:53:00Z — connected as grafana_reader with password auth to the container's network IP (pg_hba 'host all all all scram-sha-256'; 127.0.0.1 would be trust). Each statement separate; errors are the expected result except the first and SHOW.
+> SELECT vehicle_id, active FROM vehicles WHERE active ORDER BY 1
+ vehicle_id | active 
+------------+--------
+ SIM-001    | t
+ SIM-002    | t
+(2 rows)
+
+> SELECT name FROM vehicles
+ERROR:  permission denied for table vehicles
+> SELECT owner_id FROM vehicles
+ERROR:  permission denied for table vehicles
+> SELECT * FROM vehicles
+ERROR:  permission denied for table vehicles
+> SELECT count(*) FROM users
+ERROR:  permission denied for table users
+> SELECT count(*) FROM anomaly_alerts
+ERROR:  permission denied for table anomaly_alerts
+> UPDATE vehicles SET active = active WHERE false
+ERROR:  cannot execute UPDATE in a read-only transaction
+> INSERT INTO vehicles(vehicle_id) VALUES ('X') 
+ERROR:  cannot execute INSERT in a read-only transaction
+> DELETE FROM vehicles WHERE false
+ERROR:  cannot execute DELETE in a read-only transaction
+> CREATE TABLE public.x(i int)
+ERROR:  cannot execute CREATE TABLE in a read-only transaction
+> CREATE TEMP TABLE t(i int)
+ERROR:  cannot execute CREATE TABLE in a read-only transaction
+> SET default_transaction_read_only = off; UPDATE vehicles SET active = active WHERE false
+SET
+ERROR:  cannot execute UPDATE in a read-only transaction
+> SHOW default_transaction_read_only
+ default_transaction_read_only 
+-------------------------------
+ on
+(1 row)
+
+> (wrong password) SELECT 1
+psql: error: connection to server at "172.18.0.2", port 5432 failed: FATAL:  password authentication failed for user "grafana_reader"
+
+> (two separate transactions) -c 'SET default_transaction_read_only = off' -c 'UPDATE vehicles SET active = active WHERE false' -c 'CREATE TABLE public.x(i int)' -c 'CREATE TEMP TABLE t(i int)'
+# read-only is only a session default the role can turn off; after that, privileges are what refuse writes. TEMP comes from PUBLIC's default TEMP grant on the database (session-local, dropped at disconnect).
+SET
+ERROR:  permission denied for table vehicles
+ERROR:  permission denied for schema public
+LINE 1: CREATE TABLE public.x(i int)
+                     ^
+CREATE TABLE

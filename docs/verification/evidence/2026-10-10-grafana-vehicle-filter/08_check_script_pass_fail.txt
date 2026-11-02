@@ -1,0 +1,26 @@
+# captured 2026-10-08T05:52:35Z — scripts/check-grafana-registry.sh, HEAD 5561d98 + uncommitted. Values never printed.
+
+$ sh scripts/check-grafana-registry.sh   # .env 값 사용
+OK   [1] GRAFANA_PG_READER_PASSWORD 설정됨(값 미출력)
+OK   [2] grafana_reader 비밀번호 로그인 + 변수 쿼리 2행: SIM-001 SIM-002
+OK   [3] Grafana datasource telemetry-pg-registry health OK
+PASS Grafana 등록 차량 변수 경로 정상
+exit=0
+
+$ ( unset GRAFANA_PG_READER_PASSWORD; ENV_FILE=/dev/null sh scripts/check-grafana-registry.sh )   # 변수 없음 모의(.env 미변경)
+FAIL [1] GRAFANA_PG_READER_PASSWORD가 셸 환경과 /dev/null 어디에도 없거나 비어 있다.
+→ 대시보드 차량 변수가 비고 텔레메트리 패널 5개가 'No data'로 보인다. 절차: .env.example의 GRAFANA_PG_READER_PASSWORD 주석, docs/verification/2026-10-10-grafana-vehicle-filter.md
+exit=1
+
+$ ( GRAFANA_PG_READER_PASSWORD=<틀린 값> sh scripts/check-grafana-registry.sh )   # 비밀번호 불일치 모의(.env·역할 미변경)
+OK   [1] GRAFANA_PG_READER_PASSWORD 설정됨(값 미출력)
+FAIL [2] grafana_reader 비밀번호 인증 실패 — .env 값과 PostgreSQL 역할 비밀번호가 다르다. sh scripts/grafana-pg-reader.sh 로 맞춘다.
+→ 대시보드 차량 변수가 비고 텔레메트리 패널 5개가 'No data'로 보인다. 절차: .env.example의 GRAFANA_PG_READER_PASSWORD 주석, docs/verification/2026-10-10-grafana-vehicle-filter.md
+exit=1
+
+$ GRAFANA_DS_UID=no-such-uid sh scripts/check-grafana-registry.sh   # 3단계 실패 경로 모의(존재하지 않는 datasource)
+OK   [1] GRAFANA_PG_READER_PASSWORD 설정됨(값 미출력)
+OK   [2] grafana_reader 비밀번호 로그인 + 변수 쿼리 2행: SIM-001 SIM-002
+FAIL [3] Grafana datasource no-such-uid health 실패: {"message":"Unable to load datasource metadata","traceID":""} — .env를 바꿨다면 grafana를 다시 만든다(docker compose ... up -d --no-deps grafana).
+→ 대시보드 차량 변수가 비고 텔레메트리 패널 5개가 'No data'로 보인다. 절차: .env.example의 GRAFANA_PG_READER_PASSWORD 주석, docs/verification/2026-10-10-grafana-vehicle-filter.md
+exit=1

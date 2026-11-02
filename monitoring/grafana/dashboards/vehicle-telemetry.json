@@ -10,7 +10,7 @@
       {
         "name": "vehicle",
         "label": "차량 (등록·활성)",
-        "description": "PostgreSQL vehicles에서 active=true인 차량만. All = 등록된 활성 차량 전체(InfluxDB tag 전체가 아니다).",
+        "description": "PostgreSQL vehicles에서 active=true인 차량만. All = 등록된 활성 차량 전체(InfluxDB tag 전체가 아니다). 목록이 비고 패널이 No data면 datasource 설정 확인: sh scripts/check-grafana-registry.sh",
         "type": "query",
         "datasource": { "type": "grafana-postgresql-datasource", "uid": "telemetry-pg-registry" },
         "query": "SELECT vehicle_id FROM vehicles WHERE active ORDER BY vehicle_id",
